@@ -1,0 +1,525 @@
+import {
+  createComponentInstance,
+  getComponentDevtoolsName,
+  setupComponent,
+  updateComponentProps,
+  type ComponentInstance,
+} from "../component/component";
+import { callHooks } from "../component/lifecycle";
+import type { Provides } from "../component/provide";
+import { emitDevtoolsEvent, hasDevtoolsListeners } from "../devtools/events";
+import { ReactiveEffect } from "../reactivity/effect";
+import { queueJob } from "../scheduler/scheduler";
+import { ShapeFlags } from "../shared/flags";
+import type { VNode, VNodeProps } from "../vnode/vnode";
+import { createElement, insert, patchProp, remove, setText } from "./dom";
+
+export function patch(
+  n1: VNode | null,
+  n2: VNode,
+  container: Element,
+  anchor: Node | null = null,
+  parentComponent: ComponentInstance | null = null,
+  appProvides: Provides | null = parentComponent?.appProvides ?? null,
+): void {
+  if (n1 !== null && !isSameVNodeType(n1, n2)) {
+    const nextAnchor = n1.el?.nextSibling ?? anchor;
+    unmount(n1);
+    patch(null, n2, container, nextAnchor, parentComponent, appProvides);
+    return;
+  }
+
+  if (n2.shapeFlag & ShapeFlags.ELEMENT) {
+    if (n1 === null) {
+      mountElement(n2, container, anchor, parentComponent, appProvides);
+      return;
+    }
+
+    patchElement(n1, n2, parentComponent, appProvides);
+    return;
+  }
+
+  if (n2.shapeFlag & ShapeFlags.FRAGMENT) {
+    if (n1 === null) {
+      mountFragment(n2, container, anchor, parentComponent, appProvides);
+      return;
+    }
+
+    patchChildren(n1, n2, container, parentComponent, appProvides);
+    n2.el = getFragmentRoot(n2);
+    return;
+  }
+
+  if (n2.shapeFlag & ShapeFlags.COMPONENT) {
+    if (n1 === null) {
+      mountComponent(n2, container, anchor, parentComponent, appProvides);
+      return;
+    }
+
+    updateComponent(n1, n2);
+  }
+}
+
+function mountFragment(
+  vnode: VNode,
+  container: Element,
+  anchor: Node | null,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+): void {
+  if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+    for (const child of vnode.children as VNode[]) {
+      patch(null, child, container, anchor, parentComponent, appProvides);
+    }
+  }
+
+  vnode.el = getFragmentRoot(vnode);
+}
+
+function mountElement(
+  vnode: VNode,
+  container: Element,
+  anchor: Node | null,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+): void {
+  const el = createElement(vnode.type as string);
+  vnode.el = el;
+
+  if (vnode.props) {
+    for (const [key, value] of Object.entries(vnode.props)) {
+      if (key !== "key") {
+        patchProp(el, key, null, value);
+      }
+    }
+  }
+
+  if (vnode.shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+    setText(el, vnode.children as string);
+  } else if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+    for (const child of vnode.children as VNode[]) {
+      patch(null, child, el, null, parentComponent, appProvides);
+    }
+  }
+
+  insert(el, container, anchor);
+  emitRendererElementDevtoolsEvent("mount", vnode.type as string);
+}
+
+function mountComponent(
+  vnode: VNode,
+  container: Element,
+  anchor: Node | null,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+): void {
+  const instance = createComponentInstance(vnode, parentComponent, appProvides);
+  vnode.component = instance;
+
+  setupComponent(instance);
+
+  const componentUpdate = (): void => {
+    if (instance.isUnmounted) {
+      return;
+    }
+
+    if (!instance.isMounted) {
+      const subTree = instance.render();
+      instance.subTree = subTree;
+      patch(null, subTree, container, anchor, instance, instance.appProvides);
+      vnode.el = subTree.el;
+      instance.isMounted = true;
+      callHooks(instance.mounted);
+      emitComponentDevtoolsEvent("component:mount", instance);
+      return;
+    }
+
+    const nextTree = instance.render();
+    const previousTree = instance.subTree;
+
+    patch(previousTree, nextTree, container, anchor, instance, instance.appProvides);
+
+    instance.subTree = nextTree;
+    instance.vnode.el = nextTree.el;
+    callHooks(instance.updated);
+    emitComponentDevtoolsEvent("component:update", instance);
+  };
+  const reactiveEffect = new ReactiveEffect(componentUpdate, () => {
+    if (instance.update !== null) {
+      queueJob(instance.update);
+    }
+  });
+
+  instance.effect = reactiveEffect;
+  instance.update = reactiveEffect.run.bind(reactiveEffect);
+  instance.update();
+}
+
+function updateComponent(n1: VNode, n2: VNode): void {
+  const instance = n1.component as ComponentInstance;
+  n2.component = instance;
+
+  updateComponentProps(instance, n2);
+
+  instance.update?.();
+  n2.el = instance.subTree?.el ?? null;
+}
+
+function patchElement(
+  n1: VNode,
+  n2: VNode,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+): void {
+  const el = n1.el as Element;
+  n2.el = el;
+
+  patchProps(el, n1.props, n2.props);
+  patchChildren(n1, n2, el, parentComponent, appProvides);
+  emitRendererElementDevtoolsEvent("update", n2.type as string);
+}
+
+function patchProps(el: Element, oldProps: VNodeProps | null, newProps: VNodeProps | null): void {
+  const previousProps = oldProps ?? {};
+  const nextProps = newProps ?? {};
+
+  for (const [key, nextValue] of Object.entries(nextProps)) {
+    if (key === "key") {
+      continue;
+    }
+
+    const previousValue = previousProps[key];
+    if (previousValue !== nextValue) {
+      patchProp(el, key, previousValue, nextValue);
+    }
+  }
+
+  for (const key of Object.keys(previousProps)) {
+    if (key !== "key" && !(key in nextProps)) {
+      patchProp(el, key, previousProps[key], null);
+    }
+  }
+}
+
+function patchChildren(
+  n1: VNode,
+  n2: VNode,
+  container: Element,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+): void {
+  const oldChildren = n1.children;
+  const newChildren = n2.children;
+  const oldShapeFlag = n1.shapeFlag;
+  const newShapeFlag = n2.shapeFlag;
+
+  if (newShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+    if (oldShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      unmountChildren(oldChildren as VNode[]);
+    }
+
+    if (oldChildren !== newChildren) {
+      setText(container, newChildren as string);
+    }
+    return;
+  }
+
+  if (newShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+    const nextChildren = newChildren as VNode[];
+
+    if (oldShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      setText(container, "");
+      mountChildren(nextChildren, container, parentComponent, appProvides);
+      return;
+    }
+
+    if (oldShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      patchArrayChildren(
+        oldChildren as VNode[],
+        nextChildren,
+        container,
+        parentComponent,
+        appProvides,
+      );
+      return;
+    }
+
+    mountChildren(nextChildren, container, parentComponent, appProvides);
+    return;
+  }
+
+  if (oldShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+    unmountChildren(oldChildren as VNode[]);
+  } else if (oldShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+    setText(container, "");
+  }
+}
+
+function mountChildren(
+  children: VNode[],
+  container: Element,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+): void {
+  for (const child of children) {
+    patch(null, child, container, null, parentComponent, appProvides);
+  }
+}
+
+function patchArrayChildren(
+  oldChildren: VNode[],
+  newChildren: VNode[],
+  container: Element,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+): void {
+  if (hasUniqueKeys(oldChildren) && hasUniqueKeys(newChildren)) {
+    patchKeyedChildren(oldChildren, newChildren, container, parentComponent, appProvides);
+    return;
+  }
+
+  patchUnkeyedChildren(oldChildren, newChildren, container, parentComponent, appProvides);
+}
+
+function patchUnkeyedChildren(
+  oldChildren: VNode[],
+  newChildren: VNode[],
+  container: Element,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+): void {
+  const commonLength = Math.min(oldChildren.length, newChildren.length);
+
+  for (let index = 0; index < commonLength; index += 1) {
+    patch(oldChildren[index], newChildren[index], container, null, parentComponent, appProvides);
+  }
+
+  if (newChildren.length > oldChildren.length) {
+    for (let index = commonLength; index < newChildren.length; index += 1) {
+      patch(null, newChildren[index], container, null, parentComponent, appProvides);
+    }
+    return;
+  }
+
+  for (let index = commonLength; index < oldChildren.length; index += 1) {
+    unmount(oldChildren[index]);
+  }
+}
+
+function patchKeyedChildren(
+  oldChildren: VNode[],
+  newChildren: VNode[],
+  container: Element,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+): void {
+  let oldStart = 0;
+  let newStart = 0;
+  let oldEnd = oldChildren.length - 1;
+  let newEnd = newChildren.length - 1;
+
+  while (
+    oldStart <= oldEnd &&
+    newStart <= newEnd &&
+    isSameVNodeType(oldChildren[oldStart], newChildren[newStart])
+  ) {
+    patch(
+      oldChildren[oldStart],
+      newChildren[newStart],
+      container,
+      null,
+      parentComponent,
+      appProvides,
+    );
+    oldStart += 1;
+    newStart += 1;
+  }
+
+  while (
+    oldStart <= oldEnd &&
+    newStart <= newEnd &&
+    isSameVNodeType(oldChildren[oldEnd], newChildren[newEnd])
+  ) {
+    patch(oldChildren[oldEnd], newChildren[newEnd], container, null, parentComponent, appProvides);
+    oldEnd -= 1;
+    newEnd -= 1;
+  }
+
+  if (oldStart > oldEnd) {
+    const anchor = getAnchor(newChildren, newEnd + 1);
+    for (let index = newStart; index <= newEnd; index += 1) {
+      patch(null, newChildren[index], container, anchor, parentComponent, appProvides);
+    }
+    return;
+  }
+
+  if (newStart > newEnd) {
+    for (let index = oldStart; index <= oldEnd; index += 1) {
+      unmount(oldChildren[index]);
+    }
+    return;
+  }
+
+  const oldKeyedChildren = new Map<string | number, VNode>();
+  const oldUnkeyedChildren: VNode[] = [];
+
+  for (let index = oldStart; index <= oldEnd; index += 1) {
+    const oldChild = oldChildren[index];
+    if (oldChild.key === null) {
+      oldUnkeyedChildren.push(oldChild);
+    } else {
+      oldKeyedChildren.set(oldChild.key, oldChild);
+    }
+  }
+
+  const usedOldChildren = new Set<VNode>();
+
+  for (let index = newStart; index <= newEnd; index += 1) {
+    const newChild = newChildren[index];
+    const oldChild = findOldChild(newChild, oldKeyedChildren, oldUnkeyedChildren);
+
+    if (oldChild !== null) {
+      usedOldChildren.add(oldChild);
+      patch(oldChild, newChild, container, null, parentComponent, appProvides);
+    } else {
+      patch(null, newChild, container, null, parentComponent, appProvides);
+    }
+  }
+
+  for (let index = oldStart; index <= oldEnd; index += 1) {
+    const oldChild = oldChildren[index];
+    if (!usedOldChildren.has(oldChild)) {
+      unmount(oldChild);
+    }
+  }
+
+  for (let index = newEnd; index >= newStart; index -= 1) {
+    const childEl = newChildren[index].el;
+    if (childEl !== null) {
+      insert(childEl, container, getAnchor(newChildren, index + 1));
+    }
+  }
+}
+
+function findOldChild(
+  newChild: VNode,
+  oldKeyedChildren: Map<string | number, VNode>,
+  oldUnkeyedChildren: VNode[],
+): VNode | null {
+  if (newChild.key !== null) {
+    return oldKeyedChildren.get(newChild.key) ?? null;
+  }
+
+  const index = oldUnkeyedChildren.findIndex((oldChild) => isSameVNodeType(oldChild, newChild));
+
+  if (index === -1) {
+    return null;
+  }
+
+  const [oldChild] = oldUnkeyedChildren.splice(index, 1);
+  return oldChild;
+}
+
+function getAnchor(children: VNode[], index: number): Node | null {
+  return (children[index]?.el as Node | null | undefined) ?? null;
+}
+
+function hasUniqueKeys(children: VNode[]): boolean {
+  const keys = new Set<string | number>();
+
+  for (const child of children) {
+    if (child.key === null || keys.has(child.key)) {
+      return false;
+    }
+
+    keys.add(child.key);
+  }
+
+  return children.length > 0;
+}
+
+function isSameVNodeType(n1: VNode, n2: VNode): boolean {
+  return n1.type === n2.type && n1.key === n2.key;
+}
+
+function unmountChildren(children: VNode[]): void {
+  for (const child of children) {
+    unmount(child);
+  }
+}
+
+function unmount(vnode: VNode): void {
+  if (vnode.shapeFlag & ShapeFlags.COMPONENT) {
+    const instance = vnode.component as ComponentInstance | null;
+    if (instance === null) {
+      return;
+    }
+
+    instance.isUnmounted = true;
+    instance.isMounted = false;
+    instance.effect?.stop();
+    instance.effect = null;
+    instance.update = null;
+
+    if (instance.subTree !== null) {
+      unmount(instance.subTree);
+    }
+    callHooks(instance.unmounted);
+    emitComponentDevtoolsEvent("component:unmount", instance);
+    return;
+  }
+
+  if (vnode.shapeFlag & ShapeFlags.FRAGMENT) {
+    if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      unmountChildren(vnode.children as VNode[]);
+    }
+    return;
+  }
+
+  if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+    unmountChildren(vnode.children as VNode[]);
+  }
+
+  if (vnode.el !== null) {
+    remove(vnode.el);
+    emitRendererElementDevtoolsEvent("unmount", vnode.type as string);
+  }
+}
+
+function getFragmentRoot(vnode: VNode): Element | Text | null {
+  if (!(vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN)) {
+    return null;
+  }
+
+  return ((vnode.children as VNode[])[0]?.el as Element | Text | null | undefined) ?? null;
+}
+
+function emitComponentDevtoolsEvent(
+  type: "component:mount" | "component:update" | "component:unmount",
+  instance: ComponentInstance,
+): void {
+  if (!hasDevtoolsListeners()) {
+    return;
+  }
+
+  emitDevtoolsEvent({
+    type,
+    id: instance.devtoolsId,
+    name: getComponentDevtoolsName(instance),
+  });
+}
+
+function emitRendererElementDevtoolsEvent(
+  operation: "mount" | "update" | "unmount",
+  tag: string,
+): void {
+  if (!hasDevtoolsListeners()) {
+    return;
+  }
+
+  emitDevtoolsEvent({
+    type: "renderer:element",
+    operation,
+    tag,
+  });
+}

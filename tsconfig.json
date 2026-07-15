@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "solace",
+    "baseUrl": ".",
+    "paths": {
+      "solace": ["src/index.ts"],
+      "solace/jsx-runtime": ["src/jsx-runtime.ts"],
+      "solace/jsx-dev-runtime": ["src/jsx-dev-runtime.ts"],
+      "solace/devtools": ["src/devtools/index.ts"]
+    }
+  },
+  "include": ["src", "tests", "examples", "*.ts"]
+}

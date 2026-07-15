@@ -1,0 +1,151 @@
+# Performance
+
+This document defines how Solace performance should be measured. It does not claim unverified results.
+
+## Current Validation
+
+The repository currently validates behavior with:
+
+- Unit tests for reactivity, scheduler, renderer, components, events, JSX runtime, store, and package exports.
+- Playwright e2e tests for basic counter, todo app, and a 10,000-row large list example.
+- Rollup production build checks.
+- Tinybench smoke benchmarks for initial render, list diff, keyed insert/remove/move/reorder,
+  Fragment rendering, batched component updates, and mount/unmount loops.
+- Chromium browser production benchmark for large-list initial render, reactive update, and unmount
+  through `pnpm benchmark:browser`.
+
+The large-list e2e test confirms that 10,000 rows can render and one selected row can update in a browser smoke test. It is not a benchmark result.
+
+## Latest Local Benchmark Run
+
+Date: 2026-07-13
+
+Environment:
+
+| Item         | Value                   |
+| ------------ | ----------------------- |
+| OS           | Darwin 25.4.0 arm64 arm |
+| Node         | v22.22.2                |
+| Runtime      | darwin arm64            |
+| Vitest       | 4.1.10                  |
+| CPU / memory | Recorded by metadata    |
+
+Command:
+
+```bash
+pnpm benchmark
+```
+
+The command logs a `benchmark metadata` JSON line before running the jsdom benchmark suite. The metadata includes package name/version, Node version, OS platform/release/architecture, CPU model, logical CPU count, total memory, benchmark runner, benchmark environment, sample size, and an ISO timestamp.
+
+`sampleSize` is currently `1` because the jsdom benchmark command remains a smoke benchmark run. Individual Tinybench tasks may perform internal iterations, but this command does not yet aggregate repeated independent runs.
+
+Result summary:
+
+| Scenario                                         | File                                          | Status | Notes                                                                  |
+| ------------------------------------------------ | --------------------------------------------- | ------ | ---------------------------------------------------------------------- |
+| 1,000 component initial render                   | `tests/performance/render.bench.ts`           | Passed | Uses jsdom and Tinybench, intended for trend tracking                  |
+| 10,000 row create/update/delete/reorder          | `tests/performance/list-diff.bench.ts`        | Passed | Covers list creation, local text update, delete, and keyed reorder     |
+| 10,000 row keyed local insert/remove/move        | `tests/performance/list-diff.bench.ts`        | Passed | Covers focused middle insert, middle remove, and tail-to-head move     |
+| 5,000 Fragment child initial render/patch/insert | `tests/performance/fragment.bench.ts`         | Passed | Covers Fragment child mount, keyed text patch, and keyed middle insert |
+| 1,000 component batched reactive update          | `tests/performance/component-update.bench.ts` | Passed | Covers scheduler batching across many component consumers              |
+| Component mount/unmount loop                     | `tests/performance/memory.bench.ts`           | Passed | Observes repeated cleanup path and records heap delta during the run   |
+
+Conclusion:
+
+- The benchmark command is reproducible and currently passes.
+- These runs are smoke benchmarks in jsdom, not browser production benchmarks.
+- No claim is made that Solace meets or exceeds a specific framework performance target yet.
+- Next optimization work should focus on keyed diff efficiency, Fragment edge cases, and component update batching under larger trees.
+
+## Browser Production Benchmark
+
+Command:
+
+```bash
+pnpm benchmark:browser
+```
+
+This command builds `examples/performance-benchmark`, serves the production output through Vite
+preview, and runs `tests/e2e/browser-benchmark.spec.ts` in Chromium.
+
+Measured scenarios:
+
+| Scenario                    | Scale       | Assertion                              |
+| --------------------------- | ----------- | -------------------------------------- |
+| Initial large-list render   | 10,000 rows | selected row 1 is rendered             |
+| Reactive selected-row patch | 10,000 rows | selected row 5000 reflects final state |
+| Large-list unmount          | 10,000 rows | row nodes are removed                  |
+
+The command logs a `browser benchmark summary` JSON line. It intentionally does not enforce absolute
+timing thresholds because browser, CPU, power mode, and background process variance can dominate
+individual runs.
+
+The summary also includes reproducibility metadata:
+
+| Field                                                                        | Source                             |
+| ---------------------------------------------------------------------------- | ---------------------------------- |
+| `metadata.packageName` / `metadata.packageVersion`                           | `package.json`                     |
+| `metadata.node`                                                              | `process.version`                  |
+| `metadata.platform`, `metadata.release`, `metadata.arch`                     | Node `os` module                   |
+| `metadata.cpuModel`, `metadata.logicalCpuCount`, `metadata.totalMemoryBytes` | Node `os` module                   |
+| `metadata.browserName`, `metadata.browserVersion`, `metadata.projectName`    | Playwright                         |
+| `metadata.sampleSize`                                                        | Current benchmark harness; now `1` |
+| `metadata.runAt`                                                             | ISO timestamp for the local run    |
+
+`metadata.sampleSize` is currently `1` because the browser benchmark is still a smoke benchmark. Use it for trend context, not statistical claims.
+
+## Benchmark Principles
+
+Benchmarks should:
+
+- Run in production mode where possible.
+- Separate initial render, update, and unmount costs.
+- Record browser, OS, Node, package version, and commit.
+- Avoid comparing development builds against production builds.
+- Report medians and variance, not a single best run.
+- Keep benchmark fixtures in source control.
+
+## Suggested Benchmarks
+
+### Reactivity
+
+- Create many reactive objects.
+- Track many effects.
+- Trigger narrow and broad dependency sets.
+- Measure computed cache hits and invalidations.
+
+### Renderer
+
+- Mount 1,000 and 10,000 simple elements.
+- Patch text props across a large list.
+- Insert, remove, and move keyed children.
+- Unmount nested component trees.
+
+### Components
+
+- Mount many small components.
+- Batch repeated state writes in one tick.
+- Repeatedly mount and unmount component subtrees.
+- Verify no retained effects after unmount.
+
+### Store
+
+- Read state directly in components.
+- Read computed getters in components.
+- Dispatch actions that update narrow state paths.
+
+## Reporting Template
+
+```text
+Scenario:
+Build mode:
+Browser / Node:
+Machine:
+Sample size:
+Median:
+p95:
+Notes:
+```
+
+Performance claims should only be added after this data exists.

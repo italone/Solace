@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build and test output
+dist/
+examples/**/dist/
+coverage/
+.vitest-attachments/
+test-results/
+playwright-report/
+
+# Vite and tooling caches
+node_modules/.vite-temp/
+.eslintcache
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System and editor files
+.DS_Store
+.idea/
+.vscode/
