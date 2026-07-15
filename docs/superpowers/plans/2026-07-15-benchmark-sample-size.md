@@ -32,25 +32,25 @@ No runtime framework source, package exports, browser benchmark harness, or benc
 - Modify: `tests/unit/scripts/benchmark-metadata.test.ts`
 - Create: `tests/unit/scripts/run-benchmark.test.ts`
 
-- [ ] **Step 1: Add explicit metadata sample-size test**
+- [x] **Step 1: Add explicit metadata sample-size test**
 
 In `tests/unit/scripts/benchmark-metadata.test.ts`, add:
 
 ```ts
-  test("prints an explicit benchmark sample size", async () => {
-    const { stdout } = await execFileAsync("node", [
-      "scripts/benchmark-metadata.mjs",
-      "--json",
-      "--sample-size",
-      "3",
-    ]);
-    const metadata = JSON.parse(stdout) as BenchmarkMetadata;
+test("prints an explicit benchmark sample size", async () => {
+  const { stdout } = await execFileAsync("node", [
+    "scripts/benchmark-metadata.mjs",
+    "--json",
+    "--sample-size",
+    "3",
+  ]);
+  const metadata = JSON.parse(stdout) as BenchmarkMetadata;
 
-    expect(metadata.sampleSize).toBe(3);
-  });
+  expect(metadata.sampleSize).toBe(3);
+});
 ```
 
-- [ ] **Step 2: Add runner dry-run tests**
+- [x] **Step 2: Add runner dry-run tests**
 
 Create `tests/unit/scripts/run-benchmark.test.ts`:
 
@@ -115,7 +115,7 @@ describe("benchmark runner CLI", () => {
 });
 ```
 
-- [ ] **Step 3: Verify RED**
+- [x] **Step 3: Verify RED**
 
 Run:
 
@@ -135,18 +135,18 @@ Expected: fails because `--sample-size` is not parsed and `scripts/run-benchmark
 - Create: `scripts/run-benchmark.mjs`
 - Modify: `package.json`
 
-- [ ] **Step 1: Parse metadata sample size**
+- [x] **Step 1: Parse metadata sample size**
 
 In `scripts/benchmark-metadata.mjs`, add sample-size parsing for `--sample-size <n>` and
 `SOLACE_BENCHMARK_SAMPLE_SIZE`, defaulting to `1`. On invalid values, throw
 `SOLACE_BENCHMARK_SAMPLE_SIZE must be a positive integer`.
 
-- [ ] **Step 2: Add runner script**
+- [x] **Step 2: Add runner script**
 
 Create `scripts/run-benchmark.mjs` with a `parseSampleSize()`, `createRunPlan()`, `runCommand()`, and `main()` flow.
 Use `spawn(command, args, { cwd: root, stdio: "inherit" })` for child benchmark runs.
 
-- [ ] **Step 3: Update package script**
+- [x] **Step 3: Update package script**
 
 Change `package.json`:
 
@@ -154,7 +154,7 @@ Change `package.json`:
 "benchmark": "node scripts/run-benchmark.mjs"
 ```
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run:
 
@@ -174,7 +174,7 @@ Expected: exits with code 0.
 - Add: `solace-project-log/solace-entries/2026-07-15-007-benchmark-sample-size.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update performance docs**
+- [x] **Step 1: Update performance docs**
 
 Replace the jsdom sample-size paragraph with:
 
@@ -184,16 +184,16 @@ Replace the jsdom sample-size paragraph with:
 the configured sample size in metadata, but it does not yet aggregate medians or persist historical results.
 ```
 
-- [ ] **Step 2: Add project log entry**
+- [x] **Step 2: Add project log entry**
 
 Create `solace-project-log/solace-entries/2026-07-15-007-benchmark-sample-size.md` with observed validation results.
 
-- [ ] **Step 3: Update log index**
+- [x] **Step 3: Update log index**
 
 Add this row after `006` under `2026-07-15`:
 
 ```md
-| 007  | 增加 benchmark sample size 配置 | benchmark runner、metadata、脚本测试、性能文档、项目日志 | `scripts/run-benchmark.mjs`, `scripts/benchmark-metadata.mjs`, `tests/unit/scripts/**`, `package.json`, `docs/performance.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-15-007-benchmark-sample-size.md) |
+| 007 | 增加 benchmark sample size 配置 | benchmark runner、metadata、脚本测试、性能文档、项目日志 | `scripts/run-benchmark.mjs`, `scripts/benchmark-metadata.mjs`, `tests/unit/scripts/**`, `package.json`, `docs/performance.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-15-007-benchmark-sample-size.md) |
 ```
 
 ---
@@ -204,7 +204,7 @@ Add this row after `006` under `2026-07-15`:
 
 - All changed files
 
-- [ ] **Step 1: Format changed files**
+- [x] **Step 1: Format changed files**
 
 Run:
 
@@ -214,7 +214,7 @@ pnpm exec prettier --write scripts/benchmark-metadata.mjs scripts/run-benchmark.
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run targeted script tests**
+- [x] **Step 2: Run targeted script tests**
 
 Run:
 
@@ -224,7 +224,7 @@ pnpm test -- tests/unit/scripts/benchmark-metadata.test.ts tests/unit/scripts/ru
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run benchmark once**
+- [x] **Step 3: Run benchmark once**
 
 Run:
 
@@ -234,7 +234,7 @@ pnpm benchmark
 
 Expected: exits with code 0 and prints `benchmark metadata` with `"sampleSize":1`.
 
-- [ ] **Step 4: Run full tests**
+- [x] **Step 4: Run full tests**
 
 Run:
 
@@ -244,7 +244,7 @@ pnpm test
 
 Expected: exits with code 0.
 
-- [ ] **Step 5: Run typecheck**
+- [x] **Step 5: Run typecheck**
 
 Run:
 
@@ -254,7 +254,7 @@ pnpm typecheck
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Run lint**
+- [x] **Step 6: Run lint**
 
 Run:
 
@@ -264,7 +264,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 7: Run build**
+- [x] **Step 7: Run build**
 
 Run:
 
@@ -274,7 +274,7 @@ pnpm build
 
 Expected: exits with code 0.
 
-- [ ] **Step 8: Run format check**
+- [x] **Step 8: Run format check**
 
 Run:
 
@@ -284,7 +284,7 @@ pnpm format:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 Run:
 

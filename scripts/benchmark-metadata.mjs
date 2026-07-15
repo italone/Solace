@@ -6,16 +6,39 @@ import { fileURLToPath } from "node:url";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const jsonOnly = process.argv.includes("--json");
 
-const metadata = await createBenchmarkMetadata();
-const payload = JSON.stringify(metadata);
+try {
+  const sampleSize = parseSampleSize(process.argv, process.env);
+  const metadata = await createBenchmarkMetadata(sampleSize);
+  const payload = JSON.stringify(metadata);
 
-if (jsonOnly) {
-  console.log(payload);
-} else {
-  console.log(`benchmark metadata: ${payload}`);
+  if (jsonOnly) {
+    console.log(payload);
+  } else {
+    console.log(`benchmark metadata: ${payload}`);
+  }
+} catch (error) {
+  console.error(error instanceof Error ? error.message : error);
+  process.exitCode = 1;
 }
 
-async function createBenchmarkMetadata() {
+function parseSampleSize(argv, env) {
+  const sampleSizeIndex = argv.indexOf("--sample-size");
+  const rawValue =
+    sampleSizeIndex === -1 ? env.SOLACE_BENCHMARK_SAMPLE_SIZE : argv[sampleSizeIndex + 1];
+
+  if (rawValue === undefined || rawValue === "") {
+    return 1;
+  }
+
+  const value = Number(rawValue);
+  if (!Number.isInteger(value) || value < 1) {
+    throw new Error("SOLACE_BENCHMARK_SAMPLE_SIZE must be a positive integer");
+  }
+
+  return value;
+}
+
+async function createBenchmarkMetadata(sampleSize) {
   const packageJson = await readPackageJson();
   const cpuList = cpus();
   const [primaryCpu] = cpuList;
@@ -35,7 +58,7 @@ async function createBenchmarkMetadata() {
     totalMemoryBytes: totalmem(),
     benchmarkRunner: "vitest",
     benchmarkEnvironment: "jsdom",
-    sampleSize: 1,
+    sampleSize,
     runAt: new Date().toISOString(),
   };
 }

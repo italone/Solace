@@ -42,4 +42,33 @@ describe("benchmark metadata CLI", () => {
     expect(metadata.sampleSize).toBe(1);
     expect(Date.parse(metadata.runAt)).not.toBeNaN();
   });
+
+  test("prints an explicit benchmark sample size", async () => {
+    const { stdout } = await execFileAsync("node", [
+      "scripts/benchmark-metadata.mjs",
+      "--json",
+      "--sample-size",
+      "3",
+    ]);
+    const metadata = JSON.parse(stdout) as BenchmarkMetadata;
+
+    expect(metadata.sampleSize).toBe(3);
+  });
+
+  test("rejects invalid benchmark sample sizes without a stack trace", async () => {
+    try {
+      await execFileAsync("node", [
+        "scripts/benchmark-metadata.mjs",
+        "--json",
+        "--sample-size",
+        "0",
+      ]);
+      throw new Error("Expected benchmark metadata CLI to reject invalid sample sizes");
+    } catch (error) {
+      expect(error).toMatchObject({
+        stderr: expect.stringContaining("SOLACE_BENCHMARK_SAMPLE_SIZE must be a positive integer"),
+      });
+      expect((error as { stderr: string }).stderr).not.toContain("at parseSampleSize");
+    }
+  });
 });

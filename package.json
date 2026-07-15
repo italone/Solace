@@ -53,7 +53,7 @@
     "test:e2e": "playwright test",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "benchmark": "node scripts/benchmark-metadata.mjs && vitest run --config vitest.benchmark.config.ts",
+    "benchmark": "node scripts/run-benchmark.mjs",
     "build:benchmark:browser": "vite build examples/performance-benchmark",
     "benchmark:browser": "playwright test --config playwright.benchmark.config.ts",
     "package:smoke": "node scripts/package-consumer-smoke.mjs",

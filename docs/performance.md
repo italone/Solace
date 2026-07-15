@@ -38,7 +38,10 @@ pnpm benchmark
 
 The command logs a `benchmark metadata` JSON line before running the jsdom benchmark suite. The metadata includes package name/version, Node version, OS platform/release/architecture, CPU model, logical CPU count, total memory, benchmark runner, benchmark environment, sample size, and an ISO timestamp.
 
-`sampleSize` is currently `1` because the jsdom benchmark command remains a smoke benchmark run. Individual Tinybench tasks may perform internal iterations, but this command does not yet aggregate repeated independent runs.
+`sampleSize` defaults to `1` so `pnpm benchmark` remains a smoke benchmark run. Set
+`SOLACE_BENCHMARK_SAMPLE_SIZE=3 pnpm benchmark` to run three independent Vitest benchmark samples.
+The command reports the configured sample size in metadata, but it does not yet aggregate medians
+or persist historical results.
 
 Result summary:
 
