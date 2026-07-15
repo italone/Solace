@@ -3,36 +3,19 @@ import { arch, cpus, platform, release, totalmem } from "node:os";
 
 import { expect, test } from "@playwright/test";
 
-type BrowserBenchmarkResult = {
-  scenario: "large-list";
-  rows: number;
-  initialRenderMs: number;
-  updateMs: number;
-  unmountMs: number;
-  selectedText: string;
-  remainingNodesAfterUnmount: number;
-};
+import {
+  appendBrowserBenchmarkHistory,
+  parseBrowserBenchmarkHistoryPath,
+  type BrowserBenchmarkHistoryMetadata,
+  type BrowserBenchmarkHistoryResult,
+  type BrowserBenchmarkHistorySummary,
+} from "./browser-benchmark-history";
 
-type BrowserBenchmarkMetadata = {
-  packageName: string;
-  packageVersion: string;
-  node: string;
-  platform: string;
-  release: string;
-  arch: string;
-  cpuModel: string;
-  logicalCpuCount: number;
-  totalMemoryBytes: number;
-  browserName: string;
-  browserVersion: string;
-  projectName: string;
-  sampleSize: number;
-  runAt: string;
-};
+type BrowserBenchmarkResult = BrowserBenchmarkHistoryResult;
 
-type BrowserBenchmarkSummary = BrowserBenchmarkResult & {
-  metadata: BrowserBenchmarkMetadata;
-};
+type BrowserBenchmarkMetadata = BrowserBenchmarkHistoryMetadata;
+
+type BrowserBenchmarkSummary = BrowserBenchmarkHistorySummary;
 
 type PackageMetadata = {
   name: string;
@@ -44,6 +27,8 @@ test("measures large-list render, update, and unmount in a production browser bu
   browserName,
   page,
 }, testInfo) => {
+  const historyPath = parseBrowserBenchmarkHistoryPath(process.env);
+
   await page.goto("/");
   await expect(page.locator("#app")).toContainText("Browser benchmark ready");
 
@@ -64,6 +49,10 @@ test("measures large-list render, update, and unmount in a production browser bu
 
   expectBrowserBenchmarkSummary(summary);
   console.log(`browser benchmark summary: ${JSON.stringify(summary)}`);
+
+  if (historyPath !== undefined) {
+    await appendBrowserBenchmarkHistory(historyPath, summary);
+  }
 });
 
 function expectBrowserBenchmarkResult(result: BrowserBenchmarkResult): void {

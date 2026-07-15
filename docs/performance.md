@@ -102,6 +102,11 @@ The summary also includes reproducibility metadata:
 
 `metadata.sampleSize` is currently `1` because the browser benchmark is still a smoke benchmark. Use it for trend context, not statistical claims.
 
+Set `SOLACE_BROWSER_BENCHMARK_HISTORY_PATH=.benchmark-history/browser.jsonl pnpm benchmark:browser`
+to append one JSONL record after a successful Chromium production benchmark run. Browser history
+records persist the existing summary object; they do not add repeated samples, timing thresholds,
+or statistical aggregation.
+
 ## Benchmark Principles
 
 Benchmarks should:
