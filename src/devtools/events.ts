@@ -3,7 +3,7 @@ export type DevtoolsEvent =
   | { type: "component:update"; id: number; name: string }
   | { type: "component:unmount"; id: number; name: string }
   | { type: "component:emit"; id: number; name: string; event: string; handlerCount: number }
-  | { type: "scheduler:flush"; queuedJobs: number; durationMs: number }
+  | { type: "scheduler:flush"; queuedJobs: number; dedupedJobs: number; durationMs: number }
   | {
       type: "reactivity:trigger";
       targetType: string;
@@ -109,6 +109,7 @@ export function serializeDevtoolsEvent(event: DevtoolsEvent): DevtoolsEvent {
       return {
         type: event.type,
         queuedJobs: event.queuedJobs,
+        dedupedJobs: event.dedupedJobs,
         durationMs: event.durationMs,
       };
 

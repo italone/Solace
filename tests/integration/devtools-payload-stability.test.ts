@@ -25,7 +25,7 @@ const allowedKeysByType: Record<DevtoolsEvent["type"], string[]> = {
     "type",
   ],
   "renderer:element": ["operation", "tag", "type"],
-  "scheduler:flush": ["durationMs", "queuedJobs", "type"],
+  "scheduler:flush": ["dedupedJobs", "durationMs", "queuedJobs", "type"],
   "store:action": ["durationMs", "name", "status", "type"],
 };
 

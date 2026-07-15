@@ -104,9 +104,57 @@ describe("scheduler", () => {
     expect(events[0]).toMatchObject({
       type: "scheduler:flush",
       queuedJobs: 2,
+      dedupedJobs: 0,
     });
     expect(
       events[0]?.type === "scheduler:flush" ? events[0].durationMs : -1,
     ).toBeGreaterThanOrEqual(0);
+  });
+
+  it("counts duplicate queued jobs in devtools flush summaries", async () => {
+    const events: DevtoolsEvent[] = [];
+    const job = vi.fn();
+
+    onDevtoolsEvent((event) => {
+      events.push(event);
+    });
+
+    queueJob(job);
+    queueJob(job);
+
+    await nextTick();
+
+    expect(job).toHaveBeenCalledTimes(1);
+    expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({
+      type: "scheduler:flush",
+      queuedJobs: 1,
+      dedupedJobs: 1,
+    });
+  });
+
+  it("counts jobs deduped during the current flush in devtools summaries", async () => {
+    const events: DevtoolsEvent[] = [];
+    const calls: string[] = [];
+    const job = () => {
+      calls.push("job");
+      queueJob(job);
+    };
+
+    onDevtoolsEvent((event) => {
+      events.push(event);
+    });
+
+    queueJob(job);
+
+    await nextTick();
+
+    expect(calls).toEqual(["job"]);
+    expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({
+      type: "scheduler:flush",
+      queuedJobs: 1,
+      dedupedJobs: 1,
+    });
   });
 });

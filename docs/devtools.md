@@ -48,7 +48,7 @@ type DevtoolsEvent =
   | { type: "component:update"; id: number; name: string }
   | { type: "component:unmount"; id: number; name: string }
   | { type: "component:emit"; id: number; name: string; event: string; handlerCount: number }
-  | { type: "scheduler:flush"; queuedJobs: number; durationMs: number }
+  | { type: "scheduler:flush"; queuedJobs: number; dedupedJobs: number; durationMs: number }
   | {
       type: "reactivity:trigger";
       targetType: string;
@@ -73,6 +73,10 @@ type DevtoolsEvent =
 `component:emit` summaries include the component id, component name, emitted event name, and callable handler count only.
 They do not include emitted arguments, raw props, handler functions, component instances, VNodes, DOM nodes, or user
 content.
+
+`scheduler:flush` summaries include executed job count, deduped queue attempt count, and flush duration only. They do
+not include scheduler job functions, function names, stack traces, component instances, reactive effects, VNodes, DOM
+nodes, or user data.
 
 Future runtime modules should emit small serializable events only when a listener is registered. If no listener is registered, the runtime should do no meaningful extra work.
 
@@ -103,7 +107,7 @@ persist data, send data over the network, write to storage, or install third-par
 
 1. **Event model design**: completed for initial component and scheduler summary events.
 2. **Development-only event bus**: internal event bus exists in `src/devtools/events.ts`.
-3. **Scheduler flush summary**: `scheduler:flush` is emitted after queued scheduler jobs flush.
+3. **Scheduler flush and dedupe summary**: `scheduler:flush` reports executed jobs, deduped queue attempts, and duration.
 4. **Component lifecycle summaries**: component mount/update/unmount summaries emit id and name only.
 5. **Component emit summaries**: `component:emit` is emitted with event name and callable handler count only.
 6. **Store action summaries**: `store:action` is emitted after action success or error without raw values.

@@ -7,9 +7,13 @@ const queuedJobs = new Set<SchedulerJob>();
 const resolvedPromise = Promise.resolve();
 
 let currentFlushPromise: Promise<void> | null = null;
+let dedupedJobs = 0;
 
 export function queueJob(job: SchedulerJob): void {
   if (queuedJobs.has(job)) {
+    if (hasDevtoolsListeners()) {
+      dedupedJobs += 1;
+    }
     return;
   }
 
@@ -44,12 +48,14 @@ function flushJobs(): void {
       emitDevtoolsEvent({
         type: "scheduler:flush",
         queuedJobs: flushedJobs,
+        dedupedJobs,
         durationMs: Math.max(0, now() - startedAt),
       });
     }
 
     queue.length = 0;
     queuedJobs.clear();
+    dedupedJobs = 0;
     currentFlushPromise = null;
   }
 }
