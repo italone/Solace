@@ -74,6 +74,7 @@ describe("package exports", () => {
       createDevtoolsRecorder: expect.any(Function),
       onDevtoolsEvent: expect.any(Function),
     });
+    expect(Object.keys(devtools).sort()).toEqual(["createDevtoolsRecorder", "onDevtoolsEvent"]);
     expect(devtools).not.toHaveProperty("clearDevtoolsListeners");
     expect(devtools).not.toHaveProperty("emitDevtoolsEvent");
     expect(devtools).not.toHaveProperty("hasDevtoolsListeners");

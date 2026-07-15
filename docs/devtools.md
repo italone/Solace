@@ -27,6 +27,18 @@ The public subpath exports listener and recorder APIs only. It does not export e
 global cleanup helpers, serializers, DOM nodes, VNode trees, component instances, props, reactive targets, store state,
 action arguments, or action results.
 
+## Public API Lifecycle
+
+`solace/devtools` is the only supported public DevTools entry point. New runtime exports require package boundary tests,
+packed consumer smoke coverage, documentation, and a project log entry before they are treated as supported API.
+
+Event payload additions must remain small serializable summaries and must update payload stability coverage. They should
+not include raw props, state, DOM nodes, VNodes, reactive targets, action arguments, action results, stack traces, or
+user content.
+
+Renames or removals require an intentional breaking-change plan. Internal helpers remain private even when public APIs
+reuse them internally, and incidental runtime cleanup must not change the public subpath shape.
+
 ## Candidate Capabilities
 
 | Area       | Useful Signals                                         | Notes                                                                        |
