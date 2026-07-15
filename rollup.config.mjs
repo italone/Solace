@@ -30,7 +30,7 @@ function typescript() {
         compilerOptions: {
           target: ts.ScriptTarget.ES2020,
           module: ts.ModuleKind.ESNext,
-          sourceMap: true,
+          sourceMap: false,
         },
         fileName: id,
       });
@@ -63,14 +63,14 @@ export default [
         entryFileNames: "[name].js",
         chunkFileNames: "[name]-[hash].js",
         format: "esm",
-        sourcemap: true,
+        sourcemap: false,
       },
       {
         dir: "dist",
         entryFileNames: "[name].cjs",
         chunkFileNames: "[name]-[hash].cjs",
         format: "cjs",
-        sourcemap: true,
+        sourcemap: false,
         exports: "named",
       },
     ],

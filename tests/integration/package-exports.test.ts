@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,6 +16,14 @@ describe("package exports", () => {
     expect(existsSync(resolve(root, "dist/jsx-runtime.d.ts"))).toBe(true);
     expect(existsSync(resolve(root, "dist/jsx-dev-runtime.js"))).toBe(true);
     expect(existsSync(resolve(root, "dist/jsx-dev-runtime.d.ts"))).toBe(true);
+  });
+
+  it("does not publish production sourcemaps", () => {
+    const sourcemaps = readdirSync(resolve(root, "dist"))
+      .filter((entry) => entry.endsWith(".map"))
+      .sort();
+
+    expect(sourcemaps).toEqual([]);
   });
 
   it("exports the public root API", async () => {

@@ -89,6 +89,9 @@ memory, exposes `snapshot()` for a copy of collected events, exposes `clear()` t
 exposes `stop()` to remove the listener. Pass `{ limit }` to keep only the latest N events in memory. It does not
 persist data, send data over the network, write to storage, or install third-party scripts.
 
+Production package builds do not publish JavaScript sourcemaps. This keeps internal DevTools wiring visible in source
+control but out of package artifacts, so consumers do not accidentally couple to private helper names or module layout.
+
 ## Privacy And Safety
 
 - Do not emit full props, state, DOM nodes, or reactive targets by default.
@@ -119,7 +122,8 @@ persist data, send data over the network, write to storage, or install third-par
 12. **Bounded recorder captures**: `createDevtoolsRecorder({ limit })` keeps recorder memory bounded for examples and experiments.
 13. **Public package boundary guard**: package exports tests verify DevTools internals are not available from the package root.
 14. **Public DevTools subpath**: `solace/devtools` exposes listener and recorder APIs without internal emit helpers.
-15. **Inspector UI or browser extension**: build only after event payloads prove stable in examples.
+15. **Production artifact boundary**: package builds do not publish JavaScript sourcemaps that expose internal wiring.
+16. **Inspector UI or browser extension**: build only after event payloads prove stable in examples.
 
 ## Recommendation
 
