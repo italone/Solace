@@ -40,8 +40,12 @@ The command logs a `benchmark metadata` JSON line before running the jsdom bench
 
 `sampleSize` defaults to `1` so `pnpm benchmark` remains a smoke benchmark run. Set
 `SOLACE_BENCHMARK_SAMPLE_SIZE=3 pnpm benchmark` to run three independent Vitest benchmark samples.
-The command reports the configured sample size in metadata, but it does not yet aggregate medians
-or persist historical results.
+The command reports the configured sample size in metadata, but it does not yet aggregate medians.
+
+Set `SOLACE_BENCHMARK_HISTORY_PATH=.benchmark-history/jsdom.jsonl pnpm benchmark` to append one
+JSONL record after a successful jsdom benchmark run. History recording is opt-in and records
+metadata plus run status; it does not yet parse Tinybench timings, compute medians, or persist
+browser benchmark results.
 
 Result summary:
 

@@ -3,25 +3,29 @@ import { arch, cpus, platform, release, totalmem } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const scriptPath = fileURLToPath(import.meta.url);
+const root = resolve(dirname(scriptPath), "..");
 const jsonOnly = process.argv.includes("--json");
+const isCli = process.argv[1] === scriptPath;
 
-try {
-  const sampleSize = parseSampleSize(process.argv, process.env);
-  const metadata = await createBenchmarkMetadata(sampleSize);
-  const payload = JSON.stringify(metadata);
+if (isCli) {
+  try {
+    const sampleSize = parseSampleSize(process.argv, process.env);
+    const metadata = await createBenchmarkMetadata(sampleSize);
+    const payload = JSON.stringify(metadata);
 
-  if (jsonOnly) {
-    console.log(payload);
-  } else {
-    console.log(`benchmark metadata: ${payload}`);
+    if (jsonOnly) {
+      console.log(payload);
+    } else {
+      console.log(`benchmark metadata: ${payload}`);
+    }
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
   }
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
 }
 
-function parseSampleSize(argv, env) {
+export function parseSampleSize(argv, env) {
   const sampleSizeIndex = argv.indexOf("--sample-size");
   const rawValue =
     sampleSizeIndex === -1 ? env.SOLACE_BENCHMARK_SAMPLE_SIZE : argv[sampleSizeIndex + 1];
@@ -38,7 +42,7 @@ function parseSampleSize(argv, env) {
   return value;
 }
 
-async function createBenchmarkMetadata(sampleSize) {
+export async function createBenchmarkMetadata(sampleSize) {
   const packageJson = await readPackageJson();
   const cpuList = cpus();
   const [primaryCpu] = cpuList;

@@ -1,6 +1,9 @@
 import { spawn } from "node:child_process";
+import { appendFile, mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { createBenchmarkMetadata } from "./benchmark-metadata.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const benchmarkCommand = "pnpm";
@@ -17,7 +20,8 @@ try {
 
 async function main() {
   const sampleSize = parseSampleSize(process.env);
-  const plan = createRunPlan(sampleSize);
+  const historyPath = parseHistoryPath(process.env);
+  const plan = createRunPlan({ sampleSize, historyPath });
 
   if (dryRun) {
     if (jsonOnly) {
@@ -29,24 +33,41 @@ async function main() {
     return;
   }
 
-  await runCommand("node", [
-    "scripts/benchmark-metadata.mjs",
-    "--sample-size",
-    String(plan.sampleSize),
-  ]);
+  const metadata = await createBenchmarkMetadata(plan.sampleSize);
+  console.log(`benchmark metadata: ${JSON.stringify(metadata)}`);
 
   for (let index = 1; index <= plan.sampleSize; index += 1) {
     console.log(`benchmark sample ${index}/${plan.sampleSize}`);
     await runCommand(plan.command, plan.args);
   }
+
+  if (plan.historyPath !== undefined) {
+    await appendBenchmarkHistory(plan.historyPath, {
+      kind: "jsdom-benchmark",
+      status: "passed",
+      metadata,
+      sampleCount: plan.sampleSize,
+      command: plan.command,
+      args: plan.args,
+    });
+  }
 }
 
-function createRunPlan(sampleSize) {
-  return {
+function createRunPlan({ sampleSize, historyPath }) {
+  const plan = {
     command: benchmarkCommand,
     args: benchmarkArgs,
     sampleSize,
   };
+
+  if (historyPath !== undefined) {
+    return {
+      ...plan,
+      historyPath,
+    };
+  }
+
+  return plan;
 }
 
 function parseSampleSize(env) {
@@ -61,6 +82,25 @@ function parseSampleSize(env) {
   }
 
   return value;
+}
+
+function parseHistoryPath(env) {
+  const rawValue = env.SOLACE_BENCHMARK_HISTORY_PATH;
+  if (rawValue === undefined) {
+    return undefined;
+  }
+
+  if (rawValue.trim() === "") {
+    throw new Error("SOLACE_BENCHMARK_HISTORY_PATH must not be empty");
+  }
+
+  return rawValue;
+}
+
+async function appendBenchmarkHistory(historyPath, record) {
+  const resolvedHistoryPath = resolve(root, historyPath);
+  await mkdir(dirname(resolvedHistoryPath), { recursive: true });
+  await appendFile(resolvedHistoryPath, `${JSON.stringify(record)}\n`, "utf8");
 }
 
 function runCommand(command, args) {

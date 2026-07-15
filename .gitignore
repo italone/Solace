@@ -9,6 +9,7 @@ coverage/
 .vitest-attachments/
 test-results/
 playwright-report/
+.benchmark-history/
 
 # Vite and tooling caches
 node_modules/.vite-temp/
