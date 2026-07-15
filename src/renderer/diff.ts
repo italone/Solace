@@ -360,27 +360,28 @@ function patchKeyedChildren(
     return;
   }
 
-  const oldKeyedChildren = new Map<string | number, VNode>();
-  const oldUnkeyedChildren: VNode[] = [];
+  const oldKeyedChildren = new Map<string | number, KeyedChildRecord>();
+  const newIndexToOldIndexMap = new Array<number>(newEnd - newStart + 1).fill(0);
+  const usedOldChildren = new Set<VNode>();
 
   for (let index = oldStart; index <= oldEnd; index += 1) {
     const oldChild = oldChildren[index];
-    if (oldChild.key === null) {
-      oldUnkeyedChildren.push(oldChild);
-    } else {
-      oldKeyedChildren.set(oldChild.key, oldChild);
+    if (oldChild.key !== null) {
+      oldKeyedChildren.set(oldChild.key, {
+        vnode: oldChild,
+        index,
+      });
     }
   }
 
-  const usedOldChildren = new Set<VNode>();
-
   for (let index = newStart; index <= newEnd; index += 1) {
     const newChild = newChildren[index];
-    const oldChild = findOldChild(newChild, oldKeyedChildren, oldUnkeyedChildren);
+    const oldRecord = oldKeyedChildren.get(newChild.key as string | number) ?? null;
 
-    if (oldChild !== null) {
-      usedOldChildren.add(oldChild);
-      patch(oldChild, newChild, container, null, parentComponent, appProvides);
+    if (oldRecord !== null) {
+      usedOldChildren.add(oldRecord.vnode);
+      newIndexToOldIndexMap[index - newStart] = oldRecord.index + 1;
+      patch(oldRecord.vnode, newChild, container, null, parentComponent, appProvides);
     } else {
       patch(null, newChild, container, null, parentComponent, appProvides);
     }
@@ -393,35 +394,88 @@ function patchKeyedChildren(
     }
   }
 
+  const stablePositions = getIncreasingSubsequence(newIndexToOldIndexMap);
+  let stableIndex = stablePositions.length - 1;
+
   for (let index = newEnd; index >= newStart; index -= 1) {
     const childEl = newChildren[index].el;
-    if (childEl !== null) {
-      insert(childEl, container, getAnchor(newChildren, index + 1));
+    if (childEl === null) {
+      continue;
     }
+
+    if (newIndexToOldIndexMap[index - newStart] === 0) {
+      insert(childEl, container, getAnchor(newChildren, index + 1));
+      continue;
+    }
+
+    if (stableIndex >= 0 && index - newStart === stablePositions[stableIndex]) {
+      stableIndex -= 1;
+      continue;
+    }
+
+    insert(childEl, container, getAnchor(newChildren, index + 1));
   }
-}
-
-function findOldChild(
-  newChild: VNode,
-  oldKeyedChildren: Map<string | number, VNode>,
-  oldUnkeyedChildren: VNode[],
-): VNode | null {
-  if (newChild.key !== null) {
-    return oldKeyedChildren.get(newChild.key) ?? null;
-  }
-
-  const index = oldUnkeyedChildren.findIndex((oldChild) => isSameVNodeType(oldChild, newChild));
-
-  if (index === -1) {
-    return null;
-  }
-
-  const [oldChild] = oldUnkeyedChildren.splice(index, 1);
-  return oldChild;
 }
 
 function getAnchor(children: VNode[], index: number): Node | null {
   return (children[index]?.el as Node | null | undefined) ?? null;
+}
+
+type KeyedChildRecord = {
+  index: number;
+  vnode: VNode;
+};
+
+function getIncreasingSubsequence(source: number[]): number[] {
+  const predecessors = source.slice();
+  const result: number[] = [];
+
+  for (let index = 0; index < source.length; index += 1) {
+    const value = source[index];
+    if (value === 0) {
+      continue;
+    }
+
+    const lastResultIndex = result[result.length - 1];
+    if (result.length === 0 || source[lastResultIndex] < value) {
+      if (result.length > 0) {
+        predecessors[index] = lastResultIndex;
+      }
+      result.push(index);
+      continue;
+    }
+
+    let start = 0;
+    let end = result.length - 1;
+
+    while (start < end) {
+      const middle = Math.floor((start + end) / 2);
+      if (source[result[middle]] < value) {
+        start = middle + 1;
+      } else {
+        end = middle;
+      }
+    }
+
+    if (value < source[result[start]]) {
+      if (start > 0) {
+        predecessors[index] = result[start - 1];
+      }
+      result[start] = index;
+    }
+  }
+
+  if (result.length === 0) {
+    return [];
+  }
+
+  let current = result[result.length - 1];
+  for (let index = result.length - 1; index >= 0; index -= 1) {
+    result[index] = current;
+    current = predecessors[current];
+  }
+
+  return result;
 }
 
 function hasUniqueKeys(children: VNode[]): boolean {

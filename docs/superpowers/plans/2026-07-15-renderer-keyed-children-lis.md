@@ -35,46 +35,46 @@ No package export map, public API, devtools payload, or unkeyed diff semantics s
 Add this test near the existing keyed-children cases:
 
 ```ts
-  it("minimizes DOM moves for keyed reorders with a stable subsequence", () => {
-    const container = document.createElement("div");
-    const insertBefore = vi.spyOn(Node.prototype, "insertBefore");
+it("minimizes DOM moves for keyed reorders with a stable subsequence", () => {
+  const container = document.createElement("div");
+  const insertBefore = vi.spyOn(Node.prototype, "insertBefore");
 
-    render(
-      h("ul", null, [
-        h("li", { key: "a" }, "A"),
-        h("li", { key: "b" }, "B"),
-        h("li", { key: "c" }, "C"),
-        h("li", { key: "d" }, "D"),
-        h("li", { key: "e" }, "E"),
-      ]),
-      container,
-    );
+  render(
+    h("ul", null, [
+      h("li", { key: "a" }, "A"),
+      h("li", { key: "b" }, "B"),
+      h("li", { key: "c" }, "C"),
+      h("li", { key: "d" }, "D"),
+      h("li", { key: "e" }, "E"),
+    ]),
+    container,
+  );
 
-    insertBefore.mockClear();
+  insertBefore.mockClear();
 
-    const before = new Map([...container.querySelectorAll("li")].map((li) => [li.textContent, li]));
+  const before = new Map([...container.querySelectorAll("li")].map((li) => [li.textContent, li]));
 
-    render(
-      h("ul", null, [
-        h("li", { key: "b" }, "B"),
-        h("li", { key: "a" }, "A"),
-        h("li", { key: "d" }, "D"),
-        h("li", { key: "c" }, "C"),
-        h("li", { key: "e" }, "E"),
-      ]),
-      container,
-    );
+  render(
+    h("ul", null, [
+      h("li", { key: "b" }, "B"),
+      h("li", { key: "a" }, "A"),
+      h("li", { key: "d" }, "D"),
+      h("li", { key: "c" }, "C"),
+      h("li", { key: "e" }, "E"),
+    ]),
+    container,
+  );
 
-    const after = [...container.querySelectorAll("li")];
+  const after = [...container.querySelectorAll("li")];
 
-    expect(after.map((li) => li.textContent)).toEqual(["B", "A", "D", "C", "E"]);
-    expect(after[0]).toBe(before.get("b"));
-    expect(after[1]).toBe(before.get("a"));
-    expect(after[2]).toBe(before.get("d"));
-    expect(after[3]).toBe(before.get("c"));
-    expect(after[4]).toBe(before.get("e"));
-    expect(insertBefore).toHaveBeenCalledTimes(2);
-  });
+  expect(after.map((li) => li.textContent)).toEqual(["B", "A", "D", "C", "E"]);
+  expect(after[0]).toBe(before.get("b"));
+  expect(after[1]).toBe(before.get("a"));
+  expect(after[2]).toBe(before.get("d"));
+  expect(after[3]).toBe(before.get("c"));
+  expect(after[4]).toBe(before.get("e"));
+  expect(insertBefore).toHaveBeenCalledTimes(2);
+});
 ```
 
 - [ ] **Step 2: Verify RED**
@@ -151,7 +151,7 @@ results after final checks.
 Add this row after `005` in the `2026-07-15` section:
 
 ```md
-| 006  | 优化 keyed children diff 的 DOM move | renderer diff、LIS、单元测试、架构文档、项目日志 | `src/renderer/diff.ts`, `tests/unit/renderer/diff.test.ts`, `docs/architecture.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-15-006-renderer-keyed-children-lis.md) |
+| 006 | 优化 keyed children diff 的 DOM move | renderer diff、LIS、单元测试、架构文档、项目日志 | `src/renderer/diff.ts`, `tests/unit/renderer/diff.test.ts`, `docs/architecture.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-15-006-renderer-keyed-children-lis.md) |
 ```
 
 ---

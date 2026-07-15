@@ -10,6 +10,7 @@ import { h, render } from "../../../src/index";
 describe("renderer diff", () => {
   afterEach(() => {
     clearDevtoolsListeners();
+    vi.restoreAllMocks();
   });
 
   it("patches props on the same element type", () => {
@@ -197,6 +198,47 @@ describe("renderer diff", () => {
     expect(after[1]).toBe(before.get("B"));
     expect(after[3]).toBe(before.get("A"));
     expect(before.get("C")?.isConnected).toBe(false);
+  });
+
+  it("minimizes DOM moves for keyed reorders with a stable subsequence", () => {
+    const container = document.createElement("div");
+    const insertBefore = vi.spyOn(Node.prototype, "insertBefore");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "e" }, "E"),
+      ]),
+      container,
+    );
+
+    insertBefore.mockClear();
+
+    const before = new Map([...container.querySelectorAll("li")].map((li) => [li.textContent, li]));
+
+    render(
+      h("ul", null, [
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "e" }, "E"),
+      ]),
+      container,
+    );
+
+    const after = [...container.querySelectorAll("li")];
+
+    expect(after.map((li) => li.textContent)).toEqual(["B", "A", "D", "C", "E"]);
+    expect(after[0]).toBe(before.get("B"));
+    expect(after[1]).toBe(before.get("A"));
+    expect(after[2]).toBe(before.get("D"));
+    expect(after[3]).toBe(before.get("C"));
+    expect(after[4]).toBe(before.get("E"));
+    expect(insertBefore).toHaveBeenCalledTimes(2);
   });
 
   it("falls back to index patching for mixed keyed and unkeyed children", () => {

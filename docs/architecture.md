@@ -46,7 +46,8 @@ The renderer compares VNode type and key:
 - Same component: update props, then run the component update.
 - Fragment: patch or unmount its children without adding a wrapper element.
 
-Children diff currently favors correctness and DOM reuse. Keyed children support insert, delete, move, and patch. The implementation does not yet include LIS optimization.
+Children diff favors correctness and DOM reuse. Keyed children support insert, delete, move, and patch, and the
+keyed-middle path uses LIS optimization to avoid unnecessary DOM moves.
 
 ## Event Flow
 
