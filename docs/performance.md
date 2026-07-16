@@ -126,15 +126,15 @@ Local history command:
 pnpm benchmark:history -- --json
 ```
 
-The local ignored history currently contains four Chromium `large-list` production benchmark records. With four
+The local ignored history currently contains seven Chromium `large-list` production benchmark records. With seven
 samples, p95 remains close to the slowest observed sample and should be treated as trend context only, not a release
 threshold.
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 4     | 14.6   | 28.7 | 38.99    |
-| `updateMs`        | 4     | 6.35   | 15.9 | 18.31    |
-| `unmountMs`       | 4     | 1.35   | 3.5  | 0.91     |
+| `initialRenderMs` | 7     | 14.0   | 28.7 | 45.3     |
+| `updateMs`        | 7     | 5.7    | 15.9 | 15.59    |
+| `unmountMs`       | 7     | 1.3    | 3.5  | 0.62     |
 
 ## Benchmark Principles
 
