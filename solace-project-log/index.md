@@ -107,9 +107,10 @@
 
 ## 2026-07-16
 
-| 编号 | 变动                            | 影响范围                                                    | 涉及文件                                                                                                                                                                       | 日志                                                                 |
-| ---- | ------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
-| 001  | 增加 benchmark history 汇总命令 | benchmark history CLI、脚本测试、性能文档、README、项目日志 | `scripts/summarize-benchmark-history.mjs`, `tests/unit/scripts/benchmark-history-summary.test.ts`, `package.json`, `docs/performance.md`, `readme.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-16-001-benchmark-history-summary.md) |
+| 编号 | 变动                            | 影响范围                                                        | 涉及文件                                                                                                                                                                       | 日志                                                                 |
+| ---- | ------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| 001  | 增加 benchmark history 汇总命令 | benchmark history CLI、脚本测试、性能文档、README、项目日志     | `scripts/summarize-benchmark-history.mjs`, `tests/unit/scripts/benchmark-history-summary.test.ts`, `package.json`, `docs/performance.md`, `readme.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-16-001-benchmark-history-summary.md) |
+| 002  | 优化 Fragment 初始挂载批量插入  | renderer diff、Fragment benchmark、单元测试、性能文档、项目日志 | `src/renderer/diff.ts`, `tests/unit/renderer/diff.test.ts`, `docs/performance.md`, `solace-project-log/**`                                                                     | [查看](./solace-entries/2026-07-16-002-fragment-batch-mount.md)      |
 
 ## 维护说明
 

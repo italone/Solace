@@ -17,7 +17,7 @@ import { createElement, insert, patchProp, remove, setText } from "./dom";
 export function patch(
   n1: VNode | null,
   n2: VNode,
-  container: Element,
+  container: Node,
   anchor: Node | null = null,
   parentComponent: ComponentInstance | null = null,
   appProvides: Provides | null = parentComponent?.appProvides ?? null,
@@ -62,13 +62,25 @@ export function patch(
 
 function mountFragment(
   vnode: VNode,
-  container: Element,
+  container: Node,
   anchor: Node | null,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
 ): void {
   if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-    for (const child of vnode.children as VNode[]) {
+    const children = vnode.children as VNode[];
+
+    if (canBatchMountFragment(children)) {
+      const fragment = document.createDocumentFragment();
+      for (const child of children) {
+        patch(null, child, fragment, null, parentComponent, appProvides);
+      }
+      insert(fragment, container, anchor);
+      vnode.el = getFragmentRoot(vnode);
+      return;
+    }
+
+    for (const child of children) {
       patch(null, child, container, anchor, parentComponent, appProvides);
     }
   }
@@ -76,9 +88,15 @@ function mountFragment(
   vnode.el = getFragmentRoot(vnode);
 }
 
+function canBatchMountFragment(children: VNode[]): boolean {
+  return (
+    children.length > 0 && children.every((child) => Boolean(child.shapeFlag & ShapeFlags.ELEMENT))
+  );
+}
+
 function mountElement(
   vnode: VNode,
-  container: Element,
+  container: Node,
   anchor: Node | null,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
@@ -108,7 +126,7 @@ function mountElement(
 
 function mountComponent(
   vnode: VNode,
-  container: Element,
+  container: Node,
   anchor: Node | null,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
@@ -204,7 +222,7 @@ function patchProps(el: Element, oldProps: VNodeProps | null, newProps: VNodePro
 function patchChildren(
   n1: VNode,
   n2: VNode,
-  container: Element,
+  container: Node,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
 ): void {
@@ -257,7 +275,7 @@ function patchChildren(
 
 function mountChildren(
   children: VNode[],
-  container: Element,
+  container: Node,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
 ): void {
@@ -269,7 +287,7 @@ function mountChildren(
 function patchArrayChildren(
   oldChildren: VNode[],
   newChildren: VNode[],
-  container: Element,
+  container: Node,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
 ): void {
@@ -284,7 +302,7 @@ function patchArrayChildren(
 function patchUnkeyedChildren(
   oldChildren: VNode[],
   newChildren: VNode[],
-  container: Element,
+  container: Node,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
 ): void {
@@ -309,7 +327,7 @@ function patchUnkeyedChildren(
 function patchKeyedChildren(
   oldChildren: VNode[],
   newChildren: VNode[],
-  container: Element,
+  container: Node,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
 ): void {

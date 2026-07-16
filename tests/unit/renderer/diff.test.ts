@@ -5,7 +5,7 @@ import {
   onDevtoolsEvent,
   type DevtoolsEvent,
 } from "../../../src/devtools/events";
-import { h, render } from "../../../src/index";
+import { Fragment, h, render } from "../../../src/index";
 
 describe("renderer diff", () => {
   afterEach(() => {
@@ -73,6 +73,27 @@ describe("renderer diff", () => {
 
     expect(container.innerHTML).toBe("<ul><li>only</li></ul>");
     expect(container.querySelector("li")).toBe(first);
+  });
+
+  it("batches root Fragment element insertion into the parent container", () => {
+    const container = document.createElement("div");
+    const insertBefore = vi.spyOn(container, "insertBefore");
+
+    render(
+      h(Fragment, null, [
+        h("span", { key: "a" }, "A"),
+        h("span", { key: "b" }, "B"),
+        h("span", { key: "c" }, "C"),
+      ]),
+      container,
+    );
+
+    expect([...container.querySelectorAll("span")].map((span) => span.textContent)).toEqual([
+      "A",
+      "B",
+      "C",
+    ]);
+    expect(insertBefore).toHaveBeenCalledTimes(1);
   });
 
   it("moves keyed children while reusing existing DOM nodes", () => {

@@ -63,7 +63,7 @@ Conclusion:
 - The benchmark command is reproducible and currently passes.
 - These runs are smoke benchmarks in jsdom, not browser production benchmarks.
 - No claim is made that Solace meets or exceeds a specific framework performance target yet.
-- Next optimization work should focus on keyed diff efficiency, Fragment edge cases, and component update batching under larger trees.
+- The latest renderer follow-up batches all-element Fragment initial mounts through a `DocumentFragment`; next optimization work should focus on component update batching under larger trees and additional browser trend samples.
 
 ## Browser Production Benchmark
 
