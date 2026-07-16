@@ -6,6 +6,7 @@ import { expect, test } from "@playwright/test";
 import {
   appendBrowserBenchmarkHistory,
   parseBrowserBenchmarkHistoryPath,
+  parseBrowserBenchmarkSampleSize,
   type BrowserBenchmarkHistoryMetadata,
   type BrowserBenchmarkHistoryResult,
   type BrowserBenchmarkHistorySummary,
@@ -28,30 +29,37 @@ test("measures large-list render, update, and unmount in a production browser bu
   page,
 }, testInfo) => {
   const historyPath = parseBrowserBenchmarkHistoryPath(process.env);
+  const sampleSize = parseBrowserBenchmarkSampleSize(process.env);
 
   await page.goto("/");
   await expect(page.locator("#app")).toContainText("Browser benchmark ready");
 
-  const result = await page.evaluate(async () => {
-    const api = window.__SOLACE_BENCHMARK__;
-    if (api === undefined) {
-      throw new Error("Missing browser benchmark API");
+  for (let sampleIndex = 1; sampleIndex <= sampleSize; sampleIndex += 1) {
+    const result = await page.evaluate(async () => {
+      const api = window.__SOLACE_BENCHMARK__;
+      if (api === undefined) {
+        throw new Error("Missing browser benchmark API");
+      }
+
+      return api.run();
+    });
+
+    const summary = createBrowserBenchmarkSummary(
+      result,
+      {
+        browserName,
+        browserVersion: browser.version(),
+        projectName: testInfo.project.name,
+      },
+      sampleSize,
+    );
+
+    expectBrowserBenchmarkSummary(summary, sampleSize);
+    console.log(`browser benchmark summary: ${JSON.stringify(summary)}`);
+
+    if (historyPath !== undefined) {
+      await appendBrowserBenchmarkHistory(historyPath, summary);
     }
-
-    return api.run();
-  });
-
-  const summary = createBrowserBenchmarkSummary(result, {
-    browserName,
-    browserVersion: browser.version(),
-    projectName: testInfo.project.name,
-  });
-
-  expectBrowserBenchmarkSummary(summary);
-  console.log(`browser benchmark summary: ${JSON.stringify(summary)}`);
-
-  if (historyPath !== undefined) {
-    await appendBrowserBenchmarkHistory(historyPath, summary);
   }
 });
 
@@ -68,6 +76,7 @@ function expectBrowserBenchmarkResult(result: BrowserBenchmarkResult): void {
 function createBrowserBenchmarkSummary(
   result: BrowserBenchmarkResult,
   options: Pick<BrowserBenchmarkMetadata, "browserName" | "browserVersion" | "projectName">,
+  sampleSize: number,
 ): BrowserBenchmarkSummary {
   const packageMetadata = readPackageMetadata();
   const cpuList = cpus();
@@ -88,13 +97,13 @@ function createBrowserBenchmarkSummary(
       browserName: options.browserName,
       browserVersion: options.browserVersion,
       projectName: options.projectName,
-      sampleSize: 1,
+      sampleSize,
       runAt: new Date().toISOString(),
     },
   };
 }
 
-function expectBrowserBenchmarkSummary(summary: BrowserBenchmarkSummary): void {
+function expectBrowserBenchmarkSummary(summary: BrowserBenchmarkSummary, sampleSize: number): void {
   expectBrowserBenchmarkResult(summary);
   expect(summary.metadata.packageName).toBe("solace");
   expect(summary.metadata.packageVersion).toMatch(/^\d+\.\d+\.\d+/);
@@ -108,7 +117,7 @@ function expectBrowserBenchmarkSummary(summary: BrowserBenchmarkSummary): void {
   expect(summary.metadata.browserName).toBe("chromium");
   expect(summary.metadata.browserVersion.length).toBeGreaterThan(0);
   expect(summary.metadata.projectName).toBe("chromium");
-  expect(summary.metadata.sampleSize).toBe(1);
+  expect(summary.metadata.sampleSize).toBe(sampleSize);
   expect(Date.parse(summary.metadata.runAt)).not.toBeNaN();
 }
 

@@ -54,6 +54,22 @@ export function parseBrowserBenchmarkHistoryPath(env: {
   return rawValue;
 }
 
+export function parseBrowserBenchmarkSampleSize(env: {
+  SOLACE_BROWSER_BENCHMARK_SAMPLE_SIZE?: string;
+}): number {
+  const rawValue = env.SOLACE_BROWSER_BENCHMARK_SAMPLE_SIZE;
+  if (rawValue === undefined || rawValue === "") {
+    return 1;
+  }
+
+  const value = Number(rawValue);
+  if (!Number.isInteger(value) || value < 1) {
+    throw new Error("SOLACE_BROWSER_BENCHMARK_SAMPLE_SIZE must be a positive integer");
+  }
+
+  return value;
+}
+
 export async function appendBrowserBenchmarkHistory(
   historyPath: string,
   summary: BrowserBenchmarkHistorySummary,

@@ -7,6 +7,7 @@ import { describe, expect, test } from "vitest";
 import {
   appendBrowserBenchmarkHistory,
   parseBrowserBenchmarkHistoryPath,
+  parseBrowserBenchmarkSampleSize,
   type BrowserBenchmarkHistorySummary,
 } from "../../e2e/browser-benchmark-history";
 
@@ -52,6 +53,30 @@ describe("browser benchmark history", () => {
         SOLACE_BROWSER_BENCHMARK_HISTORY_PATH: "   ",
       }),
     ).toThrow("SOLACE_BROWSER_BENCHMARK_HISTORY_PATH must not be empty");
+  });
+
+  test("parses browser benchmark sample size", () => {
+    expect(parseBrowserBenchmarkSampleSize({})).toBe(1);
+    expect(
+      parseBrowserBenchmarkSampleSize({
+        SOLACE_BROWSER_BENCHMARK_SAMPLE_SIZE: "",
+      }),
+    ).toBe(1);
+    expect(
+      parseBrowserBenchmarkSampleSize({
+        SOLACE_BROWSER_BENCHMARK_SAMPLE_SIZE: "3",
+      }),
+    ).toBe(3);
+  });
+
+  test("rejects invalid browser benchmark sample sizes", () => {
+    for (const value of ["0", "-1", "1.5", "not-a-number"]) {
+      expect(() =>
+        parseBrowserBenchmarkSampleSize({
+          SOLACE_BROWSER_BENCHMARK_SAMPLE_SIZE: value,
+        }),
+      ).toThrow("SOLACE_BROWSER_BENCHMARK_SAMPLE_SIZE must be a positive integer");
+    }
   });
 
   test("appends a browser benchmark history record", async () => {

@@ -93,22 +93,23 @@ individual runs.
 
 The summary also includes reproducibility metadata:
 
-| Field                                                                        | Source                             |
-| ---------------------------------------------------------------------------- | ---------------------------------- |
-| `metadata.packageName` / `metadata.packageVersion`                           | `package.json`                     |
-| `metadata.node`                                                              | `process.version`                  |
-| `metadata.platform`, `metadata.release`, `metadata.arch`                     | Node `os` module                   |
-| `metadata.cpuModel`, `metadata.logicalCpuCount`, `metadata.totalMemoryBytes` | Node `os` module                   |
-| `metadata.browserName`, `metadata.browserVersion`, `metadata.projectName`    | Playwright                         |
-| `metadata.sampleSize`                                                        | Current benchmark harness; now `1` |
-| `metadata.runAt`                                                             | ISO timestamp for the local run    |
+| Field                                                                        | Source                          |
+| ---------------------------------------------------------------------------- | ------------------------------- |
+| `metadata.packageName` / `metadata.packageVersion`                           | `package.json`                  |
+| `metadata.node`                                                              | `process.version`               |
+| `metadata.platform`, `metadata.release`, `metadata.arch`                     | Node `os` module                |
+| `metadata.cpuModel`, `metadata.logicalCpuCount`, `metadata.totalMemoryBytes` | Node `os` module                |
+| `metadata.browserName`, `metadata.browserVersion`, `metadata.projectName`    | Playwright                      |
+| `metadata.sampleSize`                                                        | Current benchmark harness       |
+| `metadata.runAt`                                                             | ISO timestamp for the local run |
 
-`metadata.sampleSize` is currently `1` because the browser benchmark is still a smoke benchmark. Use it for trend context, not statistical claims.
+`metadata.sampleSize` defaults to `1` so `pnpm benchmark:browser` remains a smoke benchmark run. Set
+`SOLACE_BROWSER_BENCHMARK_SAMPLE_SIZE=3 pnpm benchmark:browser` to run three independent browser benchmark samples in
+one Playwright run. The command logs one `browser benchmark summary` line per sample.
 
 Set `SOLACE_BROWSER_BENCHMARK_HISTORY_PATH=.benchmark-history/browser.jsonl pnpm benchmark:browser`
-to append one JSONL record after a successful Chromium production benchmark run. Browser history
-records persist the existing summary object; they do not add repeated samples, timing thresholds,
-or statistical aggregation.
+to append one JSONL record after each successful Chromium production benchmark sample. Browser history
+records persist the existing summary object; they do not add timing thresholds or statistical aggregation.
 
 Run `pnpm benchmark:history` to summarize local JSONL history from `.benchmark-history/jsdom.jsonl`
 and `.benchmark-history/browser.jsonl`. Use `pnpm benchmark:history -- --json <path>` for
