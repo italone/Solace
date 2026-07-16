@@ -221,6 +221,43 @@ describe("renderer diff", () => {
     expect(before.get("C")?.isConnected).toBe(false);
   });
 
+  it("mounts new keyed children directly at their final anchor during mixed inserts and moves", () => {
+    const container = document.createElement("div");
+    const insertBefore = vi.spyOn(Node.prototype, "insertBefore");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "d" }, "D"),
+      ]),
+      container,
+    );
+
+    insertBefore.mockClear();
+
+    const before = new Map([...container.querySelectorAll("li")].map((li) => [li.textContent, li]));
+
+    render(
+      h("ul", null, [
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "d" }, "D"),
+      ]),
+      container,
+    );
+
+    const after = [...container.querySelectorAll("li")];
+
+    expect(after.map((li) => li.textContent)).toEqual(["B", "C", "A", "D"]);
+    expect(after[0]).toBe(before.get("B"));
+    expect(after[1]).not.toBe(before.get("A"));
+    expect(after[2]).toBe(before.get("A"));
+    expect(after[3]).toBe(before.get("D"));
+    expect(insertBefore).toHaveBeenCalledTimes(2);
+  });
+
   it("minimizes DOM moves for keyed reorders with a stable subsequence", () => {
     const container = document.createElement("div");
     const insertBefore = vi.spyOn(Node.prototype, "insertBefore");

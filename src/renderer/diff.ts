@@ -454,8 +454,6 @@ function patchKeyedChildren(
       usedOldChildren.add(oldRecord.vnode);
       newIndexToOldIndexMap[index - newStart] = oldRecord.index + 1;
       patch(oldRecord.vnode, newChild, container, null, parentComponent, appProvides);
-    } else {
-      patch(null, newChild, container, null, parentComponent, appProvides);
     }
   }
 
@@ -470,13 +468,20 @@ function patchKeyedChildren(
   let stableIndex = stablePositions.length - 1;
 
   for (let index = newEnd; index >= newStart; index -= 1) {
-    const childEl = newChildren[index].el;
-    if (childEl === null) {
+    if (newIndexToOldIndexMap[index - newStart] === 0) {
+      patch(
+        null,
+        newChildren[index],
+        container,
+        getAnchor(newChildren, index + 1),
+        parentComponent,
+        appProvides,
+      );
       continue;
     }
 
-    if (newIndexToOldIndexMap[index - newStart] === 0) {
-      insert(childEl, container, getAnchor(newChildren, index + 1));
+    const childEl = newChildren[index].el;
+    if (childEl === null) {
       continue;
     }
 
