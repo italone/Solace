@@ -115,6 +115,7 @@
 | 004  | 记录 browser benchmark trend summary | performance docs、benchmark history、本地验证、项目日志                      | `docs/performance.md`, `docs/superpowers/**`, `solace-project-log/**`                                                                                                                           | [查看](./solace-entries/2026-07-16-004-browser-benchmark-trend-summary.md) |
 | 005  | 补充性能与 benchmark trend changeset | Changesets、release readiness、项目日志                                      | `.changeset/performance-trend-readiness.md`, `solace-project-log/**`                                                                                                                            | [查看](./solace-entries/2026-07-16-005-performance-trend-changeset.md)     |
 | 006  | 跳过稳定 keyed 元素无效更新          | renderer keyed children、list diff benchmark、单元测试、性能文档、项目日志   | `src/renderer/diff.ts`, `tests/unit/renderer/diff.test.ts`, `tests/performance/list-diff.bench.ts`, `docs/performance.md`, `.changeset/performance-trend-readiness.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-16-006-stable-keyed-element-skip.md)       |
+| 007  | 更新 browser benchmark history trend | browser benchmark、本地 history、性能文档、项目日志                          | `docs/performance.md`, `solace-project-log/**`                                                                                                                                                  | [查看](./solace-entries/2026-07-16-007-browser-benchmark-trend-refresh.md) |
 
 ## 维护说明
 
