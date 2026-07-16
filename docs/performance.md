@@ -49,14 +49,14 @@ browser benchmark results.
 
 Result summary:
 
-| Scenario                                         | File                                          | Status | Notes                                                                                                                               |
-| ------------------------------------------------ | --------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| 1,000 component initial render                   | `tests/performance/render.bench.ts`           | Passed | Uses jsdom and Tinybench, intended for trend tracking                                                                               |
-| 10,000 row create/update/delete/reorder          | `tests/performance/list-diff.bench.ts`        | Passed | Covers list creation, text-to-list mount, initial element child mount, unkeyed append, local text update, delete, and keyed reorder |
-| 10,000 row keyed local insert/remove/move        | `tests/performance/list-diff.bench.ts`        | Passed | Covers focused middle insert, middle remove, tail-to-head move, mixed insert/move, and adjacent insert/move                         |
-| 5,000 Fragment child initial render/patch/insert | `tests/performance/fragment.bench.ts`         | Passed | Covers Fragment child mount, keyed text patch, and keyed middle insert                                                              |
-| 1,000 component batched reactive update          | `tests/performance/component-update.bench.ts` | Passed | Covers scheduler batching across many component consumers                                                                           |
-| Component mount/unmount loop                     | `tests/performance/memory.bench.ts`           | Passed | Observes repeated cleanup path and records heap delta during the run                                                                |
+| Scenario                                         | File                                          | Status | Notes                                                                                                                                      |
+| ------------------------------------------------ | --------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1,000 component initial render                   | `tests/performance/render.bench.ts`           | Passed | Uses jsdom and Tinybench, intended for trend tracking                                                                                      |
+| 10,000 row create/update/delete/reorder          | `tests/performance/list-diff.bench.ts`        | Passed | Covers list creation, text-to-list mount, initial element child mount, unkeyed append/remove, local text update, delete, and keyed reorder |
+| 10,000 row keyed local insert/remove/move        | `tests/performance/list-diff.bench.ts`        | Passed | Covers focused middle insert, middle remove, tail-to-head move, mixed insert/move, and adjacent insert/move                                |
+| 5,000 Fragment child initial render/patch/insert | `tests/performance/fragment.bench.ts`         | Passed | Covers Fragment child mount, keyed text patch, and keyed middle insert                                                                     |
+| 1,000 component batched reactive update          | `tests/performance/component-update.bench.ts` | Passed | Covers scheduler batching across many component consumers                                                                                  |
+| Component mount/unmount loop                     | `tests/performance/memory.bench.ts`           | Passed | Observes repeated cleanup path and records heap delta during the run                                                                       |
 
 Conclusion:
 
@@ -67,11 +67,11 @@ Conclusion:
   batch all-element array children during element initial mount and text-to-array child replacement, skip
   stable child component updates when parent rerenders do not change child props or children, and skip
   unchanged keyed element sibling patches during local list updates. Unkeyed appended all-element suffixes
-  batch through a `DocumentFragment` after index patching. Keyed mixed insert/move patches now mount new
-  children directly at their final anchor instead of appending and moving them. Contiguous all-element
-  keyed insert segments also batch through a `DocumentFragment` before one parent insert, including
-  adjacent new runs discovered during mixed keyed placement. Next optimization work should focus on
-  additional browser trend samples.
+  batch through a `DocumentFragment` after index patching, and safe unkeyed removed leaf suffixes batch
+  through a DOM `Range`. Keyed mixed insert/move patches now mount new children directly at their final
+  anchor instead of appending and moving them. Contiguous all-element keyed insert segments also batch
+  through a `DocumentFragment` before one parent insert, including adjacent new runs discovered during
+  mixed keyed placement. Next optimization work should focus on additional browser trend samples.
 
 ## Browser Production Benchmark
 

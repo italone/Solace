@@ -114,6 +114,14 @@ describe("list diff benchmark", () => {
       expect(container.querySelectorAll("p")[10000]?.textContent).toBe("Row 10001");
     });
 
+    bench.add("10000 row unkeyed tail remove", () => {
+      const container = document.createElement("div");
+      render(unkeyedList(1, unkeyedAppendedRows), container);
+      render(unkeyedList(1), container);
+      expect(container.querySelectorAll("p")).toHaveLength(10000);
+      expect(container.querySelectorAll("p")[9999]?.textContent).toBe("Row 10000");
+    });
+
     bench.add("10000 row keyed middle remove", () => {
       const container = document.createElement("div");
       render(list(1), container);

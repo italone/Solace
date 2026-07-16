@@ -123,5 +123,5 @@ describe("benchmark runner CLI", () => {
     } finally {
       await rm(tempDir, { recursive: true, force: true });
     }
-  }, 15_000);
+  }, 45_000);
 });

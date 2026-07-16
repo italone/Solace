@@ -8,6 +8,7 @@ import {
 import { callHooks } from "../component/lifecycle";
 import type { Provides } from "../component/provide";
 import { emitDevtoolsEvent, hasDevtoolsListeners } from "../devtools/events";
+import { isEventProp } from "../event/event";
 import { ReactiveEffect } from "../reactivity/effect";
 import { queueJob } from "../scheduler/scheduler";
 import { ShapeFlags } from "../shared/flags";
@@ -386,9 +387,7 @@ function patchUnkeyedChildren(
     return;
   }
 
-  for (let index = commonLength; index < oldChildren.length; index += 1) {
-    unmount(oldChildren[index]);
-  }
+  unmountChildrenRange(oldChildren, commonLength, oldChildren.length - 1);
 }
 
 function patchKeyedChildren(
@@ -573,6 +572,58 @@ function canBatchMountChildren(children: VNode[], start: number, end: number): b
   }
 
   return true;
+}
+
+function unmountChildrenRange(children: VNode[], start: number, end: number): void {
+  if (canBatchRemoveChildren(children, start, end)) {
+    const first = children[start].el as Node;
+    const last = children[end].el as Node;
+    const range = document.createRange();
+    range.setStartBefore(first);
+    range.setEndAfter(last);
+    range.deleteContents();
+    range.detach();
+    return;
+  }
+
+  for (let index = start; index <= end; index += 1) {
+    unmount(children[index]);
+  }
+}
+
+function canBatchRemoveChildren(children: VNode[], start: number, end: number): boolean {
+  if (start > end || hasDevtoolsListeners()) {
+    return false;
+  }
+
+  let parent: Node | null = null;
+
+  for (let index = start; index <= end; index += 1) {
+    const child = children[index];
+    if (
+      !(child.shapeFlag & ShapeFlags.ELEMENT) ||
+      child.shapeFlag & ShapeFlags.ARRAY_CHILDREN ||
+      child.el === null ||
+      hasEventProps(child.props)
+    ) {
+      return false;
+    }
+
+    parent ??= child.el.parentNode;
+    if (parent === null || child.el.parentNode !== parent) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function hasEventProps(props: VNodeProps | null): boolean {
+  if (props === null) {
+    return false;
+  }
+
+  return Object.keys(props).some(isEventProp);
 }
 
 function getAnchor(children: VNode[], index: number): Node | null {

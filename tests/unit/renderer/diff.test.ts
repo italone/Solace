@@ -116,6 +116,23 @@ describe("renderer diff", () => {
     expect(insertBefore).toHaveBeenCalledTimes(1);
   });
 
+  it("batches unkeyed leaf children removed after index patching", () => {
+    const container = document.createElement("div");
+
+    render(h("ul", null, [h("li", null, "A"), h("li", null, "B"), h("li", null, "C")]), container);
+    const list = container.querySelector("ul") as HTMLUListElement;
+    const first = container.querySelector("li");
+    const removeChild = vi.spyOn(list, "removeChild");
+
+    render(h("ul", null, [h("li", null, "A")]), container);
+
+    const after = [...container.querySelectorAll("li")];
+
+    expect(after.map((li) => li.textContent)).toEqual(["A"]);
+    expect(after[0]).toBe(first);
+    expect(removeChild.mock.calls.length).toBeLessThanOrEqual(1);
+  });
+
   it("batches root Fragment element insertion into the parent container", () => {
     const container = document.createElement("div");
     const insertBefore = vi.spyOn(container, "insertBefore");
