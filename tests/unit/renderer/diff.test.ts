@@ -155,6 +155,33 @@ describe("renderer diff", () => {
     expect(after[3]).toBe(last);
   });
 
+  it("batches keyed children inserted between synced prefix and suffix", () => {
+    const container = document.createElement("div");
+
+    render(h("ul", null, [h("li", { key: "a" }, "A"), h("li", { key: "d" }, "D")]), container);
+    const list = container.querySelector("ul") as HTMLUListElement;
+    const first = container.querySelectorAll("li")[0];
+    const last = container.querySelectorAll("li")[1];
+    const insertBefore = vi.spyOn(list, "insertBefore");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "d" }, "D"),
+      ]),
+      container,
+    );
+
+    const after = [...container.querySelectorAll("li")];
+
+    expect(after.map((li) => li.textContent)).toEqual(["A", "B", "C", "D"]);
+    expect(after[0]).toBe(first);
+    expect(after[3]).toBe(last);
+    expect(insertBefore).toHaveBeenCalledTimes(1);
+  });
+
   it("removes keyed children between synced prefix and suffix", () => {
     const container = document.createElement("div");
 

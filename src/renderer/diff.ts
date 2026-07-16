@@ -419,9 +419,15 @@ function patchKeyedChildren(
 
   if (oldStart > oldEnd) {
     const anchor = getAnchor(newChildren, newEnd + 1);
-    for (let index = newStart; index <= newEnd; index += 1) {
-      patch(null, newChildren[index], container, anchor, parentComponent, appProvides);
-    }
+    mountNewKeyedChildren(
+      newChildren,
+      newStart,
+      newEnd,
+      container,
+      anchor,
+      parentComponent,
+      appProvides,
+    );
     return;
   }
 
@@ -492,6 +498,43 @@ function patchKeyedChildren(
 
     insert(childEl, container, getAnchor(newChildren, index + 1));
   }
+}
+
+function mountNewKeyedChildren(
+  children: VNode[],
+  start: number,
+  end: number,
+  container: Node,
+  anchor: Node | null,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+): void {
+  if (canBatchMountChildren(children, start, end)) {
+    const fragment = document.createDocumentFragment();
+    for (let index = start; index <= end; index += 1) {
+      patch(null, children[index], fragment, null, parentComponent, appProvides);
+    }
+    insert(fragment, container, anchor);
+    return;
+  }
+
+  for (let index = start; index <= end; index += 1) {
+    patch(null, children[index], container, anchor, parentComponent, appProvides);
+  }
+}
+
+function canBatchMountChildren(children: VNode[], start: number, end: number): boolean {
+  if (start > end) {
+    return false;
+  }
+
+  for (let index = start; index <= end; index += 1) {
+    if (!(children[index].shapeFlag & ShapeFlags.ELEMENT)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function getAnchor(children: VNode[], index: number): Node | null {

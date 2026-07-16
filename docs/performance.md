@@ -66,8 +66,9 @@ Conclusion:
 - The latest renderer follow-ups batch all-element Fragment initial mounts through a `DocumentFragment`,
   skip stable child component updates when parent rerenders do not change child props or children, and
   skip unchanged keyed element sibling patches during local list updates. Keyed mixed insert/move patches
-  now mount new children directly at their final anchor instead of appending and moving them. Next
-  optimization work should focus on additional browser trend samples.
+  now mount new children directly at their final anchor instead of appending and moving them. Contiguous
+  all-element keyed insert segments also batch through a `DocumentFragment` before one parent insert.
+  Next optimization work should focus on additional browser trend samples.
 
 ## Browser Production Benchmark
 
