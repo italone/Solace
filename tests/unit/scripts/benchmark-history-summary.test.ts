@@ -20,6 +20,18 @@ type BenchmarkHistorySummary = {
 };
 
 describe("benchmark history summary CLI", () => {
+  test("prints help for available benchmark history options", async () => {
+    const { stdout, stderr } = await execFileAsync("node", [
+      "scripts/summarize-benchmark-history.mjs",
+      "--help",
+    ]);
+
+    expect(stderr).toBe("");
+    expect(stdout).toContain("Usage: pnpm benchmark:history -- [options] [history-path...]");
+    expect(stdout).toContain("--json");
+    expect(stdout).toContain("--min-browser-count <count>");
+  });
+
   test("summarizes browser timing metrics and jsdom record counts", async () => {
     const tempDir = await mkdtemp(join(tmpdir(), "solace-history-summary-"));
     const historyPath = join(tempDir, "history.jsonl");

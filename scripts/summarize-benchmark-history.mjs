@@ -6,15 +6,20 @@ const isCli = process.argv[1] === new URL(import.meta.url).pathname;
 
 if (isCli) {
   try {
-    const { json, minBrowserCount, paths } = parseArgs(process.argv.slice(2));
-    const summary = await summarizeBenchmarkHistory(paths);
-
-    validateSummary(summary, { minBrowserCount });
-
-    if (json) {
-      console.log(JSON.stringify(summary));
+    const { help, json, minBrowserCount, paths } = parseArgs(process.argv.slice(2));
+    if (help) {
+      printHelp();
+      process.exitCode = 0;
     } else {
-      printTextSummary(summary);
+      const summary = await summarizeBenchmarkHistory(paths);
+
+      validateSummary(summary, { minBrowserCount });
+
+      if (json) {
+        console.log(JSON.stringify(summary));
+      } else {
+        printTextSummary(summary);
+      }
     }
   } catch (error) {
     console.error(error instanceof Error ? error.message : error);
@@ -23,6 +28,7 @@ if (isCli) {
 }
 
 export function parseArgs(args) {
+  let help = false;
   let json = false;
   let minBrowserCount;
   const paths = [];
@@ -36,6 +42,11 @@ export function parseArgs(args) {
 
     if (arg === "--json") {
       json = true;
+      continue;
+    }
+
+    if (arg === "--help" || arg === "-h") {
+      help = true;
       continue;
     }
 
@@ -57,10 +68,21 @@ export function parseArgs(args) {
   }
 
   return {
+    help,
     json,
     minBrowserCount,
     paths: paths.length === 0 ? defaultHistoryPaths : paths,
   };
+}
+
+function printHelp() {
+  console.log(`Usage: pnpm benchmark:history -- [options] [history-path...]
+
+Options:
+  --json                         Print the summary as JSON.
+  --min-browser-count <count>    Require each browser benchmark scenario to have at least count records.
+  -h, --help                     Show this help message.
+`);
 }
 
 function parsePositiveInteger(rawValue, optionName) {
