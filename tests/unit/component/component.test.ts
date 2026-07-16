@@ -58,6 +58,27 @@ describe("component renderer", () => {
     expect(container.querySelector("button")).toBe(button);
   });
 
+  it("skips child component updates when parent rerenders with unchanged props", async () => {
+    const state = reactive({ count: 0 });
+    const container = document.createElement("div");
+    const childRender = vi.fn((label: string) => h("span", { "data-child": label }, label));
+    const Child = (props: { label: string }) => () => childRender(props.label);
+    const Parent = () => () =>
+      h("section", null, [
+        h("p", null, `parent: ${state.count}`),
+        h(Child, { key: "stable", label: "stable" }),
+      ]);
+
+    render(h(Parent), container);
+
+    state.count = 1;
+    await nextTick();
+
+    expect(container.querySelector("p")?.textContent).toBe("parent: 1");
+    expect(container.querySelector("[data-child='stable']")?.textContent).toBe("stable");
+    expect(childRender).toHaveBeenCalledTimes(1);
+  });
+
   it("schedules rerender when reactive state is read inside a component render", async () => {
     const state = reactive({ count: 0 });
     const container = document.createElement("div");

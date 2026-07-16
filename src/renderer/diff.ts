@@ -177,10 +177,37 @@ function updateComponent(n1: VNode, n2: VNode): void {
   const instance = n1.component as ComponentInstance;
   n2.component = instance;
 
+  if (!shouldUpdateComponent(n1, n2)) {
+    instance.vnode = n2;
+    n2.el = n1.el;
+    return;
+  }
+
   updateComponentProps(instance, n2);
 
   instance.update?.();
   n2.el = instance.subTree?.el ?? null;
+}
+
+function shouldUpdateComponent(n1: VNode, n2: VNode): boolean {
+  if (n1.children !== n2.children) {
+    return true;
+  }
+
+  return havePropsChanged(n1.props, n2.props);
+}
+
+function havePropsChanged(oldProps: VNodeProps | null, newProps: VNodeProps | null): boolean {
+  const previousProps = oldProps ?? {};
+  const nextProps = newProps ?? {};
+  const previousKeys = Object.keys(previousProps).filter((key) => key !== "key");
+  const nextKeys = Object.keys(nextProps).filter((key) => key !== "key");
+
+  if (previousKeys.length !== nextKeys.length) {
+    return true;
+  }
+
+  return nextKeys.some((key) => previousProps[key] !== nextProps[key]);
 }
 
 function patchElement(

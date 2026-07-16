@@ -51,6 +51,32 @@ describe("component update benchmark", () => {
       );
     });
 
+    bench.add("1000 stable child components parent update", async () => {
+      const state = reactive({ count: 0 });
+      const container = document.createElement("div");
+      const Child = (props: { index: number }) => () =>
+        h("span", { "data-index": props.index }, `child ${props.index}`);
+      const App = () => () =>
+        h("div", null, [
+          h("p", { "data-parent": "count" }, `parent: ${state.count}`),
+          ...Array.from({ length: itemCount }, (_, index) => h(Child, { key: index, index })),
+        ]);
+
+      render(h(App), container);
+      expect(container.querySelectorAll("span")).toHaveLength(itemCount);
+
+      state.count = 1;
+      state.count = 2;
+      state.count = 3;
+
+      await nextTick();
+
+      expect(container.querySelector("[data-parent='count']")?.textContent).toBe("parent: 3");
+      expect(container.querySelector(`[data-index="${itemCount - 1}"]`)?.textContent).toBe(
+        `child ${itemCount - 1}`,
+      );
+    });
+
     await bench.run();
     report(bench);
 
