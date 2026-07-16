@@ -112,6 +112,25 @@ and `.benchmark-history/browser.jsonl`. Use `pnpm benchmark:history -- --json <p
 machine-readable output. The summary reports record counts plus median, p95, and variance for
 numeric browser timing metrics; it does not enforce thresholds.
 
+### Latest Local Browser History Summary
+
+Date: 2026-07-16
+
+Local history command:
+
+```bash
+pnpm benchmark:history -- --json
+```
+
+The local ignored history currently contains three Chromium `large-list` production benchmark records. With three
+samples, p95 is the slowest observed sample and should be treated as trend context only, not a release threshold.
+
+| Metric            | Count | Median | p95  | Variance |
+| ----------------- | ----- | ------ | ---- | -------- |
+| `initialRenderMs` | 3     | 15.2   | 28.7 | 45.14    |
+| `updateMs`        | 3     | 7.0    | 15.9 | 20.55    |
+| `unmountMs`       | 3     | 1.4    | 3.5  | 1.08     |
+
 ## Benchmark Principles
 
 Benchmarks should:
