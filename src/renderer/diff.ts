@@ -219,9 +219,36 @@ function patchElement(
   const el = n1.el as Element;
   n2.el = el;
 
+  if (!shouldPatchElement(n1, n2)) {
+    return;
+  }
+
   patchProps(el, n1.props, n2.props);
   patchChildren(n1, n2, el, parentComponent, appProvides);
   emitRendererElementDevtoolsEvent("update", n2.type as string);
+}
+
+function shouldPatchElement(n1: VNode, n2: VNode): boolean {
+  return havePropsChanged(n1.props, n2.props) || haveElementChildrenChanged(n1, n2);
+}
+
+function haveElementChildrenChanged(n1: VNode, n2: VNode): boolean {
+  const oldShapeFlag = n1.shapeFlag;
+  const newShapeFlag = n2.shapeFlag;
+  const oldHasTextChildren = Boolean(oldShapeFlag & ShapeFlags.TEXT_CHILDREN);
+  const newHasTextChildren = Boolean(newShapeFlag & ShapeFlags.TEXT_CHILDREN);
+  const oldHasArrayChildren = Boolean(oldShapeFlag & ShapeFlags.ARRAY_CHILDREN);
+  const newHasArrayChildren = Boolean(newShapeFlag & ShapeFlags.ARRAY_CHILDREN);
+
+  if (oldHasTextChildren || newHasTextChildren) {
+    return !oldHasTextChildren || !newHasTextChildren || n1.children !== n2.children;
+  }
+
+  if (oldHasArrayChildren || newHasArrayChildren) {
+    return !oldHasArrayChildren || !newHasArrayChildren || n1.children !== n2.children;
+  }
+
+  return false;
 }
 
 function patchProps(el: Element, oldProps: VNodeProps | null, newProps: VNodeProps | null): void {

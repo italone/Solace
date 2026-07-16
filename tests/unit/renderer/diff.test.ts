@@ -326,6 +326,45 @@ describe("renderer diff", () => {
     expect(after[2]).toBe(second);
   });
 
+  it("skips element updates for unchanged keyed siblings", () => {
+    const events: DevtoolsEvent[] = [];
+    const container = document.createElement("div");
+
+    onDevtoolsEvent((event) => {
+      events.push(event);
+    });
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a", "data-row": "a" }, "A"),
+        h("li", { key: "b", "data-row": "b" }, "B"),
+        h("li", { key: "c", "data-row": "c" }, "C"),
+      ]),
+      container,
+    );
+    const before = [...container.querySelectorAll("li")];
+    events.length = 0;
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a", "data-row": "a" }, "A"),
+        h("li", { key: "b", "data-row": "b" }, "B selected"),
+        h("li", { key: "c", "data-row": "c" }, "C"),
+      ]),
+      container,
+    );
+
+    const after = [...container.querySelectorAll("li")];
+    const elementUpdates = events.filter(
+      (event): event is Extract<DevtoolsEvent, { type: "renderer:element" }> =>
+        event.type === "renderer:element" && event.operation === "update",
+    );
+
+    expect(after).toEqual(before);
+    expect(after.map((li) => li.textContent)).toEqual(["A", "B selected", "C"]);
+    expect(elementUpdates.map((event) => event.tag)).toEqual(["li", "ul"]);
+  });
+
   it("emits devtools summaries for element mount, update, and unmount", () => {
     const events: DevtoolsEvent[] = [];
     const container = document.createElement("div");

@@ -63,7 +63,10 @@ Conclusion:
 - The benchmark command is reproducible and currently passes.
 - These runs are smoke benchmarks in jsdom, not browser production benchmarks.
 - No claim is made that Solace meets or exceeds a specific framework performance target yet.
-- The latest renderer follow-ups batch all-element Fragment initial mounts through a `DocumentFragment` and skip stable child component updates when parent rerenders do not change child props or children. Next optimization work should focus on additional browser trend samples.
+- The latest renderer follow-ups batch all-element Fragment initial mounts through a `DocumentFragment`,
+  skip stable child component updates when parent rerenders do not change child props or children, and
+  skip unchanged keyed element sibling patches during local list updates. Next optimization work should
+  focus on additional browser trend samples.
 
 ## Browser Production Benchmark
 
