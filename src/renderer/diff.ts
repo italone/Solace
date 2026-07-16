@@ -374,9 +374,15 @@ function patchUnkeyedChildren(
   }
 
   if (newChildren.length > oldChildren.length) {
-    for (let index = commonLength; index < newChildren.length; index += 1) {
-      patch(null, newChildren[index], container, null, parentComponent, appProvides);
-    }
+    mountNewChildren(
+      newChildren,
+      commonLength,
+      newChildren.length - 1,
+      container,
+      null,
+      parentComponent,
+      appProvides,
+    );
     return;
   }
 
@@ -426,7 +432,7 @@ function patchKeyedChildren(
 
   if (oldStart > oldEnd) {
     const anchor = getAnchor(newChildren, newEnd + 1);
-    mountNewKeyedChildren(
+    mountNewChildren(
       newChildren,
       newStart,
       newEnd,
@@ -484,7 +490,7 @@ function patchKeyedChildren(
     if (newIndexToOldIndexMap[index - newStart] === 0) {
       const runStart = getNewRunStart(newIndexToOldIndexMap, newStart, index);
       if (runStart < index && canBatchMountChildren(newChildren, runStart, index)) {
-        mountNewKeyedChildren(
+        mountNewChildren(
           newChildren,
           runStart,
           index,
@@ -532,7 +538,7 @@ function getNewRunStart(newIndexToOldIndexMap: number[], newStart: number, index
   return start;
 }
 
-function mountNewKeyedChildren(
+function mountNewChildren(
   children: VNode[],
   start: number,
   end: number,

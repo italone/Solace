@@ -99,6 +99,23 @@ describe("renderer diff", () => {
     expect(container.querySelector("li")).toBe(first);
   });
 
+  it("batches unkeyed children appended after index patching", () => {
+    const container = document.createElement("div");
+
+    render(h("ul", null, [h("li", null, "A")]), container);
+    const list = container.querySelector("ul") as HTMLUListElement;
+    const first = container.querySelector("li");
+    const insertBefore = vi.spyOn(list, "insertBefore");
+
+    render(h("ul", null, [h("li", null, "A"), h("li", null, "B"), h("li", null, "C")]), container);
+
+    const after = [...container.querySelectorAll("li")];
+
+    expect(after.map((li) => li.textContent)).toEqual(["A", "B", "C"]);
+    expect(after[0]).toBe(first);
+    expect(insertBefore).toHaveBeenCalledTimes(1);
+  });
+
   it("batches root Fragment element insertion into the parent container", () => {
     const container = document.createElement("div");
     const insertBefore = vi.spyOn(container, "insertBefore");

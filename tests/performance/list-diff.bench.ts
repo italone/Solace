@@ -9,6 +9,7 @@ const insertedRows = [
   ...Array.from({ length: 100 }, (_, index) => 10_001 + index),
   ...rows.slice(5000),
 ];
+const unkeyedAppendedRows = [...rows, ...Array.from({ length: 100 }, (_, index) => 10_001 + index)];
 const removedRows = [...rows.slice(0, 4500), ...rows.slice(4600)];
 const movedRows = [rows[rows.length - 1], ...rows.slice(0, rows.length - 1)];
 const mixedInsertMoveRows = [
@@ -39,6 +40,14 @@ function list(selected: number, items = rows) {
         selected === row ? `Row ${row} selected` : `Row ${row}`,
       ),
     ),
+  );
+}
+
+function unkeyedList(selected: number, items = rows) {
+  return h(
+    "div",
+    null,
+    items.map((row) => h("p", null, selected === row ? `Row ${row} selected` : `Row ${row}`)),
   );
 }
 
@@ -95,6 +104,14 @@ describe("list diff benchmark", () => {
       render(list(1, insertedRows), container);
       expect(container.querySelectorAll("p")).toHaveLength(10100);
       expect(container.querySelector('[data-row="10001"]')?.textContent).toBe("Row 10001");
+    });
+
+    bench.add("10000 row unkeyed tail append", () => {
+      const container = document.createElement("div");
+      render(unkeyedList(1), container);
+      render(unkeyedList(1, unkeyedAppendedRows), container);
+      expect(container.querySelectorAll("p")).toHaveLength(10100);
+      expect(container.querySelectorAll("p")[10000]?.textContent).toBe("Row 10001");
     });
 
     bench.add("10000 row keyed middle remove", () => {
