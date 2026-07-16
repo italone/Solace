@@ -115,13 +115,31 @@ function mountElement(
   if (vnode.shapeFlag & ShapeFlags.TEXT_CHILDREN) {
     setText(el, vnode.children as string);
   } else if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-    for (const child of vnode.children as VNode[]) {
-      patch(null, child, el, null, parentComponent, appProvides);
-    }
+    mountElementChildren(vnode.children as VNode[], el, parentComponent, appProvides);
   }
 
   insert(el, container, anchor);
   emitRendererElementDevtoolsEvent("mount", vnode.type as string);
+}
+
+function mountElementChildren(
+  children: VNode[],
+  container: Node,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+): void {
+  if (canBatchMountChildren(children, 0, children.length - 1)) {
+    const fragment = document.createDocumentFragment();
+    for (const child of children) {
+      patch(null, child, fragment, null, parentComponent, appProvides);
+    }
+    insert(fragment, container, null);
+    return;
+  }
+
+  for (const child of children) {
+    patch(null, child, container, null, parentComponent, appProvides);
+  }
 }
 
 function mountComponent(

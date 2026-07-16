@@ -96,6 +96,30 @@ describe("renderer diff", () => {
     expect(insertBefore).toHaveBeenCalledTimes(1);
   });
 
+  it("batches initial element child insertion into the element container", () => {
+    const container = document.createElement("div");
+    const insertBefore = vi.spyOn(Node.prototype, "insertBefore");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+      ]),
+      container,
+    );
+
+    const list = container.querySelector("ul") as HTMLUListElement;
+    const listInsertCalls = insertBefore.mock.contexts.filter((context) => context === list);
+
+    expect([...container.querySelectorAll("li")].map((li) => li.textContent)).toEqual([
+      "A",
+      "B",
+      "C",
+    ]);
+    expect(listInsertCalls).toHaveLength(1);
+  });
+
   it("moves keyed children while reusing existing DOM nodes", () => {
     const container = document.createElement("div");
 
