@@ -113,6 +113,7 @@
 | 002  | 优化 Fragment 初始挂载批量插入       | renderer diff、Fragment benchmark、单元测试、性能文档、项目日志              | `src/renderer/diff.ts`, `tests/unit/renderer/diff.test.ts`, `docs/performance.md`, `solace-project-log/**`                                                                     | [查看](./solace-entries/2026-07-16-002-fragment-batch-mount.md)            |
 | 003  | 跳过稳定子组件无效更新               | renderer component update、component benchmark、单元测试、性能文档、项目日志 | `src/renderer/diff.ts`, `tests/unit/component/component.test.ts`, `tests/performance/component-update.bench.ts`, `docs/performance.md`, `solace-project-log/**`                | [查看](./solace-entries/2026-07-16-003-stable-component-update-skip.md)    |
 | 004  | 记录 browser benchmark trend summary | performance docs、benchmark history、本地验证、项目日志                      | `docs/performance.md`, `docs/superpowers/**`, `solace-project-log/**`                                                                                                          | [查看](./solace-entries/2026-07-16-004-browser-benchmark-trend-summary.md) |
+| 005  | 补充性能与 benchmark trend changeset | Changesets、release readiness、项目日志                                      | `.changeset/performance-trend-readiness.md`, `solace-project-log/**`                                                                                                           | [查看](./solace-entries/2026-07-16-005-performance-trend-changeset.md)     |
 
 ## 维护说明
 
