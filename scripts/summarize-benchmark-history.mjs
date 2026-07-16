@@ -6,8 +6,10 @@ const isCli = process.argv[1] === new URL(import.meta.url).pathname;
 
 if (isCli) {
   try {
-    const { json, paths } = parseArgs(process.argv.slice(2));
+    const { json, minBrowserCount, paths } = parseArgs(process.argv.slice(2));
     const summary = await summarizeBenchmarkHistory(paths);
+
+    validateSummary(summary, { minBrowserCount });
 
     if (json) {
       console.log(JSON.stringify(summary));
@@ -21,13 +23,53 @@ if (isCli) {
 }
 
 export function parseArgs(args) {
-  const json = args.includes("--json");
-  const paths = args.filter((arg) => arg !== "--json" && arg !== "--");
+  let json = false;
+  let minBrowserCount;
+  const paths = [];
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === "--") {
+      continue;
+    }
+
+    if (arg === "--json") {
+      json = true;
+      continue;
+    }
+
+    if (arg === "--min-browser-count") {
+      minBrowserCount = parsePositiveInteger(args[index + 1], "--min-browser-count");
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith("--min-browser-count=")) {
+      minBrowserCount = parsePositiveInteger(
+        arg.slice("--min-browser-count=".length),
+        "--min-browser-count",
+      );
+      continue;
+    }
+
+    paths.push(arg);
+  }
 
   return {
     json,
+    minBrowserCount,
     paths: paths.length === 0 ? defaultHistoryPaths : paths,
   };
+}
+
+function parsePositiveInteger(rawValue, optionName) {
+  const value = Number(rawValue);
+  if (!Number.isInteger(value) || value < 1) {
+    throw new Error(`${optionName} must be a positive integer`);
+  }
+
+  return value;
 }
 
 export async function summarizeBenchmarkHistory(paths) {
@@ -38,6 +80,26 @@ export async function summarizeBenchmarkHistory(paths) {
     recordCount: records.length,
     groups,
   };
+}
+
+export function validateSummary(summary, { minBrowserCount } = {}) {
+  if (minBrowserCount === undefined) {
+    return;
+  }
+
+  const browserGroups = summary.groups.filter((group) => group.kind === "browser-benchmark");
+  if (browserGroups.length === 0) {
+    throw new Error(`Browser benchmark history has 0 record(s), below required ${minBrowserCount}`);
+  }
+
+  for (const group of browserGroups) {
+    if (group.recordCount < minBrowserCount) {
+      const label = group.scenario ?? "unknown";
+      throw new Error(
+        `Browser benchmark ${label} has ${group.recordCount} record(s), below required ${minBrowserCount}`,
+      );
+    }
+  }
 }
 
 async function readHistoryRecords(paths) {

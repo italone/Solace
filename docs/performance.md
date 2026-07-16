@@ -116,6 +116,10 @@ and `.benchmark-history/browser.jsonl`. Use `pnpm benchmark:history -- --json <p
 machine-readable output. The summary reports record counts plus median, p95, and variance for
 numeric browser timing metrics; it does not enforce thresholds.
 
+Use `pnpm benchmark:history -- --min-browser-count 5` to require each browser benchmark scenario
+to have at least five local history records. This is an opt-in trend quality gate for local or CI
+checks; it is not a timing threshold and does not compare measured performance against a target.
+
 ### Latest Local Browser History Summary
 
 Date: 2026-07-16

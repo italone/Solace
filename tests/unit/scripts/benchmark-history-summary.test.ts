@@ -92,6 +92,69 @@ describe("benchmark history summary CLI", () => {
       stderr: expect.stringContaining(`Invalid benchmark history JSON at ${historyPath}:2`),
     });
   });
+
+  test("accepts browser groups that meet the configured minimum record count", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "solace-history-summary-min-"));
+    const historyPath = join(tempDir, "history.jsonl");
+    await writeFile(
+      historyPath,
+      [
+        JSON.stringify(createBrowserRecord({ initialRenderMs: 10, updateMs: 4, unmountMs: 1 })),
+        JSON.stringify(createBrowserRecord({ initialRenderMs: 12, updateMs: 6, unmountMs: 3 })),
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const { stdout } = await execFileAsync("node", [
+      "scripts/summarize-benchmark-history.mjs",
+      "--json",
+      "--min-browser-count",
+      "2",
+      historyPath,
+    ]);
+    const summary = JSON.parse(stdout) as BenchmarkHistorySummary;
+
+    expect(summary.groups.find((group) => group.kind === "browser-benchmark")).toMatchObject({
+      recordCount: 2,
+    });
+  });
+
+  test("fails when browser benchmark groups are below the configured minimum record count", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "solace-history-summary-low-"));
+    const historyPath = join(tempDir, "history.jsonl");
+    await writeFile(
+      historyPath,
+      `${JSON.stringify(createBrowserRecord({ initialRenderMs: 10, updateMs: 4, unmountMs: 1 }))}\n`,
+      "utf8",
+    );
+
+    await expect(
+      execFileAsync("node", [
+        "scripts/summarize-benchmark-history.mjs",
+        "--json",
+        "--min-browser-count",
+        "2",
+        historyPath,
+      ]),
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(
+        "Browser benchmark large-list has 1 record(s), below required 2",
+      ),
+    });
+  });
+
+  test("rejects invalid minimum browser record counts", async () => {
+    await expect(
+      execFileAsync("node", [
+        "scripts/summarize-benchmark-history.mjs",
+        "--min-browser-count",
+        "0",
+      ]),
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("--min-browser-count must be a positive integer"),
+    });
+  });
 });
 
 function createBrowserRecord(metrics: {
