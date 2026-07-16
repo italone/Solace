@@ -54,6 +54,30 @@ describe("renderer diff", () => {
     expect(container.querySelector("p")).toBe(paragraph);
   });
 
+  it("batches element children mounted after text children are cleared", () => {
+    const container = document.createElement("div");
+
+    render(h("ul", null, "loading"), container);
+    const list = container.querySelector("ul") as HTMLUListElement;
+    const insertBefore = vi.spyOn(list, "insertBefore");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+      ]),
+      container,
+    );
+
+    expect([...container.querySelectorAll("li")].map((li) => li.textContent)).toEqual([
+      "A",
+      "B",
+      "C",
+    ]);
+    expect(insertBefore).toHaveBeenCalledTimes(1);
+  });
+
   it("patches non-keyed array children by index and mounts or removes extras", () => {
     const container = document.createElement("div");
 

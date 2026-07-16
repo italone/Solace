@@ -115,31 +115,11 @@ function mountElement(
   if (vnode.shapeFlag & ShapeFlags.TEXT_CHILDREN) {
     setText(el, vnode.children as string);
   } else if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-    mountElementChildren(vnode.children as VNode[], el, parentComponent, appProvides);
+    mountChildren(vnode.children as VNode[], el, parentComponent, appProvides);
   }
 
   insert(el, container, anchor);
   emitRendererElementDevtoolsEvent("mount", vnode.type as string);
-}
-
-function mountElementChildren(
-  children: VNode[],
-  container: Node,
-  parentComponent: ComponentInstance | null,
-  appProvides: Provides | null,
-): void {
-  if (canBatchMountChildren(children, 0, children.length - 1)) {
-    const fragment = document.createDocumentFragment();
-    for (const child of children) {
-      patch(null, child, fragment, null, parentComponent, appProvides);
-    }
-    insert(fragment, container, null);
-    return;
-  }
-
-  for (const child of children) {
-    patch(null, child, container, null, parentComponent, appProvides);
-  }
 }
 
 function mountComponent(
@@ -189,6 +169,26 @@ function mountComponent(
   instance.effect = reactiveEffect;
   instance.update = reactiveEffect.run.bind(reactiveEffect);
   instance.update();
+}
+
+function mountChildren(
+  children: VNode[],
+  container: Node,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+): void {
+  if (canBatchMountChildren(children, 0, children.length - 1)) {
+    const fragment = document.createDocumentFragment();
+    for (const child of children) {
+      patch(null, child, fragment, null, parentComponent, appProvides);
+    }
+    insert(fragment, container, null);
+    return;
+  }
+
+  for (const child of children) {
+    patch(null, child, container, null, parentComponent, appProvides);
+  }
 }
 
 function updateComponent(n1: VNode, n2: VNode): void {
@@ -342,17 +342,6 @@ function patchChildren(
     unmountChildren(oldChildren as VNode[]);
   } else if (oldShapeFlag & ShapeFlags.TEXT_CHILDREN) {
     setText(container, "");
-  }
-}
-
-function mountChildren(
-  children: VNode[],
-  container: Node,
-  parentComponent: ComponentInstance | null,
-  appProvides: Provides | null,
-): void {
-  for (const child of children) {
-    patch(null, child, container, null, parentComponent, appProvides);
   }
 }
 

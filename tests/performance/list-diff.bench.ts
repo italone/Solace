@@ -67,6 +67,14 @@ describe("list diff benchmark", () => {
       expect(container.querySelectorAll("p")).toHaveLength(10000);
     });
 
+    bench.add("10000 row text to keyed list", () => {
+      const container = document.createElement("div");
+      render(h("div", null, "loading"), container);
+      render(list(1), container);
+      expect(container.querySelectorAll("p")).toHaveLength(10000);
+      expect(container.querySelector('[data-row="1"]')?.textContent).toBe("Row 1 selected");
+    });
+
     bench.add("10000 row local text update", () => {
       const container = document.createElement("div");
       render(list(1), container);
