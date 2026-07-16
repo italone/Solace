@@ -18,6 +18,15 @@ const mixedInsertMoveRows = [
   rows[4999],
   ...rows.slice(5001),
 ];
+const mixedAdjacentInsertMoveRows = [
+  ...rows.slice(0, 4999),
+  rows[5001],
+  10_001,
+  10_002,
+  rows[4999],
+  rows[5000],
+  ...rows.slice(5002),
+];
 
 function list(selected: number, items = rows) {
   return h(
@@ -107,6 +116,18 @@ describe("list diff benchmark", () => {
       expect(container.querySelectorAll("p")[4999]?.textContent).toBe("Row 5001");
       expect(container.querySelectorAll("p")[4999]).toBe(moved);
       expect(container.querySelectorAll("p")[5000]?.textContent).toBe("Row 10001");
+    });
+
+    bench.add("10000 row keyed mixed adjacent insert and move", () => {
+      const container = document.createElement("div");
+      render(list(1), container);
+      const moved = container.querySelector('[data-row="5002"]');
+      render(list(1, mixedAdjacentInsertMoveRows), container);
+      expect(container.querySelectorAll("p")).toHaveLength(10002);
+      expect(container.querySelectorAll("p")[4999]?.textContent).toBe("Row 5002");
+      expect(container.querySelectorAll("p")[4999]).toBe(moved);
+      expect(container.querySelectorAll("p")[5000]?.textContent).toBe("Row 10001");
+      expect(container.querySelectorAll("p")[5001]?.textContent).toBe("Row 10002");
     });
 
     bench.add("10000 row keyed reorder", () => {

@@ -285,6 +285,46 @@ describe("renderer diff", () => {
     expect(insertBefore).toHaveBeenCalledTimes(2);
   });
 
+  it("batches adjacent new keyed children during mixed inserts and moves", () => {
+    const container = document.createElement("div");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "e" }, "E"),
+        h("li", { key: "b" }, "B"),
+      ]),
+      container,
+    );
+
+    const list = container.querySelector("ul") as HTMLUListElement;
+    const insertBefore = vi.spyOn(list, "insertBefore");
+    const before = new Map([...container.querySelectorAll("li")].map((li) => [li.textContent, li]));
+
+    render(
+      h("ul", null, [
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "x" }, "X"),
+        h("li", { key: "y" }, "Y"),
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "d" }, "D"),
+      ]),
+      container,
+    );
+
+    const after = [...container.querySelectorAll("li")];
+
+    expect(after.map((li) => li.textContent)).toEqual(["B", "X", "Y", "A", "D"]);
+    expect(after[0]).toBe(before.get("B"));
+    expect(after[1]).not.toBe(before.get("X"));
+    expect(after[2]).not.toBe(before.get("Y"));
+    expect(after[3]).toBe(before.get("A"));
+    expect(after[4]).toBe(before.get("D"));
+    expect(before.get("E")?.isConnected).toBe(false);
+    expect(insertBefore).toHaveBeenCalledTimes(2);
+  });
+
   it("minimizes DOM moves for keyed reorders with a stable subsequence", () => {
     const container = document.createElement("div");
     const insertBefore = vi.spyOn(Node.prototype, "insertBefore");

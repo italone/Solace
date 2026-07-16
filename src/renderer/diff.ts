@@ -475,6 +475,21 @@ function patchKeyedChildren(
 
   for (let index = newEnd; index >= newStart; index -= 1) {
     if (newIndexToOldIndexMap[index - newStart] === 0) {
+      const runStart = getNewRunStart(newIndexToOldIndexMap, newStart, index);
+      if (runStart < index && canBatchMountChildren(newChildren, runStart, index)) {
+        mountNewKeyedChildren(
+          newChildren,
+          runStart,
+          index,
+          container,
+          getAnchor(newChildren, index + 1),
+          parentComponent,
+          appProvides,
+        );
+        index = runStart;
+        continue;
+      }
+
       patch(
         null,
         newChildren[index],
@@ -498,6 +513,16 @@ function patchKeyedChildren(
 
     insert(childEl, container, getAnchor(newChildren, index + 1));
   }
+}
+
+function getNewRunStart(newIndexToOldIndexMap: number[], newStart: number, index: number): number {
+  let start = index;
+
+  while (start > newStart && newIndexToOldIndexMap[start - 1 - newStart] === 0) {
+    start -= 1;
+  }
+
+  return start;
 }
 
 function mountNewKeyedChildren(
