@@ -626,6 +626,6 @@ pnpm tsc --init
 
 当前最小框架闭环、示例、文档和发布前门禁已经建立。后续建议优先推进以下方向：
 
-- 持续记录 jsdom 与 Chromium 生产构建 benchmark 趋势；两个 benchmark 命令都支持 opt-in 本地 JSONL history，后续可扩展 median、p95 和 variance 聚合。
+- 持续记录 jsdom 与 Chromium 生产构建 benchmark 趋势；两个 benchmark 命令都支持 opt-in 本地 JSONL history，`pnpm benchmark:history` 可汇总 median、p95 和 variance，后续再评估阈值和发布性能结论。
 - 根据 [`docs/devtools.md`](./docs/devtools.md) 的边界继续扩展 DevTools summary payload；浏览器扩展或可视化面板应在更多真实示例验证后再实现。
 - 发布前运行 release readiness 检查，确认 npm 包名、访问权限、Changesets version 和 `private` 配置调整策略。

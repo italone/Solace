@@ -54,6 +54,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "benchmark": "node scripts/run-benchmark.mjs",
+    "benchmark:history": "node scripts/summarize-benchmark-history.mjs",
     "build:benchmark:browser": "vite build examples/performance-benchmark",
     "benchmark:browser": "playwright test --config playwright.benchmark.config.ts",
     "package:smoke": "node scripts/package-consumer-smoke.mjs",

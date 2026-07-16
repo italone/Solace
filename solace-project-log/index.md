@@ -105,6 +105,12 @@
 | 009  | 增加 jsdom benchmark history 记录           | benchmark runner、metadata helper、脚本测试、性能文档、README、项目日志    | `scripts/run-benchmark.mjs`, `scripts/benchmark-metadata.mjs`, `tests/unit/scripts/**`, `docs/performance.md`, `readme.md`, `solace-project-log/**`                                                                                                 | [查看](./solace-entries/2026-07-15-009-benchmark-history.md)              |
 | 010  | 增加 browser benchmark history 记录         | browser benchmark、Playwright helper、脚本测试、性能文档、README、项目日志 | `tests/e2e/browser-benchmark.spec.ts`, `tests/e2e/browser-benchmark-history.ts`, `tests/unit/scripts/browser-benchmark-history.test.ts`, `docs/performance.md`, `readme.md`, `solace-project-log/**`                                                | [查看](./solace-entries/2026-07-15-010-browser-benchmark-history.md)      |
 
+## 2026-07-16
+
+| 编号 | 变动                            | 影响范围                                                    | 涉及文件                                                                                                                                                                       | 日志                                                                 |
+| ---- | ------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| 001  | 增加 benchmark history 汇总命令 | benchmark history CLI、脚本测试、性能文档、README、项目日志 | `scripts/summarize-benchmark-history.mjs`, `tests/unit/scripts/benchmark-history-summary.test.ts`, `package.json`, `docs/performance.md`, `readme.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-16-001-benchmark-history-summary.md) |
+
 ## 维护说明
 
 后续每次变更完成后，应执行以下动作：

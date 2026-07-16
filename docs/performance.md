@@ -107,6 +107,11 @@ to append one JSONL record after a successful Chromium production benchmark run.
 records persist the existing summary object; they do not add repeated samples, timing thresholds,
 or statistical aggregation.
 
+Run `pnpm benchmark:history` to summarize local JSONL history from `.benchmark-history/jsdom.jsonl`
+and `.benchmark-history/browser.jsonl`. Use `pnpm benchmark:history -- --json <path>` for
+machine-readable output. The summary reports record counts plus median, p95, and variance for
+numeric browser timing metrics; it does not enforce thresholds.
+
 ## Benchmark Principles
 
 Benchmarks should:
