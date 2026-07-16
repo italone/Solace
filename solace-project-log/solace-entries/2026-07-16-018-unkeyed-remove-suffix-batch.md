@@ -9,8 +9,8 @@
 
 ## 变动摘要
 
-优化 unkeyed children 的尾部移除路径：当 index patch 后剩余的旧 suffix 全部是安全的 leaf element vnode 时，使用 DOM
-`Range.deleteContents()` 批量删除这一段。该优化只在无 DevTools listener、无事件 props、无子数组的 element suffix 上启用；
+优化 unkeyed children 的尾部移除路径：当 index patch 后剩余的旧 suffix 全部是安全的 leaf element vnode 时，移动到临时
+`DocumentFragment` 批量脱离父节点。该优化只在无 DevTools listener、无事件 props、无子数组的 element suffix 上启用；
 其他情况继续逐个 `unmount`，保留事件清理、组件生命周期和 DevTools 事件语义。
 
 ## 变动原因
@@ -21,21 +21,21 @@ suffix 切入，用单元测试约束父节点 remove 调用次数，并用 `100
 ## 影响范围
 
 - 影响模块：renderer unkeyed children diff、renderer diff 单元测试、list diff benchmark、benchmark runner 测试、性能文档、Changesets。
-- 行为变化：满足安全条件的 unkeyed removed suffix 会通过 DOM `Range` 批量删除。
+- 行为变化：满足安全条件的 unkeyed removed suffix 会通过临时 `DocumentFragment` 批量脱离父节点。
 - 风险等级：中低；存在 DevTools listener、事件 props、嵌套 children、组件或 Fragment 时仍走原逐个 unmount 路径。
 
 ## 涉及文件
 
-| 文件                                                                              | 动作 | 说明                                             |
-| --------------------------------------------------------------------------------- | ---- | ------------------------------------------------ |
-| `src/renderer/diff.ts`                                                            | 修改 | 增加安全 unkeyed remove suffix 的 Range 批量删除 |
-| `tests/unit/renderer/diff.test.ts`                                                | 修改 | 覆盖 unkeyed tail remove 的父节点 remove 计数    |
-| `tests/performance/list-diff.bench.ts`                                            | 修改 | 增加 `10000 row unkeyed tail remove` benchmark   |
-| `tests/unit/scripts/run-benchmark.test.ts`                                        | 修改 | 对齐 benchmark runner history 测试超时预算       |
-| `docs/performance.md`                                                             | 修改 | 记录 unkeyed append/remove benchmark 覆盖和优化  |
-| `.changeset/performance-trend-readiness.md`                                       | 修改 | 补充 patch changeset 文案                        |
-| `solace-project-log/solace-entries/2026-07-16-018-unkeyed-remove-suffix-batch.md` | 新增 | 记录本次变更                                     |
-| `solace-project-log/index.md`                                                     | 修改 | 追加 2026-07-16 日志索引                         |
+| 文件                                                                              | 动作 | 说明                                            |
+| --------------------------------------------------------------------------------- | ---- | ----------------------------------------------- |
+| `src/renderer/diff.ts`                                                            | 修改 | 增加安全 unkeyed remove suffix 的批量 detach    |
+| `tests/unit/renderer/diff.test.ts`                                                | 修改 | 覆盖 unkeyed tail remove 的父节点 remove 计数   |
+| `tests/performance/list-diff.bench.ts`                                            | 修改 | 增加 `10000 row unkeyed tail remove` benchmark  |
+| `tests/unit/scripts/run-benchmark.test.ts`                                        | 修改 | 对齐 benchmark runner history 测试超时预算      |
+| `docs/performance.md`                                                             | 修改 | 记录 unkeyed append/remove benchmark 覆盖和优化 |
+| `.changeset/performance-trend-readiness.md`                                       | 修改 | 补充 patch changeset 文案                       |
+| `solace-project-log/solace-entries/2026-07-16-018-unkeyed-remove-suffix-batch.md` | 新增 | 记录本次变更                                    |
+| `solace-project-log/index.md`                                                     | 修改 | 追加 2026-07-16 日志索引                        |
 
 ## 验证记录
 

@@ -444,9 +444,7 @@ function patchKeyedChildren(
   }
 
   if (newStart > newEnd) {
-    for (let index = oldStart; index <= oldEnd; index += 1) {
-      unmount(oldChildren[index]);
-    }
+    unmountChildrenRange(oldChildren, oldStart, oldEnd);
     return;
   }
 
@@ -576,13 +574,10 @@ function canBatchMountChildren(children: VNode[], start: number, end: number): b
 
 function unmountChildrenRange(children: VNode[], start: number, end: number): void {
   if (canBatchRemoveChildren(children, start, end)) {
-    const first = children[start].el as Node;
-    const last = children[end].el as Node;
-    const range = document.createRange();
-    range.setStartBefore(first);
-    range.setEndAfter(last);
-    range.deleteContents();
-    range.detach();
+    const fragment = document.createDocumentFragment();
+    for (let index = start; index <= end; index += 1) {
+      fragment.appendChild(children[index].el as Node);
+    }
     return;
   }
 

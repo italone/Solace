@@ -264,7 +264,7 @@ describe("renderer diff", () => {
     expect(insertBefore).toHaveBeenCalledTimes(1);
   });
 
-  it("removes keyed children between synced prefix and suffix", () => {
+  it("batches keyed children removed between synced prefix and suffix", () => {
     const container = document.createElement("div");
 
     render(
@@ -279,22 +279,18 @@ describe("renderer diff", () => {
     const first = container.querySelectorAll("li")[0];
     const last = container.querySelectorAll("li")[3];
     const removed = container.querySelectorAll("li")[1];
+    const list = container.querySelector("ul") as HTMLUListElement;
+    const removeChild = vi.spyOn(list, "removeChild");
 
-    render(
-      h("ul", null, [
-        h("li", { key: "a" }, "A"),
-        h("li", { key: "c" }, "C"),
-        h("li", { key: "d" }, "D"),
-      ]),
-      container,
-    );
+    render(h("ul", null, [h("li", { key: "a" }, "A"), h("li", { key: "d" }, "D")]), container);
 
     const after = [...container.querySelectorAll("li")];
 
-    expect(after.map((li) => li.textContent)).toEqual(["A", "C", "D"]);
+    expect(after.map((li) => li.textContent)).toEqual(["A", "D"]);
     expect(after[0]).toBe(first);
-    expect(after[2]).toBe(last);
+    expect(after[1]).toBe(last);
     expect(removed.isConnected).toBe(false);
+    expect(removeChild.mock.calls.length).toBeLessThanOrEqual(1);
   });
 
   it("handles keyed insert, remove, and move in one patch", () => {

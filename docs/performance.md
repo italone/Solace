@@ -67,11 +67,11 @@ Conclusion:
   batch all-element array children during element initial mount and text-to-array child replacement, skip
   stable child component updates when parent rerenders do not change child props or children, and skip
   unchanged keyed element sibling patches during local list updates. Unkeyed appended all-element suffixes
-  batch through a `DocumentFragment` after index patching, and safe unkeyed removed leaf suffixes batch
-  through a DOM `Range`. Keyed mixed insert/move patches now mount new children directly at their final
-  anchor instead of appending and moving them. Contiguous all-element keyed insert segments also batch
-  through a `DocumentFragment` before one parent insert, including adjacent new runs discovered during
-  mixed keyed placement. Next optimization work should focus on additional browser trend samples.
+  batch through a `DocumentFragment` after index patching, and safe removed leaf suffixes detach through
+  a temporary `DocumentFragment`. Keyed mixed insert/move patches now mount new children directly at their
+  final anchor instead of appending and moving them. Contiguous all-element keyed insert segments also
+  batch through a `DocumentFragment` before one parent insert, including adjacent new runs discovered
+  during mixed keyed placement. Next optimization work should focus on additional browser trend samples.
 
 ## Browser Production Benchmark
 
