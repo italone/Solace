@@ -139,6 +139,7 @@
 | 004  | 记录 release readiness 与 quality 基线 | release readiness、quality gate、项目日志                                  | `solace-project-log/**`                                                                                                                                                                         | [查看](./solace-entries/2026-07-17-004-release-readiness-quality-baseline.md) |
 | 005  | 记录 release check 全量门禁            | release check、coverage、package smoke、benchmark、e2e、项目日志           | `solace-project-log/**`                                                                                                                                                                         | [查看](./solace-entries/2026-07-17-005-release-check-full-gate.md)            |
 | 006  | 同步 release gate 文档说明             | README、package usage、examples、项目日志                                  | `readme.md`, `docs/package-usage.md`, `docs/examples.md`, `solace-project-log/**`                                                                                                               | [查看](./solace-entries/2026-07-17-006-release-doc-gate-alignment.md)         |
+| 007  | 同步项目计划当前状态                   | 项目计划、文件职责映射、release gate 状态、项目日志                        | `solace-project-plan/README.md`, `solace-project-plan/01-file-map.md`, `solace-project-log/**`                                                                                                  | [查看](./solace-entries/2026-07-17-007-plan-current-state-sync.md)            |
 
 ## 维护说明
 

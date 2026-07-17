@@ -26,6 +26,14 @@
 
 - 每个 `step-*.md` 是一个独立执行文件，按文件名顺序执行。
 - 每个步骤完成后运行该文件列出的验证命令。
-- 当前目录尚未初始化 Git 仓库；如果需要提交记录，先初始化 Git。
-- 当前单包项目骨架、源码、测试、示例、文档和发布前门禁已经创建完成；后续继续执行时应以现有文件为准，不要重新初始化项目。
+- 当前目录已经初始化 Git 仓库；后续变更应保持聚焦提交，并避免改动用户未要求的历史变更。
+- 当前单包项目骨架、源码、测试、示例、文档、DevTools public subpath、benchmark history tooling 和发布前门禁已经创建完成；后续继续执行时应以现有文件为准，不要重新初始化项目。
 - 性能目标必须通过可复现 benchmark 验证，不能提前写成已达成结论。
+
+## 当前收口状态
+
+- `package.json` 仍保持 `"private": true`，在用户明确批准前不执行 `release:version` 或 `release:publish`。
+- `pnpm release:readiness` 已在默认非发布模式通过，publishability 在 private 状态下按预期跳过。
+- `pnpm quality` 已通过 format、typecheck、JSX dev typecheck、lint、默认测试、package build 和 package exports 测试。
+- `pnpm release:check` 已通过 full gate，覆盖 coverage、package smoke、jsdom benchmark、Chromium production browser benchmark 和 browser e2e。
+- browser benchmark history 已支持 full-history、minimum count gate 和 latest-window summary，用于后续性能趋势判断。
