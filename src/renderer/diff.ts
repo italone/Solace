@@ -473,12 +473,7 @@ function patchKeyedChildren(
     }
   }
 
-  for (let index = oldStart; index <= oldEnd; index += 1) {
-    const oldChild = oldChildren[index];
-    if (!usedOldChildren.has(oldChild)) {
-      unmount(oldChild);
-    }
-  }
+  unmountUnusedKeyedChildren(oldChildren, oldStart, oldEnd, usedOldChildren);
 
   const stablePositions = getIncreasingSubsequence(newIndexToOldIndexMap);
   let stableIndex = stablePositions.length - 1;
@@ -533,6 +528,28 @@ function getNewRunStart(newIndexToOldIndexMap: number[], newStart: number, index
   }
 
   return start;
+}
+
+function unmountUnusedKeyedChildren(
+  children: VNode[],
+  start: number,
+  end: number,
+  usedChildren: Set<VNode>,
+): void {
+  let index = start;
+
+  while (index <= end) {
+    if (usedChildren.has(children[index])) {
+      index += 1;
+      continue;
+    }
+
+    const runStart = index;
+    while (index <= end && !usedChildren.has(children[index])) {
+      index += 1;
+    }
+    unmountChildrenRange(children, runStart, index - 1);
+  }
 }
 
 function mountNewChildren(

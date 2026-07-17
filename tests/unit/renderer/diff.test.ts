@@ -403,6 +403,44 @@ describe("renderer diff", () => {
     expect(insertBefore).toHaveBeenCalledTimes(2);
   });
 
+  it("batches adjacent old keyed children removed during mixed moves", () => {
+    const container = document.createElement("div");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "e" }, "E"),
+      ]),
+      container,
+    );
+
+    const list = container.querySelector("ul") as HTMLUListElement;
+    const removeChild = vi.spyOn(list, "removeChild");
+    const before = new Map([...container.querySelectorAll("li")].map((li) => [li.textContent, li]));
+
+    render(
+      h("ul", null, [
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "e" }, "E"),
+      ]),
+      container,
+    );
+
+    const after = [...container.querySelectorAll("li")];
+
+    expect(after.map((li) => li.textContent)).toEqual(["D", "A", "E"]);
+    expect(after[0]).toBe(before.get("D"));
+    expect(after[1]).toBe(before.get("A"));
+    expect(after[2]).toBe(before.get("E"));
+    expect(before.get("B")?.isConnected).toBe(false);
+    expect(before.get("C")?.isConnected).toBe(false);
+    expect(removeChild.mock.calls.length).toBeLessThanOrEqual(1);
+  });
+
   it("minimizes DOM moves for keyed reorders with a stable subsequence", () => {
     const container = document.createElement("div");
     const insertBefore = vi.spyOn(Node.prototype, "insertBefore");
