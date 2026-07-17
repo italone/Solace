@@ -18,7 +18,7 @@ The large-list e2e test confirms that 10,000 rows can render and one selected ro
 
 ## Latest Local Benchmark Run
 
-Date: 2026-07-13
+Date: 2026-07-17
 
 Environment:
 
@@ -33,7 +33,7 @@ Environment:
 Command:
 
 ```bash
-pnpm benchmark
+SOLACE_BENCHMARK_HISTORY_PATH=.benchmark-history/jsdom.jsonl SOLACE_BENCHMARK_SAMPLE_SIZE=3 pnpm benchmark
 ```
 
 The command logs a `benchmark metadata` JSON line before running the jsdom benchmark suite. The metadata includes package name/version, Node version, OS platform/release/architecture, CPU model, logical CPU count, total memory, benchmark runner, benchmark environment, sample size, and an ISO timestamp.
@@ -46,6 +46,10 @@ Set `SOLACE_BENCHMARK_HISTORY_PATH=.benchmark-history/jsdom.jsonl pnpm benchmark
 JSONL record after a successful jsdom benchmark run. History recording is opt-in and records
 metadata plus run status; it does not yet parse Tinybench timings, compute medians, or persist
 browser benchmark results.
+
+The local ignored jsdom history currently contains two records. The latest record was created with
+`SOLACE_BENCHMARK_SAMPLE_SIZE=3`; all five jsdom benchmark files passed in each sample. The history
+summary reports jsdom record counts only because Tinybench timing aggregation is not yet persisted.
 
 Result summary:
 
