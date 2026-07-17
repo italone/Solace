@@ -217,16 +217,57 @@ function shouldUpdateComponent(n1: VNode, n2: VNode): boolean {
 }
 
 function havePropsChanged(oldProps: VNodeProps | null, newProps: VNodeProps | null): boolean {
-  const previousProps = oldProps ?? {};
-  const nextProps = newProps ?? {};
-  const previousKeys = Object.keys(previousProps).filter((key) => key !== "key");
-  const nextKeys = Object.keys(nextProps).filter((key) => key !== "key");
-
-  if (previousKeys.length !== nextKeys.length) {
-    return true;
+  if (oldProps === newProps) {
+    return false;
   }
 
-  return nextKeys.some((key) => previousProps[key] !== nextProps[key]);
+  if (oldProps === null) {
+    return hasPatchableProps(newProps);
+  }
+
+  if (newProps === null) {
+    return hasPatchableProps(oldProps);
+  }
+
+  for (const key in oldProps) {
+    if (!hasOwnProp(oldProps, key) || key === "key") {
+      continue;
+    }
+
+    if (!hasOwnProp(newProps, key) || oldProps[key] !== newProps[key]) {
+      return true;
+    }
+  }
+
+  for (const key in newProps) {
+    if (!hasOwnProp(newProps, key) || key === "key") {
+      continue;
+    }
+
+    if (!hasOwnProp(oldProps, key)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function hasPatchableProps(props: VNodeProps | null): boolean {
+  if (props === null) {
+    return false;
+  }
+
+  for (const key in props) {
+    if (hasOwnProp(props, key) && key !== "key") {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function hasOwnProp(props: VNodeProps, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(props, key);
 }
 
 function patchElement(
@@ -238,17 +279,22 @@ function patchElement(
   const el = n1.el as Element;
   n2.el = el;
 
-  if (!shouldPatchElement(n1, n2)) {
+  const propsChanged = havePropsChanged(n1.props, n2.props);
+  const childrenChanged = haveElementChildrenChanged(n1, n2);
+
+  if (!propsChanged && !childrenChanged) {
     return;
   }
 
-  patchProps(el, n1.props, n2.props);
-  patchChildren(n1, n2, el, parentComponent, appProvides);
-  emitRendererElementDevtoolsEvent("update", n2.type as string);
-}
+  if (propsChanged) {
+    patchProps(el, n1.props, n2.props);
+  }
 
-function shouldPatchElement(n1: VNode, n2: VNode): boolean {
-  return havePropsChanged(n1.props, n2.props) || haveElementChildrenChanged(n1, n2);
+  if (childrenChanged) {
+    patchChildren(n1, n2, el, parentComponent, appProvides);
+  }
+
+  emitRendererElementDevtoolsEvent("update", n2.type as string);
 }
 
 function haveElementChildrenChanged(n1: VNode, n2: VNode): boolean {

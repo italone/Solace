@@ -585,6 +585,37 @@ describe("renderer diff", () => {
     expect(elementUpdates.map((event) => event.tag)).toEqual(["li", "ul"]);
   });
 
+  it("avoids Object.keys props scans for child-only keyed updates", () => {
+    const container = document.createElement("div");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+      ]),
+      container,
+    );
+
+    const before = [...container.querySelectorAll("li")];
+    const objectKeys = vi.spyOn(Object, "keys");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B selected"),
+        h("li", { key: "c" }, "C"),
+      ]),
+      container,
+    );
+
+    const after = [...container.querySelectorAll("li")];
+
+    expect(after).toEqual(before);
+    expect(after.map((li) => li.textContent)).toEqual(["A", "B selected", "C"]);
+    expect(objectKeys).not.toHaveBeenCalled();
+  });
+
   it("emits devtools summaries for element mount, update, and unmount", () => {
     const events: DevtoolsEvent[] = [];
     const container = document.createElement("div");

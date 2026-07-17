@@ -65,8 +65,9 @@ Conclusion:
 - No claim is made that Solace meets or exceeds a specific framework performance target yet.
 - The latest renderer follow-ups batch all-element Fragment initial mounts through a `DocumentFragment`,
   batch all-element array children during element initial mount and text-to-array child replacement, skip
-  stable child component updates when parent rerenders do not change child props or children, and skip
-  unchanged keyed element sibling patches during local list updates. Unkeyed appended all-element suffixes
+  stable child component updates when parent rerenders do not change child props or children, skip
+  unchanged keyed element sibling patches during local list updates, and avoid prop patching plus `Object.keys`
+  props scans for keyed child-only updates. Unkeyed appended all-element suffixes
   batch through a `DocumentFragment` after index patching, and safe removed leaf suffixes detach through
   a temporary `DocumentFragment`, including adjacent old keyed runs removed during mixed placement. Keyed
   mixed insert/move patches now mount new children directly at their final anchor instead of appending and
