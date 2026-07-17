@@ -138,18 +138,18 @@ Date: 2026-07-17
 Local history command:
 
 ```bash
-pnpm benchmark:history -- --min-browser-count 15 --json
+pnpm benchmark:history -- --min-browser-count 20 --json
 ```
 
-The local ignored history currently contains seventeen Chromium `large-list` production benchmark records. The
-`--min-browser-count 15` trend gate passes locally. p95 still reflects the slowest observed samples and should be
+The local ignored history currently contains twenty-two Chromium `large-list` production benchmark records. The
+`--min-browser-count 20` trend gate passes locally. p95 still reflects the slowest observed samples and should be
 treated as trend context only, not a release threshold.
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 17    | 8.1    | 28.7 | 31.53    |
-| `updateMs`        | 17    | 3.6    | 15.9 | 9.06     |
-| `unmountMs`       | 17    | 1.2    | 3.5  | 0.31     |
+| `initialRenderMs` | 22    | 8.05   | 15.2 | 26.93    |
+| `updateMs`        | 22    | 3.5    | 7.0  | 7.5      |
+| `unmountMs`       | 22    | 1.2    | 1.5  | 0.25     |
 
 Latest-window command:
 
@@ -157,14 +157,14 @@ Latest-window command:
 pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
 ```
 
-The latest five Chromium `large-list` records show lower p95 and variance than the full 12-record
+The latest five Chromium `large-list` records show lower p95 and variance than the full 22-record
 history, which indicates older slow samples still dominate the full-history p95.
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 5     | 7.1    | 13.8 | 7.63     |
-| `updateMs`        | 5     | 3.5    | 5.5  | 0.8      |
-| `unmountMs`       | 5     | 1.1    | 1.3  | 0.01     |
+| `initialRenderMs` | 5     | 7.7    | 14.9 | 8.92     |
+| `updateMs`        | 5     | 3.3    | 5.0  | 0.62     |
+| `unmountMs`       | 5     | 1.1    | 1.5  | 0.03     |
 
 ## Benchmark Principles
 
