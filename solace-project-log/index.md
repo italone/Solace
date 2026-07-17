@@ -137,6 +137,7 @@
 | 002  | 刷新 browser benchmark 趋势样本        | browser benchmark、本地 history、性能文档、项目日志                        | `docs/performance.md`, `solace-project-log/**`                                                                                                                                                  | [查看](./solace-entries/2026-07-17-002-browser-benchmark-trend-refresh.md)    |
 | 003  | 增加 browser history 最新窗口汇总      | benchmark history CLI、单元测试、性能文档、项目日志                        | `scripts/summarize-benchmark-history.mjs`, `tests/unit/scripts/benchmark-history-summary.test.ts`, `docs/performance.md`, `.changeset/performance-trend-readiness.md`, `solace-project-log/**`  | [查看](./solace-entries/2026-07-17-003-browser-history-latest-window.md)      |
 | 004  | 记录 release readiness 与 quality 基线 | release readiness、quality gate、项目日志                                  | `solace-project-log/**`                                                                                                                                                                         | [查看](./solace-entries/2026-07-17-004-release-readiness-quality-baseline.md) |
+| 005  | 记录 release check 全量门禁            | release check、coverage、package smoke、benchmark、e2e、项目日志           | `solace-project-log/**`                                                                                                                                                                         | [查看](./solace-entries/2026-07-17-005-release-check-full-gate.md)            |
 
 ## 维护说明
 
