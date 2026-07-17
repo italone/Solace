@@ -25,18 +25,24 @@ summarize those jsdom metrics by benchmark task.
 
 ## Proposed Approach
 
-Use Vitest benchmark JSON output for jsdom runs. `scripts/run-benchmark.mjs` should run the existing benchmark command in
-a machine-readable mode when history recording is enabled, parse the resulting task data, and append a jsdom history
-record containing:
+Use an explicit benchmark metrics helper inside the jsdom benchmark files. A quick probe showed Vitest's JSON reporter
+only exposes test-level duration for these benchmark tests, not Tinybench task latency or throughput. The implementation
+should therefore move the duplicated per-file `report(bench)` logic into a shared helper that both prints the existing
+human-readable lines and stores task-level metrics in a process-scoped collection.
+
+`scripts/run-benchmark.mjs` should run the existing benchmark command as it does today. When history recording is
+enabled, the benchmark process should also write a temporary JSON metrics artifact through an internal environment
+variable controlled by the runner. The runner should parse that artifact after all samples pass and append a jsdom
+history record containing:
 
 - existing metadata and run fields,
 - `sampleCount`,
 - benchmark command and args,
 - a `summary.tasks` array with one entry per Tinybench task.
 
-Each task entry should include a stable benchmark label and numeric timing summaries available from Vitest/Tinybench,
-such as latency mean and p99 when present. If a task lacks a numeric metric, the parser should omit that metric rather
-than inventing a value.
+Each task entry should include a stable benchmark label, the benchmark file, and numeric timing summaries available from
+Tinybench, such as latency mean and p99 when present. If a task lacks a numeric metric, the metrics helper should omit
+that metric rather than inventing a value.
 
 `scripts/summarize-benchmark-history.mjs` should keep the existing browser grouping unchanged and add jsdom groups keyed
 by task name. For each numeric jsdom task metric, it should report count, median, p95, and variance across history
@@ -54,6 +60,12 @@ Fragment, component update, and memory benchmark behavior.
 
 The existing benchmark files print human-readable Tinybench reports. Parsing those lines would be brittle and sensitive
 to wording changes. A machine-readable output path is safer.
+
+### Use Vitest JSON Reporter
+
+This was the initial idea, but a probe of `vitest --reporter=json` showed only test-level duration and assertion status
+for the current benchmark tests. It does not include Tinybench task-level latency or throughput, so it is not sufficient
+for scenario-level trend records.
 
 ### Add Threshold Gates Now
 
@@ -96,16 +108,17 @@ use explicit metric names so future readers know the unit and meaning.
 - `pnpm benchmark` without `SOLACE_BENCHMARK_HISTORY_PATH` continues to run the existing jsdom benchmark suite.
 - `SOLACE_BENCHMARK_HISTORY_PATH=.benchmark-history/jsdom.jsonl pnpm benchmark` appends a valid JSONL record.
 - New records include task-level numeric metrics when Vitest/Tinybench exposes them.
+- The metrics artifact path is internal to `scripts/run-benchmark.mjs` and should not be required from users.
 - `pnpm benchmark:history` remains compatible with old jsdom metadata-only records.
 - `pnpm benchmark:history -- --json` includes jsdom task metric summaries when task metrics exist.
 - Browser history summaries and `--min-browser-count` behavior remain unchanged.
-- Invalid benchmark JSON should fail with a clear error rather than appending a misleading history record.
+- Invalid metrics JSON should fail with a clear error rather than appending a misleading history record.
 
 ## Test Plan
 
 Implementation should use TDD in the script unit tests:
 
-- Add parser tests for representative Vitest benchmark JSON containing multiple files and tasks.
+- Add helper tests for collecting representative Tinybench task metrics from completed and non-completed tasks.
 - Add history summary tests proving jsdom task metrics produce median, p95, and variance.
 - Add compatibility tests for old jsdom records without `summary.tasks`.
 - Add a dry-run or fixture-based test for `run-benchmark` history record creation without running the full benchmark suite.
@@ -134,6 +147,6 @@ This design document is tracked separately as `2026-07-17-018`.
 
 ## Risk And Safety
 
-The main risk is coupling to a Vitest benchmark JSON shape that may change. Keep parsing explicit, fixture-backed, and
-tolerant of missing optional metrics. The history writer should only append after all benchmark samples pass and parsing
-succeeds.
+The main risk is making benchmark files depend on a process-global side channel. Keep the helper small, fixture-backed,
+and active only when the runner sets an internal metrics artifact path. The history writer should only append after all
+benchmark samples pass and metrics artifact parsing succeeds.
