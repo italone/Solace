@@ -131,9 +131,10 @@
 
 ## 2026-07-17
 
-| 编号 | 变动                              | 影响范围                                                                   | 涉及文件                                                                                                                                                                                        | 日志                                                                    |
-| ---- | --------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| 001  | 批量移除 mixed keyed 旧节点连续段 | renderer keyed children、list diff benchmark、单元测试、性能文档、项目日志 | `src/renderer/diff.ts`, `tests/unit/renderer/diff.test.ts`, `tests/performance/list-diff.bench.ts`, `docs/performance.md`, `.changeset/performance-trend-readiness.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-17-001-keyed-mixed-remove-run-batch.md) |
+| 编号 | 变动                              | 影响范围                                                                   | 涉及文件                                                                                                                                                                                        | 日志                                                                       |
+| ---- | --------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| 001  | 批量移除 mixed keyed 旧节点连续段 | renderer keyed children、list diff benchmark、单元测试、性能文档、项目日志 | `src/renderer/diff.ts`, `tests/unit/renderer/diff.test.ts`, `tests/performance/list-diff.bench.ts`, `docs/performance.md`, `.changeset/performance-trend-readiness.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-17-001-keyed-mixed-remove-run-batch.md)    |
+| 002  | 刷新 browser benchmark 趋势样本   | browser benchmark、本地 history、性能文档、项目日志                        | `docs/performance.md`, `solace-project-log/**`                                                                                                                                                  | [查看](./solace-entries/2026-07-17-002-browser-benchmark-trend-refresh.md) |
 
 ## 维护说明
 

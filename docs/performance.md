@@ -129,23 +129,23 @@ Run `pnpm benchmark:history -- --help` to list the supported summary options.
 
 ### Latest Local Browser History Summary
 
-Date: 2026-07-16
+Date: 2026-07-17
 
 Local history command:
 
 ```bash
-pnpm benchmark:history -- --json
+pnpm benchmark:history -- --min-browser-count 10 --json
 ```
 
-The local ignored history currently contains seven Chromium `large-list` production benchmark records. With seven
-samples, p95 remains close to the slowest observed sample and should be treated as trend context only, not a release
-threshold.
+The local ignored history currently contains twelve Chromium `large-list` production benchmark records. The
+`--min-browser-count 10` trend gate passes locally. p95 still reflects the slowest observed samples and should be
+treated as trend context only, not a release threshold.
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 7     | 14.0   | 28.7 | 45.3     |
-| `updateMs`        | 7     | 5.7    | 15.9 | 15.59    |
-| `unmountMs`       | 7     | 1.3    | 3.5  | 0.62     |
+| `initialRenderMs` | 12    | 11.0   | 28.7 | 37.99    |
+| `updateMs`        | 12    | 4.55   | 15.9 | 11.69    |
+| `unmountMs`       | 12    | 1.25   | 3.5  | 0.4      |
 
 ## Benchmark Principles
 
