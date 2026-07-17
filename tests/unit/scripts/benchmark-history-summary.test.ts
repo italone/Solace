@@ -14,6 +14,7 @@ type BenchmarkHistorySummary = {
     kind: string;
     scenario?: string;
     environment?: string;
+    task?: string;
     recordCount: number;
     metrics: Record<string, { count: number; median: number; p95: number; variance: number }>;
   }>;
@@ -77,6 +78,81 @@ describe("benchmark history summary CLI", () => {
       environment: "jsdom",
       recordCount: 1,
       metrics: {},
+    });
+  });
+
+  test("summarizes jsdom task timing metrics", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "solace-history-summary-jsdom-metrics-"));
+    const historyPath = join(tempDir, "history.jsonl");
+    await writeFile(
+      historyPath,
+      [
+        JSON.stringify(
+          createJsdomRecord({
+            tasks: [
+              {
+                name: "10000 row local text update",
+                file: "tests/performance/list-diff.bench.ts",
+                metrics: {
+                  latencyMeanMs: 4,
+                  latencyP99Ms: 6,
+                  throughputMeanOpsPerSec: 250,
+                },
+              },
+            ],
+          }),
+        ),
+        JSON.stringify(
+          createJsdomRecord({
+            tasks: [
+              {
+                name: "10000 row local text update",
+                file: "tests/performance/list-diff.bench.ts",
+                metrics: {
+                  latencyMeanMs: 8,
+                  latencyP99Ms: 10,
+                  throughputMeanOpsPerSec: 125,
+                },
+              },
+            ],
+          }),
+        ),
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const { stdout } = await execFileAsync("node", [
+      "scripts/summarize-benchmark-history.mjs",
+      "--json",
+      historyPath,
+    ]);
+    const summary = JSON.parse(stdout) as BenchmarkHistorySummary;
+    const jsdomTaskGroup = summary.groups.find(
+      (group) => group.kind === "jsdom-benchmark" && group.task === "10000 row local text update",
+    );
+
+    expect(summary.recordCount).toBe(2);
+    expect(jsdomTaskGroup).toMatchObject({
+      environment: "jsdom",
+      task: "10000 row local text update",
+      recordCount: 2,
+    });
+    expect(jsdomTaskGroup?.metrics.latencyMeanMs).toEqual({
+      count: 2,
+      median: 6,
+      p95: 8,
+      variance: 4,
+    });
+    expect(jsdomTaskGroup?.metrics.latencyP99Ms).toMatchObject({
+      count: 2,
+      median: 8,
+      p95: 10,
+    });
+    expect(jsdomTaskGroup?.metrics.throughputMeanOpsPerSec).toMatchObject({
+      count: 2,
+      median: 187.5,
+      p95: 250,
     });
   });
 
@@ -253,7 +329,13 @@ function createBrowserRecord(metrics: {
   };
 }
 
-function createJsdomRecord() {
+function createJsdomRecord(options?: {
+  tasks?: Array<{
+    name: string;
+    file: string;
+    metrics: Record<string, number>;
+  }>;
+}) {
   return {
     kind: "jsdom-benchmark",
     status: "passed",
@@ -264,5 +346,6 @@ function createJsdomRecord() {
     },
     command: "pnpm",
     args: ["exec", "vitest", "run", "--config", "vitest.benchmark.config.ts"],
+    ...(options?.tasks === undefined ? {} : { summary: { tasks: options.tasks } }),
   };
 }

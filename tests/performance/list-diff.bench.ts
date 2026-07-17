@@ -1,6 +1,7 @@
 import { Bench } from "tinybench";
 import { describe, expect, it } from "vitest";
 
+import { reportBenchmark } from "./benchmark-report";
 import { h, render } from "../../src/index";
 
 const rows = Array.from({ length: 10_000 }, (_, index) => index + 1);
@@ -55,21 +56,6 @@ function unkeyedList(selected: number, items = rows) {
     null,
     items.map((row) => h("p", null, selected === row ? `Row ${row} selected` : `Row ${row}`)),
   );
-}
-
-function report(bench: Bench): void {
-  for (const task of bench.tasks) {
-    const result = task.result;
-    if (result.state !== "completed") {
-      console.log(`${task.name}: ${result.state}`);
-      continue;
-    }
-
-    const { latency, throughput } = result;
-    console.log(
-      `${task.name}: latency mean ${latency.mean.toFixed(3)}ms, p99 ${latency.p99.toFixed(3)}ms, throughput ${throughput.mean.toFixed(2)} ops/sec`,
-    );
-  }
 }
 
 describe("list diff benchmark", () => {
@@ -189,7 +175,7 @@ describe("list diff benchmark", () => {
     });
 
     await bench.run();
-    report(bench);
+    reportBenchmark(bench, import.meta.url);
 
     for (const task of bench.tasks) {
       const result = task.result;

@@ -1,6 +1,7 @@
 import { Bench } from "tinybench";
 import { describe, expect, it } from "vitest";
 
+import { reportBenchmark } from "./benchmark-report";
 import { Fragment, h, render } from "../../src/index";
 
 const rows = Array.from({ length: 5000 }, (_, index) => index + 1);
@@ -22,21 +23,6 @@ function fragment(items = rows, selected = 1) {
       ),
     ),
   );
-}
-
-function report(bench: Bench): void {
-  for (const task of bench.tasks) {
-    const result = task.result;
-    if (result.state !== "completed") {
-      console.log(`${task.name}: ${result.state}`);
-      continue;
-    }
-
-    const { latency, throughput } = result;
-    console.log(
-      `${task.name}: latency mean ${latency.mean.toFixed(3)}ms, p99 ${latency.p99.toFixed(3)}ms, throughput ${throughput.mean.toFixed(2)} ops/sec`,
-    );
-  }
 }
 
 describe("fragment benchmark", () => {
@@ -72,7 +58,7 @@ describe("fragment benchmark", () => {
     });
 
     await bench.run();
-    report(bench);
+    reportBenchmark(bench, import.meta.url);
 
     for (const task of bench.tasks) {
       const result = task.result;

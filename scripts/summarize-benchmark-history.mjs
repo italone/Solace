@@ -229,8 +229,23 @@ function createSummaryGroups(records) {
     };
 
     group.recordCount += 1;
-    collectMetricValues(group.metricValues, record);
+    collectMetricValues(group.metricValues, record, groupKey);
     groups.set(groupKey.key, group);
+
+    for (const taskGroupKey of getJsdomTaskGroupKeys(record)) {
+      const taskGroup = groups.get(taskGroupKey.key) ?? {
+        kind: taskGroupKey.kind,
+        environment: taskGroupKey.environment,
+        task: taskGroupKey.task,
+        recordCount: 0,
+        metrics: {},
+        metricValues: new Map(),
+      };
+
+      taskGroup.recordCount += 1;
+      collectJsdomTaskMetricValues(taskGroup.metricValues, taskGroupKey.taskRecord);
+      groups.set(taskGroupKey.key, taskGroup);
+    }
   }
 
   return [...groups.values()].map((group) => {
@@ -243,6 +258,7 @@ function createSummaryGroups(records) {
       kind: group.kind,
       ...(group.scenario === undefined ? {} : { scenario: group.scenario }),
       ...(group.environment === undefined ? {} : { environment: group.environment }),
+      ...(group.task === undefined ? {} : { task: group.task }),
       recordCount: group.recordCount,
       metrics,
     };
@@ -272,13 +288,49 @@ function getGroupKey(record) {
   return undefined;
 }
 
-function collectMetricValues(metricValues, record) {
-  if (record?.kind !== "browser-benchmark") {
+function getJsdomTaskGroupKeys(record) {
+  if (
+    record?.kind !== "jsdom-benchmark" ||
+    typeof record.metadata?.benchmarkEnvironment !== "string" ||
+    !Array.isArray(record.summary?.tasks)
+  ) {
+    return [];
+  }
+
+  return record.summary.tasks
+    .filter((task) => typeof task?.name === "string")
+    .map((task) => ({
+      key: `jsdom-benchmark:${record.metadata.benchmarkEnvironment}:${task.name}`,
+      kind: "jsdom-benchmark",
+      environment: record.metadata.benchmarkEnvironment,
+      task: task.name,
+      taskRecord: task,
+    }));
+}
+
+function collectMetricValues(metricValues, record, groupKey) {
+  if (groupKey?.kind !== "browser-benchmark" || record?.kind !== "browser-benchmark") {
     return;
   }
 
   for (const metric of numericBrowserMetrics) {
     const value = record.summary?.[metric];
+    if (!Number.isFinite(value)) {
+      continue;
+    }
+
+    const values = metricValues.get(metric) ?? [];
+    values.push(value);
+    metricValues.set(metric, values);
+  }
+}
+
+function collectJsdomTaskMetricValues(metricValues, task) {
+  if (task === undefined || typeof task !== "object" || task.metrics === undefined) {
+    return;
+  }
+
+  for (const [metric, value] of Object.entries(task.metrics)) {
     if (!Number.isFinite(value)) {
       continue;
     }
@@ -327,7 +379,9 @@ function printTextSummary(summary) {
   console.log(`benchmark history records: ${summary.recordCount}`);
 
   for (const group of summary.groups) {
-    const label = [group.kind, group.scenario ?? group.environment].filter(Boolean).join(" ");
+    const label = [group.kind, group.scenario ?? group.environment, group.task]
+      .filter(Boolean)
+      .join(" ");
     console.log(`${label}: ${group.recordCount} record(s)`);
 
     for (const [metric, value] of Object.entries(group.metrics)) {

@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
-import { appendFile, mkdir } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { appendFile, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { createBenchmarkMetadata } from "./benchmark-metadata.mjs";
@@ -34,22 +35,32 @@ async function main() {
   }
 
   const metadata = await createBenchmarkMetadata(plan.sampleSize);
+  const metricsPath =
+    plan.historyPath === undefined ? undefined : await createBenchmarkMetricsPath();
   console.log(`benchmark metadata: ${JSON.stringify(metadata)}`);
 
-  for (let index = 1; index <= plan.sampleSize; index += 1) {
-    console.log(`benchmark sample ${index}/${plan.sampleSize}`);
-    await runCommand(plan.command, plan.args);
-  }
+  try {
+    for (let index = 1; index <= plan.sampleSize; index += 1) {
+      console.log(`benchmark sample ${index}/${plan.sampleSize}`);
+      await runCommand(plan.command, plan.args, { metricsPath });
+    }
 
-  if (plan.historyPath !== undefined) {
-    await appendBenchmarkHistory(plan.historyPath, {
-      kind: "jsdom-benchmark",
-      status: "passed",
-      metadata,
-      sampleCount: plan.sampleSize,
-      command: plan.command,
-      args: plan.args,
-    });
+    if (plan.historyPath !== undefined) {
+      const tasks = metricsPath === undefined ? [] : await readBenchmarkMetrics(metricsPath);
+      await appendBenchmarkHistory(plan.historyPath, {
+        kind: "jsdom-benchmark",
+        status: "passed",
+        metadata,
+        sampleCount: plan.sampleSize,
+        command: plan.command,
+        args: plan.args,
+        ...(tasks.length === 0 ? {} : { summary: { tasks } }),
+      });
+    }
+  } finally {
+    if (metricsPath !== undefined) {
+      await rm(dirname(metricsPath), { recursive: true, force: true });
+    }
   }
 }
 
@@ -97,17 +108,45 @@ function parseHistoryPath(env) {
   return rawValue;
 }
 
+async function createBenchmarkMetricsPath() {
+  const directory = await mkdtemp(join(tmpdir(), "solace-benchmark-metrics-"));
+  return join(directory, "metrics.jsonl");
+}
+
+async function readBenchmarkMetrics(metricsPath) {
+  const content = await readFile(metricsPath, "utf8");
+  const records = [];
+
+  content.split(/\r?\n/).forEach((line, index) => {
+    if (line.trim() === "") {
+      return;
+    }
+
+    try {
+      records.push(JSON.parse(line));
+    } catch {
+      throw new Error(`Invalid benchmark metrics JSON at ${metricsPath}:${index + 1}`);
+    }
+  });
+
+  return records;
+}
+
 async function appendBenchmarkHistory(historyPath, record) {
   const resolvedHistoryPath = resolve(root, historyPath);
   await mkdir(dirname(resolvedHistoryPath), { recursive: true });
   await appendFile(resolvedHistoryPath, `${JSON.stringify(record)}\n`, "utf8");
 }
 
-function runCommand(command, args) {
+function runCommand(command, args, { metricsPath } = {}) {
   return new Promise((resolveRun, rejectRun) => {
     const child = spawn(command, args, {
       cwd: root,
       stdio: "inherit",
+      env: {
+        ...process.env,
+        ...(metricsPath === undefined ? {} : { SOLACE_BENCHMARK_METRICS_PATH: metricsPath }),
+      },
     });
 
     child.on("error", rejectRun);

@@ -109,6 +109,13 @@ describe("benchmark runner CLI", () => {
         sampleCount: number;
         command: string;
         args: string[];
+        summary?: {
+          tasks?: Array<{
+            name: string;
+            file: string;
+            metrics: Record<string, number>;
+          }>;
+        };
       };
 
       expect(record).toMatchObject({
@@ -120,6 +127,16 @@ describe("benchmark runner CLI", () => {
       });
       expect(record.metadata.benchmarkEnvironment).toBe("jsdom");
       expect(record.metadata.sampleSize).toBe(1);
+      expect(record.summary?.tasks?.length).toBeGreaterThan(0);
+      expect(record.summary?.tasks?.[0]).toMatchObject({
+        name: expect.any(String),
+        file: expect.stringMatching(/^tests\/performance\/.+\.bench\.ts$/),
+        metrics: {
+          latencyMeanMs: expect.any(Number),
+          latencyP99Ms: expect.any(Number),
+          throughputMeanOpsPerSec: expect.any(Number),
+        },
+      });
     } finally {
       await rm(tempDir, { recursive: true, force: true });
     }

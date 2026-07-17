@@ -44,12 +44,12 @@ The command reports the configured sample size in metadata, but it does not yet 
 
 Set `SOLACE_BENCHMARK_HISTORY_PATH=.benchmark-history/jsdom.jsonl pnpm benchmark` to append one
 JSONL record after a successful jsdom benchmark run. History recording is opt-in and records
-metadata plus run status; it does not yet parse Tinybench timings, compute medians, or persist
-browser benchmark results.
+metadata plus run status. Records created by the current benchmark runner also include
+task-level Tinybench metrics under `summary.tasks`.
 
-The local ignored jsdom history currently contains two records. The latest record was created with
-`SOLACE_BENCHMARK_SAMPLE_SIZE=3`; all five jsdom benchmark files passed in each sample. The history
-summary reports jsdom record counts only because Tinybench timing aggregation is not yet persisted.
+The local ignored jsdom history currently contains records with task-level Tinybench metrics when created by the current
+benchmark runner. `pnpm benchmark:history -- --json` summarizes those jsdom task metrics with count, median, p95, and
+variance while still accepting older metadata-only records.
 
 Result summary:
 
@@ -125,7 +125,7 @@ records persist the existing summary object; they do not add timing thresholds o
 Run `pnpm benchmark:history` to summarize local JSONL history from `.benchmark-history/jsdom.jsonl`
 and `.benchmark-history/browser.jsonl`. Use `pnpm benchmark:history -- --json <path>` for
 machine-readable output. The summary reports record counts plus median, p95, and variance for
-numeric browser timing metrics; it does not enforce thresholds.
+numeric browser timing metrics and jsdom task metrics; it does not enforce thresholds.
 
 Use `pnpm benchmark:history -- --min-browser-count 5` to require each browser benchmark scenario
 to have at least five local history records. This is an opt-in trend quality gate for local or CI
