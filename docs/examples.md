@@ -75,4 +75,4 @@ The Playwright config starts each example on a fixed localhost port:
 | Todo app      | `5175` |
 | Large list    | `5176` |
 
-`pnpm release:check` also runs these e2e tests after quality checks, including format check, coverage, package smoke, and benchmark smoke checks.
+`pnpm release:check` also runs these e2e tests after quality checks, coverage, package smoke, jsdom benchmark smoke, and the Chromium production browser benchmark.

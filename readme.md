@@ -438,10 +438,11 @@ pnpm tsc --init
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "benchmark": "vitest run --config vitest.benchmark.config.ts",
+    "benchmark": "node scripts/run-benchmark.mjs",
+    "benchmark:browser": "playwright test --config playwright.benchmark.config.ts",
     "package:smoke": "node scripts/package-consumer-smoke.mjs",
     "quality": "pnpm format:check && pnpm typecheck && pnpm typecheck:jsxdev && pnpm lint && pnpm test && pnpm test:package",
-    "release:check": "pnpm quality && pnpm test:coverage && pnpm package:smoke && pnpm benchmark && pnpm test:e2e"
+    "release:check": "pnpm quality && pnpm test:coverage && pnpm package:smoke && pnpm benchmark && pnpm benchmark:browser && pnpm test:e2e"
   }
 }
 ```
@@ -628,4 +629,4 @@ pnpm tsc --init
 
 - 持续记录 jsdom 与 Chromium 生产构建 benchmark 趋势；两个 benchmark 命令都支持 opt-in 本地 JSONL history，`pnpm benchmark:history` 可汇总 median、p95 和 variance，后续再评估阈值和发布性能结论。
 - 根据 [`docs/devtools.md`](./docs/devtools.md) 的边界继续扩展 DevTools summary payload；浏览器扩展或可视化面板应在更多真实示例验证后再实现。
-- 发布前运行 release readiness 检查，确认 npm 包名、访问权限、Changesets version 和 `private` 配置调整策略。
+- 发布前运行 release readiness 与 full release check，确认 npm 包名、访问权限、Changesets version、browser benchmark/e2e 结果和 `private` 配置调整策略。

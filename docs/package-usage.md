@@ -89,7 +89,7 @@ For the full local release gate, run:
 pnpm release:check
 ```
 
-That command runs quality checks including format check, coverage thresholds, package consumer smoke, benchmark smoke, and browser e2e tests.
+That command runs quality checks including format check, coverage thresholds, package consumer smoke, jsdom benchmark smoke, Chromium production browser benchmark, and browser e2e tests.
 
 See `docs/release.md` for versioning and publish steps.
 
