@@ -1,0 +1,42 @@
+# 2026-07-17-014：编写 keyed props compare fast path 实现计划
+
+## 基本信息
+
+- 日期：2026-07-17
+- 类型：implementation plan / renderer performance / project log
+- 状态：已完成
+- 关联提交：本条日志随计划文档提交一并提交
+
+## 变动摘要
+
+新增 keyed props compare fast path 实现计划，明确 TDD RED 测试、最小 renderer 改动、性能文档更新、项目日志、验证命令和提交边界。计划将后续实现日志编号预留为 `2026-07-17-015`。
+
+## 变动原因
+
+用户已确认 keyed props compare fast path 设计规格。进入实现前需要把 props comparison 优化拆成可执行步骤，确保实现只触碰 renderer 内部逻辑，不扩大 public API、package exports 或 DevTools payload。
+
+## 影响范围
+
+- 影响模块：renderer performance implementation plan、项目日志。
+- 行为变化：无运行时代码变化。
+- 风险等级：低；仅新增计划文档。
+
+## 涉及文件
+
+| 文件                                                                                     | 动作 | 说明                     |
+| ---------------------------------------------------------------------------------------- | ---- | ------------------------ |
+| `docs/superpowers/plans/2026-07-17-keyed-props-compare-fast-path.md`                     | 新增 | 记录实现计划             |
+| `solace-project-log/solace-entries/2026-07-17-014-keyed-props-compare-fast-path-plan.md` | 新增 | 记录本次计划文档变更     |
+| `solace-project-log/index.md`                                                            | 修改 | 追加 2026-07-17 日志索引 |
+
+## 验证记录
+
+| 验证项           | 命令或方式          | 结果                   |
+| ---------------- | ------------------- | ---------------------- |
+| 格式检查         | `pnpm format:check` | 通过                   |
+| Diff whitespace  | `git diff --check`  | 通过                   |
+| Private boundary | `package.json`      | 保持 `"private": true` |
+
+## 后续动作
+
+- 下一步按该计划执行实现；推荐使用 subagent-driven 或 inline executing-plans 执行任务。
