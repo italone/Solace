@@ -132,10 +132,11 @@ control but out of package artifacts, so consumers do not accidentally couple to
 10. **Internal recorder boundary**: `createDevtoolsRecorder()` captures serialized event snapshots for examples and experiments.
 11. **Example-oriented recorder smoke**: a todo-style interaction validates recorder capture after clearing initial mount noise.
 12. **Bounded recorder captures**: `createDevtoolsRecorder({ limit })` keeps recorder memory bounded for examples and experiments.
-13. **Public package boundary guard**: package exports tests verify DevTools internals are not available from the package root.
-14. **Public DevTools subpath**: `solace/devtools` exposes listener and recorder APIs without internal emit helpers.
-15. **Production artifact boundary**: package builds do not publish JavaScript sourcemaps that expose internal wiring.
-16. **Inspector UI or browser extension**: build only after event payloads prove stable in examples.
+13. **Large-list recorder smoke**: a 10,000-row keyed update validates public recorder snapshots remain serialized summaries without DOM, VNode, raw state, or row data.
+14. **Public package boundary guard**: package exports tests verify DevTools internals are not available from the package root.
+15. **Public DevTools subpath**: `solace/devtools` exposes listener and recorder APIs without internal emit helpers.
+16. **Production artifact boundary**: package builds do not publish JavaScript sourcemaps that expose internal wiring.
+17. **Inspector UI or browser extension**: build only after event payloads prove stable in examples.
 
 ## Recommendation
 
