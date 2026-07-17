@@ -30,6 +30,7 @@ describe("benchmark history summary CLI", () => {
     expect(stdout).toContain("Usage: pnpm benchmark:history -- [options] [history-path...]");
     expect(stdout).toContain("--json");
     expect(stdout).toContain("--min-browser-count <count>");
+    expect(stdout).toContain("--latest-browser-count <count>");
   });
 
   test("summarizes browser timing metrics and jsdom record counts", async () => {
@@ -132,6 +133,54 @@ describe("benchmark history summary CLI", () => {
     });
   });
 
+  test("summarizes only the latest browser records when configured", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "solace-history-summary-latest-"));
+    const historyPath = join(tempDir, "history.jsonl");
+    await writeFile(
+      historyPath,
+      [
+        JSON.stringify(createBrowserRecord({ initialRenderMs: 100, updateMs: 20, unmountMs: 8 })),
+        JSON.stringify(createBrowserRecord({ initialRenderMs: 10, updateMs: 4, unmountMs: 1 })),
+        JSON.stringify(createBrowserRecord({ initialRenderMs: 12, updateMs: 6, unmountMs: 3 })),
+        JSON.stringify(createJsdomRecord()),
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const { stdout } = await execFileAsync("node", [
+      "scripts/summarize-benchmark-history.mjs",
+      "--json",
+      "--latest-browser-count",
+      "2",
+      historyPath,
+    ]);
+    const summary = JSON.parse(stdout) as BenchmarkHistorySummary;
+    const browserGroup = summary.groups.find((group) => group.kind === "browser-benchmark");
+    const jsdomGroup = summary.groups.find((group) => group.kind === "jsdom-benchmark");
+
+    expect(summary.recordCount).toBe(3);
+    expect(browserGroup).toMatchObject({
+      scenario: "large-list",
+      recordCount: 2,
+    });
+    expect(browserGroup?.metrics.initialRenderMs).toEqual({
+      count: 2,
+      median: 11,
+      p95: 12,
+      variance: 1,
+    });
+    expect(browserGroup?.metrics.updateMs).toMatchObject({
+      count: 2,
+      median: 5,
+      p95: 6,
+    });
+    expect(jsdomGroup).toMatchObject({
+      environment: "jsdom",
+      recordCount: 1,
+    });
+  });
+
   test("fails when browser benchmark groups are below the configured minimum record count", async () => {
     const tempDir = await mkdtemp(join(tmpdir(), "solace-history-summary-low-"));
     const historyPath = join(tempDir, "history.jsonl");
@@ -165,6 +214,18 @@ describe("benchmark history summary CLI", () => {
       ]),
     ).rejects.toMatchObject({
       stderr: expect.stringContaining("--min-browser-count must be a positive integer"),
+    });
+  });
+
+  test("rejects invalid latest browser record counts", async () => {
+    await expect(
+      execFileAsync("node", [
+        "scripts/summarize-benchmark-history.mjs",
+        "--latest-browser-count",
+        "0",
+      ]),
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("--latest-browser-count must be a positive integer"),
     });
   });
 });

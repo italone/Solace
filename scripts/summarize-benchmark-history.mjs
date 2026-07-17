@@ -6,12 +6,14 @@ const isCli = process.argv[1] === new URL(import.meta.url).pathname;
 
 if (isCli) {
   try {
-    const { help, json, minBrowserCount, paths } = parseArgs(process.argv.slice(2));
+    const { help, json, latestBrowserCount, minBrowserCount, paths } = parseArgs(
+      process.argv.slice(2),
+    );
     if (help) {
       printHelp();
       process.exitCode = 0;
     } else {
-      const summary = await summarizeBenchmarkHistory(paths);
+      const summary = await summarizeBenchmarkHistory(paths, { latestBrowserCount });
 
       validateSummary(summary, { minBrowserCount });
 
@@ -30,6 +32,7 @@ if (isCli) {
 export function parseArgs(args) {
   let help = false;
   let json = false;
+  let latestBrowserCount;
   let minBrowserCount;
   const paths = [];
 
@@ -64,12 +67,27 @@ export function parseArgs(args) {
       continue;
     }
 
+    if (arg === "--latest-browser-count") {
+      latestBrowserCount = parsePositiveInteger(args[index + 1], "--latest-browser-count");
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith("--latest-browser-count=")) {
+      latestBrowserCount = parsePositiveInteger(
+        arg.slice("--latest-browser-count=".length),
+        "--latest-browser-count",
+      );
+      continue;
+    }
+
     paths.push(arg);
   }
 
   return {
     help,
     json,
+    latestBrowserCount,
     minBrowserCount,
     paths: paths.length === 0 ? defaultHistoryPaths : paths,
   };
@@ -81,6 +99,7 @@ function printHelp() {
 Options:
   --json                         Print the summary as JSON.
   --min-browser-count <count>    Require each browser benchmark scenario to have at least count records.
+  --latest-browser-count <count> Summarize only the latest count browser records per scenario.
   -h, --help                     Show this help message.
 `);
 }
@@ -94,12 +113,13 @@ function parsePositiveInteger(rawValue, optionName) {
   return value;
 }
 
-export async function summarizeBenchmarkHistory(paths) {
+export async function summarizeBenchmarkHistory(paths, { latestBrowserCount } = {}) {
   const records = await readHistoryRecords(paths);
-  const groups = createSummaryGroups(records);
+  const summarizedRecords = filterLatestBrowserRecords(records, latestBrowserCount);
+  const groups = createSummaryGroups(summarizedRecords);
 
   return {
-    recordCount: records.length,
+    recordCount: summarizedRecords.length,
     groups,
   };
 }
@@ -122,6 +142,34 @@ export function validateSummary(summary, { minBrowserCount } = {}) {
       );
     }
   }
+}
+
+function filterLatestBrowserRecords(records, latestBrowserCount) {
+  if (latestBrowserCount === undefined) {
+    return records;
+  }
+
+  const browserRecordIndexes = new Map();
+  records.forEach((record, index) => {
+    const groupKey = getGroupKey(record);
+    if (groupKey?.kind !== "browser-benchmark") {
+      return;
+    }
+
+    const indexes = browserRecordIndexes.get(groupKey.key) ?? [];
+    indexes.push(index);
+    browserRecordIndexes.set(groupKey.key, indexes);
+  });
+
+  const keptBrowserIndexes = new Set();
+  for (const indexes of browserRecordIndexes.values()) {
+    indexes.slice(-latestBrowserCount).forEach((index) => keptBrowserIndexes.add(index));
+  }
+
+  return records.filter((record, index) => {
+    const groupKey = getGroupKey(record);
+    return groupKey?.kind !== "browser-benchmark" || keptBrowserIndexes.has(index);
+  });
 }
 
 async function readHistoryRecords(paths) {

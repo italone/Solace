@@ -135,6 +135,7 @@
 | ---- | --------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | 001  | 批量移除 mixed keyed 旧节点连续段 | renderer keyed children、list diff benchmark、单元测试、性能文档、项目日志 | `src/renderer/diff.ts`, `tests/unit/renderer/diff.test.ts`, `tests/performance/list-diff.bench.ts`, `docs/performance.md`, `.changeset/performance-trend-readiness.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-17-001-keyed-mixed-remove-run-batch.md)    |
 | 002  | 刷新 browser benchmark 趋势样本   | browser benchmark、本地 history、性能文档、项目日志                        | `docs/performance.md`, `solace-project-log/**`                                                                                                                                                  | [查看](./solace-entries/2026-07-17-002-browser-benchmark-trend-refresh.md) |
+| 003  | 增加 browser history 最新窗口汇总 | benchmark history CLI、单元测试、性能文档、项目日志                        | `scripts/summarize-benchmark-history.mjs`, `tests/unit/scripts/benchmark-history-summary.test.ts`, `docs/performance.md`, `.changeset/performance-trend-readiness.md`, `solace-project-log/**`  | [查看](./solace-entries/2026-07-17-003-browser-history-latest-window.md)   |
 
 ## 维护说明
 

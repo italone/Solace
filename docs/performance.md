@@ -125,6 +125,9 @@ numeric browser timing metrics; it does not enforce thresholds.
 Use `pnpm benchmark:history -- --min-browser-count 5` to require each browser benchmark scenario
 to have at least five local history records. This is an opt-in trend quality gate for local or CI
 checks; it is not a timing threshold and does not compare measured performance against a target.
+Use `pnpm benchmark:history -- --latest-browser-count 5` to summarize only the latest five browser
+records per scenario while leaving jsdom record counts in the summary. This is useful when older
+slow samples dominate full-history p95 and the next runtime hotspot needs a fresher trend window.
 Run `pnpm benchmark:history -- --help` to list the supported summary options.
 
 ### Latest Local Browser History Summary
@@ -146,6 +149,21 @@ treated as trend context only, not a release threshold.
 | `initialRenderMs` | 12    | 11.0   | 28.7 | 37.99    |
 | `updateMs`        | 12    | 4.55   | 15.9 | 11.69    |
 | `unmountMs`       | 12    | 1.25   | 3.5  | 0.4      |
+
+Latest-window command:
+
+```bash
+pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
+```
+
+The latest five Chromium `large-list` records show lower p95 and variance than the full 12-record
+history, which indicates older slow samples still dominate the full-history p95.
+
+| Metric            | Count | Median | p95  | Variance |
+| ----------------- | ----- | ------ | ---- | -------- |
+| `initialRenderMs` | 5     | 6.8    | 13.8 | 7.59     |
+| `updateMs`        | 5     | 3.3    | 5.5  | 0.88     |
+| `unmountMs`       | 5     | 1.2    | 1.3  | 0.01     |
 
 ## Benchmark Principles
 
