@@ -40,6 +40,7 @@ export interface ComponentInstance {
   devtoolsId: number;
   isMounted: boolean;
   isUnmounted: boolean;
+  isUpdateQueued: boolean;
   render: ComponentRender;
   effect: ReactiveEffect<void> | null;
   update: (() => void) | null;
@@ -69,6 +70,7 @@ export function createComponentInstance(
     devtoolsId: nextComponentDevtoolsId,
     isMounted: false,
     isUnmounted: false,
+    isUpdateQueued: false,
     render: () => {
       throw new Error("Component render function called before setup");
     },

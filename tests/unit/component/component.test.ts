@@ -13,9 +13,11 @@ import {
   render,
 } from "../../../src/index";
 import type { ComponentSetupContext } from "../../../src/index";
+import * as scheduler from "../../../src/scheduler/scheduler";
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.restoreAllMocks();
 });
 
 async function flushPromises(cycles: number): Promise<void> {
@@ -77,6 +79,42 @@ describe("component renderer", () => {
     expect(container.querySelector("p")?.textContent).toBe("parent: 1");
     expect(container.querySelector("[data-child='stable']")?.textContent).toBe("stable");
     expect(childRender).toHaveBeenCalledTimes(1);
+  });
+
+  it("queues each pending component update only once per tick", async () => {
+    const state = reactive({ count: 0 });
+    const queueJob = vi.spyOn(scheduler, "queueJob");
+    const container = document.createElement("div");
+    const childCount = 20;
+    const Child = (props: { index: number }) => () =>
+      h("span", { "data-index": props.index }, `item ${props.index}: ${state.count}`);
+    const Parent = () => () =>
+      h(
+        "div",
+        null,
+        Array.from({ length: childCount }, (_, index) => h(Child, { key: index, index })),
+      );
+
+    render(h(Parent), container);
+    queueJob.mockClear();
+
+    state.count = 1;
+    state.count = 2;
+    state.count = 3;
+
+    expect(queueJob).toHaveBeenCalledTimes(childCount);
+
+    await nextTick();
+
+    expect(container.querySelector('[data-index="0"]')?.textContent).toBe("item 0: 3");
+    expect(container.querySelector(`[data-index="${childCount - 1}"]`)?.textContent).toBe(
+      `item ${childCount - 1}: 3`,
+    );
+
+    state.count = 4;
+    await nextTick();
+
+    expect(queueJob).toHaveBeenCalledTimes(childCount * 2);
   });
 
   it("schedules rerender when reactive state is read inside a component render", async () => {

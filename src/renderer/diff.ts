@@ -136,35 +136,42 @@ function mountComponent(
   setupComponent(instance);
 
   const componentUpdate = (): void => {
-    if (instance.isUnmounted) {
-      return;
+    try {
+      if (instance.isUnmounted) {
+        return;
+      }
+
+      if (!instance.isMounted) {
+        const subTree = instance.render();
+        instance.subTree = subTree;
+        patch(null, subTree, container, anchor, instance, instance.appProvides);
+        vnode.el = subTree.el;
+        instance.isMounted = true;
+        callHooks(instance.mounted);
+        emitComponentDevtoolsEvent("component:mount", instance);
+        return;
+      }
+
+      const nextTree = instance.render();
+      const previousTree = instance.subTree;
+
+      patch(previousTree, nextTree, container, anchor, instance, instance.appProvides);
+
+      instance.subTree = nextTree;
+      instance.vnode.el = nextTree.el;
+      callHooks(instance.updated);
+      emitComponentDevtoolsEvent("component:update", instance);
+    } finally {
+      instance.isUpdateQueued = false;
     }
-
-    if (!instance.isMounted) {
-      const subTree = instance.render();
-      instance.subTree = subTree;
-      patch(null, subTree, container, anchor, instance, instance.appProvides);
-      vnode.el = subTree.el;
-      instance.isMounted = true;
-      callHooks(instance.mounted);
-      emitComponentDevtoolsEvent("component:mount", instance);
-      return;
-    }
-
-    const nextTree = instance.render();
-    const previousTree = instance.subTree;
-
-    patch(previousTree, nextTree, container, anchor, instance, instance.appProvides);
-
-    instance.subTree = nextTree;
-    instance.vnode.el = nextTree.el;
-    callHooks(instance.updated);
-    emitComponentDevtoolsEvent("component:update", instance);
   };
   const reactiveEffect = new ReactiveEffect(componentUpdate, () => {
-    if (instance.update !== null) {
-      queueJob(instance.update);
+    if (instance.update === null || instance.isUpdateQueued) {
+      return;
     }
+
+    instance.isUpdateQueued = true;
+    queueJob(instance.update);
   });
 
   instance.effect = reactiveEffect;

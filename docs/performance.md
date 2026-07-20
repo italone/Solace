@@ -76,8 +76,9 @@ Conclusion:
   a temporary `DocumentFragment`, including adjacent old keyed runs removed during mixed placement. Keyed
   mixed insert/move patches now mount new children directly at their final anchor instead of appending and
   moving them. Contiguous all-element keyed insert segments also batch through a `DocumentFragment` before
-  one parent insert, including adjacent new runs discovered during mixed keyed placement. Next optimization
-  work should focus on additional browser trend samples.
+  one parent insert, including adjacent new runs discovered during mixed keyed placement. The component update path
+  also avoids repeated enqueue attempts while a component update is already pending. Next optimization work should focus
+  on additional browser trend samples.
 
 ## Browser Production Benchmark
 
