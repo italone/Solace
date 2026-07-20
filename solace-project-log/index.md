@@ -156,9 +156,10 @@
 
 ## 2026-07-20
 
-| 编号 | 变动                            | 影响范围                                            | 涉及文件                                       | 日志                                                                       |
-| ---- | ------------------------------- | --------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------- |
-| 001  | 刷新 browser benchmark 趋势样本 | browser benchmark、本地 history、性能文档、项目日志 | `docs/performance.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-20-001-browser-benchmark-trend-refresh.md) |
+| 编号 | 变动                                | 影响范围                                            | 涉及文件                                                                                              | 日志                                                                             |
+| ---- | ----------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| 001  | 刷新 browser benchmark 趋势样本     | browser benchmark、本地 history、性能文档、项目日志 | `docs/performance.md`, `solace-project-log/**`                                                        | [查看](./solace-entries/2026-07-20-001-browser-benchmark-trend-refresh.md)       |
+| 002  | 设计 component update pending guard | performance 设计、component scheduler、项目日志     | `docs/superpowers/specs/2026-07-20-component-update-pending-guard-design.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-20-002-component-update-pending-guard-design.md) |
 
 ## 维护说明
 
