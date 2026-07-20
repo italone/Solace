@@ -18,7 +18,7 @@ The large-list e2e test confirms that 10,000 rows can render and one selected ro
 
 ## Latest Local Benchmark Run
 
-Date: 2026-07-17
+Date: 2026-07-20
 
 Environment:
 
@@ -77,8 +77,9 @@ Conclusion:
   mixed insert/move patches now mount new children directly at their final anchor instead of appending and
   moving them. Contiguous all-element keyed insert segments also batch through a `DocumentFragment` before
   one parent insert, including adjacent new runs discovered during mixed keyed placement. The component update path
-  also avoids repeated enqueue attempts while a component update is already pending. Next optimization work should focus
-  on additional browser trend samples.
+  also avoids repeated enqueue attempts while a component update is already pending. The component initial mount path
+  also batches child inserts through a `DocumentFragment`. Next optimization work should focus on additional browser
+  trend samples.
 
 ## Browser Production Benchmark
 

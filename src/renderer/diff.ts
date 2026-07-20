@@ -90,9 +90,7 @@ function mountFragment(
 }
 
 function canBatchMountFragment(children: VNode[]): boolean {
-  return (
-    children.length > 0 && children.every((child) => Boolean(child.shapeFlag & ShapeFlags.ELEMENT))
-  );
+  return children.length > 0;
 }
 
 function mountElement(
@@ -629,17 +627,7 @@ function mountNewChildren(
 }
 
 function canBatchMountChildren(children: VNode[], start: number, end: number): boolean {
-  if (start > end) {
-    return false;
-  }
-
-  for (let index = start; index <= end; index += 1) {
-    if (!(children[index].shapeFlag & ShapeFlags.ELEMENT)) {
-      return false;
-    }
-  }
-
-  return true;
+  return start <= end;
 }
 
 function unmountChildrenRange(children: VNode[], start: number, end: number): void {

@@ -162,6 +162,29 @@ describe("component renderer", () => {
     expect(calls).toBe(1);
   });
 
+  it("batches initial mount of component children into one parent insert", () => {
+    const container = document.createElement("div");
+    const insertBefore = vi.spyOn(Element.prototype, "insertBefore");
+    const childCount = 20;
+    const Child = (props: { index: number }) => () =>
+      h("span", { "data-index": props.index }, `item ${props.index}`);
+    const Parent = () => () =>
+      h(
+        "div",
+        null,
+        Array.from({ length: childCount }, (_, index) => h(Child, { key: index, index })),
+      );
+
+    render(h(Parent), container);
+
+    expect(insertBefore).toHaveBeenCalledTimes(2);
+    expect(container.querySelectorAll("span")).toHaveLength(childCount);
+    expect(container.querySelector('[data-index="0"]')?.textContent).toBe("item 0");
+    expect(container.querySelector(`[data-index="${childCount - 1}"]`)?.textContent).toBe(
+      `item ${childCount - 1}`,
+    );
+  });
+
   it("stops component reactive updates after unmount", async () => {
     const state = reactive({ active: true });
     const container = document.createElement("div");
