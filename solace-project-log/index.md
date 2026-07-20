@@ -163,6 +163,7 @@
 | 003  | 实现 component update pending guard | performance 实现、component scheduler、项目日志     | `src/component/component.ts`, `src/renderer/diff.ts`, `tests/unit/component/component.test.ts`, `docs/performance.md`, `docs/superpowers/plans/2026-07-20-component-update-pending-guard.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-20-003-component-update-pending-guard.md)        |
 | 004  | 刷新 browser benchmark 趋势样本     | browser benchmark、本地 history、性能文档、项目日志 | `docs/performance.md`, `solace-project-log/**`                                                                                                                                                                        | [查看](./solace-entries/2026-07-20-004-browser-benchmark-trend-refresh.md)       |
 | 005  | 实现 component child batch mount    | performance 实现、component renderer、项目日志      | `src/renderer/diff.ts`, `tests/unit/component/component.test.ts`, `docs/performance.md`, `solace-project-log/**`                                                                                                      | [查看](./solace-entries/2026-07-20-005-component-child-batch-mount.md)           |
+| 006  | 刷新 browser benchmark 趋势样本     | browser benchmark、本地 history、性能文档、项目日志 | `docs/performance.md`, `solace-project-log/**`                                                                                                                                                                        | [查看](./solace-entries/2026-07-20-006-browser-benchmark-trend-refresh.md)       |
 
 ## 维护说明
 
