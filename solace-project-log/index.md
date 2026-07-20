@@ -154,6 +154,12 @@
 | 019  | 编写 jsdom benchmark metrics history 实现计划    | implementation plan、benchmark tooling、项目日志                           | `docs/superpowers/plans/2026-07-17-jsdom-benchmark-metrics-history.md`, `docs/superpowers/specs/2026-07-17-jsdom-benchmark-metrics-history-design.md`, `solace-project-log/**`                  | [查看](./solace-entries/2026-07-17-019-jsdom-benchmark-metrics-history-plan.md)      |
 | 020  | 持久化 jsdom benchmark task metrics              | benchmark tooling、script tests、performance docs、项目日志                | `scripts/**`, `tests/performance/**`, `tests/unit/scripts/**`, `docs/performance.md`, `solace-project-log/**`                                                                                   | [查看](./solace-entries/2026-07-17-020-jsdom-benchmark-metrics-history.md)           |
 
+## 2026-07-20
+
+| 编号 | 变动                            | 影响范围                                            | 涉及文件                                       | 日志                                                                       |
+| ---- | ------------------------------- | --------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------- |
+| 001  | 刷新 browser benchmark 趋势样本 | browser benchmark、本地 history、性能文档、项目日志 | `docs/performance.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-20-001-browser-benchmark-trend-refresh.md) |
+
 ## 维护说明
 
 后续每次变更完成后，应执行以下动作：
