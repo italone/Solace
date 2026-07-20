@@ -178,6 +178,47 @@ describe("renderer diff", () => {
     expect(listInsertCalls).toHaveLength(1);
   });
 
+  it("avoids Object.entries props scans for plain initial element mounts", () => {
+    const container = document.createElement("div");
+    const objectEntries = vi.spyOn(Object, "entries");
+
+    render(h("div", { id: "row", "data-row": 1, class: "selected" }, "Row 1"), container);
+
+    const row = container.querySelector('[data-row="1"]') as HTMLDivElement;
+
+    expect(row.id).toBe("row");
+    expect(row.className).toBe("selected");
+    expect(row.textContent).toBe("Row 1");
+    expect(objectEntries).not.toHaveBeenCalled();
+  });
+
+  it("skips redundant removals for empty initial element props", () => {
+    const container = document.createElement("div");
+    const removeAttribute = vi.spyOn(Element.prototype, "removeAttribute");
+
+    render(
+      h(
+        "button",
+        {
+          key: "save",
+          disabled: false,
+          "data-empty": undefined,
+          title: null,
+        },
+        "Save",
+      ),
+      container,
+    );
+
+    const button = container.querySelector("button") as HTMLButtonElement;
+
+    expect(button.hasAttribute("disabled")).toBe(false);
+    expect(button.hasAttribute("data-empty")).toBe(false);
+    expect(button.hasAttribute("title")).toBe(false);
+    expect(button.textContent).toBe("Save");
+    expect(removeAttribute).not.toHaveBeenCalled();
+  });
+
   it("moves keyed children while reusing existing DOM nodes", () => {
     const container = document.createElement("div");
 

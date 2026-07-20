@@ -104,11 +104,7 @@ function mountElement(
   vnode.el = el;
 
   if (vnode.props) {
-    for (const [key, value] of Object.entries(vnode.props)) {
-      if (key !== "key") {
-        patchProp(el, key, null, value);
-      }
-    }
+    mountInitialProps(el, vnode.props);
   }
 
   if (vnode.shapeFlag & ShapeFlags.TEXT_CHILDREN) {
@@ -273,6 +269,30 @@ function hasPatchableProps(props: VNodeProps | null): boolean {
 
 function hasOwnProp(props: VNodeProps, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(props, key);
+}
+
+function mountInitialProps(el: Element, props: VNodeProps): void {
+  for (const key in props) {
+    if (!hasOwnProp(props, key) || key === "key") {
+      continue;
+    }
+
+    const value = props[key];
+    if (value === null || value === undefined || value === false) {
+      continue;
+    }
+
+    if (mightBeEventProp(key)) {
+      patchProp(el, key, null, value);
+      continue;
+    }
+
+    el.setAttribute(key, String(value));
+  }
+}
+
+function mightBeEventProp(key: string): boolean {
+  return key.length > 2 && key[0] === "o" && key[1] === "n" && isEventProp(key);
 }
 
 function patchElement(
