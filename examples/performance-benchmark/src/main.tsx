@@ -1,4 +1,4 @@
-import { h, nextTick, reactive, render } from "solace";
+import { h, nextTick, reactive, render } from "@italone/solace";
 
 type BrowserBenchmarkResult = {
   scenario: "large-list";

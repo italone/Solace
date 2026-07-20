@@ -5,7 +5,7 @@
 The package is publishable, so registry install is valid after release:
 
 ```bash
-pnpm add solace
+pnpm add @italone/solace
 ```
 
 Before that release decision, run `pnpm release:readiness` to check local release metadata and validate package consumption with the packed-consumer smoke test described below.
@@ -13,7 +13,7 @@ Before that release decision, run `pnpm release:readiness` to check local releas
 ## Import Runtime APIs
 
 ```ts
-import { createApp, h, reactive } from "solace";
+import { createApp, h, reactive } from "@italone/solace";
 
 const state = reactive({ count: 0 });
 
@@ -39,7 +39,7 @@ Configure TypeScript with the Solace JSX runtime:
 {
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "solace"
+    "jsxImportSource": "@italone/solace"
   }
 }
 ```
@@ -47,7 +47,7 @@ Configure TypeScript with the Solace JSX runtime:
 Then write components with JSX:
 
 ```tsx
-import { createApp, reactive } from "solace";
+import { createApp, reactive } from "@italone/solace";
 
 const state = reactive({ count: 0 });
 
@@ -66,10 +66,10 @@ createApp(App).mount(document.querySelector("#app") as Element);
 
 ## Public Entry Points
 
-- `solace`: core runtime APIs.
-- `solace/jsx-runtime`: TypeScript automatic JSX runtime.
-- `solace/jsx-dev-runtime`: development JSX runtime used by Vite.
-- `solace/devtools`: low-level DevTools listener and recorder APIs.
+- `@italone/solace`: core runtime APIs.
+- `@italone/solace/jsx-runtime`: TypeScript automatic JSX runtime.
+- `@italone/solace/jsx-dev-runtime`: development JSX runtime used by Vite.
+- `@italone/solace/devtools`: low-level DevTools listener and recorder APIs.
 
 Do not import from `src/**`, `dist/**`, or internal runtime modules directly. Those paths are implementation details and are not part of the package compatibility contract.
 

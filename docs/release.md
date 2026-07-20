@@ -50,7 +50,7 @@ pnpm release:version
 
 Before publishing, explicitly confirm:
 
-- the npm package name `solace` is available or controlled by the maintainer,
+- the npm package name `@italone/solace` is available or controlled by the maintainer,
 - npm authentication and organization access are configured,
 - public access is intended,
 - `pnpm release:readiness -- --publishable` passes,

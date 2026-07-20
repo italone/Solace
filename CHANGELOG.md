@@ -1,4 +1,4 @@
-# solace
+# @italone/solace
 
 ## 0.0.1
 

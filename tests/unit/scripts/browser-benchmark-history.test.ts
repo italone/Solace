@@ -20,7 +20,7 @@ const summary: BrowserBenchmarkHistorySummary = {
   selectedText: "Row 5000 selected",
   remainingNodesAfterUnmount: 0,
   metadata: {
-    packageName: "solace",
+    packageName: "@italone/solace",
     packageVersion: "0.0.0",
     node: process.version,
     platform: "darwin",

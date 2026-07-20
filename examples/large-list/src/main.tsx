@@ -1,4 +1,4 @@
-import { reactive, render } from "solace";
+import { reactive, render } from "@italone/solace";
 
 const rows = Array.from({ length: 10_000 }, (_, index) => index + 1);
 const state = reactive({

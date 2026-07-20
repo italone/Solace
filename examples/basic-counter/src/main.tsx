@@ -1,4 +1,4 @@
-import { reactive, render } from "solace";
+import { reactive, render } from "@italone/solace";
 
 const state = reactive({ count: 0 });
 

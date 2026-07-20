@@ -11,13 +11,13 @@
     "outDir": "dist",
     "skipLibCheck": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "solace",
+    "jsxImportSource": "@italone/solace",
     "baseUrl": ".",
     "paths": {
-      "solace": ["src/index.ts"],
-      "solace/jsx-runtime": ["src/jsx-runtime.ts"],
-      "solace/jsx-dev-runtime": ["src/jsx-dev-runtime.ts"],
-      "solace/devtools": ["src/devtools/index.ts"]
+      "@italone/solace": ["src/index.ts"],
+      "@italone/solace/jsx-runtime": ["src/jsx-runtime.ts"],
+      "@italone/solace/jsx-dev-runtime": ["src/jsx-dev-runtime.ts"],
+      "@italone/solace/devtools": ["src/devtools/index.ts"]
     }
   },
   "include": ["src", "tests", "examples", "*.ts"]

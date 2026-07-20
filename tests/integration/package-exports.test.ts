@@ -27,7 +27,7 @@ describe("package exports", () => {
   });
 
   it("exports the public root API", async () => {
-    const api = await import("solace");
+    const api = await import("@italone/solace");
 
     expect(api).toMatchObject({
       createApp: expect.any(Function),
@@ -53,7 +53,7 @@ describe("package exports", () => {
   });
 
   it("does not expose internal runtime helpers from the package root", async () => {
-    const api = await import("solace");
+    const api = await import("@italone/solace");
 
     expect(api).not.toHaveProperty("clearDevtoolsListeners");
     expect(api).not.toHaveProperty("createComponentInstance");
@@ -68,7 +68,7 @@ describe("package exports", () => {
   });
 
   it("exports the public DevTools subpath without internal emit helpers", async () => {
-    const devtools = await import("solace/devtools");
+    const devtools = await import("@italone/solace/devtools");
 
     expect(devtools).toMatchObject({
       createDevtoolsRecorder: expect.any(Function),
@@ -82,8 +82,8 @@ describe("package exports", () => {
   });
 
   it("exports JSX runtime entry points", async () => {
-    const runtime = await import("solace/jsx-runtime");
-    const devRuntime = await import("solace/jsx-dev-runtime");
+    const runtime = await import("@italone/solace/jsx-runtime");
+    const devRuntime = await import("@italone/solace/jsx-dev-runtime");
 
     expect(runtime).toMatchObject({
       Fragment: expect.any(Symbol),
@@ -99,10 +99,10 @@ describe("package exports", () => {
   });
 
   it("supports CommonJS package exports", () => {
-    const api = require("solace") as Record<string, unknown>;
-    const runtime = require("solace/jsx-runtime") as Record<string, unknown>;
-    const devRuntime = require("solace/jsx-dev-runtime") as Record<string, unknown>;
-    const devtools = require("solace/devtools") as Record<string, unknown>;
+    const api = require("@italone/solace") as Record<string, unknown>;
+    const runtime = require("@italone/solace/jsx-runtime") as Record<string, unknown>;
+    const devRuntime = require("@italone/solace/jsx-dev-runtime") as Record<string, unknown>;
+    const devtools = require("@italone/solace/devtools") as Record<string, unknown>;
 
     expect(api.createApp).toEqual(expect.any(Function));
     expect(api.defineAsyncComponent).toEqual(expect.any(Function));
@@ -123,7 +123,7 @@ describe("package exports", () => {
   });
 
   it("mounts a component with createApp", async () => {
-    const { createApp, h } = await import("solace");
+    const { createApp, h } = await import("@italone/solace");
     const container = document.createElement("div");
     const App = () => h("p", null, "mounted");
 

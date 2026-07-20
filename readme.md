@@ -29,7 +29,7 @@ pnpm exec vite examples/large-list --host 127.0.0.1 --port 5176
 最小用法：
 
 ```ts
-import { createApp, h, reactive } from "solace";
+import { createApp, h, reactive } from "@italone/solace";
 
 const state = reactive({ count: 0 });
 
@@ -55,7 +55,7 @@ createApp(App).mount(document.querySelector("#app") as Element);
 - 事件：`onXxx` 事件绑定、handler 更新、invoker 缓存和卸载清理。
 - 状态管理：`createStore`，支持 state、computed getters、显式 context actions。
 - 插件：`app.use(plugin, ...options)` 和 `app.provide(key, value)`，支持函数插件、对象插件和 app-level 注入值。
-- JSX：`solace/jsx-runtime`、`solace/jsx-dev-runtime`。
+- JSX：`@italone/solace/jsx-runtime`、`@italone/solace/jsx-dev-runtime`。
 - 包构建：ESM、CJS、类型声明和 package exports。
 - 示例：basic counter、todo app、large list。
 - 发布门禁：`pnpm release:check`、format check、coverage thresholds、package consumer smoke、jsdom benchmark smoke、Chromium production browser benchmark、browser e2e、Changesets versioning。
@@ -295,7 +295,7 @@ interface VNode {
 函数式组件示例：
 
 ```ts
-import { h, reactive } from "solace";
+import { h, reactive } from "@italone/solace";
 
 export function Counter() {
   const state = reactive({ count: 0 });
@@ -389,10 +389,10 @@ import {
   render,
   watch,
   watchEffect,
-} from "solace";
+} from "@italone/solace";
 ```
 
-当前 README 中列出的候选 API 已完成首轮 root export 收口；DevTools 通过 `solace/devtools`
+当前 README 中列出的候选 API 已完成首轮 root export 收口；DevTools 通过 `@italone/solace/devtools`
 子路径提供低层集成入口。
 
 ## 8. 项目初始化步骤

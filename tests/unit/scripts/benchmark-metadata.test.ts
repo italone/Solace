@@ -27,7 +27,7 @@ describe("benchmark metadata CLI", () => {
     const { stdout } = await execFileAsync("node", ["scripts/benchmark-metadata.mjs", "--json"]);
     const metadata = JSON.parse(stdout) as BenchmarkMetadata;
 
-    expect(metadata.packageName).toBe("solace");
+    expect(metadata.packageName).toBe("@italone/solace");
     expect(metadata.packageVersion).toMatch(/^\d+\.\d+\.\d+/);
     expect(metadata.node).toBe(process.version);
     expect(metadata.platform.length).toBeGreaterThan(0);

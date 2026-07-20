@@ -1,4 +1,4 @@
-import { reactive, render } from "solace";
+import { reactive, render } from "@italone/solace";
 
 interface TodoItem {
   id: number;

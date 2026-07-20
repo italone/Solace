@@ -29,7 +29,7 @@ try {
         private: true,
         type: "module",
         dependencies: {
-          solace: `file:${tarball}`,
+          "@italone/solace": `file:${tarball}`,
         },
       },
       null,
@@ -46,7 +46,7 @@ try {
           module: "ESNext",
           moduleResolution: "Bundler",
           jsx: "react-jsx",
-          jsxImportSource: "solace",
+          jsxImportSource: "@italone/solace",
           lib: ["ES2020", "DOM"],
           skipLibCheck: true,
         },
@@ -58,10 +58,10 @@ try {
   );
   await writeFile(
     join(consumerDir, "src", "main.tsx"),
-    `import { createApp, createStore, defineAsyncComponent, defineComponent, h, inject, reactive, watchEffect } from "solace";
-import type { AsyncComponentOptions, ComponentSetupContext, Plugin, StoreContext, StoreGetterContext } from "solace";
-import { createDevtoolsRecorder, onDevtoolsEvent } from "solace/devtools";
-import type { DevtoolsEvent } from "solace/devtools";
+    `import { createApp, createStore, defineAsyncComponent, defineComponent, h, inject, reactive, watchEffect } from "@italone/solace";
+import type { AsyncComponentOptions, ComponentSetupContext, Plugin, StoreContext, StoreGetterContext } from "@italone/solace";
+import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtools";
+import type { DevtoolsEvent } from "@italone/solace/devtools";
 
 const state = reactive({ count: 0 });
 const stopWatching = watchEffect(() => state.count);
@@ -163,7 +163,7 @@ createApp(App).use(appPlugin, "enabled").mount(document.createElement("main"));
     [
       "--input-type=module",
       "-e",
-      "const api = await import('solace'); const runtime = await import('solace/jsx-runtime'); const dev = await import('solace/jsx-dev-runtime'); const devtools = await import('solace/devtools'); if (!api.createApp || !api.defineAsyncComponent || !api.defineComponent || !api.inject || !api.provide || !api.watchEffect || !runtime.jsx || !dev.jsxDEV || !devtools.createDevtoolsRecorder || !devtools.onDevtoolsEvent || devtools.emitDevtoolsEvent) process.exit(1);",
+      "const api = await import('@italone/solace'); const runtime = await import('@italone/solace/jsx-runtime'); const dev = await import('@italone/solace/jsx-dev-runtime'); const devtools = await import('@italone/solace/devtools'); if (!api.createApp || !api.defineAsyncComponent || !api.defineComponent || !api.inject || !api.provide || !api.watchEffect || !runtime.jsx || !dev.jsxDEV || !devtools.createDevtoolsRecorder || !devtools.onDevtoolsEvent || devtools.emitDevtoolsEvent) process.exit(1);",
     ],
     consumerDir,
   );
@@ -171,7 +171,7 @@ createApp(App).use(appPlugin, "enabled").mount(document.createElement("main"));
     "node",
     [
       "-e",
-      "const api = require('solace'); const runtime = require('solace/jsx-runtime'); const dev = require('solace/jsx-dev-runtime'); const devtools = require('solace/devtools'); if (!api.createApp || !api.defineAsyncComponent || !api.defineComponent || !api.inject || !api.provide || !api.watchEffect || !runtime.jsx || !dev.jsxDEV || !devtools.createDevtoolsRecorder || !devtools.onDevtoolsEvent || devtools.emitDevtoolsEvent) process.exit(1);",
+      "const api = require('@italone/solace'); const runtime = require('@italone/solace/jsx-runtime'); const dev = require('@italone/solace/jsx-dev-runtime'); const devtools = require('@italone/solace/devtools'); if (!api.createApp || !api.defineAsyncComponent || !api.defineComponent || !api.inject || !api.provide || !api.watchEffect || !runtime.jsx || !dev.jsxDEV || !devtools.createDevtoolsRecorder || !devtools.onDevtoolsEvent || devtools.emitDevtoolsEvent) process.exit(1);",
     ],
     consumerDir,
   );

@@ -105,7 +105,7 @@ function createBrowserBenchmarkSummary(
 
 function expectBrowserBenchmarkSummary(summary: BrowserBenchmarkSummary, sampleSize: number): void {
   expectBrowserBenchmarkResult(summary);
-  expect(summary.metadata.packageName).toBe("solace");
+  expect(summary.metadata.packageName).toBe("@italone/solace");
   expect(summary.metadata.packageVersion).toMatch(/^\d+\.\d+\.\d+/);
   expect(summary.metadata.node).toBe(process.version);
   expect(summary.metadata.platform).toBe(platform());
