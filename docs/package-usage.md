@@ -2,7 +2,7 @@
 
 ## Install
 
-The repository currently keeps `"private": true` in `package.json`, so registry install is only valid after the package is made publishable and released:
+The package is publishable, so registry install is valid after release:
 
 ```bash
 pnpm add solace

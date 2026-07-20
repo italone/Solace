@@ -30,7 +30,9 @@ if (changesetConfig.access !== "public") {
   failures.push('.changeset/config.json access must be "public" before public publishing.');
 }
 
-if (packageJson.private === true) {
+const packageIsPrivate = packageJson.private === true;
+
+if (packageIsPrivate) {
   if (publishableMode) {
     failures.push(
       'package.json still has "private": true; remove it only after explicit publish approval.',
@@ -74,7 +76,11 @@ for (const warning of warnings) {
 }
 
 if (!publishableMode) {
-  console.log("publishability: skipped; run with --publishable after explicit publish approval.");
+  if (packageIsPrivate) {
+    console.log("publishability: skipped; run with --publishable after explicit publish approval.");
+  } else {
+    console.log("publishability: ready; run with --publishable to verify publishable mode.");
+  }
 }
 
 async function readJson(relativePath) {

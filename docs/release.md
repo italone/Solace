@@ -26,13 +26,11 @@ pnpm release:readiness
 
 This command checks local package metadata, package entry points, release scripts, and Changesets public access configuration. It does not contact npm and does not publish.
 
-The package intentionally remains private by default. To verify the stricter publishable mode after a maintainer explicitly approves publishing and removes or changes `"private": true`, run:
+The package is now publishable. To verify the stricter publishable mode before publishing, run:
 
 ```bash
 pnpm release:readiness -- --publishable
 ```
-
-While `"private": true` remains set, publishable mode is expected to fail.
 
 ## Prepare A Version
 
@@ -50,12 +48,12 @@ pnpm release:version
 
 ## Publish
 
-The package currently keeps `"private": true` in `package.json`, so it is not publishable by default. Before removing or changing that field, explicitly confirm:
+Before publishing, explicitly confirm:
 
 - the npm package name `solace` is available or controlled by the maintainer,
 - npm authentication and organization access are configured,
 - public access is intended,
-- `pnpm release:readiness` passes,
+- `pnpm release:readiness -- --publishable` passes,
 - `pnpm release:check` passes,
 - `pnpm package:smoke` passes after the final version update,
 - Changesets versioning has been run for user-visible changes.
