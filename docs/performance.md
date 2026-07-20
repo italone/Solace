@@ -146,15 +146,15 @@ Local history command:
 pnpm benchmark:history -- --min-browser-count 20 --json
 ```
 
-The local ignored history currently contains twenty-five Chromium `large-list` production benchmark records. The
+The local ignored history currently contains thirty Chromium `large-list` production benchmark records. The
 `--min-browser-count 20` trend gate passes locally. p95 still reflects the slowest observed samples and should be
 treated as trend context only, not a release threshold.
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 25    | 8.2    | 15.6 | 25.00    |
-| `updateMs`        | 25    | 3.6    | 7.0  | 6.67     |
-| `unmountMs`       | 25    | 1.2    | 1.5  | 0.22     |
+| `initialRenderMs` | 30    | 8.15   | 15.6 | 22.52    |
+| `updateMs`        | 30    | 3.5    | 7.0  | 5.84     |
+| `unmountMs`       | 30    | 1.2    | 1.5  | 0.19     |
 
 Latest-window command:
 
@@ -162,14 +162,14 @@ Latest-window command:
 pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
 ```
 
-The latest five Chromium `large-list` records keep the initial-render p95 at the same slow-sample ceiling as the
-full-history view, while update and unmount remain noticeably tighter.
+The latest five Chromium `large-list` records keep the initial-render p95 below the full-history ceiling, while update
+and unmount remain tighter.
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 5     | 8.3    | 15.6 | 10.25    |
-| `updateMs`        | 5     | 3.7    | 5.1  | 0.67     |
-| `unmountMs`       | 5     | 1.2    | 1.4  | 0.03     |
+| `initialRenderMs` | 5     | 7.1    | 13.8 | 7.16     |
+| `updateMs`        | 5     | 3.2    | 4.9  | 0.62     |
+| `unmountMs`       | 5     | 1.2    | 1.2  | 0.01     |
 
 ## Benchmark Principles
 
