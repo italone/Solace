@@ -219,6 +219,33 @@ describe("renderer diff", () => {
     expect(removeAttribute).not.toHaveBeenCalled();
   });
 
+  it("uses className for initial HTML class mounts", () => {
+    const container = document.createElement("div");
+    const setAttribute = vi.spyOn(Element.prototype, "setAttribute");
+
+    render(h("div", { class: "selected" }, "Row"), container);
+
+    const row = container.querySelector("div") as HTMLDivElement;
+
+    expect(row.className).toBe("selected");
+    expect(row.textContent).toBe("Row");
+    expect(setAttribute).not.toHaveBeenCalledWith("class", expect.anything());
+  });
+
+  it("still mounts ordinary attributes alongside initial class mounts", () => {
+    const container = document.createElement("div");
+    const setAttribute = vi.spyOn(Element.prototype, "setAttribute");
+
+    render(h("div", { class: "selected", "data-row": 1 }, "Row"), container);
+
+    const row = container.querySelector('[data-row="1"]') as HTMLDivElement;
+
+    expect(row.className).toBe("selected");
+    expect(row.textContent).toBe("Row");
+    expect(row.getAttribute("data-row")).toBe("1");
+    expect(setAttribute).toHaveBeenCalledWith("data-row", "1");
+  });
+
   it("moves keyed children while reusing existing DOM nodes", () => {
     const container = document.createElement("div");
 

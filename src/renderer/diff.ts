@@ -282,6 +282,11 @@ function mountInitialProps(el: Element, props: VNodeProps): void {
       continue;
     }
 
+    if (key === "class") {
+      mountInitialClass(el, value);
+      continue;
+    }
+
     if (mightBeEventProp(key)) {
       patchProp(el, key, null, value);
       continue;
@@ -289,6 +294,15 @@ function mountInitialProps(el: Element, props: VNodeProps): void {
 
     el.setAttribute(key, String(value));
   }
+}
+
+function mountInitialClass(el: Element, value: unknown): void {
+  if (el instanceof HTMLElement) {
+    el.className = String(value);
+    return;
+  }
+
+  el.setAttribute("class", String(value));
 }
 
 function mightBeEventProp(key: string): boolean {

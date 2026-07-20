@@ -80,7 +80,8 @@ Conclusion:
   also avoids repeated enqueue attempts while a component update is already pending. The component initial mount path
   also batches child inserts through a `DocumentFragment`. The initial element mount path now uses a conservative props
   fast path for ordinary attributes, avoiding `Object.entries()` scans and redundant attribute removals on fresh
-  elements. Next optimization work should focus on additional browser trend samples.
+  elements. It also uses a direct HTML `className` fast path for `class` props while keeping the existing attribute
+  fallback for non-HTML nodes. Next optimization work should focus on additional browser trend samples.
 
 ## Browser Production Benchmark
 
@@ -148,15 +149,15 @@ Local history command:
 pnpm benchmark:history -- --min-browser-count 20 --json
 ```
 
-The local ignored history currently contains forty Chromium `large-list` production benchmark records. The
+The local ignored history currently contains forty-five Chromium `large-list` production benchmark records. The
 `--min-browser-count 20` trend gate passes locally. p95 still reflects the slowest observed samples and should be
 treated as trend context only, not a release threshold.
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 40    | 7.9    | 15.6 | 19.61    |
-| `updateMs`        | 40    | 3.5    | 5.7  | 4.64     |
-| `unmountMs`       | 40    | 1.2    | 1.4  | 0.15     |
+| `initialRenderMs` | 45    | 7.7    | 15.7 | 18.98    |
+| `updateMs`        | 45    | 3.6    | 6.1  | 4.23     |
+| `unmountMs`       | 45    | 1.2    | 1.4  | 0.14     |
 
 Latest-window command:
 
@@ -164,14 +165,14 @@ Latest-window command:
 pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
 ```
 
-The latest five Chromium `large-list` records show a tighter initial-render window than the previous trend refresh,
-though p95 still reflects the slowest observed sample and remains trend context only.
+The latest five Chromium `large-list` records still show a slow-sample ceiling on initial render, but the median
+remains lower than the preceding full-history window.
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 5     | 6.9    | 12.6 | 5.84     |
-| `updateMs`        | 5     | 3.5    | 5.4  | 0.75     |
-| `unmountMs`       | 5     | 1.1    | 1.3  | 0.02     |
+| `initialRenderMs` | 5     | 7.7    | 16.2 | 13.46    |
+| `updateMs`        | 5     | 4.0    | 6.1  | 0.93     |
+| `unmountMs`       | 5     | 1.2    | 1.3  | 0.01     |
 
 ## Benchmark Principles
 
