@@ -177,10 +177,11 @@
 
 ## 2026-07-21
 
-| 编号 | 变动                                  | 影响范围                                            | 涉及文件                                                                                                | 日志                                                                               |
-| ---- | ------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| 001  | 刷新 browser keyed reorder 趋势样本   | browser benchmark、本地 history、性能文档、项目日志 | `docs/performance.md`, `solace-project-log/**`                                                          | [查看](./solace-entries/2026-07-21-001-browser-keyed-reorder-trend-refresh.md)     |
-| 002  | 设计 keyed reorder matched patch skip | renderer performance 设计、keyed reorder、项目日志  | `docs/superpowers/specs/2026-07-21-keyed-reorder-matched-patch-skip-design.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-21-002-keyed-reorder-matched-patch-skip-design.md) |
+| 编号 | 变动                                           | 影响范围                                            | 涉及文件                                                                                                | 日志                                                                               |
+| ---- | ---------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| 001  | 刷新 browser keyed reorder 趋势样本            | browser benchmark、本地 history、性能文档、项目日志 | `docs/performance.md`, `solace-project-log/**`                                                          | [查看](./solace-entries/2026-07-21-001-browser-keyed-reorder-trend-refresh.md)     |
+| 002  | 设计 keyed reorder matched patch skip          | renderer performance 设计、keyed reorder、项目日志  | `docs/superpowers/specs/2026-07-21-keyed-reorder-matched-patch-skip-design.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-21-002-keyed-reorder-matched-patch-skip-design.md) |
+| 003  | 编写 keyed reorder matched patch skip 实现计划 | implementation plan、renderer performance、项目日志 | `docs/superpowers/plans/2026-07-21-keyed-reorder-matched-patch-skip.md`, `solace-project-log/**`        | [查看](./solace-entries/2026-07-21-003-keyed-reorder-matched-patch-skip-plan.md)   |
 
 ## 维护说明
 
