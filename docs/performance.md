@@ -159,7 +159,7 @@ Local history command:
 pnpm benchmark:history -- --json
 ```
 
-The local ignored history currently contains 60 Chromium `large-list` production benchmark records and 10 Chromium
+The local ignored history currently contains 65 Chromium `large-list` production benchmark records and 15 Chromium
 `keyed-reorder` production benchmark records. The `--min-browser-count 5` trend gate passes locally for both browser
 scenarios. p95 still reflects the slowest observed samples and should be treated as trend context only, not a release
 threshold.
@@ -168,17 +168,17 @@ Full-history `large-list` summary:
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 60    | 7.3    | 15.7 | 18.1     |
-| `updateMs`        | 60    | 3.5    | 5.7  | 3.43     |
-| `unmountMs`       | 60    | 1.2    | 1.5  | 2.98     |
+| `initialRenderMs` | 65    | 7.3    | 15.8 | 17.81    |
+| `updateMs`        | 65    | 3.5    | 5.7  | 3.22     |
+| `unmountMs`       | 65    | 1.2    | 1.5  | 2.76     |
 
 Full-history `keyed-reorder` summary:
 
 | Metric            | Count | Median | p95 | Variance |
 | ----------------- | ----- | ------ | --- | -------- |
-| `initialRenderMs` | 10    | 5.5    | 6.7 | 0.56     |
-| `reorderMs`       | 10    | 4.75   | 6.2 | 0.42     |
-| `unmountMs`       | 10    | 1.25   | 1.6 | 0.04     |
+| `initialRenderMs` | 15    | 5.6    | 6.7 | 0.45     |
+| `reorderMs`       | 15    | 4.7    | 6.2 | 0.4      |
+| `unmountMs`       | 15    | 1.2    | 1.6 | 0.03     |
 
 Latest-window command:
 
@@ -195,17 +195,17 @@ Latest-window `large-list` summary:
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 5     | 6.6    | 15   | 11.86    |
-| `updateMs`        | 5     | 3.7    | 5.2  | 0.58     |
-| `unmountMs`       | 5     | 1.2    | 12.5 | 20.53    |
+| `initialRenderMs` | 5     | 7.4    | 15.8 | 14.1     |
+| `updateMs`        | 5     | 3.1    | 5.1  | 0.65     |
+| `unmountMs`       | 5     | 1.2    | 1.3  | 0.02     |
 
 Latest-window `keyed-reorder` summary:
 
 | Metric            | Count | Median | p95 | Variance |
 | ----------------- | ----- | ------ | --- | -------- |
-| `initialRenderMs` | 5     | 5.1    | 6.7 | 0.6      |
-| `reorderMs`       | 5     | 4.9    | 6.2 | 0.33     |
-| `unmountMs`       | 5     | 1.3    | 1.6 | 0.03     |
+| `initialRenderMs` | 5     | 5.6    | 6.4 | 0.24     |
+| `reorderMs`       | 5     | 4.7    | 5.8 | 0.33     |
+| `unmountMs`       | 5     | 1.2    | 1.3 | 0.01     |
 
 ## Benchmark Principles
 
