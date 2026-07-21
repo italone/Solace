@@ -10,6 +10,7 @@ coverage/
 test-results/
 playwright-report/
 .benchmark-history/
+.worktrees/
 
 # Vite and tooling caches
 node_modules/.vite-temp/
