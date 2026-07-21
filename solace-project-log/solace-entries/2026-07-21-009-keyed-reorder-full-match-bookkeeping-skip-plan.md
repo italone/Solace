@@ -8,8 +8,9 @@
 
 ## 变动摘要
 
-补写 keyed reorder full-match bookkeeping skip 的 implementation plan。计划要求先用 `globalThis.Set` spy 写出 RED
-测试，证明 fully matched keyed reorder 当前仍构造 unused tracking Set，再实现 `matchedOldCount` 与
+补写 keyed reorder full-match bookkeeping skip 的 implementation plan。计划要求先用带 stack filter 的 `globalThis.Set`
+constructor spy 写出 RED 测试，证明 fully matched keyed reorder 当前仍在 `patchKeyedChildren()` 内构造 unused tracking
+Set，再实现 `matchedOldCount` 与
 `newIndexToOldIndexMap` 派生 unused detection。
 
 ## 变动原因

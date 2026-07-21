@@ -535,7 +535,7 @@ function patchKeyedChildren(
 
   const oldKeyedChildren = new Map<string | number, KeyedChildRecord>();
   const newIndexToOldIndexMap = new Array<number>(newEnd - newStart + 1).fill(0);
-  const usedOldChildren = new Set<VNode>();
+  let matchedOldCount = 0;
 
   for (let index = oldStart; index <= oldEnd; index += 1) {
     const oldChild = oldChildren[index];
@@ -552,13 +552,15 @@ function patchKeyedChildren(
     const oldRecord = oldKeyedChildren.get(newChild.key as string | number) ?? null;
 
     if (oldRecord !== null) {
-      usedOldChildren.add(oldRecord.vnode);
+      matchedOldCount += 1;
       newIndexToOldIndexMap[index - newStart] = oldRecord.index + 1;
       patch(oldRecord.vnode, newChild, container, null, parentComponent, appProvides);
     }
   }
 
-  unmountUnusedKeyedChildren(oldChildren, oldStart, oldEnd, usedOldChildren);
+  if (matchedOldCount < oldEnd - oldStart + 1) {
+    unmountUnusedKeyedChildren(oldChildren, oldStart, oldEnd, newIndexToOldIndexMap);
+  }
 
   const stablePositions = getIncreasingSubsequence(newIndexToOldIndexMap);
   let stableIndex = stablePositions.length - 1;
@@ -619,18 +621,26 @@ function unmountUnusedKeyedChildren(
   children: VNode[],
   start: number,
   end: number,
-  usedChildren: Set<VNode>,
+  newIndexToOldIndexMap: number[],
 ): void {
+  const usedOldIndexes = new Array<boolean>(end - start + 1).fill(false);
+
+  for (const mappedOldIndex of newIndexToOldIndexMap) {
+    if (mappedOldIndex > 0) {
+      usedOldIndexes[mappedOldIndex - 1 - start] = true;
+    }
+  }
+
   let index = start;
 
   while (index <= end) {
-    if (usedChildren.has(children[index])) {
+    if (usedOldIndexes[index - start]) {
       index += 1;
       continue;
     }
 
     const runStart = index;
-    while (index <= end && !usedChildren.has(children[index])) {
+    while (index <= end && !usedOldIndexes[index - start]) {
       index += 1;
     }
     unmountChildrenRange(children, runStart, index - 1);

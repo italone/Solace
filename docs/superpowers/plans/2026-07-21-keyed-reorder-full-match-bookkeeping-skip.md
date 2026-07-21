@@ -15,8 +15,9 @@ Prettier.
 
 ## File Structure
 
-- Modify `tests/unit/renderer/diff.test.ts`: add a RED regression test proving full matched keyed reorder does not need
-  `Set` unused tracking, plus a removal safety assertion if existing coverage needs tightening.
+- Modify `tests/unit/renderer/diff.test.ts`: add a RED regression test proving full matched keyed reorder does not
+  allocate a `Set` inside `patchKeyedChildren()` for unused-child tracking, plus a removal safety assertion if existing
+  coverage needs tightening.
 - Modify `src/renderer/diff.ts`: remove unconditional `usedOldChildren` allocation, track matched old count, skip
   unused-old unmounting on full match, and replace Set-based unused unmounting with index-map-derived used flags for
   removal cases.
@@ -36,21 +37,24 @@ fixture shape, package metadata, release flow, or `.benchmark-history/**`.
 
 - Modify: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Add a Set constructor spy helper**
+- [x] **Step 1: Add a Set allocation spy helper**
 
 Near the keyed children tests in `tests/unit/renderer/diff.test.ts`, add this helper:
 
 ```ts
-function spyOnGlobalSet(): { setConstructor: ReturnType<typeof vi.fn>; restore: () => void } {
+function spyOnGlobalSetAllocations(): { allocationStacks: string[]; restore: () => void } {
   const OriginalSet = globalThis.Set;
-  const setConstructor = vi.fn(function SetWithSpy(values?: Iterable<unknown> | null) {
-    return new OriginalSet(values ?? undefined);
-  });
+  const allocationStacks: string[] = [];
 
-  vi.stubGlobal("Set", setConstructor as unknown as SetConstructor);
+  function SetWithAllocationSpy<T>(values?: Iterable<T> | null): Set<T> {
+    allocationStacks.push(new Error().stack ?? "");
+    return new OriginalSet(values ?? undefined);
+  }
+
+  vi.stubGlobal("Set", SetWithAllocationSpy as unknown as SetConstructor);
 
   return {
-    setConstructor,
+    allocationStacks,
     restore() {
       vi.stubGlobal("Set", OriginalSet);
     },
@@ -58,12 +62,12 @@ function spyOnGlobalSet(): { setConstructor: ReturnType<typeof vi.fn>; restore: 
 }
 ```
 
-- [ ] **Step 2: Add the full-match reorder RED test**
+- [x] **Step 2: Add the full-match reorder RED test**
 
 Add this test near the existing keyed reorder tests:
 
 ```ts
-it("skips unused-child Set bookkeeping for fully matched keyed reorders", () => {
+it("skips unused-child Set allocation for fully matched keyed reorders", () => {
   const container = document.createElement("div");
 
   render(
@@ -77,7 +81,7 @@ it("skips unused-child Set bookkeeping for fully matched keyed reorders", () => 
   );
 
   const before = new Map([...container.querySelectorAll("li")].map((li) => [li.textContent, li]));
-  const { setConstructor, restore } = spyOnGlobalSet();
+  const { allocationStacks, restore } = spyOnGlobalSetAllocations();
 
   try {
     render(
@@ -94,17 +98,20 @@ it("skips unused-child Set bookkeeping for fully matched keyed reorders", () => 
   }
 
   const after = [...container.querySelectorAll("li")];
+  const patchKeyedChildrenSetAllocations = allocationStacks.filter((stack) =>
+    stack.includes("patchKeyedChildren"),
+  );
 
   expect(after.map((li) => li.textContent)).toEqual(["D", "C", "B", "A"]);
   expect(after[0]).toBe(before.get("D"));
   expect(after[1]).toBe(before.get("C"));
   expect(after[2]).toBe(before.get("B"));
   expect(after[3]).toBe(before.get("A"));
-  expect(setConstructor).not.toHaveBeenCalled();
+  expect(patchKeyedChildrenSetAllocations).toHaveLength(0);
 });
 ```
 
-- [ ] **Step 3: Verify RED**
+- [x] **Step 3: Verify RED**
 
 Run:
 
@@ -112,8 +119,9 @@ Run:
 pnpm vitest run tests/unit/renderer/diff.test.ts
 ```
 
-Expected: FAIL. The new test should fail because current `patchKeyedChildren()` constructs `new Set<VNode>()` during a
-fully matched keyed reorder.
+Expected: FAIL. The new test should fail because current `patchKeyedChildren()` constructs `new Set<VNode>()` for
+unused-child tracking during a fully matched keyed reorder. The stack filter avoids counting `hasUniqueKeys()` and jsdom
+internal `Set` allocations.
 
 ---
 
@@ -124,7 +132,7 @@ fully matched keyed reorder.
 - Modify: `src/renderer/diff.ts`
 - Modify: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Replace unconditional Set tracking in `patchKeyedChildren()`**
+- [x] **Step 1: Replace unconditional Set tracking in `patchKeyedChildren()`**
 
 In `src/renderer/diff.ts`, replace:
 
@@ -142,7 +150,7 @@ const newIndexToOldIndexMap = new Array<number>(newEnd - newStart + 1).fill(0);
 let matchedOldCount = 0;
 ```
 
-- [ ] **Step 2: Count matched old children instead of adding to Set**
+- [x] **Step 2: Count matched old children instead of adding to Set**
 
 In the keyed new-child loop, replace:
 
@@ -160,7 +168,7 @@ newIndexToOldIndexMap[index - newStart] = oldRecord.index + 1;
 patch(oldRecord.vnode, newChild, container, null, parentComponent, appProvides);
 ```
 
-- [ ] **Step 3: Skip unused-old unmounting when every old child matched**
+- [x] **Step 3: Skip unused-old unmounting when every old child matched**
 
 Replace:
 
@@ -176,7 +184,7 @@ if (matchedOldCount < oldEnd - oldStart + 1) {
 }
 ```
 
-- [ ] **Step 4: Replace `unmountUnusedKeyedChildren()` implementation**
+- [x] **Step 4: Replace `unmountUnusedKeyedChildren()` implementation**
 
 Change the helper signature and body from Set-based tracking to index-map-derived flags:
 
@@ -212,7 +220,7 @@ function unmountUnusedKeyedChildren(
 }
 ```
 
-- [ ] **Step 5: Verify GREEN for renderer tests**
+- [x] **Step 5: Verify GREEN for renderer tests**
 
 Run:
 
@@ -222,7 +230,7 @@ pnpm vitest run tests/unit/renderer/diff.test.ts
 
 Expected: PASS. The new full-match Set spy test passes, and existing keyed remove/reorder tests still pass.
 
-- [ ] **Step 6: Commit renderer implementation**
+- [x] **Step 6: Commit renderer implementation**
 
 Run:
 
@@ -241,7 +249,7 @@ git commit -m "perf: skip full-match keyed reorder bookkeeping"
 - Add: `solace-project-log/solace-entries/2026-07-21-010-keyed-reorder-full-match-bookkeeping-skip.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update performance docs**
+- [x] **Step 1: Update performance docs**
 
 In `docs/performance.md`, add this note to the renderer optimization conclusion paragraph:
 
@@ -250,7 +258,7 @@ Fully matched keyed middle segments also skip unused-old `Set` tracking and unmo
 avoid bookkeeping that cannot produce removals while preserving the existing LIS move path.
 ```
 
-- [ ] **Step 2: Add implementation log**
+- [x] **Step 2: Add implementation log**
 
 Create `solace-project-log/solace-entries/2026-07-21-010-keyed-reorder-full-match-bookkeeping-skip.md`:
 
@@ -311,7 +319,7 @@ LIS move path 或 DOM ordering。
   下一轮再单独设计 move path 或 anchor lookup 优化。
 ```
 
-- [ ] **Step 3: Update the log index**
+- [x] **Step 3: Update the log index**
 
 Append this row in the `2026-07-21` table in `solace-project-log/index.md`:
 
@@ -319,7 +327,7 @@ Append this row in the `2026-07-21` table in `solace-project-log/index.md`:
 | 010 | 优化 keyed reorder full-match bookkeeping | renderer performance、keyed diff、项目日志 | `src/renderer/diff.ts`, `tests/unit/renderer/diff.test.ts`, `docs/performance.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-21-010-keyed-reorder-full-match-bookkeeping-skip.md) |
 ```
 
-- [ ] **Step 4: Run verification**
+- [x] **Step 4: Run verification**
 
 Run:
 
@@ -338,7 +346,7 @@ git diff --check
 Expected: all commands pass. `pnpm benchmark:browser` may require local preview server permission to bind
 `127.0.0.1:5177`.
 
-- [ ] **Step 5: Commit docs and log**
+- [x] **Step 5: Commit docs and log**
 
 Run:
 

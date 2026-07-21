@@ -81,7 +81,9 @@ Conclusion:
   also batches child inserts through a `DocumentFragment`. The initial element mount path now uses a conservative props
   fast path for ordinary attributes, avoiding `Object.entries()` scans and redundant attribute removals on fresh
   elements. It also uses a direct HTML `className` fast path for `class` props while keeping the existing attribute
-  fallback for non-HTML nodes. Next optimization work should focus on additional browser trend samples.
+  fallback for non-HTML nodes. Fully matched keyed middle segments also skip unused-old `Set` tracking and unmount
+  scanning, so stable keyed reorders avoid bookkeeping that cannot produce removals while preserving the existing LIS
+  move path. Next optimization work should focus on additional browser trend samples.
 
 ## Browser Production Benchmark
 

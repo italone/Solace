@@ -13,6 +13,25 @@ describe("renderer diff", () => {
     vi.restoreAllMocks();
   });
 
+  function spyOnGlobalSetAllocations(): { allocationStacks: string[]; restore: () => void } {
+    const OriginalSet = globalThis.Set;
+    const allocationStacks: string[] = [];
+
+    function SetWithAllocationSpy<T>(values?: Iterable<T> | null): Set<T> {
+      allocationStacks.push(new Error().stack ?? "");
+      return new OriginalSet(values ?? undefined);
+    }
+
+    vi.stubGlobal("Set", SetWithAllocationSpy as unknown as SetConstructor);
+
+    return {
+      allocationStacks,
+      restore() {
+        vi.stubGlobal("Set", OriginalSet);
+      },
+    };
+  }
+
   it("patches props on the same element type", () => {
     const container = document.createElement("div");
     const onClick = vi.fn();
@@ -548,6 +567,49 @@ describe("renderer diff", () => {
     expect(after[3]).toBe(before.get("C"));
     expect(after[4]).toBe(before.get("E"));
     expect(insertBefore).toHaveBeenCalledTimes(2);
+  });
+
+  it("skips unused-child Set allocation for fully matched keyed reorders", () => {
+    const container = document.createElement("div");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "d" }, "D"),
+      ]),
+      container,
+    );
+
+    const before = new Map([...container.querySelectorAll("li")].map((li) => [li.textContent, li]));
+    const { allocationStacks, restore } = spyOnGlobalSetAllocations();
+
+    try {
+      render(
+        h("ul", null, [
+          h("li", { key: "d" }, "D"),
+          h("li", { key: "c" }, "C"),
+          h("li", { key: "b" }, "B"),
+          h("li", { key: "a" }, "A"),
+        ]),
+        container,
+      );
+    } finally {
+      restore();
+    }
+
+    const after = [...container.querySelectorAll("li")];
+    const patchKeyedChildrenSetAllocations = allocationStacks.filter((stack) =>
+      stack.includes("patchKeyedChildren"),
+    );
+
+    expect(after.map((li) => li.textContent)).toEqual(["D", "C", "B", "A"]);
+    expect(after[0]).toBe(before.get("D"));
+    expect(after[1]).toBe(before.get("C"));
+    expect(after[2]).toBe(before.get("B"));
+    expect(after[3]).toBe(before.get("A"));
+    expect(patchKeyedChildrenSetAllocations).toHaveLength(0);
   });
 
   it("falls back to index patching for mixed keyed and unkeyed children", () => {
