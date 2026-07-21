@@ -1,5 +1,10 @@
 # Keyed Reorder Matched Patch Skip Implementation Plan
 
+> Superseded on 2026-07-21 by
+> `docs/superpowers/plans/2026-07-21-keyed-reorder-dom-mutation-instrumentation.md`.
+> Do not execute this plan as written. Its first RED test was proven invalid because the renderer already skips unchanged
+> keyed element updates inside `patchElement()`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Skip no-op element patch work for matched keyed nodes whose DOM output is provably unchanged during keyed reorder.

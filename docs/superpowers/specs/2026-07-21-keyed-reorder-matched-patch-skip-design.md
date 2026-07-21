@@ -1,5 +1,10 @@
 # Keyed Reorder Matched Patch Skip Design
 
+> Superseded on 2026-07-21 by
+> `docs/superpowers/specs/2026-07-21-keyed-reorder-dom-mutation-instrumentation-design.md`.
+> A RED-test probe showed that this design duplicates the existing `patchElement()` no-op early return and should not be
+> implemented as written.
+
 ## Context
 
 Solace has shipped `@italone/solace@0.0.1` and the performance line is back on renderer work. The browser benchmark now
