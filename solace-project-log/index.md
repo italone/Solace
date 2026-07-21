@@ -175,6 +175,12 @@
 | 015  | 编写 browser keyed reorder benchmark 实现计划 | browser benchmark planning、项目计划、项目日志         | `docs/superpowers/plans/2026-07-20-browser-keyed-reorder-benchmark.md`, `solace-project-log/**`                                                                                                                                                    | [查看](./solace-entries/2026-07-20-015-browser-keyed-reorder-benchmark-plan.md)   |
 | 016  | 扩展 browser keyed reorder benchmark          | browser benchmark、history summary、性能文档、项目日志 | `examples/performance-benchmark/src/main.tsx`, `tests/e2e/browser-benchmark.spec.ts`, `tests/e2e/browser-benchmark-history.ts`, `tests/unit/scripts/**`, `scripts/summarize-benchmark-history.mjs`, `docs/performance.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-20-016-browser-keyed-reorder-benchmark.md)        |
 
+## 2026-07-21
+
+| 编号 | 变动                                | 影响范围                                            | 涉及文件                                       | 日志                                                                           |
+| ---- | ----------------------------------- | --------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
+| 001  | 刷新 browser keyed reorder 趋势样本 | browser benchmark、本地 history、性能文档、项目日志 | `docs/performance.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-21-001-browser-keyed-reorder-trend-refresh.md) |
+
 ## 维护说明
 
 后续每次变更完成后，应执行以下动作：

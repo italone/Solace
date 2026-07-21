@@ -18,7 +18,7 @@ The large-list e2e test confirms that 10,000 rows can render and one selected ro
 
 ## Latest Local Benchmark Run
 
-Date: 2026-07-20
+Date: 2026-07-21
 
 Environment:
 
@@ -152,15 +152,26 @@ Local history command:
 pnpm benchmark:history -- --min-browser-count 20 --json
 ```
 
-The local ignored history currently contains fifty Chromium `large-list` production benchmark records. The
-`--min-browser-count 20` trend gate passes locally. p95 still reflects the slowest observed samples and should be
-treated as trend context only, not a release threshold.
+The local ignored history currently contains 55 Chromium `large-list` production benchmark records and 5 Chromium
+`keyed-reorder` production benchmark records. The `--min-browser-count 5` trend gate passes locally for both browser
+scenarios. p95 still reflects the slowest observed samples and should be treated as trend context only, not a release
+threshold.
+
+Full-history `large-list` summary:
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 50    | 7.55   | 16.2 | 19.29    |
-| `updateMs`        | 50    | 3.55   | 6.1  | 3.95     |
-| `unmountMs`       | 50    | 1.2    | 1.4  | 0.12     |
+| `initialRenderMs` | 55    | 7.4    | 16.2 | 18.54    |
+| `updateMs`        | 55    | 3.5    | 6.1  | 3.68     |
+| `unmountMs`       | 55    | 1.2    | 1.5  | 1.01     |
+
+Full-history `keyed-reorder` summary:
+
+| Metric            | Count | Median | p95 | Variance |
+| ----------------- | ----- | ------ | --- | -------- |
+| `initialRenderMs` | 5     | 5.9    | 6.6 | 0.52     |
+| `reorderMs`       | 5     | 4.6    | 6.2 | 0.48     |
+| `unmountMs`       | 5     | 1.1    | 1.3 | 0.01     |
 
 Latest-window command:
 
@@ -168,14 +179,25 @@ Latest-window command:
 pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
 ```
 
-The latest five Chromium `large-list` records include one slow first initial-render sample, so latest-window p95
-remains noisy. The latest update median is lower than the preceding window, while unmount remains stable.
+The latest five Chromium `large-list` records include one slow first initial-render sample and one slow unmount sample,
+so latest-window p95 remains noisy. The latest five Chromium `keyed-reorder` records establish the first browser
+baseline for `reorderMs`.
+
+Latest-window `large-list` summary:
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 5     | 7.0    | 18.1 | 21.48    |
-| `updateMs`        | 5     | 3.5    | 5.4  | 1.04     |
-| `unmountMs`       | 5     | 1.1    | 1.3  | 0.01     |
+| `initialRenderMs` | 5     | 6.2    | 12.7 | 6.96     |
+| `updateMs`        | 5     | 3.3    | 5.2  | 0.71     |
+| `unmountMs`       | 5     | 1.3    | 8.3  | 8.2      |
+
+Latest-window `keyed-reorder` summary:
+
+| Metric            | Count | Median | p95 | Variance |
+| ----------------- | ----- | ------ | --- | -------- |
+| `initialRenderMs` | 5     | 5.9    | 6.6 | 0.52     |
+| `reorderMs`       | 5     | 4.6    | 6.2 | 0.48     |
+| `unmountMs`       | 5     | 1.1    | 1.3 | 0.01     |
 
 ## Benchmark Principles
 
