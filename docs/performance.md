@@ -128,6 +128,11 @@ Set `SOLACE_BROWSER_BENCHMARK_HISTORY_PATH=.benchmark-history/browser.jsonl pnpm
 to append one JSONL record after each successful Chromium production benchmark sample. Browser history
 records persist the existing summary object; they do not add timing thresholds or statistical aggregation.
 
+The keyed reorder browser result also includes `domMutationCounts`, measured only during the reorder update window.
+These counters are diagnostic context for choosing the next renderer performance slice. They are not timing thresholds.
+For the current stable reverse reorder fixture, `insertBefore` should be greater than zero, while `setAttribute`,
+`removeAttribute`, `textContent`, and `removeChild` should remain zero.
+
 Run `pnpm benchmark:history` to summarize local JSONL history from `.benchmark-history/jsdom.jsonl`
 and `.benchmark-history/browser.jsonl`. Use `pnpm benchmark:history -- --json <path>` for
 machine-readable output. The summary reports record counts plus median, p95, and variance for

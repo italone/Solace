@@ -45,6 +45,13 @@ const keyedReorderSummary: BrowserBenchmarkHistorySummary = {
   unmountMs: 1,
   firstRowText: "Row 10000",
   remainingNodesAfterUnmount: 0,
+  domMutationCounts: {
+    insertBefore: 9999,
+    setAttribute: 0,
+    removeAttribute: 0,
+    textContent: 0,
+    removeChild: 0,
+  },
   metadata: {
     packageName: "@italone/solace",
     packageVersion: "0.0.0",
@@ -150,8 +157,18 @@ describe("browser benchmark history", () => {
         throw new Error("Expected keyed-reorder summary");
       }
 
-      expect(record.summary.reorderMs).toBe(2);
-      expect(record.summary.firstRowText).toBe("Row 10000");
+      expect(record.summary).toMatchObject({
+        scenario: "keyed-reorder",
+        reorderMs: 2,
+        firstRowText: "Row 10000",
+        domMutationCounts: {
+          insertBefore: 9999,
+          setAttribute: 0,
+          removeAttribute: 0,
+          textContent: 0,
+          removeChild: 0,
+        },
+      });
     } finally {
       await rm(tempDir, { recursive: true, force: true });
     }

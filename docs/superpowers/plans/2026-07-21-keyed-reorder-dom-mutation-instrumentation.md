@@ -32,7 +32,7 @@ No changes should be made to `src/renderer/diff.ts`, keyed LIS movement, public 
 - Modify: `tests/e2e/browser-benchmark-history.ts`
 - Modify: `tests/unit/scripts/browser-benchmark-history.test.ts`
 
-- [ ] **Step 1: Widen the browser history keyed reorder result type**
+- [x] **Step 1: Widen the browser history keyed reorder result type**
 
 In `tests/e2e/browser-benchmark-history.ts`, add this exported type above `BrowserBenchmarkHistoryResult`:
 
@@ -61,7 +61,7 @@ Then change the `keyed-reorder` branch of `BrowserBenchmarkHistoryResult` to:
     };
 ```
 
-- [ ] **Step 2: Import the counter type in the Playwright benchmark test**
+- [x] **Step 2: Import the counter type in the Playwright benchmark test**
 
 In `tests/e2e/browser-benchmark.spec.ts`, extend the existing import:
 
@@ -73,7 +73,7 @@ In `tests/e2e/browser-benchmark.spec.ts`, extend the existing import:
 } from "./browser-benchmark-history";
 ```
 
-- [ ] **Step 3: Add assertion helpers**
+- [x] **Step 3: Add assertion helpers**
 
 In `tests/e2e/browser-benchmark.spec.ts`, add this helper near `expectFinitePositive()`:
 
@@ -92,7 +92,7 @@ function expectNonNegativeInteger(value: number): void {
 }
 ```
 
-- [ ] **Step 4: Assert keyed reorder counter signal**
+- [x] **Step 4: Assert keyed reorder counter signal**
 
 In `expectBrowserBenchmarkResult()`, replace the keyed reorder branch after `expectFinitePositive(result.reorderMs);`
 with:
@@ -108,7 +108,7 @@ expect(result.domMutationCounts.textContent).toBe(0);
 expect(result.domMutationCounts.removeChild).toBe(0);
 ```
 
-- [ ] **Step 5: Add history append coverage**
+- [x] **Step 5: Add history append coverage**
 
 In `tests/unit/scripts/browser-benchmark-history.test.ts`, update the keyed reorder summary fixture to include:
 
@@ -139,7 +139,7 @@ expect(record.summary).toMatchObject({
 });
 ```
 
-- [ ] **Step 6: Verify RED**
+- [x] **Step 6: Verify RED**
 
 Run:
 
@@ -160,7 +160,7 @@ Expected: the unit test typecheck or fixture compilation fails until the benchma
 - Modify: `examples/performance-benchmark/src/main.tsx`
 - Modify: `tests/e2e/browser-benchmark.spec.ts`
 
-- [ ] **Step 1: Add the result counter type**
+- [x] **Step 1: Add the result counter type**
 
 In `examples/performance-benchmark/src/main.tsx`, add this type below `BrowserBenchmarkScenario`:
 
@@ -176,7 +176,7 @@ type DomMutationCounts = {
 
 Then add `domMutationCounts: DomMutationCounts;` to the `keyed-reorder` branch of `BrowserBenchmarkResult`.
 
-- [ ] **Step 2: Add the async counter helper**
+- [x] **Step 2: Add the async counter helper**
 
 In `examples/performance-benchmark/src/main.tsx`, add this helper above `runKeyedReorderBenchmark()`:
 
@@ -264,7 +264,7 @@ async function measureDomMutations<T>(run: () => Promise<T>): Promise<{
 }
 ```
 
-- [ ] **Step 3: Count only the keyed reorder update window**
+- [x] **Step 3: Count only the keyed reorder update window**
 
 In `runKeyedReorderBenchmark()`, replace the reorder timing block:
 
@@ -290,7 +290,7 @@ const firstRowText = reorderedFirstRow?.textContent?.trim() ?? "";
 const reorderMs = now() - reorderStart;
 ```
 
-- [ ] **Step 4: Return the counts**
+- [x] **Step 4: Return the counts**
 
 In the keyed reorder `result` object, add:
 
@@ -298,7 +298,7 @@ In the keyed reorder `result` object, add:
     domMutationCounts,
 ```
 
-- [ ] **Step 5: Verify GREEN for browser benchmark**
+- [x] **Step 5: Verify GREEN for browser benchmark**
 
 Run:
 
@@ -319,7 +319,7 @@ Expected: PASS. The `browser benchmark summary` line for `keyed-reorder` include
 - Add: `solace-project-log/solace-entries/2026-07-21-006-keyed-reorder-dom-mutation-instrumentation.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update performance docs**
+- [x] **Step 1: Update performance docs**
 
 In `docs/performance.md`, under the browser production benchmark section, add:
 
@@ -330,7 +330,7 @@ For the current stable reverse reorder fixture, `insertBefore` should be greater
 `removeAttribute`, `textContent`, and `removeChild` should remain zero.
 ```
 
-- [ ] **Step 2: Add implementation log**
+- [x] **Step 2: Add implementation log**
 
 Create `solace-project-log/solace-entries/2026-07-21-006-keyed-reorder-dom-mutation-instrumentation.md`:
 
@@ -390,7 +390,7 @@ Create `solace-project-log/solace-entries/2026-07-21-006-keyed-reorder-dom-mutat
   研究 keyed diff bookkeeping 或 move path；如果它们不为零，再设计 patch 重复成本优化。
 ```
 
-- [ ] **Step 3: Update the log index**
+- [x] **Step 3: Update the log index**
 
 Append this row in the `2026-07-21` table in `solace-project-log/index.md` after the plan row for this design:
 
@@ -398,7 +398,7 @@ Append this row in the `2026-07-21` table in `solace-project-log/index.md` after
 | 006 | 补充 keyed reorder DOM mutation instrumentation | browser benchmark、performance instrumentation、项目日志 | `examples/performance-benchmark/src/main.tsx`, `tests/e2e/browser-benchmark.spec.ts`, `tests/e2e/browser-benchmark-history.ts`, `tests/unit/scripts/browser-benchmark-history.test.ts`, `docs/performance.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-21-006-keyed-reorder-dom-mutation-instrumentation.md) |
 ```
 
-- [ ] **Step 4: Run documentation checks**
+- [x] **Step 4: Run documentation checks**
 
 Run:
 
@@ -409,7 +409,7 @@ git diff --check
 
 Expected: both commands pass.
 
-- [ ] **Step 5: Commit implementation**
+- [x] **Step 5: Commit implementation**
 
 Run:
 

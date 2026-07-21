@@ -2,6 +2,14 @@ import { h, nextTick, reactive, render } from "@italone/solace";
 
 type BrowserBenchmarkScenario = "large-list" | "keyed-reorder";
 
+type DomMutationCounts = {
+  insertBefore: number;
+  setAttribute: number;
+  removeAttribute: number;
+  textContent: number;
+  removeChild: number;
+};
+
 type BrowserBenchmarkResult = {
   scenario: BrowserBenchmarkScenario;
   rows: number;
@@ -18,6 +26,7 @@ type BrowserBenchmarkResult = {
       scenario: "keyed-reorder";
       reorderMs: number;
       firstRowText: string;
+      domMutationCounts: DomMutationCounts;
     }
 );
 
@@ -123,6 +132,90 @@ async function runLargeListBenchmark(): Promise<BrowserBenchmarkResult> {
   return result;
 }
 
+async function measureDomMutations<T>(run: () => Promise<T>): Promise<{
+  result: T;
+  counts: DomMutationCounts;
+}> {
+  const counts: DomMutationCounts = {
+    insertBefore: 0,
+    setAttribute: 0,
+    removeAttribute: 0,
+    textContent: 0,
+    removeChild: 0,
+  };
+
+  const originalInsertBefore = Node.prototype.insertBefore;
+  const originalRemoveChild = Node.prototype.removeChild;
+  const originalSetAttribute = Element.prototype.setAttribute;
+  const originalRemoveAttribute = Element.prototype.removeAttribute;
+  const textContentDescriptor = Object.getOwnPropertyDescriptor(Node.prototype, "textContent");
+
+  if (textContentDescriptor?.set === undefined || textContentDescriptor.get === undefined) {
+    throw new Error("Unable to instrument Node.textContent");
+  }
+  const getTextContent = textContentDescriptor.get;
+  const setTextContent = textContentDescriptor.set;
+
+  Node.prototype.insertBefore = function insertBeforeWithCount<TNode extends Node>(
+    this: Node,
+    node: TNode,
+    child: Node | null,
+  ): TNode {
+    counts.insertBefore += 1;
+    return originalInsertBefore.call(this, node, child) as TNode;
+  };
+
+  Node.prototype.removeChild = function removeChildWithCount<TNode extends Node>(
+    this: Node,
+    child: TNode,
+  ): TNode {
+    counts.removeChild += 1;
+    return originalRemoveChild.call(this, child) as TNode;
+  };
+
+  Element.prototype.setAttribute = function setAttributeWithCount(
+    this: Element,
+    qualifiedName: string,
+    value: string,
+  ): void {
+    counts.setAttribute += 1;
+    originalSetAttribute.call(this, qualifiedName, value);
+  };
+
+  Element.prototype.removeAttribute = function removeAttributeWithCount(
+    this: Element,
+    qualifiedName: string,
+  ): void {
+    counts.removeAttribute += 1;
+    originalRemoveAttribute.call(this, qualifiedName);
+  };
+
+  Object.defineProperty(Node.prototype, "textContent", {
+    configurable: textContentDescriptor.configurable,
+    enumerable: textContentDescriptor.enumerable,
+    get(this: Node): string | null {
+      return getTextContent.call(this);
+    },
+    set(this: Node, value: string | null): void {
+      counts.textContent += 1;
+      setTextContent.call(this, value);
+    },
+  });
+
+  try {
+    return {
+      result: await run(),
+      counts,
+    };
+  } finally {
+    Node.prototype.insertBefore = originalInsertBefore;
+    Node.prototype.removeChild = originalRemoveChild;
+    Element.prototype.setAttribute = originalSetAttribute;
+    Element.prototype.removeAttribute = originalRemoveAttribute;
+    Object.defineProperty(Node.prototype, "textContent", textContentDescriptor);
+  }
+}
+
 async function runKeyedReorderBenchmark(): Promise<BrowserBenchmarkResult> {
   const container = ensureApp();
   const state = reactive({
@@ -150,12 +243,14 @@ async function runKeyedReorderBenchmark(): Promise<BrowserBenchmarkResult> {
     throw new Error("Initial keyed rows were not rendered");
   }
 
-  const reorderStart = now();
-  state.rowOrder = [...state.rowOrder].reverse();
-  await nextTick();
+  const { result: reorderMs, counts: domMutationCounts } = await measureDomMutations(async () => {
+    const reorderStart = now();
+    state.rowOrder = [...state.rowOrder].reverse();
+    await nextTick();
+    return now() - reorderStart;
+  });
   const reorderedFirstRow = container.querySelector("#rows > div:first-child");
   const firstRowText = reorderedFirstRow?.textContent?.trim() ?? "";
-  const reorderMs = now() - reorderStart;
 
   if (firstRowText !== "Row 10000") {
     throw new Error("Reordered first row was not rendered");
@@ -174,6 +269,7 @@ async function runKeyedReorderBenchmark(): Promise<BrowserBenchmarkResult> {
     unmountMs,
     firstRowText,
     remainingNodesAfterUnmount,
+    domMutationCounts,
   };
 
   writeResult(result);

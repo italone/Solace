@@ -1,6 +1,14 @@
 import { appendFile, mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
+export type DomMutationCounts = {
+  insertBefore: number;
+  setAttribute: number;
+  removeAttribute: number;
+  textContent: number;
+  removeChild: number;
+};
+
 export type BrowserBenchmarkHistoryResult =
   | {
       scenario: "large-list";
@@ -19,6 +27,7 @@ export type BrowserBenchmarkHistoryResult =
       unmountMs: number;
       firstRowText: string;
       remainingNodesAfterUnmount: number;
+      domMutationCounts: DomMutationCounts;
     };
 
 export type BrowserBenchmarkHistoryMetadata = {

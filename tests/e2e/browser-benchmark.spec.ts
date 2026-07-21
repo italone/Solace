@@ -10,6 +10,7 @@ import {
   type BrowserBenchmarkHistoryMetadata,
   type BrowserBenchmarkHistoryResult,
   type BrowserBenchmarkHistorySummary,
+  type DomMutationCounts,
 } from "./browser-benchmark-history";
 
 type BrowserBenchmarkResult = BrowserBenchmarkHistoryResult;
@@ -92,6 +93,12 @@ function expectBrowserBenchmarkResult(
 
   expectFinitePositive(result.reorderMs);
   expect(result.firstRowText).toBe("Row 10000");
+  expectDomMutationCounts(result.domMutationCounts);
+  expect(result.domMutationCounts.insertBefore).toBeGreaterThan(0);
+  expect(result.domMutationCounts.setAttribute).toBe(0);
+  expect(result.domMutationCounts.removeAttribute).toBe(0);
+  expect(result.domMutationCounts.textContent).toBe(0);
+  expect(result.domMutationCounts.removeChild).toBe(0);
 }
 
 function createBrowserBenchmarkSummary(
@@ -164,4 +171,17 @@ function readPackageMetadata(): PackageMetadata {
 function expectFinitePositive(value: number): void {
   expect(Number.isFinite(value)).toBe(true);
   expect(value).toBeGreaterThan(0);
+}
+
+function expectDomMutationCounts(counts: DomMutationCounts): void {
+  expectNonNegativeInteger(counts.insertBefore);
+  expectNonNegativeInteger(counts.setAttribute);
+  expectNonNegativeInteger(counts.removeAttribute);
+  expectNonNegativeInteger(counts.textContent);
+  expectNonNegativeInteger(counts.removeChild);
+}
+
+function expectNonNegativeInteger(value: number): void {
+  expect(Number.isInteger(value)).toBe(true);
+  expect(value).toBeGreaterThanOrEqual(0);
 }
