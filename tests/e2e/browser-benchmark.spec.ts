@@ -18,12 +18,16 @@ type BrowserBenchmarkMetadata = BrowserBenchmarkHistoryMetadata;
 
 type BrowserBenchmarkSummary = BrowserBenchmarkHistorySummary;
 
+type BrowserBenchmarkScenario = BrowserBenchmarkResult["scenario"];
+
 type PackageMetadata = {
   name: string;
   version: string;
 };
 
-test("measures large-list render, update, and unmount in a production browser build", async ({
+const browserBenchmarkScenarios = ["large-list", "keyed-reorder"] as const;
+
+test("measures browser benchmark scenarios in a production browser build", async ({
   browser,
   browserName,
   page,
@@ -35,42 +39,59 @@ test("measures large-list render, update, and unmount in a production browser bu
   await expect(page.locator("#app")).toContainText("Browser benchmark ready");
 
   for (let sampleIndex = 1; sampleIndex <= sampleSize; sampleIndex += 1) {
-    const result = await page.evaluate(async () => {
-      const api = window.__SOLACE_BENCHMARK__;
-      if (api === undefined) {
-        throw new Error("Missing browser benchmark API");
+    for (const scenario of browserBenchmarkScenarios) {
+      const result = await page.evaluate(async (scenario) => {
+        const benchmarkWindow = window as Window & {
+          __SOLACE_BENCHMARK__?: {
+            runScenario(scenario: BrowserBenchmarkScenario): Promise<BrowserBenchmarkResult>;
+          };
+        };
+        const api = benchmarkWindow.__SOLACE_BENCHMARK__;
+        if (api === undefined) {
+          throw new Error("Missing browser benchmark API");
+        }
+
+        return api.runScenario(scenario);
+      }, scenario);
+
+      const summary = createBrowserBenchmarkSummary(
+        result,
+        {
+          browserName,
+          browserVersion: browser.version(),
+          projectName: testInfo.project.name,
+        },
+        sampleSize,
+      );
+
+      expectBrowserBenchmarkSummary(summary, sampleSize, scenario);
+      console.log(`browser benchmark summary: ${JSON.stringify(summary)}`);
+
+      if (historyPath !== undefined) {
+        await appendBrowserBenchmarkHistory(historyPath, summary);
       }
-
-      return api.run();
-    });
-
-    const summary = createBrowserBenchmarkSummary(
-      result,
-      {
-        browserName,
-        browserVersion: browser.version(),
-        projectName: testInfo.project.name,
-      },
-      sampleSize,
-    );
-
-    expectBrowserBenchmarkSummary(summary, sampleSize);
-    console.log(`browser benchmark summary: ${JSON.stringify(summary)}`);
-
-    if (historyPath !== undefined) {
-      await appendBrowserBenchmarkHistory(historyPath, summary);
     }
   }
 });
 
-function expectBrowserBenchmarkResult(result: BrowserBenchmarkResult): void {
-  expect(result.scenario).toBe("large-list");
+function expectBrowserBenchmarkResult(
+  result: BrowserBenchmarkResult,
+  scenario: BrowserBenchmarkScenario,
+): void {
+  expect(result.scenario).toBe(scenario);
   expect(result.rows).toBe(10_000);
   expectFinitePositive(result.initialRenderMs);
-  expectFinitePositive(result.updateMs);
   expectFinitePositive(result.unmountMs);
-  expect(result.selectedText).toContain("Row 5000 selected");
   expect(result.remainingNodesAfterUnmount).toBe(0);
+
+  if (result.scenario === "large-list") {
+    expectFinitePositive(result.updateMs);
+    expect(result.selectedText).toContain("Row 5000 selected");
+    return;
+  }
+
+  expectFinitePositive(result.reorderMs);
+  expect(result.firstRowText).toBe("Row 10000");
 }
 
 function createBrowserBenchmarkSummary(
@@ -103,8 +124,12 @@ function createBrowserBenchmarkSummary(
   };
 }
 
-function expectBrowserBenchmarkSummary(summary: BrowserBenchmarkSummary, sampleSize: number): void {
-  expectBrowserBenchmarkResult(summary);
+function expectBrowserBenchmarkSummary(
+  summary: BrowserBenchmarkSummary,
+  sampleSize: number,
+  scenario: BrowserBenchmarkScenario,
+): void {
+  expectBrowserBenchmarkResult(summary, scenario);
   expect(summary.metadata.packageName).toBe("@italone/solace");
   expect(summary.metadata.packageVersion).toMatch(/^\d+\.\d+\.\d+/);
   expect(summary.metadata.node).toBe(process.version);
@@ -139,12 +164,4 @@ function readPackageMetadata(): PackageMetadata {
 function expectFinitePositive(value: number): void {
   expect(Number.isFinite(value)).toBe(true);
   expect(value).toBeGreaterThan(0);
-}
-
-declare global {
-  interface Window {
-    __SOLACE_BENCHMARK__?: {
-      run(): Promise<BrowserBenchmarkResult>;
-    };
-  }
 }

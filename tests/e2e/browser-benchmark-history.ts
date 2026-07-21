@@ -1,15 +1,25 @@
 import { appendFile, mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
-export type BrowserBenchmarkHistoryResult = {
-  scenario: "large-list";
-  rows: number;
-  initialRenderMs: number;
-  updateMs: number;
-  unmountMs: number;
-  selectedText: string;
-  remainingNodesAfterUnmount: number;
-};
+export type BrowserBenchmarkHistoryResult =
+  | {
+      scenario: "large-list";
+      rows: number;
+      initialRenderMs: number;
+      updateMs: number;
+      unmountMs: number;
+      selectedText: string;
+      remainingNodesAfterUnmount: number;
+    }
+  | {
+      scenario: "keyed-reorder";
+      rows: number;
+      initialRenderMs: number;
+      reorderMs: number;
+      unmountMs: number;
+      firstRowText: string;
+      remainingNodesAfterUnmount: number;
+    };
 
 export type BrowserBenchmarkHistoryMetadata = {
   packageName: string;

@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 
 const defaultHistoryPaths = [".benchmark-history/jsdom.jsonl", ".benchmark-history/browser.jsonl"];
-const numericBrowserMetrics = ["initialRenderMs", "updateMs", "unmountMs"];
+const numericBrowserMetrics = ["initialRenderMs", "updateMs", "reorderMs", "unmountMs"];
 const isCli = process.argv[1] === new URL(import.meta.url).pathname;
 
 if (isCli) {

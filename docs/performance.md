@@ -11,8 +11,8 @@ The repository currently validates behavior with:
 - Rollup production build checks.
 - Tinybench smoke benchmarks for initial render, list diff, keyed insert/remove/move/reorder,
   Fragment rendering, batched component updates, and mount/unmount loops.
-- Chromium browser production benchmark for large-list initial render, reactive update, and unmount
-  through `pnpm benchmark:browser`.
+- Chromium browser production benchmark for large-list initial render, reactive update, unmount,
+  and keyed reorder through `pnpm benchmark:browser`.
 
 The large-list e2e test confirms that 10,000 rows can render and one selected row can update in a browser smoke test. It is not a benchmark result.
 
@@ -101,6 +101,7 @@ Measured scenarios:
 | Initial large-list render   | 10,000 rows | selected row 1 is rendered             |
 | Reactive selected-row patch | 10,000 rows | selected row 5000 reflects final state |
 | Large-list unmount          | 10,000 rows | row nodes are removed                  |
+| Keyed reorder               | 10,000 rows | first row becomes `Row 10000`          |
 
 The command logs a `browser benchmark summary` JSON line. It intentionally does not enforce absolute
 timing thresholds because browser, CPU, power mode, and background process variance can dominate
@@ -120,7 +121,8 @@ The summary also includes reproducibility metadata:
 
 `metadata.sampleSize` defaults to `1` so `pnpm benchmark:browser` remains a smoke benchmark run. Set
 `SOLACE_BROWSER_BENCHMARK_SAMPLE_SIZE=3 pnpm benchmark:browser` to run three independent browser benchmark samples in
-one Playwright run. The command logs one `browser benchmark summary` line per sample.
+one Playwright run. Each sample runs both `large-list` and `keyed-reorder`, and the command logs one
+`browser benchmark summary` line per scenario per sample.
 
 Set `SOLACE_BROWSER_BENCHMARK_HISTORY_PATH=.benchmark-history/browser.jsonl pnpm benchmark:browser`
 to append one JSONL record after each successful Chromium production benchmark sample. Browser history
@@ -129,7 +131,8 @@ records persist the existing summary object; they do not add timing thresholds o
 Run `pnpm benchmark:history` to summarize local JSONL history from `.benchmark-history/jsdom.jsonl`
 and `.benchmark-history/browser.jsonl`. Use `pnpm benchmark:history -- --json <path>` for
 machine-readable output. The summary reports record counts plus median, p95, and variance for
-numeric browser timing metrics and jsdom task metrics; it does not enforce thresholds.
+numeric browser timing metrics, including `initialRenderMs`, `updateMs`, `reorderMs`, and `unmountMs`,
+and jsdom task metrics; it does not enforce thresholds.
 
 Use `pnpm benchmark:history -- --min-browser-count 5` to require each browser benchmark scenario
 to have at least five local history records. This is an opt-in trend quality gate for local or CI

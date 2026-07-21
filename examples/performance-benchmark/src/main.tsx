@@ -1,17 +1,28 @@
 import { h, nextTick, reactive, render } from "@italone/solace";
 
+type BrowserBenchmarkScenario = "large-list" | "keyed-reorder";
+
 type BrowserBenchmarkResult = {
-  scenario: "large-list";
+  scenario: BrowserBenchmarkScenario;
   rows: number;
   initialRenderMs: number;
-  updateMs: number;
   unmountMs: number;
-  selectedText: string;
   remainingNodesAfterUnmount: number;
-};
+} & (
+  | {
+      scenario: "large-list";
+      updateMs: number;
+      selectedText: string;
+    }
+  | {
+      scenario: "keyed-reorder";
+      reorderMs: number;
+      firstRowText: string;
+    }
+);
 
 type BrowserBenchmarkApi = {
-  run(): Promise<BrowserBenchmarkResult>;
+  runScenario(scenario: BrowserBenchmarkScenario): Promise<BrowserBenchmarkResult>;
 };
 
 declare global {
@@ -21,26 +32,8 @@ declare global {
 }
 
 const rows = Array.from({ length: 10_000 }, (_, index) => index + 1);
-const state = reactive({
-  selected: 1,
-});
-
 const output = document.querySelector("#benchmark-output");
 const app = document.querySelector("#app");
-
-const LargeList = () => () =>
-  h("section", { id: "benchmark-root" }, [
-    <h1>Solace Browser Benchmark</h1>,
-    <p id="selected-row">selected: {state.selected}</p>,
-    <div id="rows">
-      {rows.map((row) => (
-        <div key={row} data-row={row} class={state.selected === row ? "selected" : ""}>
-          Row {row}
-          {state.selected === row ? " selected" : ""}
-        </div>
-      ))}
-    </div>,
-  ]);
 
 function ensureApp(): Element {
   if (app === null) {
@@ -60,9 +53,36 @@ function writeResult(result: BrowserBenchmarkResult): void {
   }
 }
 
-async function runBenchmark(): Promise<BrowserBenchmarkResult> {
+async function runScenario(scenario: BrowserBenchmarkScenario): Promise<BrowserBenchmarkResult> {
+  switch (scenario) {
+    case "large-list":
+      return runLargeListBenchmark();
+    case "keyed-reorder":
+      return runKeyedReorderBenchmark();
+    default:
+      throw new Error(`Unknown browser benchmark scenario: ${scenario}`);
+  }
+}
+
+async function runLargeListBenchmark(): Promise<BrowserBenchmarkResult> {
   const container = ensureApp();
-  state.selected = 1;
+  const state = reactive({
+    selected: 1,
+  });
+
+  const LargeList = () => () =>
+    h("section", { id: "benchmark-root" }, [
+      <h1>Solace Browser Benchmark</h1>,
+      <p id="selected-row">selected: {state.selected}</p>,
+      <div id="rows">
+        {rows.map((row) => (
+          <div key={row} data-row={row} class={state.selected === row ? "selected" : ""}>
+            Row {row}
+            {state.selected === row ? " selected" : ""}
+          </div>
+        ))}
+      </div>,
+    ]);
 
   const initialStart = now();
   render(h(LargeList), container);
@@ -103,8 +123,65 @@ async function runBenchmark(): Promise<BrowserBenchmarkResult> {
   return result;
 }
 
+async function runKeyedReorderBenchmark(): Promise<BrowserBenchmarkResult> {
+  const container = ensureApp();
+  const state = reactive({
+    rowOrder: rows.slice(),
+  });
+
+  const KeyedReorder = () => () =>
+    h("section", { id: "benchmark-root" }, [
+      <h1>Solace Browser Benchmark</h1>,
+      <div id="rows">
+        {state.rowOrder.map((row) => (
+          <div key={row} data-row={row}>
+            Row {row}
+          </div>
+        ))}
+      </div>,
+    ]);
+
+  const initialStart = now();
+  render(h(KeyedReorder), container);
+  const firstRenderedRow = container.querySelector("#rows > div:first-child");
+  const initialRenderMs = now() - initialStart;
+
+  if (firstRenderedRow?.textContent?.trim() !== "Row 1") {
+    throw new Error("Initial keyed rows were not rendered");
+  }
+
+  const reorderStart = now();
+  state.rowOrder = [...state.rowOrder].reverse();
+  await nextTick();
+  const reorderedFirstRow = container.querySelector("#rows > div:first-child");
+  const firstRowText = reorderedFirstRow?.textContent?.trim() ?? "";
+  const reorderMs = now() - reorderStart;
+
+  if (firstRowText !== "Row 10000") {
+    throw new Error("Reordered first row was not rendered");
+  }
+
+  const unmountStart = now();
+  render(<section id="benchmark-complete">complete</section>, container);
+  const unmountMs = now() - unmountStart;
+  const remainingNodesAfterUnmount = container.querySelectorAll("#rows > div").length;
+
+  const result: BrowserBenchmarkResult = {
+    scenario: "keyed-reorder",
+    rows: rows.length,
+    initialRenderMs,
+    reorderMs,
+    unmountMs,
+    firstRowText,
+    remainingNodesAfterUnmount,
+  };
+
+  writeResult(result);
+  return result;
+}
+
 window.__SOLACE_BENCHMARK__ = {
-  run: runBenchmark,
+  runScenario,
 };
 
 if (app !== null) {

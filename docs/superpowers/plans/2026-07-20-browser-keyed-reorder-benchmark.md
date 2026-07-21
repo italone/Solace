@@ -19,8 +19,8 @@
 - Modify `tests/unit/scripts/benchmark-history-summary.test.ts`: cover `reorderMs` aggregation for keyed-reorder records.
 - Modify `scripts/summarize-benchmark-history.mjs`: include `reorderMs` in browser numeric metrics.
 - Modify `docs/performance.md`: document the new browser scenario and the summary shape.
-- Add `solace-project-log/solace-entries/2026-07-20-015-browser-keyed-reorder-benchmark-plan.md`: record the plan change.
-- Modify `solace-project-log/index.md`: append the 2026-07-20 row for this plan.
+- Add `solace-project-log/solace-entries/2026-07-20-016-browser-keyed-reorder-benchmark.md`: record the implementation change.
+- Modify `solace-project-log/index.md`: append the 2026-07-20 row for this implementation.
 
 No renderer diff behavior, keyed LIS logic, public API, package exports, or timing thresholds should change in this slice.
 
@@ -33,7 +33,7 @@ No renderer diff behavior, keyed LIS logic, public API, package exports, or timi
 - Modify: `tests/unit/scripts/browser-benchmark-history.test.ts`
 - Modify: `tests/unit/scripts/benchmark-history-summary.test.ts`
 
-- [ ] **Step 1: Add keyed-reorder expectations**
+- [x] **Step 1: Add keyed-reorder expectations**
 
 Update the browser history test with a keyed-reorder fixture and append assertion. Use a summary object shaped like this:
 
@@ -67,7 +67,7 @@ const keyedReorderSummary: BrowserBenchmarkHistorySummary = {
 
 Assert that the appended JSONL record preserves `scenario: "keyed-reorder"`, `reorderMs`, and `firstRowText`.
 
-- [ ] **Step 2: Add summary aggregation coverage**
+- [x] **Step 2: Add summary aggregation coverage**
 
 Extend the benchmark history summary test with keyed-reorder JSONL records and assert the new metric is summarized:
 
@@ -86,7 +86,7 @@ expect(keyedReorderGroup?.metrics.reorderMs).toEqual({
 
 Update the record helper so it can build both `large-list` and `keyed-reorder` summaries.
 
-- [ ] **Step 3: Verify the tests fail for the right reason**
+- [x] **Step 3: Verify the tests fail for the right reason**
 
 Run:
 
@@ -108,7 +108,7 @@ Expected: the browser history test fails because the result type is still `large
 - Modify: `tests/unit/scripts/browser-benchmark-history.test.ts`
 - Modify: `tests/unit/scripts/benchmark-history-summary.test.ts`
 
-- [ ] **Step 1: Expand the browser history result union**
+- [x] **Step 1: Expand the browser history result union**
 
 Change `BrowserBenchmarkHistoryResult` into a discriminated union with two scenarios:
 
@@ -136,7 +136,7 @@ export type BrowserBenchmarkHistoryResult =
 
 Keep `BrowserBenchmarkHistorySummary` as `BrowserBenchmarkHistoryResult & { metadata: ... }`, and keep `appendBrowserBenchmarkHistory()` writing one JSONL record per summary.
 
-- [ ] **Step 2: Add `reorderMs` to browser summary metrics**
+- [x] **Step 2: Add `reorderMs` to browser summary metrics**
 
 Update the browser metric list in `scripts/summarize-benchmark-history.mjs` from:
 
@@ -152,7 +152,7 @@ const numericBrowserMetrics = ["initialRenderMs", "updateMs", "reorderMs", "unmo
 
 Do not change the existing browser grouping key logic; `scenario` should keep separating `large-list` and `keyed-reorder`.
 
-- [ ] **Step 3: Re-run the focused tests**
+- [x] **Step 3: Re-run the focused tests**
 
 Run:
 
@@ -172,7 +172,7 @@ Expected: both tests pass once the union type and summary metric list are update
 - Modify: `examples/performance-benchmark/src/main.tsx`
 - Modify: `tests/e2e/browser-benchmark.spec.ts`
 
-- [ ] **Step 1: Split the fixture into named runners**
+- [x] **Step 1: Split the fixture into named runners**
 
 Replace the current single `runBenchmark()` path with explicit scenario runners, for example:
 
@@ -186,7 +186,7 @@ type BrowserBenchmarkApi = {
 
 Keep the existing `large-list` behavior unchanged. Add a keyed-reorder runner that mounts 10,000 keyed rows, reverses the row order, measures the reorder patch, asserts the first rendered row text is `Row 10000`, and then unmounts.
 
-- [ ] **Step 2: Drive both scenarios from Playwright**
+- [x] **Step 2: Drive both scenarios from Playwright**
 
 Update the e2e test to iterate over both scenarios for each sample:
 
@@ -207,7 +207,7 @@ for (const scenario of ["large-list", "keyed-reorder"] as const) {
 
 Keep the history append path unchanged so each scenario still produces one JSONL record per sample.
 
-- [ ] **Step 3: Verify the browser benchmark in Chromium**
+- [x] **Step 3: Verify the browser benchmark in Chromium**
 
 Run:
 
@@ -224,10 +224,10 @@ Expected: Chromium runs both scenarios successfully, prints one `browser benchma
 **Files:**
 
 - Modify: `docs/performance.md`
-- Add: `solace-project-log/solace-entries/2026-07-20-015-browser-keyed-reorder-benchmark-plan.md`
+- Add: `solace-project-log/solace-entries/2026-07-20-016-browser-keyed-reorder-benchmark.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Document the new browser scenario**
+- [x] **Step 1: Document the new browser scenario**
 
 Update the browser benchmark section in `docs/performance.md` so it lists both measured scenarios:
 
@@ -240,11 +240,11 @@ Update the browser benchmark section in `docs/performance.md` so it lists both m
 
 Also update the latest-history section to mention `reorderMs` in browser summary metrics.
 
-- [ ] **Step 2: Add the plan log entry and index row**
+- [x] **Step 2: Add the implementation log entry and index row**
 
-Create `solace-project-log/solace-entries/2026-07-20-015-browser-keyed-reorder-benchmark-plan.md` and append a `2026-07-20` row `015` to `solace-project-log/index.md`. The log should state that this work only adds the plan and does not change runtime behavior yet.
+Create `solace-project-log/solace-entries/2026-07-20-016-browser-keyed-reorder-benchmark.md` and append a `2026-07-20` row `016` to `solace-project-log/index.md`. The log should state that this work extends the browser benchmark harness and does not change renderer behavior.
 
-- [ ] **Step 3: Run the validation suite**
+- [x] **Step 3: Run the validation suite**
 
 Run:
 

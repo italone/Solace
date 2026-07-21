@@ -81,6 +81,71 @@ describe("benchmark history summary CLI", () => {
     });
   });
 
+  test("summarizes keyed reorder browser timing metrics separately by scenario", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "solace-history-summary-keyed-reorder-"));
+    const historyPath = join(tempDir, "history.jsonl");
+    await writeFile(
+      historyPath,
+      [
+        JSON.stringify(
+          createBrowserRecord({
+            scenario: "large-list",
+            initialRenderMs: 10,
+            updateMs: 4,
+            unmountMs: 1,
+          }),
+        ),
+        JSON.stringify(
+          createBrowserRecord({
+            scenario: "keyed-reorder",
+            initialRenderMs: 10,
+            reorderMs: 7 - Math.sqrt(15),
+            unmountMs: 1,
+          }),
+        ),
+        JSON.stringify(
+          createBrowserRecord({
+            scenario: "keyed-reorder",
+            initialRenderMs: 12,
+            reorderMs: 6,
+            unmountMs: 3,
+          }),
+        ),
+        JSON.stringify(
+          createBrowserRecord({
+            scenario: "keyed-reorder",
+            initialRenderMs: 14,
+            reorderMs: 8,
+            unmountMs: 5,
+          }),
+        ),
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const { stdout } = await execFileAsync("node", [
+      "scripts/summarize-benchmark-history.mjs",
+      "--json",
+      historyPath,
+    ]);
+    const summary = JSON.parse(stdout) as BenchmarkHistorySummary;
+    const keyedReorderGroup = summary.groups.find(
+      (group) => group.kind === "browser-benchmark" && group.scenario === "keyed-reorder",
+    );
+
+    expect(keyedReorderGroup).toMatchObject({
+      scenario: "keyed-reorder",
+      recordCount: 3,
+    });
+    expect(keyedReorderGroup?.metrics.reorderMs).toEqual({
+      count: 3,
+      median: 6,
+      p95: 8,
+      variance: 4,
+    });
+  });
+
   test("summarizes jsdom task timing metrics", async () => {
     const tempDir = await mkdtemp(join(tmpdir(), "solace-history-summary-jsdom-metrics-"));
     const historyPath = join(tempDir, "history.jsonl");
@@ -306,20 +371,34 @@ describe("benchmark history summary CLI", () => {
   });
 });
 
-function createBrowserRecord(metrics: {
-  initialRenderMs: number;
-  updateMs: number;
-  unmountMs: number;
-}) {
+type BrowserRecordOptions =
+  | {
+      scenario?: "large-list";
+      initialRenderMs: number;
+      updateMs: number;
+      unmountMs: number;
+    }
+  | {
+      scenario: "keyed-reorder";
+      initialRenderMs: number;
+      reorderMs: number;
+      unmountMs: number;
+    };
+
+function createBrowserRecord(options: BrowserRecordOptions) {
+  const scenario = options.scenario ?? "large-list";
+
   return {
     kind: "browser-benchmark",
     status: "passed",
     sampleCount: 1,
     summary: {
-      scenario: "large-list",
+      scenario,
       rows: 10_000,
-      ...metrics,
-      selectedText: "Row 5000 selected",
+      ...options,
+      ...(scenario === "large-list"
+        ? { selectedText: "Row 5000 selected" }
+        : { firstRowText: "Row 10000" }),
       remainingNodesAfterUnmount: 0,
       metadata: {
         browserName: "chromium",
