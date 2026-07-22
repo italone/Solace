@@ -7,6 +7,8 @@ export default defineConfig({
       "tests/e2e/**",
       "tests/integration/package-exports.test.ts",
       "node_modules/**",
+      ".worktrees/**",
+      "**/node_modules/**",
       "dist/**",
     ],
     coverage: {
