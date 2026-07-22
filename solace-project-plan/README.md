@@ -32,8 +32,8 @@
 
 ## 当前收口状态
 
-- `package.json` 仍保持 `"private": true`，在用户明确批准前不执行 `release:version` 或 `release:publish`。
-- `pnpm release:readiness` 已在默认非发布模式通过，publishability 在 private 状态下按预期跳过。
+- `vitest.config.ts` 已排除 `.worktrees/**` 与 `**/node_modules/**`，`pnpm test` 仅扫描框架测试文件。
 - `pnpm quality` 已通过 format、typecheck、JSX dev typecheck、lint、默认测试、package build 和 package exports 测试。
-- `pnpm release:check` 已通过 full gate，覆盖 coverage、package smoke、jsdom benchmark、Chromium production browser benchmark 和 browser e2e。
+- `package.json` 已设置 `"private": true`，在用户明确批准前不执行 `release:version` 或 `release:publish`。
+- `pnpm release:readiness` 已在默认非发布模式通过，publishability 在 private 状态下按预期跳过。
 - browser benchmark history 已支持 full-history、minimum count gate 和 latest-window summary，用于后续性能趋势判断。
