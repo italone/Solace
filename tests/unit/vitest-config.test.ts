@@ -5,6 +5,7 @@ describe("vitest config", () => {
   it("excludes worktree directories and nested node_modules", () => {
     const excludes = config.test?.exclude ?? [];
     expect(excludes).toContain(".worktrees/**");
-    expect(excludes.some((pattern: string) => pattern.includes("node_modules"))).toBe(true);
+    expect(excludes).toContain("node_modules/**");
+    expect(excludes).toContain("**/node_modules/**");
   });
 });
