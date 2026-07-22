@@ -14,6 +14,17 @@ import { queueJob } from "../scheduler/scheduler";
 import { ShapeFlags } from "../shared/flags";
 import type { VNode, VNodeProps } from "../vnode/vnode";
 import { createElement, insert, patchProp, remove, setText } from "./dom";
+import {
+  isKeyedReorderMovePathInstrumentationEnabled,
+  recordKeyedReorderAnchorLookup,
+  recordKeyedReorderLisLength,
+  recordKeyedReorderMatchedOldChild,
+  recordKeyedReorderMiddleSegment,
+  recordKeyedReorderMountedChildren,
+  recordKeyedReorderMovedExistingChild,
+  recordKeyedReorderRemovedOldChildren,
+  recordKeyedReorderStableMoveSkip,
+} from "./keyed-reorder-instrumentation";
 
 export function patch(
   n1: VNode | null,
@@ -533,6 +544,11 @@ function patchKeyedChildren(
     return;
   }
 
+  const shouldRecordMovePath = isKeyedReorderMovePathInstrumentationEnabled();
+  if (shouldRecordMovePath) {
+    recordKeyedReorderMiddleSegment();
+  }
+
   const oldKeyedChildren = new Map<string | number, KeyedChildRecord>();
   const newIndexToOldIndexMap = new Array<number>(newEnd - newStart + 1).fill(0);
   let matchedOldCount = 0;
@@ -553,22 +569,35 @@ function patchKeyedChildren(
 
     if (oldRecord !== null) {
       matchedOldCount += 1;
+      if (shouldRecordMovePath) {
+        recordKeyedReorderMatchedOldChild();
+      }
       newIndexToOldIndexMap[index - newStart] = oldRecord.index + 1;
       patch(oldRecord.vnode, newChild, container, null, parentComponent, appProvides);
     }
   }
 
   if (matchedOldCount < oldEnd - oldStart + 1) {
+    if (shouldRecordMovePath) {
+      recordKeyedReorderRemovedOldChildren(oldEnd - oldStart + 1 - matchedOldCount);
+    }
     unmountUnusedKeyedChildren(oldChildren, oldStart, oldEnd, newIndexToOldIndexMap);
   }
 
   const stablePositions = getIncreasingSubsequence(newIndexToOldIndexMap);
+  if (shouldRecordMovePath) {
+    recordKeyedReorderLisLength(stablePositions.length);
+  }
   let stableIndex = stablePositions.length - 1;
 
   for (let index = newEnd; index >= newStart; index -= 1) {
     if (newIndexToOldIndexMap[index - newStart] === 0) {
       const runStart = getNewRunStart(newIndexToOldIndexMap, newStart, index);
       if (runStart < index && canBatchMountChildren(newChildren, runStart, index)) {
+        if (shouldRecordMovePath) {
+          recordKeyedReorderMountedChildren(index - runStart + 1);
+          recordKeyedReorderAnchorLookup();
+        }
         mountNewChildren(
           newChildren,
           runStart,
@@ -582,6 +611,10 @@ function patchKeyedChildren(
         continue;
       }
 
+      if (shouldRecordMovePath) {
+        recordKeyedReorderMountedChildren(1);
+        recordKeyedReorderAnchorLookup();
+      }
       patch(
         null,
         newChildren[index],
@@ -599,10 +632,17 @@ function patchKeyedChildren(
     }
 
     if (stableIndex >= 0 && index - newStart === stablePositions[stableIndex]) {
+      if (shouldRecordMovePath) {
+        recordKeyedReorderStableMoveSkip();
+      }
       stableIndex -= 1;
       continue;
     }
 
+    if (shouldRecordMovePath) {
+      recordKeyedReorderMovedExistingChild();
+      recordKeyedReorderAnchorLookup();
+    }
     insert(childEl, container, getAnchor(newChildren, index + 1));
   }
 }

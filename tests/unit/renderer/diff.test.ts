@@ -5,11 +5,19 @@ import {
   onDevtoolsEvent,
   type DevtoolsEvent,
 } from "../../../src/devtools/events";
+import {
+  disableKeyedReorderMovePathInstrumentation,
+  enableKeyedReorderMovePathInstrumentation,
+  getKeyedReorderMovePathCounts,
+  resetKeyedReorderMovePathCounts,
+} from "../../../src/renderer/keyed-reorder-instrumentation";
 import { Fragment, h, render } from "../../../src/index";
 
 describe("renderer diff", () => {
   afterEach(() => {
     clearDevtoolsListeners();
+    resetKeyedReorderMovePathCounts();
+    disableKeyedReorderMovePathInstrumentation();
     vi.restoreAllMocks();
   });
 
@@ -31,6 +39,39 @@ describe("renderer diff", () => {
       },
     };
   }
+
+  it("keeps keyed reorder move-path counters disabled by default", () => {
+    const container = document.createElement("div");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+      ]),
+      container,
+    );
+
+    render(
+      h("ul", null, [
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "a" }, "A"),
+      ]),
+      container,
+    );
+
+    expect(getKeyedReorderMovePathCounts()).toEqual({
+      keyedMiddleSegments: 0,
+      matchedOldChildren: 0,
+      newChildrenMounted: 0,
+      removedOldChildren: 0,
+      lisLength: 0,
+      stableMoveSkips: 0,
+      movedExistingChildren: 0,
+      anchorLookups: 0,
+    });
+  });
 
   it("patches props on the same element type", () => {
     const container = document.createElement("div");
@@ -298,6 +339,89 @@ describe("renderer diff", () => {
     expect(after[2]).toBe(before.get("A"));
     expect(after[3]).not.toBe(before.get("C"));
     expect(before.get("C")?.isConnected).toBe(false);
+  });
+
+  it("records keyed full reverse move-path counters when enabled", () => {
+    const container = document.createElement("div");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "d" }, "D"),
+      ]),
+      container,
+    );
+
+    enableKeyedReorderMovePathInstrumentation();
+
+    render(
+      h("ul", null, [
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "a" }, "A"),
+      ]),
+      container,
+    );
+
+    expect([...container.querySelectorAll("li")].map((li) => li.textContent)).toEqual([
+      "D",
+      "C",
+      "B",
+      "A",
+    ]);
+    expect(getKeyedReorderMovePathCounts()).toEqual({
+      keyedMiddleSegments: 1,
+      matchedOldChildren: 4,
+      newChildrenMounted: 0,
+      removedOldChildren: 0,
+      lisLength: 1,
+      stableMoveSkips: 1,
+      movedExistingChildren: 3,
+      anchorLookups: 3,
+    });
+  });
+
+  it("records keyed mixed mount remove and move counters when enabled", () => {
+    const container = document.createElement("div");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "d" }, "D"),
+      ]),
+      container,
+    );
+
+    enableKeyedReorderMovePathInstrumentation();
+
+    render(
+      h("ul", null, [
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "e" }, "E"),
+        h("li", { key: "a" }, "A"),
+      ]),
+      container,
+    );
+
+    const after = [...container.querySelectorAll("li")];
+
+    expect(after.map((li) => li.textContent)).toEqual(["D", "B", "E", "A"]);
+    expect(getKeyedReorderMovePathCounts()).toEqual({
+      keyedMiddleSegments: 1,
+      matchedOldChildren: 3,
+      newChildrenMounted: 1,
+      removedOldChildren: 1,
+      lisLength: 1,
+      stableMoveSkips: 1,
+      movedExistingChildren: 2,
+      anchorLookups: 3,
+    });
   });
 
   it("mounts keyed children between synced prefix and suffix", () => {
