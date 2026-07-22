@@ -157,7 +157,7 @@ Run `pnpm benchmark:history -- --help` to list the supported summary options.
 
 ### Latest Local Browser History Summary
 
-Date: 2026-07-21
+Date: 2026-07-22
 
 Local history command:
 
@@ -165,26 +165,10 @@ Local history command:
 pnpm benchmark:history -- --json
 ```
 
-The local ignored history currently contains 65 Chromium `large-list` production benchmark records and 15 Chromium
-`keyed-reorder` production benchmark records. The `--min-browser-count 5` trend gate passes locally for both browser
-scenarios. p95 still reflects the slowest observed samples and should be treated as trend context only, not a release
-threshold.
-
-Full-history `large-list` summary:
-
-| Metric            | Count | Median | p95  | Variance |
-| ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 65    | 7.3    | 15.8 | 17.81    |
-| `updateMs`        | 65    | 3.5    | 5.7  | 3.22     |
-| `unmountMs`       | 65    | 1.2    | 1.5  | 2.76     |
-
-Full-history `keyed-reorder` summary:
-
-| Metric            | Count | Median | p95 | Variance |
-| ----------------- | ----- | ------ | --- | -------- |
-| `initialRenderMs` | 15    | 5.6    | 6.7 | 0.45     |
-| `reorderMs`       | 15    | 4.7    | 6.2 | 0.4      |
-| `unmountMs`       | 15    | 1.2    | 1.6 | 0.03     |
+The local ignored history currently contains five fresh Chromium `large-list` production benchmark records and five
+Chromium `keyed-reorder` production benchmark records from the latest refresh. The `--min-browser-count 5` trend gate
+passes locally for both browser scenarios. p95 reflects the slowest observed samples in the fresh window and should be
+treated as trend context only, not a release threshold.
 
 Latest-window command:
 
@@ -193,25 +177,31 @@ pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
 ```
 
 The latest five Chromium `large-list` records include one slow first initial-render sample and one slow unmount sample,
-so latest-window p95 remains noisy. The latest five Chromium `keyed-reorder` records include
-`domMutationCounts`: every sample recorded `insertBefore: 9999`, `setAttribute: 0`, `removeAttribute: 0`,
-`textContent: 0`, and `removeChild: 0` during the reorder update window.
+so latest-window p95 remains noisy. The latest five Chromium `keyed-reorder` records include `domMutationCounts`: every
+sample recorded `insertBefore: 9999`, `setAttribute: 0`, `removeAttribute: 0`, `textContent: 0`, and `removeChild: 0`
+during the reorder update window. They also include `movePathCounts`: every sample recorded one keyed middle segment,
+10,000 matched old children, zero new mounts, zero old removals, LIS length 1, one stable skip, 9,999 existing-node
+moves, and 9,999 move-loop anchor lookups.
 
 Latest-window `large-list` summary:
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 5     | 7.4    | 15.8 | 14.1     |
-| `updateMs`        | 5     | 3.1    | 5.1  | 0.65     |
-| `unmountMs`       | 5     | 1.2    | 1.3  | 0.02     |
+| `initialRenderMs` | 5     | 6.5    | 11.8 | 4.22     |
+| `updateMs`        | 5     | 3.6    | 5.2  | 0.61     |
+| `unmountMs`       | 5     | 1.3    | 3.8  | 1.07     |
 
 Latest-window `keyed-reorder` summary:
 
 | Metric            | Count | Median | p95 | Variance |
 | ----------------- | ----- | ------ | --- | -------- |
-| `initialRenderMs` | 5     | 5.6    | 6.4 | 0.24     |
-| `reorderMs`       | 5     | 4.7    | 5.8 | 0.33     |
-| `unmountMs`       | 5     | 1.2    | 1.3 | 0.01     |
+| `initialRenderMs` | 5     | 5.0    | 6.5 | 0.59     |
+| `reorderMs`       | 5     | 4.6    | 5.5 | 0.15     |
+| `unmountMs`       | 5     | 1.3    | 1.3 | 0.00     |
+
+Latest `keyed-reorder` move-path diagnostics report full reverse reorder as one keyed middle segment, 10,000 matched
+old children, zero mounts/removes, LIS length 1, one stable skip, 9,999 existing-node moves, and 9,999 move-loop anchor
+lookups. This confirms the current fixture is dominated by required DOM placements rather than prop/text/remove writes.
 
 ## Benchmark Principles
 
