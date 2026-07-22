@@ -801,7 +801,7 @@ Expected: one commit containing browser result and history wiring.
 - Add: `solace-project-log/solace-entries/2026-07-21-014-keyed-reorder-move-path-instrumentation.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update performance documentation**
+- [x] **Step 1: Update performance documentation**
 
 In `docs/performance.md`, update the browser benchmark section that describes keyed reorder diagnostics. Add this paragraph near the existing `domMutationCounts` note:
 
@@ -813,7 +813,7 @@ existing-node moves, and move-loop anchor lookups. These counters are diagnostic
 thresholds.
 ```
 
-- [ ] **Step 2: Create the implementation project log**
+- [x] **Step 2: Create the implementation project log**
 
 Create `solace-project-log/solace-entries/2026-07-21-014-keyed-reorder-move-path-instrumentation.md` with this content after validation results are known:
 
@@ -879,7 +879,7 @@ lookup 的分布，再决定是否进入 move-path 优化。
 - 基于新样本决定下一轮性能切片是否瞄准 anchor lookup、move-loop branching，或扩展更多 reorder shapes。
 ```
 
-- [ ] **Step 3: Add the implementation row to the log index**
+- [x] **Step 3: Add the implementation row to the log index**
 
 In `solace-project-log/index.md`, add this row after the `013` plan row:
 
@@ -887,7 +887,7 @@ In `solace-project-log/index.md`, add this row after the `013` plan row:
 | 014 | 补充 keyed reorder move path instrumentation | renderer performance instrumentation、browser benchmark、项目日志 | `src/renderer/keyed-reorder-instrumentation.ts`, `src/renderer/diff.ts`, `tests/unit/renderer/diff.test.ts`, `examples/performance-benchmark/src/main.tsx`, `tests/e2e/browser-benchmark-history.ts`, `tests/unit/scripts/browser-benchmark-history.test.ts`, `tests/e2e/browser-benchmark.spec.ts`, `docs/performance.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-21-014-keyed-reorder-move-path-instrumentation.md) |
 ```
 
-- [ ] **Step 4: Format docs and source files**
+- [x] **Step 4: Format docs and source files**
 
 Run:
 
@@ -897,7 +897,7 @@ pnpm prettier --write src/renderer/keyed-reorder-instrumentation.ts src/renderer
 
 Expected: exits with code 0.
 
-- [ ] **Step 5: Run final validation**
+- [x] **Step 5: Run final validation**
 
 Run:
 
@@ -963,7 +963,7 @@ git diff --check
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Commit documentation and final implementation state**
+- [x] **Step 6: Commit documentation and final implementation state**
 
 Run:
 

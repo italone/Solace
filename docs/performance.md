@@ -135,6 +135,12 @@ These counters are diagnostic context for choosing the next renderer performance
 For the current stable reverse reorder fixture, `insertBefore` should be greater than zero, while `setAttribute`,
 `removeAttribute`, `textContent`, and `removeChild` should remain zero.
 
+`keyed-reorder` results also include `movePathCounts`, an internal renderer diagnostic captured only during the measured
+reorder update window. `domMutationCounts` describes browser-visible DOM writes; `movePathCounts` describes renderer
+move-path intent: keyed middle segments, matched old children, new mounts, old removals, LIS length, stable move skips,
+existing-node moves, and move-loop anchor lookups. These counters are diagnostic trend context and are not release
+thresholds.
+
 Run `pnpm benchmark:history` to summarize local JSONL history from `.benchmark-history/jsdom.jsonl`
 and `.benchmark-history/browser.jsonl`. Use `pnpm benchmark:history -- --json <path>` for
 machine-readable output. The summary reports record counts plus median, p95, and variance for
