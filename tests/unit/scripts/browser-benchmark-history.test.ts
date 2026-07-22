@@ -52,6 +52,16 @@ const keyedReorderSummary: BrowserBenchmarkHistorySummary = {
     textContent: 0,
     removeChild: 0,
   },
+  movePathCounts: {
+    keyedMiddleSegments: 1,
+    matchedOldChildren: 10_000,
+    newChildrenMounted: 0,
+    removedOldChildren: 0,
+    lisLength: 1,
+    stableMoveSkips: 1,
+    movedExistingChildren: 9999,
+    anchorLookups: 9999,
+  },
   metadata: {
     packageName: "@italone/solace",
     packageVersion: "0.0.0",
@@ -167,6 +177,16 @@ describe("browser benchmark history", () => {
           removeAttribute: 0,
           textContent: 0,
           removeChild: 0,
+        },
+        movePathCounts: {
+          keyedMiddleSegments: 1,
+          matchedOldChildren: 10_000,
+          newChildrenMounted: 0,
+          removedOldChildren: 0,
+          lisLength: 1,
+          stableMoveSkips: 1,
+          movedExistingChildren: 9999,
+          anchorLookups: 9999,
         },
       });
     } finally {

@@ -11,6 +11,7 @@ import {
   type BrowserBenchmarkHistoryResult,
   type BrowserBenchmarkHistorySummary,
   type DomMutationCounts,
+  type MovePathCounts,
 } from "./browser-benchmark-history";
 
 type BrowserBenchmarkResult = BrowserBenchmarkHistoryResult;
@@ -99,6 +100,15 @@ function expectBrowserBenchmarkResult(
   expect(result.domMutationCounts.removeAttribute).toBe(0);
   expect(result.domMutationCounts.textContent).toBe(0);
   expect(result.domMutationCounts.removeChild).toBe(0);
+  expectMovePathCounts(result.movePathCounts);
+  expect(result.movePathCounts.keyedMiddleSegments).toBe(1);
+  expect(result.movePathCounts.matchedOldChildren).toBe(10_000);
+  expect(result.movePathCounts.newChildrenMounted).toBe(0);
+  expect(result.movePathCounts.removedOldChildren).toBe(0);
+  expect(result.movePathCounts.lisLength).toBe(1);
+  expect(result.movePathCounts.stableMoveSkips).toBe(1);
+  expect(result.movePathCounts.movedExistingChildren).toBe(9999);
+  expect(result.movePathCounts.anchorLookups).toBeGreaterThanOrEqual(9999);
 }
 
 function createBrowserBenchmarkSummary(
@@ -179,6 +189,17 @@ function expectDomMutationCounts(counts: DomMutationCounts): void {
   expectNonNegativeInteger(counts.removeAttribute);
   expectNonNegativeInteger(counts.textContent);
   expectNonNegativeInteger(counts.removeChild);
+}
+
+function expectMovePathCounts(counts: MovePathCounts): void {
+  expectNonNegativeInteger(counts.keyedMiddleSegments);
+  expectNonNegativeInteger(counts.matchedOldChildren);
+  expectNonNegativeInteger(counts.newChildrenMounted);
+  expectNonNegativeInteger(counts.removedOldChildren);
+  expectNonNegativeInteger(counts.lisLength);
+  expectNonNegativeInteger(counts.stableMoveSkips);
+  expectNonNegativeInteger(counts.movedExistingChildren);
+  expectNonNegativeInteger(counts.anchorLookups);
 }
 
 function expectNonNegativeInteger(value: number): void {

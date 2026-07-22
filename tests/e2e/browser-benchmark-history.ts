@@ -9,6 +9,17 @@ export type DomMutationCounts = {
   removeChild: number;
 };
 
+export type MovePathCounts = {
+  keyedMiddleSegments: number;
+  matchedOldChildren: number;
+  newChildrenMounted: number;
+  removedOldChildren: number;
+  lisLength: number;
+  stableMoveSkips: number;
+  movedExistingChildren: number;
+  anchorLookups: number;
+};
+
 export type BrowserBenchmarkHistoryResult =
   | {
       scenario: "large-list";
@@ -28,6 +39,7 @@ export type BrowserBenchmarkHistoryResult =
       firstRowText: string;
       remainingNodesAfterUnmount: number;
       domMutationCounts: DomMutationCounts;
+      movePathCounts: MovePathCounts;
     };
 
 export type BrowserBenchmarkHistoryMetadata = {

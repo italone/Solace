@@ -1,4 +1,11 @@
 import { h, nextTick, reactive, render } from "@italone/solace";
+import {
+  disableKeyedReorderMovePathInstrumentation,
+  enableKeyedReorderMovePathInstrumentation,
+  getKeyedReorderMovePathCounts,
+  resetKeyedReorderMovePathCounts,
+  type KeyedReorderMovePathCounts,
+} from "../../../src/renderer/keyed-reorder-instrumentation";
 
 type BrowserBenchmarkScenario = "large-list" | "keyed-reorder";
 
@@ -9,6 +16,8 @@ type DomMutationCounts = {
   textContent: number;
   removeChild: number;
 };
+
+type MovePathCounts = KeyedReorderMovePathCounts;
 
 type BrowserBenchmarkResult = {
   scenario: BrowserBenchmarkScenario;
@@ -27,6 +36,7 @@ type BrowserBenchmarkResult = {
       reorderMs: number;
       firstRowText: string;
       domMutationCounts: DomMutationCounts;
+      movePathCounts: MovePathCounts;
     }
 );
 
@@ -216,6 +226,24 @@ async function measureDomMutations<T>(run: () => Promise<T>): Promise<{
   }
 }
 
+async function measureKeyedReorderMovePath<T>(run: () => Promise<T>): Promise<{
+  result: T;
+  counts: MovePathCounts;
+}> {
+  enableKeyedReorderMovePathInstrumentation();
+
+  try {
+    const result = await run();
+    return {
+      result,
+      counts: getKeyedReorderMovePathCounts(),
+    };
+  } finally {
+    resetKeyedReorderMovePathCounts();
+    disableKeyedReorderMovePathInstrumentation();
+  }
+}
+
 async function runKeyedReorderBenchmark(): Promise<BrowserBenchmarkResult> {
   const container = ensureApp();
   const state = reactive({
@@ -243,12 +271,17 @@ async function runKeyedReorderBenchmark(): Promise<BrowserBenchmarkResult> {
     throw new Error("Initial keyed rows were not rendered");
   }
 
-  const { result: reorderMs, counts: domMutationCounts } = await measureDomMutations(async () => {
-    const reorderStart = now();
-    state.rowOrder = [...state.rowOrder].reverse();
-    await nextTick();
-    return now() - reorderStart;
-  });
+  const {
+    result: { result: reorderMs, counts: movePathCounts },
+    counts: domMutationCounts,
+  } = await measureDomMutations(() =>
+    measureKeyedReorderMovePath(async () => {
+      const reorderStart = now();
+      state.rowOrder = [...state.rowOrder].reverse();
+      await nextTick();
+      return now() - reorderStart;
+    }),
+  );
   const reorderedFirstRow = container.querySelector("#rows > div:first-child");
   const firstRowText = reorderedFirstRow?.textContent?.trim() ?? "";
 
@@ -270,6 +303,7 @@ async function runKeyedReorderBenchmark(): Promise<BrowserBenchmarkResult> {
     firstRowText,
     remainingNodesAfterUnmount,
     domMutationCounts,
+    movePathCounts,
   };
 
   writeResult(result);
