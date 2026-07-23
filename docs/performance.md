@@ -193,6 +193,9 @@ during the reorder update window. They also include `movePathCounts`: every samp
 10,000 matched old children, zero new mounts, zero old removals, LIS length 1, one stable skip, 9,999 existing-node
 moves, and 9,999 move-loop anchor lookups.
 
+The following latest-window data was captured before the anchor-node optimization in
+2026-07-23-001. Task 6 will refresh this window with fresh five-sample data for every shape.
+
 Latest-window `large-list` summary:
 
 | Metric            | Count | Median | p95  | Variance |
