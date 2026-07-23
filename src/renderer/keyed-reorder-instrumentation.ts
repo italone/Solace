@@ -6,6 +6,7 @@ export type KeyedReorderMovePathCounts = {
   lisLength: number;
   stableMoveSkips: number;
   movedExistingChildren: number;
+  movedExistingBatches: number;
   anchorLookups: number;
 };
 
@@ -18,6 +19,7 @@ export function createEmptyKeyedReorderMovePathCounts(): KeyedReorderMovePathCou
     lisLength: 0,
     stableMoveSkips: 0,
     movedExistingChildren: 0,
+    movedExistingBatches: 0,
     anchorLookups: 0,
   };
 }
@@ -72,4 +74,8 @@ export function recordKeyedReorderStableMoveSkip(): void {
 
 export function recordKeyedReorderMovedExistingChild(): void {
   counts.movedExistingChildren += 1;
+}
+
+export function recordKeyedReorderMovedExistingBatch(): void {
+  counts.movedExistingBatches += 1;
 }
