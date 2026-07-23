@@ -39,6 +39,7 @@ const summary: BrowserBenchmarkHistorySummary = {
 
 const keyedReorderSummary: BrowserBenchmarkHistorySummary = {
   scenario: "keyed-reorder",
+  shape: "reverse",
   rows: 10_000,
   initialRenderMs: 1,
   reorderMs: 2,
@@ -60,7 +61,7 @@ const keyedReorderSummary: BrowserBenchmarkHistorySummary = {
     lisLength: 1,
     stableMoveSkips: 1,
     movedExistingChildren: 9999,
-    anchorLookups: 9999,
+    anchorLookups: 0,
   },
   metadata: {
     packageName: "@italone/solace",
@@ -169,6 +170,7 @@ describe("browser benchmark history", () => {
 
       expect(record.summary).toMatchObject({
         scenario: "keyed-reorder",
+        shape: "reverse",
         reorderMs: 2,
         firstRowText: "Row 10000",
         domMutationCounts: {
@@ -186,7 +188,7 @@ describe("browser benchmark history", () => {
           lisLength: 1,
           stableMoveSkips: 1,
           movedExistingChildren: 9999,
-          anchorLookups: 9999,
+          anchorLookups: 0,
         },
       });
     } finally {

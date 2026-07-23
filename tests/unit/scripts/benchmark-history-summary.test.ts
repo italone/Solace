@@ -146,6 +146,89 @@ describe("benchmark history summary CLI", () => {
     });
   });
 
+  test("groups keyed-reorder browser records by shape", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "solace-history-summary-keyed-reorder-shape-"));
+    const historyPath = join(tempDir, "history.jsonl");
+    await writeFile(
+      historyPath,
+      [
+        JSON.stringify(createBrowserRecord({ initialRenderMs: 10, updateMs: 4, unmountMs: 1 })),
+        JSON.stringify(
+          createBrowserRecord({
+            scenario: "keyed-reorder",
+            shape: "reverse",
+            initialRenderMs: 10,
+            reorderMs: 5,
+            unmountMs: 1,
+          }),
+        ),
+        JSON.stringify(
+          createBrowserRecord({
+            scenario: "keyed-reorder",
+            shape: "reverse",
+            initialRenderMs: 12,
+            reorderMs: 7,
+            unmountMs: 3,
+          }),
+        ),
+        JSON.stringify(
+          createBrowserRecord({
+            scenario: "keyed-reorder",
+            shape: "sorted",
+            initialRenderMs: 20,
+            reorderMs: 4,
+            unmountMs: 1,
+          }),
+        ),
+        JSON.stringify(
+          createBrowserRecord({
+            scenario: "keyed-reorder",
+            shape: "sorted",
+            initialRenderMs: 22,
+            reorderMs: 8,
+            unmountMs: 2,
+          }),
+        ),
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const { stdout } = await execFileAsync("node", [
+      "scripts/summarize-benchmark-history.mjs",
+      "--json",
+      historyPath,
+    ]);
+    const summary = JSON.parse(stdout) as BenchmarkHistorySummary;
+    const reverseGroup = summary.groups.find(
+      (group) => group.kind === "browser-benchmark" && group.scenario === "keyed-reorder:reverse",
+    );
+    const sortedGroup = summary.groups.find(
+      (group) => group.kind === "browser-benchmark" && group.scenario === "keyed-reorder:sorted",
+    );
+
+    expect(reverseGroup).toMatchObject({
+      scenario: "keyed-reorder:reverse",
+      recordCount: 2,
+    });
+    expect(reverseGroup?.metrics.reorderMs).toEqual({
+      count: 2,
+      median: 6,
+      p95: 7,
+      variance: 1,
+    });
+    expect(sortedGroup).toMatchObject({
+      scenario: "keyed-reorder:sorted",
+      recordCount: 2,
+    });
+    expect(sortedGroup?.metrics.reorderMs).toEqual({
+      count: 2,
+      median: 6,
+      p95: 8,
+      variance: 4,
+    });
+  });
+
   test("summarizes jsdom task timing metrics", async () => {
     const tempDir = await mkdtemp(join(tmpdir(), "solace-history-summary-jsdom-metrics-"));
     const historyPath = join(tempDir, "history.jsonl");
@@ -380,6 +463,7 @@ type BrowserRecordOptions =
     }
   | {
       scenario: "keyed-reorder";
+      shape?: string;
       initialRenderMs: number;
       reorderMs: number;
       unmountMs: number;

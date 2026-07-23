@@ -32,6 +32,7 @@ export type BrowserBenchmarkHistoryResult =
     }
   | {
       scenario: "keyed-reorder";
+      shape?: string;
       rows: number;
       initialRenderMs: number;
       reorderMs: number;

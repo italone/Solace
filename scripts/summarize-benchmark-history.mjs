@@ -267,10 +267,19 @@ function createSummaryGroups(records) {
 
 function getGroupKey(record) {
   if (record?.kind === "browser-benchmark" && typeof record.summary?.scenario === "string") {
+    const scenario = record.summary.scenario;
+    if (typeof record.summary.shape === "string") {
+      return {
+        key: `browser-benchmark:${scenario}:${record.summary.shape}`,
+        kind: "browser-benchmark",
+        scenario: `${scenario}:${record.summary.shape}`,
+      };
+    }
+
     return {
-      key: `browser-benchmark:${record.summary.scenario}`,
+      key: `browser-benchmark:${scenario}`,
       kind: "browser-benchmark",
-      scenario: record.summary.scenario,
+      scenario,
     };
   }
 
