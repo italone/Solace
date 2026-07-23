@@ -103,7 +103,11 @@ Measured scenarios:
 | Initial large-list render   | 10,000 rows | selected row 1 is rendered             |
 | Reactive selected-row patch | 10,000 rows | selected row 5000 reflects final state |
 | Large-list unmount          | 10,000 rows | row nodes are removed                  |
-| Keyed reorder               | 10,000 rows | first row becomes `Row 10000`          |
+| Keyed reorder (reverse)     | 10,000 rows | first row becomes `Row 10000`          |
+| Keyed reorder (sorted)      | 10,000 rows | first row stays `Row 1`                |
+| Keyed reorder (swap)        | 10,000 rows | first row becomes `Row 2`              |
+| Keyed reorder (shuffle)     | 10,000 rows | first row matches seeded result        |
+| Keyed reorder (shift)       | 10,000 rows | first row becomes `Row 9901`           |
 
 The command logs a `browser benchmark summary` JSON line. It intentionally does not enforce absolute
 timing thresholds because browser, CPU, power mode, and background process variance can dominate
@@ -140,6 +144,12 @@ reorder update window. `domMutationCounts` describes browser-visible DOM writes;
 move-path intent: keyed middle segments, matched old children, new mounts, old removals, LIS length, stable move skips,
 existing-node moves, and move-loop anchor lookups. These counters are diagnostic trend context and are not release
 thresholds.
+
+`keyed-reorder` runs a shape matrix: `reverse`, `sorted`, `swap-neighbors`, `shuffle`, and
+`shift-window`. The `shuffle` shape uses a seeded PRNG so results are deterministic across runs.
+Each shape logs its own browser benchmark summary record, allowing comparison of move-path behavior
+across stable, pathological, and realistic reorder distributions. After the anchor-node
+optimization, every keyed-reorder shape reports `movePathCounts.anchorLookups: 0`.
 
 Run `pnpm benchmark:history` to summarize local JSONL history from `.benchmark-history/jsdom.jsonl`
 and `.benchmark-history/browser.jsonl`. Use `pnpm benchmark:history -- --json <path>` for
