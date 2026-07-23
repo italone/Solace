@@ -61,6 +61,7 @@ const keyedReorderSummary: BrowserBenchmarkHistorySummary = {
     lisLength: 1,
     stableMoveSkips: 1,
     movedExistingChildren: 9999,
+    movedExistingBatches: 1,
     anchorLookups: 0,
   },
   metadata: {

@@ -69,6 +69,7 @@ describe("renderer diff", () => {
       lisLength: 0,
       stableMoveSkips: 0,
       movedExistingChildren: 0,
+      movedExistingBatches: 0,
       anchorLookups: 0,
     });
   });
@@ -380,6 +381,7 @@ describe("renderer diff", () => {
       lisLength: 1,
       stableMoveSkips: 1,
       movedExistingChildren: 3,
+      movedExistingBatches: 1,
       anchorLookups: 0,
     });
   });
@@ -526,6 +528,100 @@ describe("renderer diff", () => {
     expect(counts.movedExistingChildren).toBeGreaterThan(0);
   });
 
+  it("batches two consecutive moved children into one movedExistingBatch", () => {
+    const container = document.createElement("div");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "d" }, "D"),
+      ]),
+      container,
+    );
+
+    enableKeyedReorderMovePathInstrumentation();
+
+    render(
+      h("ul", null, [
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+      ]),
+      container,
+    );
+
+    expect([...container.querySelectorAll("li")].map((li) => li.textContent)).toEqual([
+      "C",
+      "D",
+      "A",
+      "B",
+    ]);
+
+    const counts = getKeyedReorderMovePathCounts();
+
+    expect(counts.keyedMiddleSegments).toBe(1);
+    expect(counts.matchedOldChildren).toBe(4);
+    expect(counts.newChildrenMounted).toBe(0);
+    expect(counts.removedOldChildren).toBe(0);
+    expect(counts.anchorLookups).toBe(0);
+    expect(counts.movedExistingChildren).toBe(2);
+    expect(counts.movedExistingBatches).toBe(1);
+    expect(counts.stableMoveSkips).toBe(2);
+  });
+
+  it("counts two separated moved runs as two movedExistingBatches", () => {
+    const container = document.createElement("div");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "e" }, "E"),
+        h("li", { key: "f" }, "F"),
+      ]),
+      container,
+    );
+
+    enableKeyedReorderMovePathInstrumentation();
+
+    render(
+      h("ul", null, [
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "f" }, "F"),
+        h("li", { key: "e" }, "E"),
+        h("li", { key: "c" }, "C"),
+      ]),
+      container,
+    );
+
+    expect([...container.querySelectorAll("li")].map((li) => li.textContent)).toEqual([
+      "D",
+      "B",
+      "A",
+      "F",
+      "E",
+      "C",
+    ]);
+
+    const counts = getKeyedReorderMovePathCounts();
+
+    expect(counts.keyedMiddleSegments).toBe(1);
+    expect(counts.matchedOldChildren).toBe(6);
+    expect(counts.newChildrenMounted).toBe(0);
+    expect(counts.removedOldChildren).toBe(0);
+    expect(counts.anchorLookups).toBe(0);
+    expect(counts.movedExistingChildren).toBe(4);
+    expect(counts.movedExistingBatches).toBe(2);
+    expect(counts.stableMoveSkips).toBe(2);
+  });
+
   it("records keyed mixed mount remove and move counters when enabled", () => {
     const container = document.createElement("div");
 
@@ -562,6 +658,7 @@ describe("renderer diff", () => {
       lisLength: 1,
       stableMoveSkips: 1,
       movedExistingChildren: 2,
+      movedExistingBatches: 1,
       anchorLookups: 0,
     });
   });
@@ -866,8 +963,8 @@ describe("renderer diff", () => {
     }
 
     const after = [...container.querySelectorAll("li")];
-    const patchKeyedChildrenSetAllocations = allocationStacks.filter((stack) =>
-      stack.includes("patchKeyedChildren"),
+    const unusedChildSetAllocations = allocationStacks.filter((stack) =>
+      stack.includes("unmountUnusedKeyedChildren"),
     );
 
     expect(after.map((li) => li.textContent)).toEqual(["D", "C", "B", "A"]);
@@ -875,7 +972,7 @@ describe("renderer diff", () => {
     expect(after[1]).toBe(before.get("C"));
     expect(after[2]).toBe(before.get("B"));
     expect(after[3]).toBe(before.get("A"));
-    expect(patchKeyedChildrenSetAllocations).toHaveLength(0);
+    expect(unusedChildSetAllocations).toHaveLength(0);
   });
 
   it("falls back to index patching for mixed keyed and unkeyed children", () => {

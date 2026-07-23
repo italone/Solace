@@ -157,7 +157,8 @@ function expectBrowserBenchmarkResult(
       expect(result.movePathCounts.lisLength).toBe(1);
       expect(result.movePathCounts.stableMoveSkips).toBe(1);
       expect(result.movePathCounts.movedExistingChildren).toBe(rowCount - 1);
-      expect(result.domMutationCounts.insertBefore).toBe(rowCount - 1);
+      expect(result.movePathCounts.movedExistingBatches).toBe(1);
+      expect(result.domMutationCounts.insertBefore).toBe(1);
       break;
     case "sorted":
       expect(result.firstRowText).toBe("Row 1");
@@ -166,6 +167,7 @@ function expectBrowserBenchmarkResult(
       expect(result.movePathCounts.lisLength).toBe(0);
       expect(result.movePathCounts.stableMoveSkips).toBe(0);
       expect(result.movePathCounts.movedExistingChildren).toBe(0);
+      expect(result.movePathCounts.movedExistingBatches).toBe(0);
       expect(result.domMutationCounts.insertBefore).toBe(0);
       break;
     case "swap-neighbors":
@@ -175,13 +177,21 @@ function expectBrowserBenchmarkResult(
       expect(result.movePathCounts.lisLength).toBe(rowCount / 2);
       expect(result.movePathCounts.stableMoveSkips).toBe(rowCount / 2);
       expect(result.movePathCounts.movedExistingChildren).toBe(rowCount / 2);
+      expect(result.movePathCounts.movedExistingBatches).toBe(0);
       expect(result.domMutationCounts.insertBefore).toBeGreaterThan(0);
       break;
     case "shuffle":
       expect(result.movePathCounts.keyedMiddleSegments).toBe(1);
       expect(result.movePathCounts.matchedOldChildren).toBe(rowCount);
       expect(result.movePathCounts.movedExistingChildren).toBeGreaterThan(0);
+      expect(result.movePathCounts.movedExistingBatches).toBeGreaterThan(0);
+      expect(result.movePathCounts.movedExistingBatches).toBeLessThan(
+        result.movePathCounts.movedExistingChildren,
+      );
       expect(result.domMutationCounts.insertBefore).toBeGreaterThan(0);
+      expect(result.domMutationCounts.insertBefore).toBeLessThan(
+        result.movePathCounts.movedExistingChildren,
+      );
       break;
     case "shift-window": {
       const windowSize = 100;
@@ -191,7 +201,8 @@ function expectBrowserBenchmarkResult(
       expect(result.movePathCounts.lisLength).toBe(rowCount - windowSize);
       expect(result.movePathCounts.stableMoveSkips).toBe(rowCount - windowSize);
       expect(result.movePathCounts.movedExistingChildren).toBe(windowSize);
-      expect(result.domMutationCounts.insertBefore).toBe(windowSize);
+      expect(result.movePathCounts.movedExistingBatches).toBe(1);
+      expect(result.domMutationCounts.insertBefore).toBe(1);
       break;
     }
   }
@@ -285,6 +296,7 @@ function expectMovePathCounts(counts: MovePathCounts): void {
   expectNonNegativeInteger(counts.lisLength);
   expectNonNegativeInteger(counts.stableMoveSkips);
   expectNonNegativeInteger(counts.movedExistingChildren);
+  expectNonNegativeInteger(counts.movedExistingBatches);
   expectNonNegativeInteger(counts.anchorLookups);
 }
 

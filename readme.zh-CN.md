@@ -1,5 +1,7 @@
 # Solace
 
+[English](./readme.md)
+
 Solace 是一个 TypeScript-first 的前端框架，用于构建响应式、组件驱动的 Web 界面。
 
 Solace 聚焦于小型运行时核心：响应式状态、调度渲染、VNode diff、函数式组件、JSX 支持，以及轻量的应用 API。这个项目以可阅读的框架实现为基础，同时配套了接近生产项目的工具链、测试、示例、包导出和发布检查。
@@ -18,6 +20,10 @@ Solace 聚焦于小型运行时核心：响应式状态、调度渲染、VNode d
 Solace 当前处于早期 alpha runtime 阶段。仓库功能可运行，并已经通过本地验证；但在 `package.json` 保持 `"private": true` 期间，npm 包会有意保持不可发布状态。
 
 目前可以通过下面的本地开发流程体验框架。只有在维护者明确开启公开发布后，包安装命令才正式可用。
+
+## Alpha 范围
+
+Solace 当前适合用于学习小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 alpha 不包含 compiler、router、SSR/SSG runtime、hydration、一方 UI 组件、浏览器扩展 DevTools，也不为内部模块提供兼容性承诺。
 
 ## 快速开始
 
@@ -291,7 +297,7 @@ state.count += 1;
 await nextTick();
 ```
 
-公共 API 详情和示例见 [docs/api.md](./docs/api.md)。
+公共 API 详情和示例见 [docs/api.zh-CN.md](./docs/api.zh-CN.md)。
 
 ## 示例
 
@@ -399,13 +405,16 @@ pnpm release:readiness
 
 ## 文档
 
-- [API](./docs/api.md)
+- [API](./docs/api.zh-CN.md)
 - [Architecture](./docs/architecture.md)
 - [Examples](./docs/examples.md)
 - [Package usage](./docs/package-usage.md)
 - [Performance](./docs/performance.md)
 - [Release](./docs/release.md)
 - [DevTools](./docs/devtools.md)
+- [Contributing](./CONTRIBUTING.md)
+- [Security](./SECURITY.md)
+- [License](./LICENSE)
 
 ## 路线图
 
