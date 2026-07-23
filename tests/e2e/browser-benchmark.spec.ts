@@ -8,26 +8,62 @@ import {
   parseBrowserBenchmarkHistoryPath,
   parseBrowserBenchmarkSampleSize,
   type BrowserBenchmarkHistoryMetadata,
-  type BrowserBenchmarkHistoryResult,
-  type BrowserBenchmarkHistorySummary,
   type DomMutationCounts,
   type MovePathCounts,
 } from "./browser-benchmark-history";
 
-type BrowserBenchmarkResult = BrowserBenchmarkHistoryResult;
+type BrowserBenchmarkResult =
+  | {
+      scenario: "large-list";
+      rows: number;
+      initialRenderMs: number;
+      updateMs: number;
+      unmountMs: number;
+      selectedText: string;
+      remainingNodesAfterUnmount: number;
+    }
+  | {
+      scenario: "keyed-reorder";
+      shape: KeyedReorderShape;
+      rows: number;
+      initialRenderMs: number;
+      reorderMs: number;
+      unmountMs: number;
+      firstRowText: string;
+      remainingNodesAfterUnmount: number;
+      domMutationCounts: DomMutationCounts;
+      movePathCounts: MovePathCounts;
+    };
 
 type BrowserBenchmarkMetadata = BrowserBenchmarkHistoryMetadata;
 
-type BrowserBenchmarkSummary = BrowserBenchmarkHistorySummary;
+type BrowserBenchmarkSummary = BrowserBenchmarkResult & {
+  metadata: BrowserBenchmarkHistoryMetadata;
+};
 
-type BrowserBenchmarkScenario = BrowserBenchmarkResult["scenario"];
+type KeyedReorderShape = "reverse" | "sorted" | "swap-neighbors" | "shuffle" | "shift-window";
+
+type BrowserBenchmarkScenario =
+  | "large-list"
+  | { scenario: "keyed-reorder"; shape: KeyedReorderShape };
 
 type PackageMetadata = {
   name: string;
   version: string;
 };
 
-const browserBenchmarkScenarios = ["large-list", "keyed-reorder"] as const;
+const keyedReorderShapes: KeyedReorderShape[] = [
+  "reverse",
+  "sorted",
+  "swap-neighbors",
+  "shuffle",
+  "shift-window",
+];
+
+const browserBenchmarkScenarios: BrowserBenchmarkScenario[] = [
+  "large-list",
+  ...keyedReorderShapes.map((shape) => ({ scenario: "keyed-reorder" as const, shape })),
+];
 
 test("measures browser benchmark scenarios in a production browser build", async ({
   browser,
@@ -80,35 +116,84 @@ function expectBrowserBenchmarkResult(
   result: BrowserBenchmarkResult,
   scenario: BrowserBenchmarkScenario,
 ): void {
-  expect(result.scenario).toBe(scenario);
   expect(result.rows).toBe(10_000);
   expectFinitePositive(result.initialRenderMs);
   expectFinitePositive(result.unmountMs);
   expect(result.remainingNodesAfterUnmount).toBe(0);
 
   if (result.scenario === "large-list") {
+    expect(scenario).toBe("large-list");
     expectFinitePositive(result.updateMs);
     expect(result.selectedText).toContain("Row 5000 selected");
     return;
   }
 
+  if (typeof scenario !== "object" || scenario.scenario !== "keyed-reorder") {
+    throw new Error(`Expected keyed-reorder scenario, got ${JSON.stringify(scenario)}`);
+  }
+
+  expect(result.scenario).toBe("keyed-reorder");
+  expect(result.shape).toBe(scenario.shape);
   expectFinitePositive(result.reorderMs);
-  expect(result.firstRowText).toBe("Row 10000");
   expectDomMutationCounts(result.domMutationCounts);
-  expect(result.domMutationCounts.insertBefore).toBeGreaterThan(0);
+  expectMovePathCounts(result.movePathCounts);
+  expect(result.movePathCounts.keyedMiddleSegments).toBeLessThanOrEqual(1);
+  expect(result.movePathCounts.matchedOldChildren).toBeLessThanOrEqual(10_000);
+  expect(result.movePathCounts.newChildrenMounted).toBe(0);
+  expect(result.movePathCounts.removedOldChildren).toBe(0);
+  expect(result.movePathCounts.anchorLookups).toBe(0);
+
   expect(result.domMutationCounts.setAttribute).toBe(0);
   expect(result.domMutationCounts.removeAttribute).toBe(0);
   expect(result.domMutationCounts.textContent).toBe(0);
   expect(result.domMutationCounts.removeChild).toBe(0);
-  expectMovePathCounts(result.movePathCounts);
-  expect(result.movePathCounts.keyedMiddleSegments).toBe(1);
-  expect(result.movePathCounts.matchedOldChildren).toBe(10_000);
-  expect(result.movePathCounts.newChildrenMounted).toBe(0);
-  expect(result.movePathCounts.removedOldChildren).toBe(0);
-  expect(result.movePathCounts.lisLength).toBe(1);
-  expect(result.movePathCounts.stableMoveSkips).toBe(1);
-  expect(result.movePathCounts.movedExistingChildren).toBe(9999);
-  expect(result.movePathCounts.anchorLookups).toBeGreaterThanOrEqual(9999);
+
+  switch (scenario.shape) {
+    case "reverse":
+      expect(result.firstRowText).toBe("Row 10000");
+      expect(result.movePathCounts.keyedMiddleSegments).toBe(1);
+      expect(result.movePathCounts.matchedOldChildren).toBe(10_000);
+      expect(result.movePathCounts.lisLength).toBe(1);
+      expect(result.movePathCounts.stableMoveSkips).toBe(1);
+      expect(result.movePathCounts.movedExistingChildren).toBe(9999);
+      expect(result.domMutationCounts.insertBefore).toBe(9999);
+      break;
+    case "sorted":
+      expect(result.firstRowText).toBe("Row 1");
+      expect(result.movePathCounts.keyedMiddleSegments).toBe(0);
+      expect(result.movePathCounts.matchedOldChildren).toBe(0);
+      expect(result.movePathCounts.lisLength).toBe(0);
+      expect(result.movePathCounts.stableMoveSkips).toBe(0);
+      expect(result.movePathCounts.movedExistingChildren).toBe(0);
+      expect(result.domMutationCounts.insertBefore).toBe(0);
+      break;
+    case "swap-neighbors":
+      expect(result.firstRowText).toBe("Row 2");
+      expect(result.movePathCounts.keyedMiddleSegments).toBe(1);
+      expect(result.movePathCounts.matchedOldChildren).toBe(10_000);
+      expect(result.movePathCounts.lisLength).toBe(5000);
+      expect(result.movePathCounts.stableMoveSkips).toBe(5000);
+      expect(result.movePathCounts.movedExistingChildren).toBe(5000);
+      expect(result.domMutationCounts.insertBefore).toBeGreaterThan(0);
+      break;
+    case "shuffle":
+      expect(result.movePathCounts.keyedMiddleSegments).toBe(1);
+      expect(result.movePathCounts.matchedOldChildren).toBe(10_000);
+      expect(result.movePathCounts.movedExistingChildren).toBeGreaterThan(0);
+      expect(result.domMutationCounts.insertBefore).toBeGreaterThan(0);
+      break;
+    case "shift-window": {
+      const windowSize = 100;
+      expect(result.firstRowText).toBe(`Row ${10_000 - windowSize + 1}`);
+      expect(result.movePathCounts.keyedMiddleSegments).toBe(1);
+      expect(result.movePathCounts.matchedOldChildren).toBe(10_000);
+      expect(result.movePathCounts.lisLength).toBe(10_000 - windowSize);
+      expect(result.movePathCounts.stableMoveSkips).toBe(10_000 - windowSize);
+      expect(result.movePathCounts.movedExistingChildren).toBe(windowSize);
+      expect(result.domMutationCounts.insertBefore).toBe(windowSize);
+      break;
+    }
+  }
 }
 
 function createBrowserBenchmarkSummary(

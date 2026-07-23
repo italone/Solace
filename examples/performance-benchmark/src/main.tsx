@@ -7,7 +7,9 @@ import {
   type KeyedReorderMovePathCounts,
 } from "../../../src/renderer/keyed-reorder-instrumentation";
 
-type BrowserBenchmarkScenario = "large-list" | "keyed-reorder";
+type KeyedReorderShape = "reverse" | "sorted" | "swap-neighbors" | "shuffle" | "shift-window";
+
+type BrowserBenchmarkScenario = "large-list" | { scenario: "keyed-reorder"; shape: KeyedReorderShape };
 
 type DomMutationCounts = {
   insertBefore: number;
@@ -20,7 +22,7 @@ type DomMutationCounts = {
 type MovePathCounts = KeyedReorderMovePathCounts;
 
 type BrowserBenchmarkResult = {
-  scenario: BrowserBenchmarkScenario;
+  scenario: "large-list" | "keyed-reorder";
   rows: number;
   initialRenderMs: number;
   unmountMs: number;
@@ -33,6 +35,7 @@ type BrowserBenchmarkResult = {
     }
   | {
       scenario: "keyed-reorder";
+      shape: KeyedReorderShape;
       reorderMs: number;
       firstRowText: string;
       domMutationCounts: DomMutationCounts;
@@ -40,17 +43,56 @@ type BrowserBenchmarkResult = {
     }
 );
 
-type BrowserBenchmarkApi = {
-  runScenario(scenario: BrowserBenchmarkScenario): Promise<BrowserBenchmarkResult>;
-};
-
 declare global {
   interface Window {
-    __SOLACE_BENCHMARK__?: BrowserBenchmarkApi;
+    __SOLACE_BENCHMARK__?: {
+      runScenario(scenario: BrowserBenchmarkScenario): Promise<BrowserBenchmarkResult>;
+    };
   }
 }
 
 const rows = Array.from({ length: 10_000 }, (_, index) => index + 1);
+
+function seededRandom(seed: number): () => number {
+  let state = seed;
+
+  return () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 0xffffffff;
+  };
+}
+
+function shuffleArray<T>(source: T[], seed: number): T[] {
+  const values = source.slice();
+  const next = seededRandom(seed);
+
+  for (let index = values.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(next() * (index + 1));
+    [values[index], values[swapIndex]] = [values[swapIndex], values[index]];
+  }
+
+  return values;
+}
+
+function applyKeyedReorderShape(rowOrder: number[], shape: KeyedReorderShape): number[] {
+  switch (shape) {
+    case "reverse":
+      return rowOrder.slice().reverse();
+    case "sorted":
+      return rowOrder.slice();
+    case "swap-neighbors":
+      return rowOrder.flatMap((row, index) =>
+        index % 2 === 0 ? [rowOrder[index + 1] ?? row, row] : [],
+      );
+    case "shuffle":
+      return shuffleArray(rowOrder, 42);
+    case "shift-window": {
+      const windowSize = 100;
+      return [...rowOrder.slice(-windowSize), ...rowOrder.slice(0, -windowSize)];
+    }
+  }
+}
+
 const output = document.querySelector("#benchmark-output");
 const app = document.querySelector("#app");
 
@@ -73,14 +115,15 @@ function writeResult(result: BrowserBenchmarkResult): void {
 }
 
 async function runScenario(scenario: BrowserBenchmarkScenario): Promise<BrowserBenchmarkResult> {
-  switch (scenario) {
-    case "large-list":
-      return runLargeListBenchmark();
-    case "keyed-reorder":
-      return runKeyedReorderBenchmark();
-    default:
-      throw new Error(`Unknown browser benchmark scenario: ${scenario}`);
+  if (scenario === "large-list") {
+    return runLargeListBenchmark();
   }
+
+  if (typeof scenario === "object" && scenario.scenario === "keyed-reorder") {
+    return runKeyedReorderBenchmark(scenario.shape);
+  }
+
+  throw new Error(`Unknown browser benchmark scenario: ${JSON.stringify(scenario)}`);
 }
 
 async function runLargeListBenchmark(): Promise<BrowserBenchmarkResult> {
@@ -244,7 +287,7 @@ async function measureKeyedReorderMovePath<T>(run: () => Promise<T>): Promise<{
   }
 }
 
-async function runKeyedReorderBenchmark(): Promise<BrowserBenchmarkResult> {
+async function runKeyedReorderBenchmark(shape: KeyedReorderShape): Promise<BrowserBenchmarkResult> {
   const container = ensureApp();
   const state = reactive({
     rowOrder: rows.slice(),
@@ -277,17 +320,13 @@ async function runKeyedReorderBenchmark(): Promise<BrowserBenchmarkResult> {
   } = await measureDomMutations(() =>
     measureKeyedReorderMovePath(async () => {
       const reorderStart = now();
-      state.rowOrder = [...state.rowOrder].reverse();
+      state.rowOrder = applyKeyedReorderShape(state.rowOrder, shape);
       await nextTick();
       return now() - reorderStart;
     }),
   );
   const reorderedFirstRow = container.querySelector("#rows > div:first-child");
   const firstRowText = reorderedFirstRow?.textContent?.trim() ?? "";
-
-  if (firstRowText !== "Row 10000") {
-    throw new Error("Reordered first row was not rendered");
-  }
 
   const unmountStart = now();
   render(<section id="benchmark-complete">complete</section>, container);
@@ -296,6 +335,7 @@ async function runKeyedReorderBenchmark(): Promise<BrowserBenchmarkResult> {
 
   const result: BrowserBenchmarkResult = {
     scenario: "keyed-reorder",
+    shape,
     rows: rows.length,
     initialRenderMs,
     reorderMs,
