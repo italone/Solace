@@ -1,5 +1,7 @@
 # Solace
 
+[简体中文](./readme.zh-CN.md)
+
 Solace is a TypeScript-first frontend framework for building reactive, component-driven web interfaces.
 
 Solace focuses on a small runtime core: reactive state, scheduled rendering, VNode diffing, functional components, JSX support, and a lightweight application API. The project is designed as a readable framework implementation with production-style tooling, tests, examples, package exports, and release checks.
@@ -18,6 +20,10 @@ Solace focuses on a small runtime core: reactive state, scheduled rendering, VNo
 Solace is currently an early alpha runtime. The repository is functional and validated locally, but the npm package is intentionally not publishable while `package.json` keeps `"private": true`.
 
 Use the local development workflow below to explore the framework today. The package installation command becomes valid after the maintainer explicitly enables public publishing.
+
+## Alpha Scope
+
+Solace is suitable today for studying a compact frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current alpha does not include a compiler, router, SSR/SSG runtime, hydration, first-party UI components, browser extension DevTools, or a compatibility guarantee for internal modules.
 
 ## Quick Start
 
@@ -411,6 +417,9 @@ See [docs/release.md](./docs/release.md) for release gates and publishing requir
 - [Performance](./docs/performance.md)
 - [Release](./docs/release.md)
 - [DevTools](./docs/devtools.md)
+- [Contributing](./CONTRIBUTING.md)
+- [Security](./SECURITY.md)
+- [License](./LICENSE)
 
 ## Roadmap
 

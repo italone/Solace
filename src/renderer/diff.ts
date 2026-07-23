@@ -20,6 +20,7 @@ import {
   recordKeyedReorderMatchedOldChild,
   recordKeyedReorderMiddleSegment,
   recordKeyedReorderMountedChildren,
+  recordKeyedReorderMovedExistingBatch,
   recordKeyedReorderMovedExistingChild,
   recordKeyedReorderRemovedOldChildren,
   recordKeyedReorderStableMoveSkip,
@@ -593,9 +594,37 @@ function patchKeyedChildren(
   }
 
   let anchorNode = getAnchor(newChildren, newEnd + 1);
+  const movedExistingBatch: Node[] = [];
+
+  function flushMovedExistingBatch(): void {
+    if (movedExistingBatch.length === 0) {
+      return;
+    }
+
+    if (movedExistingBatch.length === 1) {
+      const [node] = movedExistingBatch;
+      insert(node, container, anchorNode);
+      anchorNode = node;
+      movedExistingBatch.length = 0;
+      return;
+    }
+
+    if (shouldRecordMovePath) {
+      recordKeyedReorderMovedExistingBatch();
+    }
+
+    const fragment = document.createDocumentFragment();
+    for (const node of movedExistingBatch) {
+      fragment.appendChild(node);
+    }
+    insert(fragment, container, anchorNode);
+    anchorNode = movedExistingBatch[0];
+    movedExistingBatch.length = 0;
+  }
 
   for (let index = newEnd; index >= newStart; index -= 1) {
     if (newIndexToOldIndexMap[index - newStart] === 0) {
+      flushMovedExistingBatch();
       const runStart = getNewRunStart(newIndexToOldIndexMap, newStart, index);
       if (runStart < index && canBatchMountChildren(newChildren, runStart, index)) {
         if (shouldRecordMovePath) {
@@ -625,10 +654,12 @@ function patchKeyedChildren(
 
     const childEl = newChildren[index].el;
     if (childEl === null) {
+      flushMovedExistingBatch();
       continue;
     }
 
     if (stableSet[index - newStart]) {
+      flushMovedExistingBatch();
       if (shouldRecordMovePath) {
         recordKeyedReorderStableMoveSkip();
       }
@@ -639,9 +670,10 @@ function patchKeyedChildren(
     if (shouldRecordMovePath) {
       recordKeyedReorderMovedExistingChild();
     }
-    insert(childEl, container, anchorNode);
-    anchorNode = childEl;
+    movedExistingBatch.unshift(childEl);
   }
+
+  flushMovedExistingBatch();
 }
 
 function getNewRunStart(newIndexToOldIndexMap: number[], newStart: number, index: number): number {

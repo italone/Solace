@@ -17,6 +17,7 @@ export type MovePathCounts = {
   lisLength: number;
   stableMoveSkips: number;
   movedExistingChildren: number;
+  movedExistingBatches: number;
   anchorLookups: number;
 };
 

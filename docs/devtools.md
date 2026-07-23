@@ -1,6 +1,6 @@
 # DevTools
 
-Solace exposes a narrow public DevTools integration surface through `solace/devtools`. This document records the public
+Solace exposes a narrow public DevTools integration surface through `@italone/solace/devtools`. This document records the public
 lifecycle, private runtime boundary, and safe constraints for future instrumentation.
 
 ## Goals
@@ -16,11 +16,11 @@ lifecycle, private runtime boundary, and safe constraints for future instrumenta
 
 ## Public API
 
-DevTools integrations should import from the `solace/devtools` subpath:
+DevTools integrations should import from the `@italone/solace/devtools` subpath:
 
 ```ts
-import { createDevtoolsRecorder, onDevtoolsEvent } from "solace/devtools";
-import type { DevtoolsEvent } from "solace/devtools";
+import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtools";
+import type { DevtoolsEvent } from "@italone/solace/devtools";
 ```
 
 The public subpath exports listener and recorder APIs only. It does not export emit helpers, listener-state helpers,
@@ -29,7 +29,7 @@ action arguments, or action results.
 
 ## Public API Lifecycle
 
-`solace/devtools` is the only supported public DevTools entry point. New runtime exports require package boundary tests,
+`@italone/solace/devtools` is the only supported public DevTools entry point. New runtime exports require package boundary tests,
 packed consumer smoke coverage, documentation, and a project log entry before they are treated as supported API.
 
 Event payload additions must remain small serializable summaries and must update payload stability coverage. They should
@@ -52,7 +52,7 @@ reuse them internally, and incidental runtime cleanup must not change the public
 ## Hook Boundary
 
 Solace has an internal event bus in `src/devtools/events.ts`. Runtime modules emit through that internal bus, while
-public integrations subscribe through `solace/devtools`. The package root intentionally does not export DevTools APIs.
+public integrations subscribe through `@italone/solace/devtools`. The package root intentionally does not export DevTools APIs.
 
 ```ts
 type DevtoolsEvent =
@@ -96,7 +96,7 @@ Future runtime modules should emit small serializable events only when a listene
 copy for the current event union and is used by integration tests to lock the payload boundary. It is not exported from
 the package root.
 
-`createDevtoolsRecorder()` is public through `solace/devtools`. It installs a listener, stores serialized events in
+`createDevtoolsRecorder()` is public through `@italone/solace/devtools`. It installs a listener, stores serialized events in
 memory, exposes `snapshot()` for a copy of collected events, exposes `clear()` to reset the current capture window, and
 exposes `stop()` to remove the listener. Pass `{ limit }` to keep only the latest N events in memory. It does not
 persist data, send data over the network, write to storage, or install third-party scripts.
@@ -134,12 +134,12 @@ control but out of package artifacts, so consumers do not accidentally couple to
 12. **Bounded recorder captures**: `createDevtoolsRecorder({ limit })` keeps recorder memory bounded for examples and experiments.
 13. **Large-list recorder smoke**: a 10,000-row keyed update validates public recorder snapshots remain serialized summaries without DOM, VNode, raw state, or row data.
 14. **Public package boundary guard**: package exports tests verify DevTools internals are not available from the package root.
-15. **Public DevTools subpath**: `solace/devtools` exposes listener and recorder APIs without internal emit helpers.
+15. **Public DevTools subpath**: `@italone/solace/devtools` exposes listener and recorder APIs without internal emit helpers.
 16. **Production artifact boundary**: package builds do not publish JavaScript sourcemaps that expose internal wiring.
 17. **Inspector UI or browser extension**: build only after event payloads prove stable in examples.
 
 ## Recommendation
 
-Do not implement a DevTools UI yet. The public `solace/devtools` subpath is a low-level integration surface for examples,
+Do not implement a DevTools UI yet. The public `@italone/solace/devtools` subpath is a low-level integration surface for examples,
 tests, and future inspector tooling. Build a browser extension or custom panel only after more payloads prove stable in
 real examples.

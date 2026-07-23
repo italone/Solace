@@ -83,7 +83,9 @@ Conclusion:
   elements. It also uses a direct HTML `className` fast path for `class` props while keeping the existing attribute
   fallback for non-HTML nodes. Fully matched keyed middle segments also skip unused-old `Set` tracking and unmount
   scanning, so stable keyed reorders avoid bookkeeping that cannot produce removals while preserving the existing LIS
-  move path. Next optimization work should focus on additional browser trend samples.
+  move path. The keyed reorder move loop also batches consecutive moved existing children through `DocumentFragment`
+  inserts, reducing high-movement DOM insert calls while preserving node identity. Next optimization work should focus
+  on additional browser trend samples.
 
 ## Browser Production Benchmark
 
@@ -175,60 +177,63 @@ Local history command:
 pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
 ```
 
-The local ignored history now contains fresh Chromium production benchmark records from the stable-position lookup-table optimization run. The latest five samples per browser scenario were used for the summary below.
+The local ignored history now contains fresh Chromium production benchmark records from the keyed move-run batching run.
+The latest five samples per browser scenario were used for the summary below.
 
 Latest-window `large-list` summary:
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 5     | 6.1    | 12.5 | 6.50     |
-| `updateMs`        | 5     | 3.1    | 5.1  | 0.80     |
-| `unmountMs`       | 5     | 1      | 5.4  | 3.05     |
+| `initialRenderMs` | 5     | 6.4    | 12.6 | 6.34     |
+| `updateMs`        | 5     | 3.1    | 5.4  | 1.03     |
+| `unmountMs`       | 5     | 1.1    | 4.1  | 1.47     |
 
 Latest-window `keyed-reorder:reverse` summary:
 
 | Metric            | Count | Median | p95 | Variance |
 | ----------------- | ----- | ------ | --- | -------- |
-| `initialRenderMs` | 5     | 4.7    | 6.3 | 0.51     |
-| `reorderMs`       | 5     | 4.3    | 6.1 | 0.57     |
+| `initialRenderMs` | 5     | 4.7    | 6.5 | 0.62     |
+| `reorderMs`       | 5     | 7      | 8.9 | 1.01     |
 | `unmountMs`       | 5     | 1.1    | 1.2 | 0.00     |
 
 Latest-window `keyed-reorder:sorted` summary:
 
 | Metric            | Count | Median | p95 | Variance |
 | ----------------- | ----- | ------ | --- | -------- |
-| `initialRenderMs` | 5     | 5.1    | 5.9 | 0.21     |
-| `reorderMs`       | 5     | 2.3    | 2.8 | 0.06     |
-| `unmountMs`       | 5     | 1.1    | 1.5 | 0.03     |
+| `initialRenderMs` | 5     | 5.1    | 6.3 | 0.28     |
+| `reorderMs`       | 5     | 2.8    | 3.2 | 0.15     |
+| `unmountMs`       | 5     | 1.2    | 1.3 | 0.01     |
 
 Latest-window `keyed-reorder:swap-neighbors` summary:
 
 | Metric            | Count | Median | p95 | Variance |
 | ----------------- | ----- | ------ | --- | -------- |
-| `initialRenderMs` | 5     | 4.6    | 5.5 | 0.26     |
-| `reorderMs`       | 5     | 4.4    | 5.5 | 0.52     |
+| `initialRenderMs` | 5     | 4.6    | 5.3 | 0.11     |
+| `reorderMs`       | 5     | 4      | 5.1 | 0.29     |
 | `unmountMs`       | 5     | 1.1    | 1.3 | 0.01     |
 
 Latest-window `keyed-reorder:shuffle` summary:
 
 | Metric            | Count | Median | p95 | Variance |
 | ----------------- | ----- | ------ | --- | -------- |
-| `initialRenderMs` | 5     | 4.7    | 5.1 | 0.08     |
-| `reorderMs`       | 5     | 6.0    | 7.0 | 0.44     |
-| `unmountMs`       | 5     | 1.2    | 1.3 | 0.01     |
+| `initialRenderMs` | 5     | 5      | 5.2 | 0.06     |
+| `reorderMs`       | 5     | 6.5    | 7.9 | 0.59     |
+| `unmountMs`       | 5     | 1.2    | 1.3 | 0.00     |
 
 Latest-window `keyed-reorder:shift-window` summary:
 
 | Metric            | Count | Median | p95 | Variance |
 | ----------------- | ----- | ------ | --- | -------- |
-| `initialRenderMs` | 5     | 4.9    | 5.8 | 0.23     |
-| `reorderMs`       | 5     | 4.5    | 4.5 | 0.20     |
-| `unmountMs`       | 5     | 1.1    | 1.5 | 0.04     |
+| `initialRenderMs` | 5     | 5.3    | 6.5 | 0.33     |
+| `reorderMs`       | 5     | 3.9    | 5   | 0.70     |
+| `unmountMs`       | 5     | 1.3    | 1.6 | 0.05     |
 
-After replacing the LIS stable-position index scan with a boolean lookup table,
+After batching consecutive moved existing keyed children through `DocumentFragment` inserts,
 every keyed-reorder shape continues to report `movePathCounts.anchorLookups: 0`.
-The `reverse` shape still performs 9,999 DOM `insertBefore` operations, confirming the optimization
-removed renderer-internal anchor lookups without changing DOM behavior. The `sorted` shape performs
+The `reverse` shape now performs one DOM `insertBefore` and one `movePathCounts.movedExistingBatches`
+for 9,999 moved existing children. The seeded `shuffle` shape performs 193 DOM `insertBefore`
+operations and 191 moved-existing batches for 9,805 moved existing children. The `shift-window`
+shape also performs one DOM `insertBefore` and one moved-existing batch. The `sorted` shape performs
 zero moves and zero insertions because the renderer's prefix/suffix sync consumes the fully matched
 list before entering the keyed middle segment.
 

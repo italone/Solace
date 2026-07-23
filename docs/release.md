@@ -26,7 +26,8 @@ pnpm release:readiness
 
 This command checks local package metadata, package entry points, release scripts, and Changesets public access configuration. It does not contact npm and does not publish.
 
-The package is now publishable. To verify the stricter publishable mode before publishing, run:
+The package is intentionally not publishable while `package.json` keeps `"private": true`. To verify
+the stricter publishable mode after an explicit publishing decision and private-flag change, run:
 
 ```bash
 pnpm release:readiness -- --publishable
