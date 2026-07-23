@@ -175,57 +175,58 @@ Local history command:
 pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
 ```
 
-The local ignored history now contains fresh Chromium production benchmark records from the anchor-node optimization run. The latest five samples per browser scenario were used for the summary below.
+The local ignored history now contains fresh Chromium production benchmark records from the stable-position lookup-table optimization run. The latest five samples per browser scenario were used for the summary below.
 
 Latest-window `large-list` summary:
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 5     | 6.7    | 12.6 | 6.72     |
-| `updateMs`        | 5     | 2.9    | 5.4  | 1.08     |
-| `unmountMs`       | 5     | 1      | 1.2  | 0.02     |
+| `initialRenderMs` | 5     | 6.1    | 12.5 | 6.50     |
+| `updateMs`        | 5     | 3.1    | 5.1  | 0.80     |
+| `unmountMs`       | 5     | 1      | 5.4  | 3.05     |
 
 Latest-window `keyed-reorder:reverse` summary:
 
-| Metric            | Count | Median | p95  | Variance |
-| ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 5     | 4.8    | 13.1 | 10.87    |
-| `reorderMs`       | 5     | 4.7    | 6.2  | 0.62     |
-| `unmountMs`       | 5     | 1.1    | 1.3  | 0.01     |
+| Metric            | Count | Median | p95 | Variance |
+| ----------------- | ----- | ------ | --- | -------- |
+| `initialRenderMs` | 5     | 4.7    | 6.3 | 0.51     |
+| `reorderMs`       | 5     | 4.3    | 6.1 | 0.57     |
+| `unmountMs`       | 5     | 1.1    | 1.2 | 0.00     |
 
 Latest-window `keyed-reorder:sorted` summary:
 
 | Metric            | Count | Median | p95 | Variance |
 | ----------------- | ----- | ------ | --- | -------- |
-| `initialRenderMs` | 5     | 4.9    | 6.4 | 0.43     |
-| `reorderMs`       | 5     | 2.1    | 2.8 | 0.11     |
-| `unmountMs`       | 5     | 1.2    | 1.4 | 0.02     |
+| `initialRenderMs` | 5     | 5.1    | 5.9 | 0.21     |
+| `reorderMs`       | 5     | 2.3    | 2.8 | 0.06     |
+| `unmountMs`       | 5     | 1.1    | 1.5 | 0.03     |
 
 Latest-window `keyed-reorder:swap-neighbors` summary:
 
 | Metric            | Count | Median | p95 | Variance |
 | ----------------- | ----- | ------ | --- | -------- |
-| `initialRenderMs` | 5     | 4.8    | 5.6 | 0.14     |
-| `reorderMs`       | 5     | 4.3    | 5.1 | 0.31     |
-| `unmountMs`       | 5     | 1.1    | 1.4 | 0.02     |
+| `initialRenderMs` | 5     | 4.6    | 5.5 | 0.26     |
+| `reorderMs`       | 5     | 4.4    | 5.5 | 0.52     |
+| `unmountMs`       | 5     | 1.1    | 1.3 | 0.01     |
 
 Latest-window `keyed-reorder:shuffle` summary:
 
-| Metric            | Count | Median | p95  | Variance |
-| ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 5     | 5      | 8.1  | 1.60     |
-| `reorderMs`       | 5     | 7      | 10.6 | 3.42     |
-| `unmountMs`       | 5     | 1.2    | 1.9  | 0.09     |
+| Metric            | Count | Median | p95 | Variance |
+| ----------------- | ----- | ------ | --- | -------- |
+| `initialRenderMs` | 5     | 4.7    | 5.1 | 0.08     |
+| `reorderMs`       | 5     | 6.0    | 7.0 | 0.44     |
+| `unmountMs`       | 5     | 1.2    | 1.3 | 0.01     |
 
 Latest-window `keyed-reorder:shift-window` summary:
 
 | Metric            | Count | Median | p95 | Variance |
 | ----------------- | ----- | ------ | --- | -------- |
-| `initialRenderMs` | 5     | 5.2    | 5.5 | 0.08     |
-| `reorderMs`       | 5     | 3      | 3.4 | 0.09     |
-| `unmountMs`       | 5     | 1.1    | 1.3 | 0.01     |
+| `initialRenderMs` | 5     | 4.9    | 5.8 | 0.23     |
+| `reorderMs`       | 5     | 4.5    | 4.5 | 0.20     |
+| `unmountMs`       | 5     | 1.1    | 1.5 | 0.04     |
 
-After the anchor-node optimization, every keyed-reorder shape reports `movePathCounts.anchorLookups: 0`.
+After replacing the LIS stable-position index scan with a boolean lookup table,
+every keyed-reorder shape continues to report `movePathCounts.anchorLookups: 0`.
 The `reverse` shape still performs 9,999 DOM `insertBefore` operations, confirming the optimization
 removed renderer-internal anchor lookups without changing DOM behavior. The `sorted` shape performs
 zero moves and zero insertions because the renderer's prefix/suffix sync consumes the fully matched

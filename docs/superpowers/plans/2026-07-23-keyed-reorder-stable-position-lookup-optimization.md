@@ -151,48 +151,48 @@ let anchorNode = getAnchor(newChildren, newEnd + 1);
 Replace the stable/move branch in the move loop from:
 
 ```ts
-    const childEl = newChildren[index].el;
-    if (childEl === null) {
-      continue;
-    }
+const childEl = newChildren[index].el;
+if (childEl === null) {
+  continue;
+}
 
-    if (stableIndex >= 0 && index - newStart === stablePositions[stableIndex]) {
-      if (shouldRecordMovePath) {
-        recordKeyedReorderStableMoveSkip();
-      }
-      stableIndex -= 1;
-      anchorNode = childEl;
-      continue;
-    }
+if (stableIndex >= 0 && index - newStart === stablePositions[stableIndex]) {
+  if (shouldRecordMovePath) {
+    recordKeyedReorderStableMoveSkip();
+  }
+  stableIndex -= 1;
+  anchorNode = childEl;
+  continue;
+}
 
-    if (shouldRecordMovePath) {
-      recordKeyedReorderMovedExistingChild();
-    }
-    insert(childEl, container, anchorNode);
-    anchorNode = childEl;
+if (shouldRecordMovePath) {
+  recordKeyedReorderMovedExistingChild();
+}
+insert(childEl, container, anchorNode);
+anchorNode = childEl;
 ```
 
 To:
 
 ```ts
-    const childEl = newChildren[index].el;
-    if (childEl === null) {
-      continue;
-    }
+const childEl = newChildren[index].el;
+if (childEl === null) {
+  continue;
+}
 
-    if (stableSet[index - newStart]) {
-      if (shouldRecordMovePath) {
-        recordKeyedReorderStableMoveSkip();
-      }
-      anchorNode = childEl;
-      continue;
-    }
+if (stableSet[index - newStart]) {
+  if (shouldRecordMovePath) {
+    recordKeyedReorderStableMoveSkip();
+  }
+  anchorNode = childEl;
+  continue;
+}
 
-    if (shouldRecordMovePath) {
-      recordKeyedReorderMovedExistingChild();
-    }
-    insert(childEl, container, anchorNode);
-    anchorNode = childEl;
+if (shouldRecordMovePath) {
+  recordKeyedReorderMovedExistingChild();
+}
+insert(childEl, container, anchorNode);
+anchorNode = childEl;
 ```
 
 - [ ] **Step 3: Run renderer tests**
