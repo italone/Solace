@@ -2,17 +2,14 @@
 
 ## Install
 
-The repository is currently kept private through `package.json` with `"private": true`. Registry
-install is valid only after a maintainer explicitly approves public publishing, removes or changes
-that private flag, and completes the release readiness checks:
+Solace is published as a public alpha package on npm:
 
 ```bash
 pnpm add @italone/solace
 ```
 
-Before that release decision, run `pnpm release:readiness` to check local release metadata and
-validate package consumption with the packed-consumer smoke test described below. After the private
-flag is intentionally changed for release, run `pnpm release:readiness -- --publishable`.
+Before preparing another release, run `pnpm release:readiness -- --publishable` to check package
+metadata and validate package consumption with the packed-consumer smoke test described below.
 
 ## Import Runtime APIs
 

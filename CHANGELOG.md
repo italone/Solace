@@ -1,5 +1,11 @@
 # @italone/solace
 
+## 0.0.3
+
+### Patch Changes
+
+- Align package usage and release documentation with the published public alpha package state.
+
 ## 0.0.2
 
 ### Patch Changes

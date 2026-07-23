@@ -18,7 +18,7 @@ CI also runs `pnpm release:readiness` before the longer checks so package metada
 
 ## Release Readiness
 
-Run the local metadata readiness check before changing publishability:
+Run the local metadata readiness check before publishing:
 
 ```bash
 pnpm release:readiness
@@ -26,8 +26,8 @@ pnpm release:readiness
 
 This command checks local package metadata, package entry points, release scripts, and Changesets public access configuration. It does not contact npm and does not publish.
 
-The package is intentionally not publishable while `package.json` keeps `"private": true`. To verify
-the stricter publishable mode after an explicit publishing decision and private-flag change, run:
+The package is configured for public npm publishing. Verify the stricter publishable mode before
+each release:
 
 ```bash
 pnpm release:readiness -- --publishable
