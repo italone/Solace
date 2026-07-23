@@ -17,9 +17,9 @@ Solace 聚焦于小型运行时核心：响应式状态、调度渲染、VNode d
 
 ## 项目状态
 
-Solace 当前处于早期 alpha runtime 阶段。仓库功能可运行，并已经通过本地验证；但在 `package.json` 保持 `"private": true` 期间，npm 包会有意保持不可发布状态。
+Solace 当前处于早期 alpha runtime 阶段。仓库功能可运行，并已经通过本地验证；当前 package metadata 已配置为可公开发布到 npm。
 
-目前可以通过下面的本地开发流程体验框架。只有在维护者明确开启公开发布后，包安装命令才正式可用。
+目前可以通过下面的本地开发流程体验框架，也可以在 release 发布后从 npm 安装已发布包。
 
 ## Alpha 范围
 

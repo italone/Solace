@@ -1,5 +1,11 @@
 # @italone/solace
 
+## 0.0.2
+
+### Patch Changes
+
+- Prepare the public alpha package for npm publishing with README documentation alignment and publishable package metadata.
+
 ## 0.0.1
 
 ### Patch Changes

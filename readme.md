@@ -17,9 +17,9 @@ Solace focuses on a small runtime core: reactive state, scheduled rendering, VNo
 
 ## Project Status
 
-Solace is currently an early alpha runtime. The repository is functional and validated locally, but the npm package is intentionally not publishable while `package.json` keeps `"private": true`.
+Solace is currently an early alpha runtime. The repository is functional and validated locally, and the package metadata is configured for public npm publishing.
 
-Use the local development workflow below to explore the framework today. The package installation command becomes valid after the maintainer explicitly enables public publishing.
+Use the local development workflow below to explore the framework or install the published package from npm after a release is available.
 
 ## Alpha Scope
 
