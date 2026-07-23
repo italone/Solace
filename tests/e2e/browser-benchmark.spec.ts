@@ -65,6 +65,8 @@ const browserBenchmarkScenarios: BrowserBenchmarkScenario[] = [
   ...keyedReorderShapes.map((shape) => ({ scenario: "keyed-reorder" as const, shape })),
 ];
 
+const rowCount = 10_000;
+
 test("measures browser benchmark scenarios in a production browser build", async ({
   browser,
   browserName,
@@ -116,7 +118,7 @@ function expectBrowserBenchmarkResult(
   result: BrowserBenchmarkResult,
   scenario: BrowserBenchmarkScenario,
 ): void {
-  expect(result.rows).toBe(10_000);
+  expect(result.rows).toBe(rowCount);
   expectFinitePositive(result.initialRenderMs);
   expectFinitePositive(result.unmountMs);
   expect(result.remainingNodesAfterUnmount).toBe(0);
@@ -138,7 +140,7 @@ function expectBrowserBenchmarkResult(
   expectDomMutationCounts(result.domMutationCounts);
   expectMovePathCounts(result.movePathCounts);
   expect(result.movePathCounts.keyedMiddleSegments).toBeLessThanOrEqual(1);
-  expect(result.movePathCounts.matchedOldChildren).toBeLessThanOrEqual(10_000);
+  expect(result.movePathCounts.matchedOldChildren).toBeLessThanOrEqual(rowCount);
   expect(result.movePathCounts.newChildrenMounted).toBe(0);
   expect(result.movePathCounts.removedOldChildren).toBe(0);
   expect(result.movePathCounts.anchorLookups).toBe(0);
@@ -150,13 +152,13 @@ function expectBrowserBenchmarkResult(
 
   switch (scenario.shape) {
     case "reverse":
-      expect(result.firstRowText).toBe("Row 10000");
+      expect(result.firstRowText).toBe(`Row ${rowCount}`);
       expect(result.movePathCounts.keyedMiddleSegments).toBe(1);
-      expect(result.movePathCounts.matchedOldChildren).toBe(10_000);
+      expect(result.movePathCounts.matchedOldChildren).toBe(rowCount);
       expect(result.movePathCounts.lisLength).toBe(1);
       expect(result.movePathCounts.stableMoveSkips).toBe(1);
-      expect(result.movePathCounts.movedExistingChildren).toBe(9999);
-      expect(result.domMutationCounts.insertBefore).toBe(9999);
+      expect(result.movePathCounts.movedExistingChildren).toBe(rowCount - 1);
+      expect(result.domMutationCounts.insertBefore).toBe(rowCount - 1);
       break;
     case "sorted":
       expect(result.firstRowText).toBe("Row 1");
@@ -170,25 +172,25 @@ function expectBrowserBenchmarkResult(
     case "swap-neighbors":
       expect(result.firstRowText).toBe("Row 2");
       expect(result.movePathCounts.keyedMiddleSegments).toBe(1);
-      expect(result.movePathCounts.matchedOldChildren).toBe(10_000);
-      expect(result.movePathCounts.lisLength).toBe(5000);
-      expect(result.movePathCounts.stableMoveSkips).toBe(5000);
-      expect(result.movePathCounts.movedExistingChildren).toBe(5000);
+      expect(result.movePathCounts.matchedOldChildren).toBe(rowCount);
+      expect(result.movePathCounts.lisLength).toBe(rowCount / 2);
+      expect(result.movePathCounts.stableMoveSkips).toBe(rowCount / 2);
+      expect(result.movePathCounts.movedExistingChildren).toBe(rowCount / 2);
       expect(result.domMutationCounts.insertBefore).toBeGreaterThan(0);
       break;
     case "shuffle":
       expect(result.movePathCounts.keyedMiddleSegments).toBe(1);
-      expect(result.movePathCounts.matchedOldChildren).toBe(10_000);
+      expect(result.movePathCounts.matchedOldChildren).toBe(rowCount);
       expect(result.movePathCounts.movedExistingChildren).toBeGreaterThan(0);
       expect(result.domMutationCounts.insertBefore).toBeGreaterThan(0);
       break;
     case "shift-window": {
       const windowSize = 100;
-      expect(result.firstRowText).toBe(`Row ${10_000 - windowSize + 1}`);
+      expect(result.firstRowText).toBe(`Row ${rowCount - windowSize + 1}`);
       expect(result.movePathCounts.keyedMiddleSegments).toBe(1);
-      expect(result.movePathCounts.matchedOldChildren).toBe(10_000);
-      expect(result.movePathCounts.lisLength).toBe(10_000 - windowSize);
-      expect(result.movePathCounts.stableMoveSkips).toBe(10_000 - windowSize);
+      expect(result.movePathCounts.matchedOldChildren).toBe(rowCount);
+      expect(result.movePathCounts.lisLength).toBe(rowCount - windowSize);
+      expect(result.movePathCounts.stableMoveSkips).toBe(rowCount - windowSize);
       expect(result.movePathCounts.movedExistingChildren).toBe(windowSize);
       expect(result.domMutationCounts.insertBefore).toBe(windowSize);
       break;

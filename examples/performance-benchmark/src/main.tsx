@@ -22,7 +22,6 @@ type DomMutationCounts = {
 type MovePathCounts = KeyedReorderMovePathCounts;
 
 type BrowserBenchmarkResult = {
-  scenario: "large-list" | "keyed-reorder";
   rows: number;
   initialRenderMs: number;
   unmountMs: number;
