@@ -587,7 +587,10 @@ function patchKeyedChildren(
   if (shouldRecordMovePath) {
     recordKeyedReorderLisLength(stablePositions.length);
   }
-  let stableIndex = stablePositions.length - 1;
+  const stableSet = new Array<boolean>(newEnd - newStart + 1).fill(false);
+  for (const position of stablePositions) {
+    stableSet[position] = true;
+  }
 
   let anchorNode = getAnchor(newChildren, newEnd + 1);
 
@@ -625,11 +628,10 @@ function patchKeyedChildren(
       continue;
     }
 
-    if (stableIndex >= 0 && index - newStart === stablePositions[stableIndex]) {
+    if (stableSet[index - newStart]) {
       if (shouldRecordMovePath) {
         recordKeyedReorderStableMoveSkip();
       }
-      stableIndex -= 1;
       anchorNode = childEl;
       continue;
     }
