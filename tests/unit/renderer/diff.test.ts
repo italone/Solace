@@ -472,6 +472,60 @@ describe("renderer diff", () => {
     expect(counts.anchorLookups).toBe(0);
   });
 
+  it("records keyed high-movement shuffle move-path counters with zero anchor lookups", () => {
+    const container = document.createElement("div");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "e" }, "E"),
+        h("li", { key: "f" }, "F"),
+        h("li", { key: "g" }, "G"),
+        h("li", { key: "h" }, "H"),
+      ]),
+      container,
+    );
+
+    enableKeyedReorderMovePathInstrumentation();
+
+    render(
+      h("ul", null, [
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "e" }, "E"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "h" }, "H"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "f" }, "F"),
+        h("li", { key: "g" }, "G"),
+      ]),
+      container,
+    );
+
+    expect([...container.querySelectorAll("li")].map((li) => li.textContent)).toEqual([
+      "D",
+      "A",
+      "E",
+      "B",
+      "H",
+      "C",
+      "F",
+      "G",
+    ]);
+
+    const counts = getKeyedReorderMovePathCounts();
+
+    expect(counts.keyedMiddleSegments).toBe(1);
+    expect(counts.matchedOldChildren).toBe(8);
+    expect(counts.newChildrenMounted).toBe(0);
+    expect(counts.removedOldChildren).toBe(0);
+    expect(counts.anchorLookups).toBe(0);
+    expect(counts.movedExistingChildren).toBeGreaterThan(0);
+  });
+
   it("records keyed mixed mount remove and move counters when enabled", () => {
     const container = document.createElement("div");
 
