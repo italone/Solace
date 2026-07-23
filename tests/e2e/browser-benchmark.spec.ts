@@ -44,8 +44,7 @@ type BrowserBenchmarkSummary = BrowserBenchmarkResult & {
 type KeyedReorderShape = "reverse" | "sorted" | "swap-neighbors" | "shuffle" | "shift-window";
 
 type BrowserBenchmarkScenario =
-  | "large-list"
-  | { scenario: "keyed-reorder"; shape: KeyedReorderShape };
+  "large-list" | { scenario: "keyed-reorder"; shape: KeyedReorderShape };
 
 type PackageMetadata = {
   name: string;

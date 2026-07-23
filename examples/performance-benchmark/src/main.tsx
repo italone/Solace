@@ -9,7 +9,8 @@ import {
 
 type KeyedReorderShape = "reverse" | "sorted" | "swap-neighbors" | "shuffle" | "shift-window";
 
-type BrowserBenchmarkScenario = "large-list" | { scenario: "keyed-reorder"; shape: KeyedReorderShape };
+type BrowserBenchmarkScenario =
+  "large-list" | { scenario: "keyed-reorder"; shape: KeyedReorderShape };
 
 type DomMutationCounts = {
   insertBefore: number;
