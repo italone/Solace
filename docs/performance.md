@@ -167,54 +167,69 @@ Run `pnpm benchmark:history -- --help` to list the supported summary options.
 
 ### Latest Local Browser History Summary
 
-Date: 2026-07-22
+Date: 2026-07-23
 
 Local history command:
-
-```bash
-pnpm benchmark:history -- --json
-```
-
-The local ignored history currently contains five fresh Chromium `large-list` production benchmark records and five
-Chromium `keyed-reorder` production benchmark records from the latest refresh. The `--min-browser-count 5` trend gate
-passes locally for both browser scenarios. p95 reflects the slowest observed samples in the fresh window and should be
-treated as trend context only, not a release threshold.
-
-Latest-window command:
 
 ```bash
 pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
 ```
 
-The latest five Chromium `large-list` records include one slow first initial-render sample and one slow unmount sample,
-so latest-window p95 remains noisy. The latest five Chromium `keyed-reorder` records include `domMutationCounts`: every
-sample recorded `insertBefore: 9999`, `setAttribute: 0`, `removeAttribute: 0`, `textContent: 0`, and `removeChild: 0`
-during the reorder update window. They also include `movePathCounts`: every sample recorded one keyed middle segment,
-10,000 matched old children, zero new mounts, zero old removals, LIS length 1, one stable skip, 9,999 existing-node
-moves, and 9,999 move-loop anchor lookups.
-
-The following latest-window data was captured before the anchor-node optimization in
-2026-07-23-001. Task 6 will refresh this window with fresh five-sample data for every shape.
+The local ignored history now contains fresh Chromium production benchmark records from the anchor-node optimization run. The latest five samples per browser scenario were used for the summary below.
 
 Latest-window `large-list` summary:
 
 | Metric            | Count | Median | p95  | Variance |
 | ----------------- | ----- | ------ | ---- | -------- |
-| `initialRenderMs` | 5     | 6.5    | 11.8 | 4.22     |
-| `updateMs`        | 5     | 3.6    | 5.2  | 0.61     |
-| `unmountMs`       | 5     | 1.3    | 3.8  | 1.07     |
+| `initialRenderMs` | 5     | 6.7    | 12.6 | 6.72     |
+| `updateMs`        | 5     | 2.9    | 5.4  | 1.08     |
+| `unmountMs`       | 5     | 1      | 1.2  | 0.02     |
 
-Latest-window `keyed-reorder` summary:
+Latest-window `keyed-reorder:reverse` summary:
+
+| Metric            | Count | Median | p95  | Variance |
+| ----------------- | ----- | ------ | ---- | -------- |
+| `initialRenderMs` | 5     | 4.8    | 13.1 | 10.87    |
+| `reorderMs`       | 5     | 4.7    | 6.2  | 0.62     |
+| `unmountMs`       | 5     | 1.1    | 1.3  | 0.01     |
+
+Latest-window `keyed-reorder:sorted` summary:
 
 | Metric            | Count | Median | p95 | Variance |
 | ----------------- | ----- | ------ | --- | -------- |
-| `initialRenderMs` | 5     | 5.0    | 6.5 | 0.59     |
-| `reorderMs`       | 5     | 4.6    | 5.5 | 0.15     |
-| `unmountMs`       | 5     | 1.3    | 1.3 | 0.00     |
+| `initialRenderMs` | 5     | 4.9    | 6.4 | 0.43     |
+| `reorderMs`       | 5     | 2.1    | 2.8 | 0.11     |
+| `unmountMs`       | 5     | 1.2    | 1.4 | 0.02     |
 
-Latest `keyed-reorder` move-path diagnostics report full reverse reorder as one keyed middle segment, 10,000 matched
-old children, zero mounts/removes, LIS length 1, one stable skip, 9,999 existing-node moves, and 9,999 move-loop anchor
-lookups. This confirms the current fixture is dominated by required DOM placements rather than prop/text/remove writes.
+Latest-window `keyed-reorder:swap-neighbors` summary:
+
+| Metric            | Count | Median | p95 | Variance |
+| ----------------- | ----- | ------ | --- | -------- |
+| `initialRenderMs` | 5     | 4.8    | 5.6 | 0.14     |
+| `reorderMs`       | 5     | 4.3    | 5.1 | 0.31     |
+| `unmountMs`       | 5     | 1.1    | 1.4 | 0.02     |
+
+Latest-window `keyed-reorder:shuffle` summary:
+
+| Metric            | Count | Median | p95  | Variance |
+| ----------------- | ----- | ------ | ---- | -------- |
+| `initialRenderMs` | 5     | 5      | 8.1  | 1.60     |
+| `reorderMs`       | 5     | 7      | 10.6 | 3.42     |
+| `unmountMs`       | 5     | 1.2    | 1.9  | 0.09     |
+
+Latest-window `keyed-reorder:shift-window` summary:
+
+| Metric            | Count | Median | p95 | Variance |
+| ----------------- | ----- | ------ | --- | -------- |
+| `initialRenderMs` | 5     | 5.2    | 5.5 | 0.08     |
+| `reorderMs`       | 5     | 3      | 3.4 | 0.09     |
+| `unmountMs`       | 5     | 1.1    | 1.3 | 0.01     |
+
+After the anchor-node optimization, every keyed-reorder shape reports `movePathCounts.anchorLookups: 0`.
+The `reverse` shape still performs 9,999 DOM `insertBefore` operations, confirming the optimization
+removed renderer-internal anchor lookups without changing DOM behavior. The `sorted` shape performs
+zero moves and zero insertions because the renderer's prefix/suffix sync consumes the fully matched
+list before entering the keyed middle segment.
 
 ## Benchmark Principles
 
