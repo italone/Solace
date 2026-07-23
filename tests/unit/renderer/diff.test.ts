@@ -380,8 +380,139 @@ describe("renderer diff", () => {
       lisLength: 1,
       stableMoveSkips: 1,
       movedExistingChildren: 3,
-      anchorLookups: 3,
+      anchorLookups: 0,
     });
+  });
+
+  it("tracks keyed reverse reorder without anchor lookups", () => {
+    const container = document.createElement("div");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "d" }, "D"),
+      ]),
+      container,
+    );
+
+    enableKeyedReorderMovePathInstrumentation();
+
+    render(
+      h("ul", null, [
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "a" }, "A"),
+      ]),
+      container,
+    );
+
+    expect([...container.querySelectorAll("li")].map((li) => li.textContent)).toEqual([
+      "D",
+      "C",
+      "B",
+      "A",
+    ]);
+    expect(getKeyedReorderMovePathCounts()).toEqual({
+      keyedMiddleSegments: 1,
+      matchedOldChildren: 4,
+      newChildrenMounted: 0,
+      removedOldChildren: 0,
+      lisLength: 1,
+      stableMoveSkips: 1,
+      movedExistingChildren: 3,
+      anchorLookups: 0,
+    });
+  });
+
+  it("tracks adjacent swaps with half moves and no anchor lookups", () => {
+    const container = document.createElement("div");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "d" }, "D"),
+      ]),
+      container,
+    );
+
+    enableKeyedReorderMovePathInstrumentation();
+
+    render(
+      h("ul", null, [
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "c" }, "C"),
+      ]),
+      container,
+    );
+
+    expect([...container.querySelectorAll("li")].map((li) => li.textContent)).toEqual([
+      "B",
+      "A",
+      "D",
+      "C",
+    ]);
+
+    const counts = getKeyedReorderMovePathCounts();
+
+    expect(counts.keyedMiddleSegments).toBe(1);
+    expect(counts.matchedOldChildren).toBe(4);
+    expect(counts.newChildrenMounted).toBe(0);
+    expect(counts.removedOldChildren).toBe(0);
+    expect(counts.stableMoveSkips).toBe(2);
+    expect(counts.movedExistingChildren).toBe(2);
+    expect(counts.anchorLookups).toBe(0);
+  });
+
+  it("tracks window shift reorder with few moves and no anchor lookups", () => {
+    const container = document.createElement("div");
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "e" }, "E"),
+      ]),
+      container,
+    );
+
+    enableKeyedReorderMovePathInstrumentation();
+
+    render(
+      h("ul", null, [
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "e" }, "E"),
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+      ]),
+      container,
+    );
+
+    expect([...container.querySelectorAll("li")].map((li) => li.textContent)).toEqual([
+      "D",
+      "E",
+      "A",
+      "B",
+      "C",
+    ]);
+
+    const counts = getKeyedReorderMovePathCounts();
+
+    expect(counts.keyedMiddleSegments).toBe(1);
+    expect(counts.matchedOldChildren).toBe(5);
+    expect(counts.newChildrenMounted).toBe(0);
+    expect(counts.removedOldChildren).toBe(0);
+    expect(counts.movedExistingChildren).toBe(2);
+    expect(counts.anchorLookups).toBe(0);
   });
 
   it("records keyed mixed mount remove and move counters when enabled", () => {
@@ -420,7 +551,7 @@ describe("renderer diff", () => {
       lisLength: 1,
       stableMoveSkips: 1,
       movedExistingChildren: 2,
-      anchorLookups: 3,
+      anchorLookups: 0,
     });
   });
 

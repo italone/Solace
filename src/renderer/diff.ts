@@ -590,39 +590,34 @@ function patchKeyedChildren(
   }
   let stableIndex = stablePositions.length - 1;
 
+  let anchorNode = getAnchor(newChildren, newEnd + 1);
+
   for (let index = newEnd; index >= newStart; index -= 1) {
     if (newIndexToOldIndexMap[index - newStart] === 0) {
       const runStart = getNewRunStart(newIndexToOldIndexMap, newStart, index);
       if (runStart < index && canBatchMountChildren(newChildren, runStart, index)) {
         if (shouldRecordMovePath) {
           recordKeyedReorderMountedChildren(index - runStart + 1);
-          recordKeyedReorderAnchorLookup();
         }
         mountNewChildren(
           newChildren,
           runStart,
           index,
           container,
-          getAnchor(newChildren, index + 1),
+          anchorNode,
           parentComponent,
           appProvides,
         );
+        anchorNode = newChildren[runStart].el ?? anchorNode;
         index = runStart;
         continue;
       }
 
       if (shouldRecordMovePath) {
         recordKeyedReorderMountedChildren(1);
-        recordKeyedReorderAnchorLookup();
       }
-      patch(
-        null,
-        newChildren[index],
-        container,
-        getAnchor(newChildren, index + 1),
-        parentComponent,
-        appProvides,
-      );
+      patch(null, newChildren[index], container, anchorNode, parentComponent, appProvides);
+      anchorNode = newChildren[index].el ?? anchorNode;
       continue;
     }
 
@@ -636,14 +631,15 @@ function patchKeyedChildren(
         recordKeyedReorderStableMoveSkip();
       }
       stableIndex -= 1;
+      anchorNode = childEl;
       continue;
     }
 
     if (shouldRecordMovePath) {
       recordKeyedReorderMovedExistingChild();
-      recordKeyedReorderAnchorLookup();
     }
-    insert(childEl, container, getAnchor(newChildren, index + 1));
+    insert(childEl, container, anchorNode);
+    anchorNode = childEl;
   }
 }
 
