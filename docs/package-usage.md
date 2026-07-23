@@ -8,6 +8,11 @@ Solace is published as a public alpha package on npm:
 pnpm add @italone/solace
 ```
 
+The npm package represents the latest published alpha. The repository `main` branch can be ahead of
+npm while documentation or release-preparation work is still local or not yet published. Check
+[project-status.md](./project-status.md) before treating local repository state as npm package
+state.
+
 Before preparing another release, run `pnpm release:readiness -- --publishable` to check package
 metadata and validate package consumption with the packed-consumer smoke test described below.
 
@@ -93,5 +98,7 @@ pnpm release:check
 That command runs quality checks including format check, coverage thresholds, package consumer smoke, jsdom benchmark smoke, Chromium production browser benchmark, and browser e2e tests.
 
 See `docs/release.md` for versioning and publish steps.
+
+See `docs/project-status.md` for the current completion map, known gaps, and release boundary.
 
 See `docs/examples.md` for runnable Vite examples and their e2e coverage.

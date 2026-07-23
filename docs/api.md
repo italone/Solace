@@ -32,6 +32,26 @@ Public TypeScript helper types include:
 - VNodes: `ComponentProps`, `ComponentRender`, `ComponentType`, `ComponentVNodeChildren`,
   `FragmentType`, `VNode`, `VNodeChild`, `VNodeChildren`, `VNodeProps`, `VNodeSlots`, `VNodeType`
 
+## API Layers And Stability
+
+Use Solace through the documented package entries only:
+
+| Entry                              | Stability | Purpose                                                    |
+| ---------------------------------- | --------- | ---------------------------------------------------------- |
+| `@italone/solace`                  | Public    | App, reactivity, rendering, components, scheduler, store   |
+| `@italone/solace/jsx-runtime`      | Public    | Automatic JSX runtime used by TypeScript and bundlers      |
+| `@italone/solace/jsx-dev-runtime`  | Public    | Development JSX runtime used by Vite and JSX dev tooling   |
+| `@italone/solace/devtools`         | Public    | Low-level listener and recorder APIs for tooling           |
+| `src/**`, `dist/**`, deep subpaths | Private   | Internal implementation details, not compatibility targets |
+
+The alpha compatibility contract is intentionally narrow. Public entries should remain usable across
+patch releases, while internal modules, event emit helpers, scheduler queues, renderer diagnostics,
+component instances, and generated file layout can change without notice.
+
+Most applications should import from the root package. Use JSX subpaths only through `jsxImportSource`
+or bundler-generated imports. Use the DevTools subpath only when building instrumentation or examples
+that need event snapshots.
+
 ## App
 
 ### `createApp(rootComponent)`

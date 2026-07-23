@@ -2,6 +2,11 @@
 
 Solace uses Changesets for version notes and package version updates.
 
+Release readiness and publishing are separate states. The repository can contain a prepared local
+version, documentation updates, or changelog entries that have not been pushed to GitHub or
+published to npm. Use [project-status.md](./project-status.md) to record that boundary when
+publishing is intentionally skipped.
+
 ## Local Release Gate
 
 Run the full local gate before preparing a release:
@@ -66,3 +71,7 @@ pnpm release:publish
 ```
 
 `release:publish` runs the full local release gate before `changeset publish`.
+
+If publishing is skipped, do not run `release:publish`, `changeset publish`, or `npm publish`.
+Leave the local version state documented in `docs/project-status.md` until a maintainer makes a
+separate release decision.

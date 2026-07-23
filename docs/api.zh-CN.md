@@ -29,6 +29,22 @@
 - Store：`Store`、`StoreActionsInput`、`StoreContext`、`StoreGetterContext`、`StoreGetters`、`StoreOptions`
 - VNode：`ComponentProps`、`ComponentRender`、`ComponentType`、`ComponentVNodeChildren`、`FragmentType`、`VNode`、`VNodeChild`、`VNodeChildren`、`VNodeProps`、`VNodeSlots`、`VNodeType`
 
+## API 分层与稳定性
+
+请只通过文档化 package entries 使用 Solace：
+
+| 入口                               | 稳定性 | 用途                                               |
+| ---------------------------------- | ------ | -------------------------------------------------- |
+| `@italone/solace`                  | 公开   | App、响应式、渲染、组件、调度器、store             |
+| `@italone/solace/jsx-runtime`      | 公开   | TypeScript 和 bundler 使用的 automatic JSX runtime |
+| `@italone/solace/jsx-dev-runtime`  | 公开   | Vite 和 JSX dev tooling 使用的开发环境 JSX runtime |
+| `@italone/solace/devtools`         | 公开   | 面向 tooling 的底层 listener 和 recorder API       |
+| `src/**`、`dist/**`、deep subpaths | 私有   | 内部实现细节，不作为兼容性目标                     |
+
+alpha 阶段的兼容性契约有意保持较窄。公开入口应在 patch release 之间保持可用；内部模块、event emit helpers、scheduler 队列、renderer diagnostics、组件实例和生成文件布局可能在不额外通知的情况下变化。
+
+大多数应用应从包根入口导入。JSX 子路径通常只通过 `jsxImportSource` 或 bundler 生成导入使用。只有在构建 instrumentation 或需要 event snapshots 的示例时，才直接使用 DevTools 子路径。
+
 ## App
 
 ### `createApp(rootComponent)`

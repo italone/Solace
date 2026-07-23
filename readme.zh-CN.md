@@ -17,9 +17,18 @@ Solace 聚焦于小型运行时核心：响应式状态、调度渲染、VNode d
 
 ## 项目状态
 
-Solace 当前处于早期 alpha runtime 阶段。仓库功能可运行，并已经通过本地验证；当前 package metadata 已配置为可公开发布到 npm。
+Solace 当前处于早期 alpha runtime 阶段。仓库功能可运行，并已经通过本地验证；当前 package metadata 已配置为公开 npm package。发布到 npm 的版本可能会在 release 准备期间有意落后于当前 `main` 分支。
 
-目前可以通过下面的本地开发流程体验框架，也可以在 release 发布后从 npm 安装已发布包。
+目前可以通过下面的本地开发流程体验框架。需要使用最新已发布 alpha 时，可以安装 npm package；需要查看 `main` 上尚未发布的文档或运行时变更时，应直接使用仓库。
+
+当前完成度摘要：
+
+- App、响应式、渲染、组件、上下文、生命周期、调度器、store、JSX 和底层 DevTools 集成已经通过文档化公开入口暴露。
+- 包产物包含 ESM、CJS、TypeScript declarations、JSX runtime 子路径，以及 `@italone/solace/devtools` 子路径。
+- 验证覆盖 format、typecheck、lint、单元测试、集成测试、包导出测试、覆盖率阈值、packed-consumer 冒烟测试、jsdom benchmark、Chromium 生产构建浏览器 benchmark 和浏览器 e2e 测试。
+- npm 发布是独立的维护者决策。本地可以先准备版本，但不一定已经 push 到 GitHub 或发布到 npm。
+
+当前完成度映射和发布边界见 [docs/project-status.zh-CN.md](./docs/project-status.zh-CN.md)。
 
 ## Alpha 范围
 
@@ -319,20 +328,20 @@ pnpm test:e2e
 
 ## 包入口
 
-计划中的公开包结构如下：
+公开包结构如下：
 
 - `@italone/solace`：核心运行时 API。
 - `@italone/solace/jsx-runtime`：自动 JSX runtime。
 - `@italone/solace/jsx-dev-runtime`：开发环境 JSX runtime。
 - `@italone/solace/devtools`：底层 DevTools listener 和 recorder API。
 
-公开发布后可通过以下命令安装：
+安装最新已发布 alpha：
 
 ```bash
 pnpm add @italone/solace
 ```
 
-在正式发布前，请使用仓库示例，或参考 [docs/package-usage.md](./docs/package-usage.md) 中的 packed-consumer 冒烟测试。
+如果仓库版本领先于 npm，请使用仓库示例，或参考 [docs/package-usage.md](./docs/package-usage.md) 中的 packed-consumer 冒烟测试。
 
 ## 架构
 
@@ -409,6 +418,7 @@ pnpm release:readiness
 - [Architecture](./docs/architecture.md)
 - [Examples](./docs/examples.md)
 - [Package usage](./docs/package-usage.md)
+- [Project status](./docs/project-status.zh-CN.md)
 - [Performance](./docs/performance.md)
 - [Release](./docs/release.md)
 - [DevTools](./docs/devtools.md)
@@ -418,7 +428,7 @@ pnpm release:readiness
 
 ## 路线图
 
-当前重点是运行时稳定性、renderer 性能、包发布就绪度和文档质量。等核心运行时契约稳定后，后续可以继续扩展 compiler tooling、DevTools 集成和生态适配器。
+当前重点是运行时稳定性、renderer 性能、包版本协调和文档质量。等核心运行时契约稳定后，后续可以继续扩展 compiler tooling、router 集成、SSR/SSG、hydration、浏览器 DevTools 和生态适配器。
 
 ## 贡献
 

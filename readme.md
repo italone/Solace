@@ -17,9 +17,18 @@ Solace focuses on a small runtime core: reactive state, scheduled rendering, VNo
 
 ## Project Status
 
-Solace is currently an early alpha runtime. The repository is functional and validated locally, and the package metadata is configured for public npm publishing.
+Solace is currently an early alpha runtime. The repository is functional, validated locally, and configured as a public npm package. Published npm versions may intentionally lag the current `main` branch while release preparation is in progress.
 
-Use the local development workflow below to explore the framework or install the published package from npm after a release is available.
+Use the local development workflow below to explore the framework. Install the npm package when you want the latest published alpha, and use the repository directly when you need unreleased documentation or runtime changes from `main`.
+
+Current completion highlights:
+
+- Runtime APIs for apps, reactivity, rendering, components, context, lifecycle, scheduler, store, JSX, and low-level DevTools integration are implemented behind documented public entry points.
+- Package outputs include ESM, CJS, TypeScript declarations, JSX runtime subpaths, and the `@italone/solace/devtools` subpath.
+- Validation covers format, typecheck, lint, unit tests, integration tests, package export tests, coverage thresholds, packed-consumer smoke tests, jsdom benchmarks, Chromium production browser benchmarks, and browser e2e tests.
+- Release publishing is a separate maintainer decision. A local version may be prepared without being pushed to GitHub or published to npm.
+
+See [docs/project-status.md](./docs/project-status.md) for the current completion map and release boundary.
 
 ## Alpha Scope
 
@@ -324,20 +333,20 @@ See [docs/examples.md](./docs/examples.md) for example details and fixed local p
 
 ## Package Entries
 
-The planned public package shape is:
+The public package shape is:
 
 - `@italone/solace`: core runtime APIs.
 - `@italone/solace/jsx-runtime`: automatic JSX runtime.
 - `@italone/solace/jsx-dev-runtime`: development JSX runtime.
 - `@italone/solace/devtools`: low-level DevTools listener and recorder APIs.
 
-After public release, install with:
+Install the latest published alpha with:
 
 ```bash
 pnpm add @italone/solace
 ```
 
-Until then, use the repository examples or the packed-consumer smoke test described in [docs/package-usage.md](./docs/package-usage.md).
+If the repository version is ahead of npm, use the repository examples or the packed-consumer smoke test described in [docs/package-usage.md](./docs/package-usage.md).
 
 ## Architecture
 
@@ -414,6 +423,7 @@ See [docs/release.md](./docs/release.md) for release gates and publishing requir
 - [Architecture](./docs/architecture.md)
 - [Examples](./docs/examples.md)
 - [Package usage](./docs/package-usage.md)
+- [Project status](./docs/project-status.md)
 - [Performance](./docs/performance.md)
 - [Release](./docs/release.md)
 - [DevTools](./docs/devtools.md)
@@ -423,7 +433,7 @@ See [docs/release.md](./docs/release.md) for release gates and publishing requir
 
 ## Roadmap
 
-The current focus is runtime stability, renderer performance, package readiness, and documentation quality. Future work can expand around compiler tooling, DevTools integration, and ecosystem adapters after the core runtime contract is stable.
+The current focus is runtime stability, renderer performance, package/version coordination, and documentation quality. Future work can expand around compiler tooling, router integration, SSR/SSG, hydration, browser DevTools, and ecosystem adapters after the core runtime contract is stable.
 
 ## Contributing
 
