@@ -73,7 +73,3 @@ export function recordKeyedReorderStableMoveSkip(): void {
 export function recordKeyedReorderMovedExistingChild(): void {
   counts.movedExistingChildren += 1;
 }
-
-export function recordKeyedReorderAnchorLookup(): void {
-  counts.anchorLookups += 1;
-}

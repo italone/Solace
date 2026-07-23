@@ -16,7 +16,6 @@ import type { VNode, VNodeProps } from "../vnode/vnode";
 import { createElement, insert, patchProp, remove, setText } from "./dom";
 import {
   isKeyedReorderMovePathInstrumentationEnabled,
-  recordKeyedReorderAnchorLookup,
   recordKeyedReorderLisLength,
   recordKeyedReorderMatchedOldChild,
   recordKeyedReorderMiddleSegment,

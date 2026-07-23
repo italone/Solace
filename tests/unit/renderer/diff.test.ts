@@ -341,7 +341,7 @@ describe("renderer diff", () => {
     expect(before.get("C")?.isConnected).toBe(false);
   });
 
-  it("records keyed full reverse move-path counters when enabled", () => {
+  it("records keyed full reverse move-path counters with zero anchor lookups", () => {
     const container = document.createElement("div");
 
     render(
@@ -384,50 +384,7 @@ describe("renderer diff", () => {
     });
   });
 
-  it("tracks keyed reverse reorder without anchor lookups", () => {
-    const container = document.createElement("div");
-
-    render(
-      h("ul", null, [
-        h("li", { key: "a" }, "A"),
-        h("li", { key: "b" }, "B"),
-        h("li", { key: "c" }, "C"),
-        h("li", { key: "d" }, "D"),
-      ]),
-      container,
-    );
-
-    enableKeyedReorderMovePathInstrumentation();
-
-    render(
-      h("ul", null, [
-        h("li", { key: "d" }, "D"),
-        h("li", { key: "c" }, "C"),
-        h("li", { key: "b" }, "B"),
-        h("li", { key: "a" }, "A"),
-      ]),
-      container,
-    );
-
-    expect([...container.querySelectorAll("li")].map((li) => li.textContent)).toEqual([
-      "D",
-      "C",
-      "B",
-      "A",
-    ]);
-    expect(getKeyedReorderMovePathCounts()).toEqual({
-      keyedMiddleSegments: 1,
-      matchedOldChildren: 4,
-      newChildrenMounted: 0,
-      removedOldChildren: 0,
-      lisLength: 1,
-      stableMoveSkips: 1,
-      movedExistingChildren: 3,
-      anchorLookups: 0,
-    });
-  });
-
-  it("tracks adjacent swaps with half moves and no anchor lookups", () => {
+  it("records keyed adjacent-swap move-path counters with zero anchor lookups", () => {
     const container = document.createElement("div");
 
     render(
@@ -470,7 +427,7 @@ describe("renderer diff", () => {
     expect(counts.anchorLookups).toBe(0);
   });
 
-  it("tracks window shift reorder with few moves and no anchor lookups", () => {
+  it("records keyed window-shift move-path counters with zero anchor lookups", () => {
     const container = document.createElement("div");
 
     render(
