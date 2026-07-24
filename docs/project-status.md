@@ -6,16 +6,17 @@ This document summarizes the current completion level of Solace as an open-sourc
 
 ## Summary
 
-Solace is an early alpha runtime with a working public API, package exports, examples, tests, benchmarks, and release checks. It is ready to be promoted as a compact educational and experimental frontend framework, but it should not be described as a mature production replacement for React, Vue, Svelte, or similar ecosystems.
+Solace is an alpha runtime that has been published to npm as `@italone/solace@0.0.3`. It provides a working public API, package exports, examples, tests, benchmarks, and release checks. It is suitable as a compact educational and experimental frontend framework, but it should not be described as a mature production replacement for React, Vue, Svelte, or similar ecosystems.
 
-Current local repository state:
+Current repository state:
 
 - Package name: `@italone/solace`
-- Local package version: `0.0.3`
-- Public package metadata: enabled with `"private": false`
+- Published version: `0.0.3`
+- npm dist-tag: `latest`
+- Public package metadata: `"private": false`
 - Current branch: `main`
-- Local branch state: ahead of `origin/main` by two release-preparation commits
-- Publishing phase: ready for intentional release on user approval
+- Remote state: in sync with `origin/main`
+- Phase: alpha released; transitioning to beta planning
 
 ## Completion Map
 
@@ -91,24 +92,20 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Release Coordination State
 
-Publishing is separate from repository readiness. The current local branch can contain release-preparation changes that are not yet available on npm.
+`@italone/solace@0.0.3` has been published to npm. Future releases should follow the same checklist:
 
-Before publishing any future version:
-
-1. Confirm the local branch is pushed or intentionally published from local state.
-2. Confirm the package version is not already published.
+1. Confirm `origin/main` is in sync with the local release branch.
+2. Confirm the target version is not already published.
 3. Run `pnpm release:readiness -- --publishable`.
 4. Run `pnpm release:check`.
 5. Run `npm publish --dry-run --access public --cache /private/tmp/npm-cache` if using the known working temporary npm cache.
 6. Publish only after npm authentication, organization access, public access, and any one-time password requirement are ready.
 
-For the current workstream, publishing is intentionally skipped.
-
 ## Recommended Next Work
 
-1. **Push release-preparation commits to `origin/main`** before publishing.
-2. **Collect browser benchmark history** for keyed reorder and large-list scenarios before making performance claims.
-3. **Stabilize the public API surface** before expanding compiler, router, SSR, hydration, or DevTools UI work.
-4. **Keep package export tests and packed-consumer smoke tests mandatory** for any public API change.
-5. **Publish v0.0.3 only after explicit user approval**, npm authentication, organization access, and dry-run validation.
-6. **Add a public roadmap document** for beta priorities (compiler/router/SSR/DevTools UI) once alpha is tagged.
+1. **Stabilize the public API surface** before expanding compiler, router, SSR, hydration, or DevTools UI work.
+2. **Keep package export tests and packed-consumer smoke tests mandatory** for any public API change.
+3. **Collect browser benchmark history** for keyed reorder and large-list scenarios before making performance claims.
+4. **Add `license` and `author` fields to `package.json`** before the next release.
+5. **Begin beta work** from `docs/roadmap.md` in priority order: template/SFC compiler exploration, first-party router design, SSR/SSG/hydration, browser DevTools extension UI, and production adoption guidance.
+6. **Update `package.json` metadata** and READMEs as the project matures.
