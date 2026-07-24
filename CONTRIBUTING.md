@@ -8,6 +8,11 @@ changes should stay focused and include validation that matches the affected are
 - Check the current project status in [readme.md](./readme.md).
 - Read the public API boundary in [docs/api.md](./docs/api.md).
 - Keep public API changes intentional and documented.
+- **Public API freeze is in effect for the alpha release.** Any change to the supported public entries
+  (`@italone/solace`, `@italone/solace/jsx-runtime`, `@italone/solace/jsx-dev-runtime`,
+  `@italone/solace/devtools`) must include updates to the package-exports tests in
+  `tests/integration/package-exports.test.ts` and the packed-consumer smoke test in
+  `scripts/package-smoke-test.mjs`.
 - Do not import from `src/**` or `dist/**` in consumer-facing examples.
 
 ## Development Setup
@@ -61,6 +66,5 @@ Solace uses Changesets for version notes. For user-visible changes, create a cha
 pnpm changeset
 ```
 
-The package remains intentionally private while `package.json` keeps `"private": true`. Public
-publishing requires an explicit maintainer decision and the checks documented in
-[docs/release.md](./docs/release.md).
+The package is published publicly as `@italone/solace`. Future publishing requires an explicit
+maintainer decision and the checks documented in [docs/release.md](./docs/release.md).
