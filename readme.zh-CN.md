@@ -422,6 +422,7 @@ pnpm release:readiness
 - [Performance](./docs/performance.md)
 - [Release](./docs/release.md)
 - [DevTools](./docs/devtools.md)
+- [Roadmap](./docs/roadmap.md)
 - [Contributing](./CONTRIBUTING.md)
 - [Security](./SECURITY.md)
 - [License](./LICENSE)
