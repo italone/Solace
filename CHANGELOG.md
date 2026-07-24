@@ -1,9 +1,12 @@
 # @italone/solace
 
-## 0.0.3
+## 0.0.3 — 2026-07-24
 
 ### Patch Changes
 
+- Alpha runtime release.
+- Reactive core, renderer, components, scheduler, store, JSX runtime, and DevTools API.
+- Full test coverage and release gates passing.
 - Align package usage and release documentation with the published public alpha package state.
 
 ## 0.0.2
