@@ -14,8 +14,8 @@ Current local repository state:
 - Local package version: `0.0.3`
 - Public package metadata: enabled with `"private": false`
 - Current branch: `main`
-- Local branch state at the last audit: ahead of `origin/main` by one release-preparation commit
-- Publishing phase: intentionally skipped for the current workstream
+- Local branch state: ahead of `origin/main` by two release-preparation commits
+- Publishing phase: ready for intentional release on user approval
 
 ## Completion Map
 
@@ -106,8 +106,9 @@ For the current workstream, publishing is intentionally skipped.
 
 ## Recommended Next Work
 
-1. Keep README, API, package usage, and release docs aligned with the actual npm version and local branch state.
-2. Continue collecting browser benchmark history for keyed reorder and large-list scenarios before making performance claims.
-3. Stabilize the public API surface before expanding compiler, router, SSR, hydration, or DevTools UI work.
-4. Keep package export tests and packed-consumer smoke tests mandatory for public API changes.
-5. Add release notes only when a version is actually prepared for npm, and avoid mixing unpublished branch state with npm package state.
+1. **Push release-preparation commits to `origin/main`** before publishing.
+2. **Collect browser benchmark history** for keyed reorder and large-list scenarios before making performance claims.
+3. **Stabilize the public API surface** before expanding compiler, router, SSR, hydration, or DevTools UI work.
+4. **Keep package export tests and packed-consumer smoke tests mandatory** for any public API change.
+5. **Publish v0.0.3 only after explicit user approval**, npm authentication, organization access, and dry-run validation.
+6. **Add a public roadmap document** for beta priorities (compiler/router/SSR/DevTools UI) once alpha is tagged.
