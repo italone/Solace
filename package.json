@@ -35,6 +35,11 @@
       "import": "./dist/devtools.js",
       "require": "./dist/devtools.cjs"
     },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js",
+      "require": "./dist/vite.cjs"
+    },
     "./package.json": "./package.json"
   },
   "engines": {
@@ -43,7 +48,7 @@
   "scripts": {
     "dev": "vite examples/basic-counter",
     "dev:todo": "vite examples/todo-app",
-    "dev:large": "vite examples/large-list",
+    "dev:sfc": "vite examples/sfc-counter",
     "build": "rollup -c",
     "typecheck": "tsc --noEmit",
     "typecheck:jsxdev": "tsc --noEmit -p tsconfig.jsxdev.json",

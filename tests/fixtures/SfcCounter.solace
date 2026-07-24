@@ -1,0 +1,17 @@
+<template>
+  <button class="counter" onClick={increment}>
+    count: {count.value}
+  </button>
+</template>
+
+<script>
+  import { ref } from "@italone/solace";
+  const count = ref(0);
+  const increment = () => count.value++;
+</script>
+
+<style>
+  .counter {
+    color: blue;
+  }
+</style>

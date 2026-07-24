@@ -50,6 +50,7 @@ export default [
       "jsx-runtime": "src/jsx-runtime.ts",
       "jsx-dev-runtime": "src/jsx-dev-runtime.ts",
       devtools: "src/devtools/index.ts",
+      vite: "src/vite/index.ts",
     },
     plugins: [
       cleanDist(),
@@ -57,6 +58,7 @@ export default [
       commonjs(),
       typescript(),
     ],
+    external: ["vite"],
     output: [
       {
         dir: "dist",
@@ -81,12 +83,14 @@ export default [
       "jsx-runtime": "src/jsx-runtime.ts",
       "jsx-dev-runtime": "src/jsx-dev-runtime.ts",
       devtools: "src/devtools/index.ts",
+      vite: "src/vite/index.ts",
     },
     output: {
       dir: "dist",
       entryFileNames: "[name].d.ts",
       format: "esm",
     },
+    external: ["vite"],
     plugins: [dts()],
   },
 ];
