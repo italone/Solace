@@ -2,6 +2,8 @@
   "name": "@italone/solace",
   "version": "0.0.3",
   "private": false,
+  "license": "MIT",
+  "author": "italone",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
