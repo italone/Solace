@@ -1,7 +1,27 @@
 export interface SFCDescriptor {
   template: string | undefined;
+  templateOffset: number | undefined;
   script: string | undefined;
+  scriptOffset: number | undefined;
   style: string | undefined;
+  styleOffset: number | undefined;
+}
+
+export interface SourceLocation {
+  offset: number;
+  line: number;
+  column: number;
+}
+
+export type SolaceCompileErrorCode =
+  "SFC_MISSING_TEMPLATE" | "SFC_PARSE_ERROR" | "SFC_CODEGEN_ERROR";
+
+export interface SolaceCompileErrorOptions {
+  code: SolaceCompileErrorCode;
+  message: string;
+  filename?: string;
+  loc?: SourceLocation;
+  cause?: unknown;
 }
 
 export type TemplateNode = ElementNode | TextNode | InterpolationNode;

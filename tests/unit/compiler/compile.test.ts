@@ -46,4 +46,42 @@ describe("compile", () => {
   it("throws when template block is missing", () => {
     expect(() => compile("<script></script>")).toThrow("Missing <template> block");
   });
+
+  it("throws SolaceCompileError with code and location for missing template", () => {
+    try {
+      compile("<script>const count = 0;</script>", { id: "/app/src/App.solace" });
+      throw new Error("compile should have thrown");
+    } catch (error) {
+      expect(error).toMatchObject({
+        name: "SolaceCompileError",
+        code: "SFC_MISSING_TEMPLATE",
+        filename: "/app/src/App.solace",
+        message: "Missing <template> block",
+      });
+      expect((error as { loc?: unknown }).loc).toBeUndefined();
+    }
+  });
+
+  it("throws SolaceCompileError with source location for parse errors", () => {
+    const source = `
+<template>
+  <section>
+    <span>{count</span>
+  </section>
+</template>
+`;
+
+    try {
+      compile(source, { id: "/app/src/Broken.solace" });
+      throw new Error("compile should have thrown");
+    } catch (error) {
+      expect(error).toMatchObject({
+        name: "SolaceCompileError",
+        code: "SFC_PARSE_ERROR",
+        filename: "/app/src/Broken.solace",
+        loc: { line: 4, column: 11 },
+      });
+      expect(String((error as Error).message)).toContain("Unclosed interpolation expression");
+    }
+  });
 });

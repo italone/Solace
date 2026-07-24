@@ -20,6 +20,9 @@ describe("parseSFC", () => {
     expect(result.template).toContain("<div>hello</div>");
     expect(result.script).toContain("const count = 0;");
     expect(result.style).toContain("div { color: red; }");
+    expect(result.templateOffset).toBeGreaterThan(0);
+    expect(result.scriptOffset).toBeGreaterThan(0);
+    expect(result.styleOffset).toBeGreaterThan(0);
   });
 
   it("returns undefined for missing blocks", () => {
@@ -89,5 +92,31 @@ describe("parseTemplate", () => {
 
   it("throws on unclosed interpolation", () => {
     expect(() => parseTemplate("{count")).toThrow("Unclosed interpolation expression");
+  });
+
+  it("reports location for mismatched closing tags", () => {
+    try {
+      parseTemplate("<section>\n  <span>bad</strong>\n</section>", 10);
+      throw new Error("parseTemplate should have thrown");
+    } catch (error) {
+      expect(error).toMatchObject({
+        loc: { offset: 31, line: 2, column: 12 },
+      });
+      expect(String((error as Error).message)).toContain(
+        "Mismatched closing tag: expected </span> but found </strong>",
+      );
+    }
+  });
+
+  it("reports location for unclosed interpolation", () => {
+    try {
+      parseTemplate("<p>{count</p>", 20);
+      throw new Error("parseTemplate should have thrown");
+    } catch (error) {
+      expect(error).toMatchObject({
+        loc: { offset: 23, line: 1, column: 4 },
+      });
+      expect(String((error as Error).message)).toContain("Unclosed interpolation expression");
+    }
   });
 });

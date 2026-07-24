@@ -1,14 +1,55 @@
-import type { Attribute, SFCDescriptor, TemplateNode } from "./types";
+import type { Attribute, SFCDescriptor, SourceLocation, TemplateNode } from "./types";
 
-export function parseSFC(source: string): SFCDescriptor {
+export class ParseError extends Error {
+  readonly loc: SourceLocation;
+
+  constructor(message: string, loc: SourceLocation) {
+    super(message);
+    this.name = "ParseError";
+    this.loc = loc;
+  }
+}
+
+function createLocation(source: string, offset: number, lineColumnOffset = 0): SourceLocation {
+  const lineColumnEnd = Math.max(0, offset - lineColumnOffset);
+  const before = source.slice(0, lineColumnEnd);
+  const lines = before.split("\n");
+
   return {
-    template: extractBlock(source, "template"),
-    script: extractBlock(source, "script"),
-    style: extractBlock(source, "style"),
+    offset,
+    line: lines.length,
+    column: lines[lines.length - 1].length + 1,
   };
 }
 
-function extractBlock(source: string, tag: string): string | undefined {
+function createParseError(
+  source: string,
+  offset: number,
+  message: string,
+  lineColumnOffset = 0,
+): ParseError {
+  return new ParseError(message, createLocation(source, offset, lineColumnOffset));
+}
+
+export function parseSFC(source: string): SFCDescriptor {
+  const template = extractBlock(source, "template");
+  const script = extractBlock(source, "script");
+  const style = extractBlock(source, "style");
+
+  return {
+    template: template?.content,
+    templateOffset: template?.offset,
+    script: script?.content,
+    scriptOffset: script?.offset,
+    style: style?.content,
+    styleOffset: style?.offset,
+  };
+}
+
+function extractBlock(
+  source: string,
+  tag: string,
+): { content: string; offset: number } | undefined {
   const open = `<${tag}>`;
   const openIndex = source.indexOf(open);
   if (openIndex === -1) {
@@ -16,15 +57,27 @@ function extractBlock(source: string, tag: string): string | undefined {
   }
 
   const close = `</${tag}>`;
-  const closeIndex = source.indexOf(close, openIndex + open.length);
+  const contentStart = openIndex + open.length;
+  const closeIndex = source.indexOf(close, contentStart);
   if (closeIndex === -1) {
-    throw new Error(`Missing closing tag </${tag}>`);
+    throw createParseError(source, openIndex, `Missing closing tag </${tag}>`);
   }
 
-  return source.slice(openIndex + open.length, closeIndex).trim();
+  const rawContent = source.slice(contentStart, closeIndex);
+  const trimmedStart = rawContent.length - rawContent.trimStart().length;
+
+  return {
+    content: rawContent.trim(),
+    offset: contentStart + trimmedStart,
+  };
 }
 
-export function parseTemplate(template: string): TemplateNode[] {
+export function parseTemplate(
+  template: string,
+  sourceOffset = 0,
+  source = template,
+  lineColumnOffset = sourceOffset,
+): TemplateNode[] {
   const nodes: TemplateNode[] = [];
   let index = 0;
 
@@ -37,14 +90,14 @@ export function parseTemplate(template: string): TemplateNode[] {
         break;
       }
 
-      const result = parseElement(template, index);
+      const result = parseElement(template, index, sourceOffset, source, lineColumnOffset);
       nodes.push(result.node);
       index = result.index;
       continue;
     }
 
     if (char === "{") {
-      const result = parseInterpolation(template, index);
+      const result = parseInterpolation(template, index, sourceOffset, source, lineColumnOffset);
       nodes.push(result.node);
       index = result.index;
       continue;
@@ -82,6 +135,9 @@ function parseText(
 function parseInterpolation(
   template: string,
   start: number,
+  sourceOffset: number,
+  source: string,
+  lineColumnOffset: number,
 ): { node: { type: "interpolation"; expression: string }; index: number } {
   let depth = 0;
   let index = start;
@@ -101,10 +157,21 @@ function parseInterpolation(
     index += 1;
   }
 
-  throw new Error("Unclosed interpolation expression");
+  throw createParseError(
+    source,
+    sourceOffset + start,
+    "Unclosed interpolation expression",
+    lineColumnOffset,
+  );
 }
 
-function parseElement(template: string, start: number): { node: TemplateNode; index: number } {
+function parseElement(
+  template: string,
+  start: number,
+  sourceOffset: number,
+  source: string,
+  lineColumnOffset: number,
+): { node: TemplateNode; index: number } {
   let index = start + 1; // skip '<'
   const tagEnd = findTagNameEnd(template, index);
   const tag = template.slice(index, tagEnd).trim();
@@ -132,7 +199,7 @@ function parseElement(template: string, start: number): { node: TemplateNode; in
       continue;
     }
 
-    const result = parseAttribute(template, index);
+    const result = parseAttribute(template, index, sourceOffset, source, lineColumnOffset);
     attributes.push(result.attribute);
     index = result.index;
   }
@@ -151,21 +218,26 @@ function parseElement(template: string, start: number): { node: TemplateNode; in
       const closeEnd = findTagNameEnd(template, closeStart);
       const closeTag = template.slice(closeStart, closeEnd).trim();
       if (closeTag !== tag) {
-        throw new Error(`Mismatched closing tag: expected </${tag}> but found </${closeTag}>`);
+        throw createParseError(
+          source,
+          sourceOffset + closeStart - 2,
+          `Mismatched closing tag: expected </${tag}> but found </${closeTag}>`,
+          lineColumnOffset,
+        );
       }
       index = closeEnd + 1; // skip '>'
       break;
     }
 
     if (template[index] === "<") {
-      const result = parseElement(template, index);
+      const result = parseElement(template, index, sourceOffset, source, lineColumnOffset);
       children.push(result.node);
       index = result.index;
       continue;
     }
 
     if (template[index] === "{") {
-      const result = parseInterpolation(template, index);
+      const result = parseInterpolation(template, index, sourceOffset, source, lineColumnOffset);
       children.push(result.node);
       index = result.index;
       continue;
@@ -196,7 +268,13 @@ function findTagNameEnd(template: string, start: number): number {
   return index;
 }
 
-function parseAttribute(template: string, start: number): { attribute: Attribute; index: number } {
+function parseAttribute(
+  template: string,
+  start: number,
+  sourceOffset: number,
+  source: string,
+  lineColumnOffset: number,
+): { attribute: Attribute; index: number } {
   let index = start;
   const nameEnd = findAttributeNameEnd(template, index);
   const name = template.slice(index, nameEnd).trim();
@@ -217,7 +295,7 @@ function parseAttribute(template: string, start: number): { attribute: Attribute
   }
 
   if (template[index] === "{") {
-    const result = parseInterpolation(template, index);
+    const result = parseInterpolation(template, index, sourceOffset, source, lineColumnOffset);
     return {
       attribute: { name, value: { type: "expression", content: result.node.expression } },
       index: result.index,
@@ -232,7 +310,12 @@ function parseAttribute(template: string, start: number): { attribute: Attribute
       index += 1;
     }
     if (index >= template.length) {
-      throw new Error(`Unclosed attribute value for ${name}`);
+      throw createParseError(
+        source,
+        sourceOffset + valueStart - 1,
+        `Unclosed attribute value for ${name}`,
+        lineColumnOffset,
+      );
     }
     const content = template.slice(valueStart, index);
     index += 1; // skip closing quote
@@ -242,7 +325,12 @@ function parseAttribute(template: string, start: number): { attribute: Attribute
     };
   }
 
-  throw new Error(`Unexpected character in attribute value for ${name}`);
+  throw createParseError(
+    source,
+    sourceOffset + index,
+    `Unexpected character in attribute value for ${name}`,
+    lineColumnOffset,
+  );
 }
 
 function findAttributeNameEnd(template: string, start: number): number {

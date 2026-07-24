@@ -3,6 +3,21 @@ import { createHash } from "node:crypto";
 import { generateRender } from "./codegen";
 import { parseSFC, parseTemplate } from "./parse";
 import { scopeStyle } from "./style";
+import type { SolaceCompileErrorOptions, SourceLocation } from "./types";
+
+export class SolaceCompileError extends Error {
+  readonly code: SolaceCompileErrorOptions["code"];
+  readonly filename: string | undefined;
+  readonly loc: SourceLocation | undefined;
+
+  constructor(options: SolaceCompileErrorOptions) {
+    super(options.message, { cause: options.cause });
+    this.name = "SolaceCompileError";
+    this.code = options.code;
+    this.filename = options.filename;
+    this.loc = options.loc;
+  }
+}
 
 export interface CompileOptions {
   id?: string;
@@ -13,15 +28,28 @@ export interface CompileResult {
 }
 
 export function compile(source: string, options: CompileOptions = {}): CompileResult {
-  const scopeId = options.id ? hashId(options.id) : undefined;
-  const descriptor = parseSFC(source);
+  const filename = options.id;
+  const scopeId = filename ? hashId(filename) : undefined;
+  const descriptor = wrapCompileStep(() => parseSFC(source), "SFC_PARSE_ERROR", filename);
 
   if (descriptor.template === undefined) {
-    throw new Error("Missing <template> block");
+    throw new SolaceCompileError({
+      code: "SFC_MISSING_TEMPLATE",
+      message: "Missing <template> block",
+      filename,
+    });
   }
 
-  const ast = parseTemplate(descriptor.template);
-  const renderExpr = generateRender(ast, { scopeId });
+  const ast = wrapCompileStep(
+    () => parseTemplate(descriptor.template ?? "", descriptor.templateOffset ?? 0, source, 0),
+    "SFC_PARSE_ERROR",
+    filename,
+  );
+  const renderExpr = wrapCompileStep(
+    () => generateRender(ast, { scopeId }),
+    "SFC_CODEGEN_ERROR",
+    filename,
+  );
 
   const { imports, body } = descriptor.script
     ? extractScript(descriptor.script)
@@ -50,6 +78,29 @@ export default (props, context) => {
 `.trim();
 
   return { code };
+}
+
+function wrapCompileStep<T>(
+  step: () => T,
+  code: SolaceCompileErrorOptions["code"],
+  filename: string | undefined,
+): T {
+  try {
+    return step();
+  } catch (error) {
+    if (error instanceof SolaceCompileError) {
+      throw error;
+    }
+
+    const maybeLocated = error as { loc?: SourceLocation; message?: string };
+    throw new SolaceCompileError({
+      code,
+      message: maybeLocated.message ?? "Solace SFC compile failed",
+      filename,
+      loc: maybeLocated.loc,
+      cause: error,
+    });
+  }
 }
 
 function extractScript(script: string): { imports: string; body: string } {
