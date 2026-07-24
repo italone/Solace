@@ -14,7 +14,7 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - 本地 package 版本：`0.0.3`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
-- 最近一次梳理时的本地分支状态：比 `origin/main` 领先一个 release-preparation commit
+- 本地分支状态：比 `origin/main` 领先两个 release-preparation commits
 - 发布阶段：当前工作流按要求跳过
 
 ## 完成度映射
@@ -28,6 +28,7 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 | 组件            | 已实现              | 函数组件、setup context、props、emit、slots、生命周期、provide/inject 和异步组件均已文档化并测试。                      |
 | Store           | 已实现              | `createStore` 组合 reactive state、computed getters 和 named actions，并包含 DevTools action summaries。                |
 | JSX             | 已实现              | package exports 包含 `jsx-runtime` 和 `jsx-dev-runtime`，并有 JSX 示例和 typecheck 覆盖。                               |
+| SFC compiler    | alpha 实现          | `.solace` 解析、template codegen、scoped style 注入和 Vite plugin 已位于 `src/compiler/**` 与 `src/vite/index.ts`。     |
 | DevTools 子路径 | 已作为底层 API 实现 | `@italone/solace/devtools` 暴露 listener 和 recorder API，但不是浏览器扩展或 UI。                                       |
 | 示例            | 已实现              | `examples/**` 下包含 basic counter、todo app、large list 和 performance benchmark 示例。                                |
 | 包产物          | 已实现              | Rollup 构建 ESM、CJS 和类型声明；package export tests 和 packed-consumer smoke tests 校验公开入口。                     |
@@ -61,6 +62,7 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - `@italone/solace/jsx-runtime`
 - `@italone/solace/jsx-dev-runtime`
 - `@italone/solace/devtools`
+- `@italone/solace/vite`
 
 不支持的私有区域：
 
@@ -78,7 +80,7 @@ alpha 阶段的兼容性承诺只适用于文档化公开入口。框架稳定�
 
 Solace 当前有意不包含：
 
-- template compiler 或 single-file component compiler。
+- 稳定的 template/SFC compiler 契约。当前 `.solace` compiler 和 Vite plugin 仍属于 alpha 实现面，需要补全文档、API 评审和兼容性加固。
 - 一方 router。
 - SSR、SSG、streaming rendering 或 hydration。
 - 一方 UI component library。
@@ -106,8 +108,9 @@ Solace 当前有意不包含：
 
 ## 建议后续工作
 
-1. 保持 README、API、package usage 和 release docs 与真实 npm version、本地分支状态一致。
-2. 在作出性能宣称前，继续收集 keyed reorder 和 large-list 场景的 browser benchmark history。
-3. 先稳定公共 API 面，再扩展 compiler、router、SSR、hydration 或 DevTools UI。
-4. 对所有公共 API 变更保持 package export tests 和 packed-consumer smoke tests 必跑。
-5. 只有在真正准备 npm 版本时才添加 release notes，避免混淆未发布分支状态和 npm package 状态。
+1. 推送当前领先 `origin/main` 的两个 release-preparation commits，或在下一次发布决策前明确继续保留本地状态。
+2. 保持 README、API、package usage 和 release docs 与真实 npm version、本地分支状态一致。
+3. 稳定公共 API 面，包括 alpha 阶段的 `.solace` compiler 和 `@italone/solace/vite` plugin 入口。
+4. 在作出性能宣称前，继续收集 keyed reorder 和 large-list 场景的 browser benchmark history。
+5. 对所有公共 API 变更保持 package export tests 和 packed-consumer smoke tests 必跑。
+6. 只有在真正准备 npm 版本时才添加 release notes，避免混淆未发布分支状态和 npm package 状态。

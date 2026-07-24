@@ -76,6 +76,7 @@ createApp(App).mount(document.querySelector("#app") as Element);
 - `@italone/solace/jsx-runtime`: TypeScript automatic JSX runtime.
 - `@italone/solace/jsx-dev-runtime`: development JSX runtime used by Vite.
 - `@italone/solace/devtools`: low-level DevTools listener and recorder APIs.
+- `@italone/solace/vite`: Vite plugin for alpha `.solace` single-file components.
 
 Do not import from `src/**`, `dist/**`, or internal runtime modules directly. Those paths are implementation details and are not part of the package compatibility contract.
 

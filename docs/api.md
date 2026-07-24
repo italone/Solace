@@ -42,6 +42,7 @@ Use Solace through the documented package entries only:
 | `@italone/solace/jsx-runtime`      | Public    | Automatic JSX runtime used by TypeScript and bundlers      |
 | `@italone/solace/jsx-dev-runtime`  | Public    | Development JSX runtime used by Vite and JSX dev tooling   |
 | `@italone/solace/devtools`         | Public    | Low-level listener and recorder APIs for tooling           |
+| `@italone/solace/vite`             | Public    | Vite plugin for alpha `.solace` single-file components     |
 | `src/**`, `dist/**`, deep subpaths | Private   | Internal implementation details, not compatibility targets |
 
 The alpha compatibility contract is intentionally narrow. Public entries should remain usable across
@@ -455,6 +456,10 @@ Public JSX entry points:
 
 - `@italone/solace/jsx-runtime`
 - `@italone/solace/jsx-dev-runtime`
+
+Public tooling entry points:
+
+- `@italone/solace/vite`
 
 ## DevTools Subpath
 

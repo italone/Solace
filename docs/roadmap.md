@@ -11,7 +11,7 @@ The alpha runtime is feature-complete for its declared scope:
 
 Planned work, in rough priority order:
 
-1. **Template / SFC compiler** — explore a compile-time template or single-file component format that targets the existing VNode/runtime.
+1. **SFC compiler stabilization** — harden the current `.solace` compiler and `@italone/solace/vite` plugin with public docs, API review, source maps, diagnostics, and compatibility tests.
 2. **First-party router** — design and implement a minimal, reactive router for SPAs.
 3. **SSR / SSG / hydration** — add server-side rendering, static generation, and client hydration capabilities.
 4. **Browser DevTools extension UI** — build a panel on top of the existing `@italone/solace/devtools` API.

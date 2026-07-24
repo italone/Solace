@@ -15,7 +15,7 @@ Current repository state:
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: in sync with `origin/main`
+- Remote state: local `main` is ahead of `origin/main` by two release-preparation commits
 - Phase: alpha released; transitioning to beta planning
 
 ## Completion Map
@@ -29,6 +29,7 @@ Current repository state:
 | Components       | Implemented                  | Function components, setup context, props, emit, slots, lifecycle hooks, provide/inject, and async components are documented and tested.        |
 | Store            | Implemented                  | `createStore` combines reactive state, computed getters, and named actions, with DevTools action summaries.                                     |
 | JSX              | Implemented                  | Package exports include `jsx-runtime` and `jsx-dev-runtime`, with JSX examples and typecheck coverage.                                          |
+| SFC compiler     | Alpha implementation         | `.solace` parsing, template code generation, scoped style injection, and the Vite plugin live in `src/compiler/**` and `src/vite/index.ts`.     |
 | DevTools subpath | Implemented as low-level API | `@italone/solace/devtools` exposes listener and recorder APIs, not a browser extension or UI.                                                   |
 | Examples         | Implemented                  | Basic counter, todo app, large list, and performance benchmark examples exist under `examples/**`.                                              |
 | Package output   | Implemented                  | Rollup builds ESM, CJS, and type declarations; package export tests and packed-consumer smoke tests validate public entries.                    |
@@ -62,6 +63,7 @@ Supported public entries:
 - `@italone/solace/jsx-runtime`
 - `@italone/solace/jsx-dev-runtime`
 - `@italone/solace/devtools`
+- `@italone/solace/vite`
 
 Unsupported private areas:
 
@@ -79,7 +81,7 @@ The alpha compatibility promise applies to documented public entries only. Inter
 
 Solace intentionally does not yet include:
 
-- A template compiler or single-file component compiler.
+- A stable template/SFC compiler contract. The current `.solace` compiler and Vite plugin are alpha implementation surfaces and still need documentation, API review, and compatibility hardening.
 - A first-party router.
 - SSR, SSG, streaming rendering, or hydration.
 - A first-party UI component library.
@@ -103,9 +105,9 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Recommended Next Work
 
-1. **Stabilize the public API surface** before expanding compiler, router, SSR, hydration, or DevTools UI work.
-2. **Keep package export tests and packed-consumer smoke tests mandatory** for any public API change.
-3. **Collect browser benchmark history** for keyed reorder and large-list scenarios before making performance claims.
-4. **Add `license` and `author` fields to `package.json`** before the next release.
-5. **Begin beta work** from `docs/roadmap.md` in priority order: template/SFC compiler exploration, first-party router design, SSR/SSG/hydration, browser DevTools extension UI, and production adoption guidance.
+1. **Push the two local release-preparation commits** or explicitly keep them local before the next publish decision.
+2. **Stabilize the public API surface**, including the alpha `.solace` compiler and `@italone/solace/vite` plugin entry.
+3. **Keep package export tests and packed-consumer smoke tests mandatory** for any public API change.
+4. **Collect browser benchmark history** for keyed reorder and large-list scenarios before making performance claims.
+5. **Begin beta work** from `docs/roadmap.md` in priority order: SFC/compiler stabilization, first-party router design, SSR/SSG/hydration, browser DevTools extension UI, and production adoption guidance.
 6. **Update `package.json` metadata** and READMEs as the project matures.

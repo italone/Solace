@@ -339,6 +339,7 @@ The public package shape is:
 - `@italone/solace/jsx-runtime`: automatic JSX runtime.
 - `@italone/solace/jsx-dev-runtime`: development JSX runtime.
 - `@italone/solace/devtools`: low-level DevTools listener and recorder APIs.
+- `@italone/solace/vite`: Vite plugin for alpha `.solace` single-file components.
 
 Install the latest published alpha with:
 

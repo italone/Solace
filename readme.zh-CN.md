@@ -334,6 +334,7 @@ pnpm test:e2e
 - `@italone/solace/jsx-runtime`：自动 JSX runtime。
 - `@italone/solace/jsx-dev-runtime`：开发环境 JSX runtime。
 - `@italone/solace/devtools`：底层 DevTools listener 和 recorder API。
+- `@italone/solace/vite`：alpha `.solace` 单文件组件的 Vite plugin。
 
 安装最新已发布 alpha：
 
