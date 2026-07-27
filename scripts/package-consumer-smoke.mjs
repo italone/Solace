@@ -62,6 +62,7 @@ try {
 import type { AsyncComponentOptions, ComponentSetupContext, Plugin, StoreContext, StoreGetterContext } from "@italone/solace";
 import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtools";
 import type { DevtoolsEvent } from "@italone/solace/devtools";
+import solacePlugin, { solacePlugin as namedSolacePlugin } from "@italone/solace/vite";
 
 const state = reactive({ count: 0 });
 const stopWatching = watchEffect(() => state.count);
@@ -76,6 +77,11 @@ const devtoolsRecorder = createDevtoolsRecorder({ limit: 2 });
 devtoolsRecorder.clear();
 devtoolsRecorder.stop();
 stopDevtoolsListener();
+const vitePlugin = solacePlugin();
+const namedVitePlugin = namedSolacePlugin();
+if (vitePlugin.name !== "solace-sfc" || namedVitePlugin.name !== "solace-sfc") {
+  throw new Error("vite plugin export mismatch");
+}
 
 const store = createStore({
   state: (): CounterState => ({ count: 0 }),

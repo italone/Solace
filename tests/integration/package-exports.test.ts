@@ -8,7 +8,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const require = createRequire(import.meta.url);
 
 describe("package exports", () => {
-  it("builds root and JSX runtime artifacts", () => {
+  it("builds root, JSX runtime, DevTools, and Vite artifacts", () => {
     expect(existsSync(resolve(root, "dist/index.js"))).toBe(true);
     expect(existsSync(resolve(root, "dist/index.cjs"))).toBe(true);
     expect(existsSync(resolve(root, "dist/index.d.ts"))).toBe(true);
@@ -16,6 +16,9 @@ describe("package exports", () => {
     expect(existsSync(resolve(root, "dist/jsx-runtime.d.ts"))).toBe(true);
     expect(existsSync(resolve(root, "dist/jsx-dev-runtime.js"))).toBe(true);
     expect(existsSync(resolve(root, "dist/jsx-dev-runtime.d.ts"))).toBe(true);
+    expect(existsSync(resolve(root, "dist/vite.js"))).toBe(true);
+    expect(existsSync(resolve(root, "dist/vite.cjs"))).toBe(true);
+    expect(existsSync(resolve(root, "dist/vite.d.ts"))).toBe(true);
   });
 
   it("does not publish production sourcemaps", () => {
@@ -98,11 +101,21 @@ describe("package exports", () => {
     });
   });
 
+  it("exports the public Vite plugin subpath", async () => {
+    const vite = await import("@italone/solace/vite");
+
+    expect(vite).toMatchObject({
+      default: expect.any(Function),
+      solacePlugin: expect.any(Function),
+    });
+  });
+
   it("supports CommonJS package exports", () => {
     const api = require("@italone/solace") as Record<string, unknown>;
     const runtime = require("@italone/solace/jsx-runtime") as Record<string, unknown>;
     const devRuntime = require("@italone/solace/jsx-dev-runtime") as Record<string, unknown>;
     const devtools = require("@italone/solace/devtools") as Record<string, unknown>;
+    const vite = require("@italone/solace/vite") as Record<string, unknown>;
 
     expect(api.createApp).toEqual(expect.any(Function));
     expect(api.defineAsyncComponent).toEqual(expect.any(Function));
@@ -120,6 +133,8 @@ describe("package exports", () => {
     expect(devtools.emitDevtoolsEvent).toBeUndefined();
     expect(devtools.hasDevtoolsListeners).toBeUndefined();
     expect(devtools.serializeDevtoolsEvent).toBeUndefined();
+    expect(vite.default).toEqual(expect.any(Function));
+    expect(vite.solacePlugin).toEqual(expect.any(Function));
   });
 
   it("mounts a component with createApp", async () => {
