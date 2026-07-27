@@ -1,5 +1,5 @@
 import { h } from "./vnode/h";
-import { render } from "./renderer/renderer";
+import { hydrate, render } from "./renderer/renderer";
 import type { ProvideKey, Provides } from "./component/provide";
 import type { ComponentType, VNode } from "./vnode/vnode";
 
@@ -13,6 +13,7 @@ export type Plugin = PluginInstall | PluginObject;
 
 export interface App {
   mount(container: Element): void;
+  hydrate(container: Element): void;
   provide<T>(key: ProvideKey, value: T): App;
   use(plugin: Plugin, ...options: unknown[]): App;
 }
@@ -24,6 +25,10 @@ export function createApp(rootComponent: ComponentType | VNode): App {
     mount(container: Element): void {
       const vnode = typeof rootComponent === "function" ? h(rootComponent) : rootComponent;
       render(vnode, container, appProvides);
+    },
+    hydrate(container: Element): void {
+      const vnode = typeof rootComponent === "function" ? h(rootComponent) : rootComponent;
+      hydrate(vnode, container, appProvides);
     },
     provide<T>(key: ProvideKey, value: T): App {
       appProvides.set(key, value);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createApp, h, inject } from "../../../src/index";
+import { createApp, h, inject, nextTick, ref } from "../../../src/index";
 import type { Plugin } from "../../../src/index";
 
 describe("createApp", () => {
@@ -114,5 +114,20 @@ describe("createApp", () => {
     const app = createApp(() => h("p", null, "mounted"));
 
     expect(app.provide("theme", "dark")).toBe(app);
+  });
+
+  it("hydrates the root component into existing DOM", async () => {
+    const count = ref(0);
+    const container = document.createElement("div");
+    container.innerHTML = "<button>count: 0</button>";
+    const button = container.querySelector("button");
+    const App = () => h("button", { onClick: () => count.value++ }, `count: ${count.value}`);
+
+    createApp(App).hydrate(container);
+    container.querySelector("button")?.click();
+    await nextTick();
+
+    expect(container.querySelector("button")).toBe(button);
+    expect(container.innerHTML).toBe("<button>count: 1</button>");
   });
 });
