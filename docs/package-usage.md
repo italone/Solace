@@ -150,7 +150,8 @@ createApp(App)
 
 The current router supports path matching, dynamic params, query parsing, browser history adapters,
 `RouterLink`, and `RouterView`. It does not yet include route guards, nested route records, named
-routes, redirects, lazy-route contracts, scroll behavior, SSR, SSG, or hydration.
+routes, redirects, lazy-route contracts, scroll behavior, memory history, auth, permissions, SSR,
+SSG, or hydration.
 
 ## Public Entry Points
 

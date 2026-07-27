@@ -513,7 +513,7 @@ Current beta router limitations:
 
 - No route names, aliases, redirects, nested records, guards, scroll behavior, or lazy component
   loading contract.
-- No SSR, SSG, or hydration integration.
+- No memory history, auth, permissions, SSR, SSG, or hydration integration.
 - Direct URL fallback still depends on the hosting configuration.
 - Unknown-route behavior should be handled by an explicit wildcard route.
 

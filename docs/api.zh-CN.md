@@ -474,7 +474,7 @@ createApp(App)
 当前 beta router 限制：
 
 - 不包含 route names、aliases、redirects、嵌套路由记录、guards、scroll behavior 或 lazy component loading contract。
-- 不包含 SSR、SSG 或 hydration 集成。
+- 不包含 memory history、auth、permissions、SSR、SSG 或 hydration 集成。
 - 直接 URL 访问的 fallback 仍依赖部署宿主配置。
 - unknown route 行为应通过显式 wildcard route 处理。
 

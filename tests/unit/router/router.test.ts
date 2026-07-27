@@ -37,6 +37,15 @@ function createMemoryLikeHistory(initial = "/"): RouterHistory & { emit(): void 
 
 describe("createRouter", () => {
   it("re-exports the public router module surface", () => {
+    expect(Object.keys(routerModule).sort()).toEqual([
+      "RouterLink",
+      "RouterView",
+      "createRouter",
+      "createWebHashHistory",
+      "createWebHistory",
+      "useRoute",
+      "useRouter",
+    ]);
     expect(routerModule).toMatchObject({
       RouterLink: expect.any(Function),
       RouterView: expect.any(Function),
@@ -46,6 +55,10 @@ describe("createRouter", () => {
       useRoute: expect.any(Function),
       useRouter: expect.any(Function),
     });
+    expect(routerModule).not.toHaveProperty("createMemoryHistory");
+    expect(routerModule).not.toHaveProperty("NavigationGuard");
+    expect(routerModule).not.toHaveProperty("RouteMeta");
+    expect(routerModule).not.toHaveProperty("createSSRRouter");
   });
 
   it("resolves string and object locations", () => {
