@@ -2,7 +2,9 @@
 
 [English](./api.md)
 
-本文档描述 Solace 的公共运行时 API。运行时能力从包根入口导入，JSX 支持从 JSX 子路径导入，DevTools 集成从 `@italone/solace/devtools` 导入。
+本文档描述 Solace 的公共运行时 API。运行时能力从包根入口导入，server rendering 从
+`@italone/solace/server` 导入，JSX 支持从 JSX 子路径导入，DevTools 集成从
+`@italone/solace/devtools` 导入。
 
 `src/**` 下的内部文件、`dist/**` 下的生成文件、scheduler 队列、shape flags、组件实例和 VNode factory 内部实现都不属于兼容性契约。
 
@@ -41,6 +43,7 @@
 | `@italone/solace/jsx-runtime`      | 公开   | TypeScript 和 bundler 使用的 automatic JSX runtime |
 | `@italone/solace/jsx-dev-runtime`  | 公开   | Vite 和 JSX dev tooling 使用的开发环境 JSX runtime |
 | `@italone/solace/devtools`         | 公开   | 面向 tooling 的底层 listener 和 recorder API       |
+| `@italone/solace/server`           | 公开   | 面向同步 VNode tree 的首个 server rendering API    |
 | `@italone/solace/sfc`              | 公开   | `.solace` 单文件组件 import 的类型声明入口         |
 | `@italone/solace/vite`             | 公开   | alpha `.solace` 单文件组件的 Vite plugin           |
 | `src/**`、`dist/**`、deep subpaths | 私有   | 内部实现细节，不作为兼容性目标                     |
@@ -51,7 +54,9 @@ alpha 阶段的兼容性契约有意保持较窄。公开入口应在 patch rele
 
 包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。route guards、嵌套路由记录、scroll behavior、具名路由、懒加载路由、SSR 集成、auth、permissions 和长期 router 兼容策略仍被推迟。
 
-大多数应用应从包根入口导入。JSX 子路径通常只通过 `jsxImportSource` 或 bundler 生成导入使用。只有在构建 instrumentation 或需要 event snapshots 的示例时，才直接使用 DevTools 子路径。
+大多数应用应从包根入口导入。`@italone/solace/server` 只应在 server-side 代码中使用。JSX
+子路径通常只通过 `jsxImportSource` 或 bundler 生成导入使用。只有在构建 instrumentation 或需要
+event snapshots 的示例时，才直接使用 DevTools 子路径。
 
 ## App
 
@@ -70,12 +75,15 @@ createApp(App).mount(document.querySelector("#app") as Element);
 返回：
 
 - `mount(container: Element): void`
+- `hydrate(container: Element): void`
 - `provide(key, value): App`
 - `use(plugin, ...options): App`
 
 当 `rootComponent` 是组件函数时，`mount()` 会先创建 root VNode，再渲染到目标 DOM 容器。
-`provide()` 在 mount 前注册 app-level value，并返回 app 以支持链式调用。后代组件可以通过
-`inject()` 读取这些值，组件级 provider 会覆盖 app-level provider。
+`hydrate()` 会创建同样的 root VNode，但会认领匹配的 server-rendered DOM、附加事件监听器，
+并让后续响应式更新通过普通 renderer patch。`provide()` 在 mount 或 hydration 前注册
+app-level value，并返回 app 以支持链式调用。后代组件可以通过 `inject()` 读取这些值，组件级
+provider 会覆盖 app-level provider。
 
 ```ts
 import { createApp } from "@italone/solace";
@@ -83,6 +91,14 @@ import { createApp } from "@italone/solace";
 createApp(App)
   .provide("theme", "dark")
   .mount(document.querySelector("#app") as Element);
+```
+
+Hydration 是显式 API：
+
+```ts
+import { createApp } from "@italone/solace";
+
+createApp(App).hydrate(document.querySelector("#app") as Element);
 ```
 
 `use()` 会在每个 app 实例中安装一次插件。插件可以是函数，也可以是带 `install()` 方法的对象。
@@ -100,6 +116,24 @@ createApp(App)
   .use(plugin, "enabled")
   .mount(document.querySelector("#app") as Element);
 ```
+
+## Server Rendering 子路径
+
+首个 SSR API 从 `@italone/solace/server` 导入：
+
+```ts
+import { h } from "@italone/solace";
+import { renderToString } from "@italone/solace/server";
+
+const result = renderToString(h("p", null, "server"));
+```
+
+`renderToString(source)` 返回 `{ html, styles }`。首个 server renderer 支持同步 VNode 和函数
+组件树，会转义文本和属性，从 HTML 中省略事件 props，并且不会运行 DOM 生命周期 hooks。浏览器端
+使用 `createApp(App).hydrate(container)` 为匹配的 server HTML 附加行为。
+
+Streaming SSR、async component SSR、SSG CLI、production manifest integration、style
+collection 和 hydration mismatch recovery 仍保持 deferred。
 
 ## Reactivity
 

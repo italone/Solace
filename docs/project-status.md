@@ -15,8 +15,10 @@ Current repository state:
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: local `main` is synchronized with `origin/main` as of the 2026-07-27 status audit; `git status --short --branch` reports 0 commits ahead and 0 commits behind
-- Phase: alpha released; beta contract stabilization in progress
+- Remote state: local `main` contains unpublished SSR/hydration implementation commits during the
+  2026-07-27 checkpoint; push and re-run `git status --short --branch` before release or publish
+  decisions
+- Phase: alpha released; beta contract stabilization plus SSR/hydration minimum loop in progress
 
 ## Completion Map
 
@@ -31,6 +33,7 @@ Current repository state:
 | JSX              | Implemented                    | Package exports include `jsx-runtime` and `jsx-dev-runtime`, with JSX examples and typecheck coverage.                                                                              |
 | SFC compiler     | Alpha public contract narrowed | `.solace` parsing, template code generation, scoped style injection, `@italone/solace/sfc`, and `@italone/solace/vite` are documented and covered by package-boundary tests.        |
 | Router           | Beta first slice stabilized    | Matcher, history adapters, query helpers, components, root exports, deferred API boundaries, package export coverage, packed-consumer smoke, and `router-basic` e2e coverage exist. |
+| SSR/hydration    | Minimum loop implemented       | `@italone/solace/server` exports `renderToString()` for synchronous VNode/component trees, and `createApp(App).hydrate(container)` attaches behavior to matching DOM.               |
 | DevTools subpath | Implemented as low-level API   | `@italone/solace/devtools` exposes listener and recorder APIs, not a browser extension or UI.                                                                                       |
 | Examples         | Implemented                    | Basic counter, todo app, large list, and performance benchmark examples exist under `examples/**`.                                                                                  |
 | Package output   | Implemented                    | Rollup builds ESM, CJS, and type declarations; package export tests and packed-consumer smoke tests validate public entries.                                                        |
@@ -65,6 +68,7 @@ Supported public entries:
 - `@italone/solace/jsx-runtime`
 - `@italone/solace/jsx-dev-runtime`
 - `@italone/solace/devtools`
+- `@italone/solace/server`
 - `@italone/solace/sfc`
 - `@italone/solace/vite`
 
@@ -86,7 +90,8 @@ Solace intentionally does not yet include:
 
 - A stable template/SFC compiler contract beyond the current narrow alpha surface. The current `.solace` compiler and Vite plugin are documented for one `<template>`, optional `<script>`, optional `<style>`, Vite transform diagnostics, and `map: null`; syntax expansion remains deferred.
 - A full first-party router contract. The current beta router covers static routes, dynamic params, wildcard fallback routes, query strings, web/hash history, `RouterLink`, `RouterView`, and composition helpers, but nested routes, guards, redirects, lazy route components, scroll behavior, memory history, SSR/hydration integration, auth, and permission routing remain deferred.
-- SSR, SSG, streaming rendering, or hydration.
+- SSG, streaming SSR, async component SSR, production asset manifest integration, server-side style
+  collection, and hydration mismatch recovery.
 - A first-party UI component library.
 - A browser extension DevTools panel.
 - A stable plugin ecosystem.
@@ -108,9 +113,11 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Recommended Next Work
 
-1. **Keep `main` synchronized with `origin/main`** before publish decisions; re-run `git status --short --branch` because this document records only the 2026-07-27 audit state.
+1. **Keep `main` synchronized with `origin/main`** before publish decisions; this document records
+   the 2026-07-27 SSR/hydration checkpoint and must be rechecked with `git status --short --branch`.
 2. **Continue stabilizing the SFC/Vite contract without syntax expansion**: keep the public surface limited to `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, and the documented alpha `.solace` block model.
 3. **Continue narrowing the router beta API without adding deferred features**: keep nested routes, guards, redirects, lazy route components, scroll behavior, memory history, SSR/hydration integration, auth, and permissions out of the beta slice until separately designed.
 4. **Keep public API gates mandatory**: `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e` must run for public API changes.
-5. **Plan the next phase** from `docs/roadmap.md`: SSR/SSG/hydration first, then browser DevTools extension UI, then production adoption guidance.
+5. **Plan the next phase** from `docs/roadmap.md`: SSG and the remaining SSR/hydration hardening
+   first, then browser DevTools extension UI, then production adoption guidance.
 6. **Collect benchmark history** for jsdom and browser scenarios before making performance claims; use `--min-browser-count` and `--min-jsdom-count` when a trend window is required.

@@ -23,8 +23,8 @@ Use the local development workflow below to explore the framework. Install the n
 
 Current completion highlights:
 
-- Runtime APIs for apps, reactivity, rendering, components, context, lifecycle, scheduler, store, JSX, and low-level DevTools integration are implemented behind documented public entry points.
-- Package outputs include ESM, CJS, TypeScript declarations, JSX runtime subpaths, and the `@italone/solace/devtools` subpath.
+- Runtime APIs for apps, reactivity, rendering, components, context, lifecycle, scheduler, store, JSX, SSR/hydration minimum loop, and low-level DevTools integration are implemented behind documented public entry points.
+- Package outputs include ESM, CJS, TypeScript declarations, JSX runtime subpaths, `@italone/solace/server`, and the `@italone/solace/devtools` subpath.
 - Validation covers format, typecheck, lint, unit tests, integration tests, package export tests, coverage thresholds, packed-consumer smoke tests, jsdom benchmarks, Chromium production browser benchmarks, and browser e2e tests.
 - Release publishing is a separate maintainer decision. A local version may be prepared without being pushed to GitHub or published to npm.
 
@@ -32,7 +32,7 @@ See [docs/project-status.md](./docs/project-status.md) for the current completio
 
 ## Alpha Scope
 
-Solace is suitable today for studying a compact frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current alpha includes an alpha `.solace` compiler, `@italone/solace/vite` plugin, and beta first-party router slice; it does not yet include SSR/SSG runtime, hydration, first-party UI components, browser extension DevTools, or a compatibility guarantee for internal modules.
+Solace is suitable today for studying a compact frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current alpha includes an alpha `.solace` compiler, `@italone/solace/vite` plugin, beta first-party router slice, and a minimum SSR/hydration loop through `@italone/solace/server` plus `createApp(App).hydrate(container)`; it does not yet include SSG, streaming SSR, async SSR, first-party UI components, browser extension DevTools, or a compatibility guarantee for internal modules.
 
 ## Quick Start
 
@@ -123,13 +123,14 @@ modules under `src/**` and generated files under `dist/**` are implementation de
 
 - `createApp(rootComponent)`
 - `app.mount(container)`
+- `app.hydrate(container)`
 - `app.use(plugin, ...options)`
 - `app.provide(key, value)`
 
-`createApp()` accepts a component or an already-created VNode, renders it into a DOM container, and
-returns a chainable app instance. `app.use()` installs function plugins or object plugins with an
-`install()` method once per app instance. `app.provide()` registers app-level values that descendants
-can read with `inject()`.
+`createApp()` accepts a component or an already-created VNode, renders it into a DOM container, or
+hydrates matching server-rendered DOM. It returns a chainable app instance. `app.use()` installs
+function plugins or object plugins with an `install()` method once per app instance. `app.provide()`
+registers app-level values that descendants can read with `inject()`.
 
 ```ts
 import { createApp, h } from "@italone/solace";

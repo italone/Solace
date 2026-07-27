@@ -3,7 +3,8 @@
 [简体中文](./api.zh-CN.md)
 
 This document describes the public Solace runtime API. Import runtime features from the package
-root, JSX support from the JSX subpaths, and DevTools integration from `@italone/solace/devtools`.
+root, server rendering from `@italone/solace/server`, JSX support from the JSX subpaths, and DevTools
+integration from `@italone/solace/devtools`.
 
 Internal files under `src/**`, generated files under `dist/**`, scheduler queues, shape flags,
 component instances, and VNode factory internals are not part of the compatibility contract.
@@ -45,6 +46,7 @@ Use Solace through the documented package entries only:
 | `@italone/solace/jsx-runtime`      | Public    | Automatic JSX runtime used by TypeScript and bundlers       |
 | `@italone/solace/jsx-dev-runtime`  | Public    | Development JSX runtime used by Vite and JSX dev tooling    |
 | `@italone/solace/devtools`         | Public    | Low-level listener and recorder APIs for tooling            |
+| `@italone/solace/server`           | Public    | First server rendering API for synchronous VNode trees      |
 | `@italone/solace/sfc`              | Public    | Type shim entry for `.solace` single-file component imports |
 | `@italone/solace/vite`             | Public    | Vite plugin for alpha `.solace` single-file components      |
 | `src/**`, `dist/**`, deep subpaths | Private   | Internal implementation details, not compatibility targets  |
@@ -62,9 +64,9 @@ The router exports in the package root are beta APIs for small SPA examples. Rou
 route records, scroll behavior, named routes, lazy route loading, SSR integration, auth, permissions,
 and a long-term router compatibility policy remain deferred.
 
-Most applications should import from the root package. Use JSX subpaths only through `jsxImportSource`
-or bundler-generated imports. Use the DevTools subpath only when building instrumentation or examples
-that need event snapshots.
+Most applications should import from the root package. Use `@italone/solace/server` only from
+server-side code. Use JSX subpaths only through `jsxImportSource` or bundler-generated imports. Use
+the DevTools subpath only when building instrumentation or examples that need event snapshots.
 
 ## App
 
@@ -83,13 +85,16 @@ createApp(App).mount(document.querySelector("#app") as Element);
 Returns:
 
 - `mount(container: Element): void`
+- `hydrate(container: Element): void`
 - `provide(key, value): App`
 - `use(plugin, ...options): App`
 
 `mount()` creates the root VNode when `rootComponent` is a component function, then renders it into
-the target DOM container. `provide()` registers app-level values before mount and returns the app for
-chaining. Descendant components can read those values with `inject()`, and component-level providers
-override app-level values.
+the target DOM container. `hydrate()` creates the same root VNode but claims matching server-rendered
+DOM, attaches event listeners, and lets later reactive updates patch through the normal renderer.
+`provide()` registers app-level values before mount or hydration and returns the app for chaining.
+Descendant components can read those values with `inject()`, and component-level providers override
+app-level values.
 
 ```ts
 import { createApp } from "@italone/solace";
@@ -97,6 +102,14 @@ import { createApp } from "@italone/solace";
 createApp(App)
   .provide("theme", "dark")
   .mount(document.querySelector("#app") as Element);
+```
+
+Hydration is explicit:
+
+```ts
+import { createApp } from "@italone/solace";
+
+createApp(App).hydrate(document.querySelector("#app") as Element);
 ```
 
 `use()` installs a plugin once per app instance. A plugin can be a function or an object with an
@@ -115,6 +128,25 @@ createApp(App)
   .use(plugin, "enabled")
   .mount(document.querySelector("#app") as Element);
 ```
+
+## Server Rendering Subpath
+
+Import the first SSR API from `@italone/solace/server`:
+
+```ts
+import { h } from "@italone/solace";
+import { renderToString } from "@italone/solace/server";
+
+const result = renderToString(h("p", null, "server"));
+```
+
+`renderToString(source)` returns `{ html, styles }`. The first server renderer supports synchronous
+VNode and function component trees, escapes text and attributes, omits event props from HTML, and
+does not run DOM lifecycle hooks. Use `createApp(App).hydrate(container)` in the browser to attach
+behavior to matching server HTML.
+
+Streaming SSR, async component SSR, SSG CLI, production manifest integration, style collection, and
+hydration mismatch recovery remain deferred.
 
 ## Reactivity
 

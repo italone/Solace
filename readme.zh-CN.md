@@ -23,8 +23,8 @@ Solace 当前处于早期 alpha runtime 阶段。仓库功能可运行，并已�
 
 当前完成度摘要：
 
-- App、响应式、渲染、组件、上下文、生命周期、调度器、store、JSX 和底层 DevTools 集成已经通过文档化公开入口暴露。
-- 包产物包含 ESM、CJS、TypeScript declarations、JSX runtime 子路径，以及 `@italone/solace/devtools` 子路径。
+- App、响应式、渲染、组件、上下文、生命周期、调度器、store、JSX、SSR/hydration minimum loop 和底层 DevTools 集成已经通过文档化公开入口暴露。
+- 包产物包含 ESM、CJS、TypeScript declarations、JSX runtime 子路径、`@italone/solace/server`，以及 `@italone/solace/devtools` 子路径。
 - 验证覆盖 format、typecheck、lint、单元测试、集成测试、包导出测试、覆盖率阈值、packed-consumer 冒烟测试、jsdom benchmark、Chromium 生产构建浏览器 benchmark 和浏览器 e2e 测试。
 - npm 发布是独立的维护者决策。本地可以先准备版本，但不一定已经 push 到 GitHub 或发布到 npm。
 
@@ -32,7 +32,7 @@ Solace 当前处于早期 alpha runtime 阶段。仓库功能可运行，并已�
 
 ## Alpha 范围
 
-Solace 当前适合用于学习小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 alpha 已包含 alpha `.solace` compiler、`@italone/solace/vite` plugin 和 beta 一方 router slice；它还不包含 SSR/SSG runtime、hydration、一方 UI 组件、浏览器扩展 DevTools，也不为内部模块提供兼容性承诺。
+Solace 当前适合用于学习小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 alpha 已包含 alpha `.solace` compiler、`@italone/solace/vite` plugin、beta 一方 router slice，以及通过 `@italone/solace/server` 和 `createApp(App).hydrate(container)` 暴露的 minimum SSR/hydration loop；它还不包含 SSG、streaming SSR、async SSR、一方 UI 组件、浏览器扩展 DevTools，也不为内部模块提供兼容性承诺。
 
 ## 快速开始
 
@@ -123,13 +123,13 @@ Solace 保持较小的公共 API 面。包根入口是稳定的运行时入口�
 
 - `createApp(rootComponent)`
 - `app.mount(container)`
+- `app.hydrate(container)`
 - `app.use(plugin, ...options)`
 - `app.provide(key, value)`
 
-`createApp()` 接收组件或已经创建好的 VNode，将其渲染到 DOM 容器中，并返回可链式调用的
-app 实例。`app.use()` 可以安装函数插件，也可以安装带 `install()` 方法的对象插件，同一个
-插件在每个 app 实例中只会安装一次。`app.provide()` 注册应用级值，后代组件可以通过
-`inject()` 读取。
+`createApp()` 接收组件或已经创建好的 VNode，可将其渲染到 DOM 容器中，也可 hydrate 匹配的
+server-rendered DOM，并返回可链式调用的 app 实例。`app.use()` 可以安装函数插件，也可以安装带
+`install()` 方法的对象插件，同一个插件在每个 app 实例中只会安装一次。`app.provide()` 注册应用级值，后代组件可以通过 `inject()` 读取。
 
 ```ts
 import { createApp, h } from "@italone/solace";

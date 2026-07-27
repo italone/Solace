@@ -115,6 +115,25 @@ subpath intentionally exports only `default` and `solacePlugin`; do not import c
 deep subpaths such as `@italone/solace/compiler`, `@italone/solace/router`, or
 `@italone/solace/dist/**`.
 
+## Use Server Rendering
+
+The first server rendering entry is `@italone/solace/server`:
+
+```ts
+import { h } from "@italone/solace";
+import { renderToString } from "@italone/solace/server";
+
+const result = renderToString(h("p", null, "server"));
+result.html;
+result.styles;
+```
+
+Use `createApp(App).hydrate(container)` in the browser to attach behavior to matching server HTML.
+Hydration throws on structural mismatches instead of silently replacing incompatible DOM.
+
+This minimum loop does not include SSG, streaming SSR, async component SSR, production asset
+manifest integration, server-side style collection, or hydration mismatch recovery.
+
 ## Use The Beta Router
 
 Solace exposes a beta router from the package root for small SPA examples:
@@ -159,6 +178,7 @@ SSG, or hydration.
 - `@italone/solace/jsx-runtime`: TypeScript automatic JSX runtime.
 - `@italone/solace/jsx-dev-runtime`: development JSX runtime used by Vite.
 - `@italone/solace/devtools`: low-level DevTools listener and recorder APIs.
+- `@italone/solace/server`: first server rendering API for synchronous VNode trees.
 - `@italone/solace/sfc`: TypeScript type shim for `.solace` imports.
 - `@italone/solace/vite`: Vite plugin for alpha `.solace` single-file components.
 
@@ -172,7 +192,10 @@ Before release, run the package consumer smoke test:
 pnpm package:smoke
 ```
 
-The smoke test builds Solace, packs the current package, installs the tarball into a temporary consumer project, typechecks a JSX entry file, verifies ESM and CJS imports for all public entry points, and runs a Vite production build of a `.solace` file through the packed `@italone/solace/vite` plugin.
+The smoke test builds Solace, packs the current package, installs the tarball into a temporary
+consumer project, typechecks a JSX entry file, verifies ESM and CJS imports for all public entry
+points including `@italone/solace/server`, checks `renderToString()`, and runs a Vite production
+build of a `.solace` file through the packed `@italone/solace/vite` plugin.
 
 For the full local release gate, run:
 

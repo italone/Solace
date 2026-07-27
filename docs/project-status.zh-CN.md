@@ -14,8 +14,10 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - 本地 package 版本：`0.0.3`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
-- 本地分支状态：截至 2026-07-27 状态审计，本地 `main` 已与 `origin/main` 同步；`git status --short --branch` 显示 ahead 0、behind 0
-- 发布阶段：alpha 已发布；正在进入 beta 契约稳定期
+- 本地分支状态：截至 2026-07-27 SSR/hydration 实现 checkpoint，本地 `main` 包含尚未
+  push 的 SSR/hydration 实现提交；发布或 publish 决策前需要先 push，并重新运行
+  `git status --short --branch`
+- 发布阶段：alpha 已发布；beta 契约稳定与 SSR/hydration minimum loop 正在推进
 
 ## 完成度映射
 
@@ -30,6 +32,7 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 | JSX             | 已实现               | package exports 包含 `jsx-runtime` 和 `jsx-dev-runtime`，并有 JSX 示例和 typecheck 覆盖。                                                                              |
 | SFC compiler    | alpha 公开契约已收窄 | `.solace` 解析、template codegen、scoped style 注入、`@italone/solace/sfc` 和 `@italone/solace/vite` 已文档化，并有 package-boundary tests 覆盖。                      |
 | Router          | beta 首个切片已稳定  | matcher、history adapters、query helpers、components、root exports、deferred API 边界、package export 覆盖、packed-consumer smoke 和 `router-basic` e2e 覆盖均已存在。 |
+| SSR/hydration   | minimum loop 已实现  | `@italone/solace/server` 暴露同步 VNode/component tree 的 `renderToString()`，`createApp(App).hydrate(container)` 可为匹配 DOM 附加行为。                              |
 | DevTools 子路径 | 已作为底层 API 实现  | `@italone/solace/devtools` 暴露 listener 和 recorder API，但不是浏览器扩展或 UI。                                                                                      |
 | 示例            | 已实现               | `examples/**` 下包含 basic counter、todo app、large list 和 performance benchmark 示例。                                                                               |
 | 包产物          | 已实现               | Rollup 构建 ESM、CJS 和类型声明；package export tests 和 packed-consumer smoke tests 校验公开入口。                                                                    |
@@ -64,6 +67,7 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - `@italone/solace/jsx-runtime`
 - `@italone/solace/jsx-dev-runtime`
 - `@italone/solace/devtools`
+- `@italone/solace/server`
 - `@italone/solace/sfc`
 - `@italone/solace/vite`
 
@@ -85,7 +89,8 @@ Solace 当前有意不包含：
 
 - 超出当前窄 alpha surface 的稳定 template/SFC compiler 契约。当前 `.solace` compiler 和 Vite plugin 已文档化为支持一个 `<template>`、可选 `<script>`、可选 `<style>`、Vite transform diagnostics 和 `map: null`；语法扩展继续推迟。
 - 完整的一方 router 契约。当前 beta router 覆盖 static routes、dynamic params、wildcard fallback routes、query strings、web/hash history、`RouterLink`、`RouterView` 和 composition helpers，但 nested routes、guards、redirects、lazy route components、scroll behavior、memory history、SSR/hydration 集成、auth 和 permission routing 仍被推迟。
-- SSR、SSG、streaming rendering 或 hydration。
+- SSG、streaming SSR、async component SSR、production asset manifest integration、
+  server-side style collection 和 hydration mismatch recovery。
 - 一方 UI component library。
 - 浏览器扩展 DevTools panel。
 - 稳定 plugin 生态。
@@ -111,9 +116,10 @@ Solace 当前有意不包含：
 
 ## 建议后续工作
 
-1. 发布决策前继续保持 `main` 与 `origin/main` 同步；由于本文档只记录 2026-07-27 的审计状态，后续仍需重新运行 `git status --short --branch`。
+1. 发布决策前继续保持 `main` 与 `origin/main` 同步；本文档记录的是 2026-07-27
+   SSR/hydration checkpoint，后续仍需重新运行 `git status --short --branch`。
 2. 继续稳定 SFC/Vite contract，但不扩语法：公开面保持为 `@italone/solace/sfc`、`@italone/solace/vite`、Vite transform diagnostics 和当前文档化的 alpha `.solace` block model。
 3. 继续收敛 router beta API，但不急着扩功能：nested routes、guards、redirects、lazy route components、scroll behavior、memory history、SSR/hydration 集成、auth 和 permissions 继续保持 deferred。
 4. 对所有公共 API 变更保持公共 API 门禁必跑：`pnpm release:readiness`、`pnpm package:smoke` 和 `pnpm test:e2e`。
-5. 下一阶段先设计 SSR/SSG/hydration，再做 browser DevTools extension UI，然后补生产落地指南。
+5. 下一阶段先做 SSG 与剩余 SSR/hydration hardening，再做 browser DevTools extension UI，然后补生产落地指南。
 6. 在作出性能宣称前，继续收集 jsdom 与 browser benchmark history；需要趋势窗口时使用 `--min-browser-count` 和 `--min-jsdom-count`。
