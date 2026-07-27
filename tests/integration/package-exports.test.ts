@@ -22,6 +22,9 @@ describe("package exports", () => {
     expect(existsSync(resolve(root, "dist/sfc.js"))).toBe(true);
     expect(existsSync(resolve(root, "dist/sfc.cjs"))).toBe(true);
     expect(existsSync(resolve(root, "dist/sfc.d.ts"))).toBe(true);
+    expect(existsSync(resolve(root, "dist/server.js"))).toBe(true);
+    expect(existsSync(resolve(root, "dist/server.cjs"))).toBe(true);
+    expect(existsSync(resolve(root, "dist/server.d.ts"))).toBe(true);
   });
 
   it("keeps package exports limited to documented public entries", () => {
@@ -35,6 +38,7 @@ describe("package exports", () => {
       "./jsx-dev-runtime",
       "./jsx-runtime",
       "./package.json",
+      "./server",
       "./sfc",
       "./vite",
     ]);
@@ -153,6 +157,15 @@ describe("package exports", () => {
     expect(Object.keys(sfc)).toEqual([]);
   });
 
+  it("exports the public server rendering subpath", async () => {
+    const server = await import("@italone/solace/server");
+
+    expect(Object.keys(server).sort()).toEqual(["renderToString"]);
+    expect(server.renderToString).toEqual(expect.any(Function));
+    expect(server).not.toHaveProperty("hydrate");
+    expect(server).not.toHaveProperty("patch");
+  });
+
   it("supports CommonJS package exports", () => {
     const api = require("@italone/solace") as Record<string, unknown>;
     const runtime = require("@italone/solace/jsx-runtime") as Record<string, unknown>;
@@ -160,6 +173,7 @@ describe("package exports", () => {
     const devtools = require("@italone/solace/devtools") as Record<string, unknown>;
     const vite = require("@italone/solace/vite") as Record<string, unknown>;
     const sfc = require("@italone/solace/sfc") as Record<string, unknown>;
+    const server = require("@italone/solace/server") as Record<string, unknown>;
 
     expect(api.createApp).toEqual(expect.any(Function));
     expect(api.createRouter).toEqual(expect.any(Function));
@@ -188,6 +202,8 @@ describe("package exports", () => {
     expect(vite.solacePlugin).toEqual(expect.any(Function));
     expect(Object.keys(vite).sort()).toEqual(["default", "solacePlugin"]);
     expect(Object.keys(sfc)).toEqual([]);
+    expect(Object.keys(server).sort()).toEqual(["renderToString"]);
+    expect(server.renderToString).toEqual(expect.any(Function));
   });
 
   it("rejects private package subpaths", async () => {

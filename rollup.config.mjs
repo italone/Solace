@@ -64,6 +64,7 @@ export default [
       "jsx-dev-runtime": "src/jsx-dev-runtime.ts",
       devtools: "src/devtools/index.ts",
       sfc: "src/sfc-entry.ts",
+      server: "src/server/index.ts",
       vite: "src/vite/index.ts",
     },
     plugins: [
@@ -97,6 +98,7 @@ export default [
       "jsx-runtime": "src/jsx-runtime.ts",
       "jsx-dev-runtime": "src/jsx-dev-runtime.ts",
       devtools: "src/devtools/index.ts",
+      server: "src/server/index.ts",
       vite: "src/vite/index.ts",
     },
     output: {

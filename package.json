@@ -40,6 +40,11 @@
       "import": "./dist/sfc.js",
       "require": "./dist/sfc.cjs"
     },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js",
+      "require": "./dist/server.cjs"
+    },
     "./vite": {
       "types": "./dist/vite.d.ts",
       "import": "./dist/vite.js",
