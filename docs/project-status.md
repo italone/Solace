@@ -15,8 +15,9 @@ Current repository state:
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: local `main` is synchronized with `origin/main` as of the 2026-07-27
-  SSR/hydration checkpoint; re-run `git status --short --branch` before release or publish decisions
+- Remote state: local `main` is 2 commits ahead of `origin/main` as of the 2026-07-27 SSG
+  design checkpoint because recent docs/spec commits have not pushed successfully; re-run
+  `git status --short --branch` before release or publish decisions
 - Phase: alpha released; beta contract stabilization plus SSR/hydration minimum loop implemented
 
 ## Completion Map
@@ -113,7 +114,8 @@ These gaps should stay visible in promotional material so the project is positio
 ## Recommended Next Work
 
 1. **Keep `main` synchronized with `origin/main`** before publish decisions; this document records
-   the 2026-07-27 SSR/hydration checkpoint and must be rechecked with `git status --short --branch`.
+   that local `main` was 2 commits ahead after the 2026-07-27 SSG design checkpoint because GitHub
+   push attempts failed, and it must be rechecked with `git status --short --branch`.
 2. **Continue stabilizing the SFC/Vite contract without syntax expansion**: keep the public surface limited to `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, and the documented alpha `.solace` block model.
 3. **Continue narrowing the router beta API without adding deferred features**: keep nested routes, guards, redirects, lazy route components, scroll behavior, memory history, SSR/hydration integration, auth, and permissions out of the beta slice until separately designed.
 4. **Keep public API gates mandatory**: `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e` must run for public API changes.

@@ -14,8 +14,9 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - 本地 package 版本：`0.0.3`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
-- 本地分支状态：截至 2026-07-27 SSR/hydration checkpoint，本地 `main` 已与
-  `origin/main` 同步；发布或 publish 决策前仍需重新运行 `git status --short --branch`
+- 本地分支状态：截至 2026-07-27 SSG design checkpoint，本地 `main` 比 `origin/main` 超前
+  2 个提交，因为近期 docs/spec 提交尚未成功 push；发布或 publish 决策前仍需重新运行
+  `git status --short --branch`
 - 发布阶段：alpha 已发布；beta 契约稳定与 SSR/hydration minimum loop 已实现
 
 ## 完成度映射
@@ -116,7 +117,8 @@ Solace 当前有意不包含：
 ## 建议后续工作
 
 1. 发布决策前继续保持 `main` 与 `origin/main` 同步；本文档记录的是 2026-07-27
-   SSR/hydration checkpoint，后续仍需重新运行 `git status --short --branch`。
+   SSG design checkpoint 后本地 `main` 因 GitHub push 失败而超前 2 个提交，后续仍需重新运行
+   `git status --short --branch`。
 2. 继续稳定 SFC/Vite contract，但不扩语法：公开面保持为 `@italone/solace/sfc`、`@italone/solace/vite`、Vite transform diagnostics 和当前文档化的 alpha `.solace` block model。
 3. 继续收敛 router beta API，但不急着扩功能：nested routes、guards、redirects、lazy route components、scroll behavior、memory history、SSR/hydration 集成、auth 和 permissions 继续保持 deferred。
 4. 对所有公共 API 变更保持公共 API 门禁必跑：`pnpm release:readiness`、`pnpm package:smoke` 和 `pnpm test:e2e`。
