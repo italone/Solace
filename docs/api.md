@@ -537,6 +537,7 @@ Public JSX entry points:
 
 Public tooling entry points:
 
+- `@italone/solace/sfc`
 - `@italone/solace/vite`
 
 ## Vite Plugin Subpath

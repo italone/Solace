@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Plugin, TransformResult } from "vite";
 
-import { solacePlugin } from "../../../src/vite/index";
+import defaultSolacePlugin, { solacePlugin } from "../../../src/vite/index";
 
 type TestTransformResult = TransformResult | Promise<TransformResult> | undefined;
 
@@ -16,6 +16,16 @@ function transformWith(plugin: Plugin, code: string, id: string): TestTransformR
 }
 
 describe("solacePlugin", () => {
+  it("exposes a stable Vite plugin shape", () => {
+    const plugin = solacePlugin();
+    const defaultPlugin = defaultSolacePlugin();
+
+    expect(plugin.name).toBe("solace-sfc");
+    expect(plugin.enforce).toBe("pre");
+    expect(defaultPlugin.name).toBe(plugin.name);
+    expect(defaultPlugin.enforce).toBe(plugin.enforce);
+  });
+
   it("ignores non-Solace files", () => {
     const plugin = solacePlugin();
     const result = transformWith(plugin, "export default 1;", "/app/src/main.ts");

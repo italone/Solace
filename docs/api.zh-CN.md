@@ -498,6 +498,7 @@ createApp(App)
 
 公共 tooling 入口：
 
+- `@italone/solace/sfc`
 - `@italone/solace/vite`
 
 ## Vite Plugin 子路径
