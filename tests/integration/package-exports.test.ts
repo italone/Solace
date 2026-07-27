@@ -19,6 +19,9 @@ describe("package exports", () => {
     expect(existsSync(resolve(root, "dist/vite.js"))).toBe(true);
     expect(existsSync(resolve(root, "dist/vite.cjs"))).toBe(true);
     expect(existsSync(resolve(root, "dist/vite.d.ts"))).toBe(true);
+    expect(existsSync(resolve(root, "dist/sfc.js"))).toBe(true);
+    expect(existsSync(resolve(root, "dist/sfc.cjs"))).toBe(true);
+    expect(existsSync(resolve(root, "dist/sfc.d.ts"))).toBe(true);
   });
 
   it("does not publish production sourcemaps", () => {
@@ -34,6 +37,9 @@ describe("package exports", () => {
 
     expect(api).toMatchObject({
       createApp: expect.any(Function),
+      createRouter: expect.any(Function),
+      createWebHashHistory: expect.any(Function),
+      createWebHistory: expect.any(Function),
       computed: expect.any(Function),
       createStore: expect.any(Function),
       defineAsyncComponent: expect.any(Function),
@@ -50,6 +56,10 @@ describe("package exports", () => {
       render: expect.any(Function),
       reactive: expect.any(Function),
       ref: expect.any(Function),
+      RouterLink: expect.any(Function),
+      RouterView: expect.any(Function),
+      useRoute: expect.any(Function),
+      useRouter: expect.any(Function),
       watch: expect.any(Function),
       watchEffect: expect.any(Function),
     });
@@ -110,19 +120,33 @@ describe("package exports", () => {
     });
   });
 
+  it("exports the SFC type shim subpath", async () => {
+    const sfc = await import("@italone/solace/sfc");
+
+    expect(Object.keys(sfc)).toEqual([]);
+  });
+
   it("supports CommonJS package exports", () => {
     const api = require("@italone/solace") as Record<string, unknown>;
     const runtime = require("@italone/solace/jsx-runtime") as Record<string, unknown>;
     const devRuntime = require("@italone/solace/jsx-dev-runtime") as Record<string, unknown>;
     const devtools = require("@italone/solace/devtools") as Record<string, unknown>;
     const vite = require("@italone/solace/vite") as Record<string, unknown>;
+    const sfc = require("@italone/solace/sfc") as Record<string, unknown>;
 
     expect(api.createApp).toEqual(expect.any(Function));
+    expect(api.createRouter).toEqual(expect.any(Function));
+    expect(api.createWebHashHistory).toEqual(expect.any(Function));
+    expect(api.createWebHistory).toEqual(expect.any(Function));
     expect(api.defineAsyncComponent).toEqual(expect.any(Function));
     expect(api.defineComponent).toEqual(expect.any(Function));
     expect(api.inject).toEqual(expect.any(Function));
     expect(api.provide).toEqual(expect.any(Function));
     expect(api.reactive).toEqual(expect.any(Function));
+    expect(api.RouterLink).toEqual(expect.any(Function));
+    expect(api.RouterView).toEqual(expect.any(Function));
+    expect(api.useRoute).toEqual(expect.any(Function));
+    expect(api.useRouter).toEqual(expect.any(Function));
     expect(api.watchEffect).toEqual(expect.any(Function));
     expect(runtime.jsx).toEqual(expect.any(Function));
     expect(runtime.jsxs).toEqual(expect.any(Function));
@@ -135,6 +159,7 @@ describe("package exports", () => {
     expect(devtools.serializeDevtoolsEvent).toBeUndefined();
     expect(vite.default).toEqual(expect.any(Function));
     expect(vite.solacePlugin).toEqual(expect.any(Function));
+    expect(Object.keys(sfc)).toEqual([]);
   });
 
   it("mounts a component with createApp", async () => {

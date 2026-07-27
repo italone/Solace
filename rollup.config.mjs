@@ -1,6 +1,6 @@
 import commonjs from "@rollup/plugin-commonjs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
-import { rmSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import dts from "rollup-plugin-dts";
 import ts from "typescript";
 
@@ -43,6 +43,19 @@ function typescript() {
   };
 }
 
+function copySfcTypes() {
+  return {
+    name: "copy-sfc-types",
+    generateBundle() {
+      this.emitFile({
+        type: "asset",
+        fileName: "sfc.d.ts",
+        source: readFileSync("src/sfc.d.ts", "utf8"),
+      });
+    },
+  };
+}
+
 export default [
   {
     input: {
@@ -50,6 +63,7 @@ export default [
       "jsx-runtime": "src/jsx-runtime.ts",
       "jsx-dev-runtime": "src/jsx-dev-runtime.ts",
       devtools: "src/devtools/index.ts",
+      sfc: "src/sfc-entry.ts",
       vite: "src/vite/index.ts",
     },
     plugins: [
@@ -91,6 +105,6 @@ export default [
       format: "esm",
     },
     external: ["vite"],
-    plugins: [dts()],
+    plugins: [dts(), copySfcTypes()],
   },
 ];

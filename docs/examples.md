@@ -60,6 +60,25 @@ Coverage:
 
 The Playwright test `tests/e2e/large-list.spec.ts` verifies the list renders 10,000 rows and updates the selected row marker.
 
+## Router Basic
+
+Run:
+
+```bash
+pnpm dev:router
+```
+
+Location: `examples/router-basic`
+
+Coverage:
+
+- Beta `RouterView` and `RouterLink` rendering.
+- Dynamic route params.
+- Query string parsing.
+- Hash history navigation without server rewrite support.
+
+The Playwright test `tests/e2e/router-basic.spec.ts` verifies home, user, and not-found navigation.
+
 ## SFC Counter
 
 Run:
@@ -93,5 +112,6 @@ The Playwright config starts each example on a fixed localhost port:
 | Basic counter | `5174` |
 | Todo app      | `5175` |
 | Large list    | `5176` |
+| Router basic  | `5178` |
 
 `pnpm release:check` also runs these e2e tests after quality checks, coverage, package smoke, jsdom benchmark smoke, and the Chromium production browser benchmark.

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { h } from "../../../src/index";
+import * as routerModule from "../../../src/router";
 import { createRouter } from "../../../src/router/router";
 import type { RouterHistory } from "../../../src/router/types";
 
@@ -35,6 +36,18 @@ function createMemoryLikeHistory(initial = "/"): RouterHistory & { emit(): void 
 }
 
 describe("createRouter", () => {
+  it("re-exports the public router module surface", () => {
+    expect(routerModule).toMatchObject({
+      RouterLink: expect.any(Function),
+      RouterView: expect.any(Function),
+      createRouter: expect.any(Function),
+      createWebHashHistory: expect.any(Function),
+      createWebHistory: expect.any(Function),
+      useRoute: expect.any(Function),
+      useRouter: expect.any(Function),
+    });
+  });
+
   it("resolves string and object locations", () => {
     const router = createRouter({
       history: createMemoryLikeHistory(),

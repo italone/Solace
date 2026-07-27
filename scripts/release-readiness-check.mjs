@@ -1,14 +1,22 @@
+import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const publishableMode = process.argv.includes("--publishable");
+const execFileAsync = promisify(execFile);
+const failures = [];
+const warnings = [];
+const options = parseArgs(process.argv.slice(2));
 
 const packageJson = await readJson("package.json");
 const changesetConfig = await readJson(".changeset/config.json");
-const failures = [];
-const warnings = [];
+
+if (options.help) {
+  printHelp();
+  process.exit(0);
+}
 
 requireString(packageJson.name, "package.json name");
 requireString(packageJson.version, "package.json version");
@@ -33,7 +41,7 @@ if (changesetConfig.access !== "public") {
 const packageIsPrivate = packageJson.private === true;
 
 if (packageIsPrivate) {
-  if (publishableMode) {
+  if (options.publishable) {
     failures.push(
       'package.json still has "private": true; remove it only after explicit publish approval.',
     );
@@ -58,6 +66,17 @@ if (!hasPackageFile("docs/*.md")) {
   failures.push('package.json files must include "docs/*.md".');
 }
 
+let gitSynchronization = "checked";
+if (options.skipGitCheck) {
+  gitSynchronization = "skipped";
+} else if (options.publishable) {
+  const gitStatus = await readGitStatus(options.gitStatusFile);
+  const gitFailure = validateGitStatus(gitStatus);
+  if (gitFailure !== undefined) {
+    failures.push(gitFailure);
+  }
+}
+
 if (failures.length > 0) {
   console.error("release readiness check failed:");
   for (const failure of failures) {
@@ -68,14 +87,17 @@ if (failures.length > 0) {
   console.log("release readiness check passed");
   console.log(`package: ${packageJson.name}@${packageJson.version}`);
   console.log(`changeset access: ${changesetConfig.access}`);
-  console.log(`mode: ${publishableMode ? "publishable" : "default"}`);
+  console.log(`mode: ${options.publishable ? "publishable" : "default"}`);
+  if (options.publishable) {
+    console.log(`git synchronization: ${gitSynchronization}`);
+  }
 }
 
 for (const warning of warnings) {
   console.log(`note: ${warning}`);
 }
 
-if (!publishableMode) {
+if (!options.publishable) {
   if (packageIsPrivate) {
     console.log("publishability: skipped; run with --publishable after explicit publish approval.");
   } else {
@@ -83,9 +105,120 @@ if (!publishableMode) {
   }
 }
 
+function parseArgs(args) {
+  const parsed = {
+    gitStatusFile: undefined,
+    help: false,
+    publishable: false,
+    skipGitCheck: false,
+  };
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === "--") {
+      continue;
+    }
+
+    if (arg === "--help" || arg === "-h") {
+      parsed.help = true;
+      continue;
+    }
+
+    if (arg === "--publishable") {
+      parsed.publishable = true;
+      continue;
+    }
+
+    if (arg === "--skip-git-check") {
+      parsed.skipGitCheck = true;
+      continue;
+    }
+
+    if (arg === "--git-status-file") {
+      parsed.gitStatusFile = requireArgValue(args[index + 1], "--git-status-file");
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith("--git-status-file=")) {
+      parsed.gitStatusFile = requireArgValue(
+        arg.slice("--git-status-file=".length),
+        "--git-status-file",
+      );
+      continue;
+    }
+
+    failures.push(`Unknown option: ${arg}`);
+  }
+
+  return parsed;
+}
+
+function printHelp() {
+  console.log(`Usage: pnpm release:readiness -- [options]
+
+Options:
+  --publishable              Verify stricter checks required before npm publishing.
+  --skip-git-check           Skip publishable git synchronization checks for metadata-only audits.
+  --git-status-file <path>   Read git status from a file, used by script tests.
+  -h, --help                 Show this help message.
+`);
+}
+
+function requireArgValue(value, optionName) {
+  if (typeof value !== "string" || value.trim() === "") {
+    failures.push(`${optionName} requires a non-empty value.`);
+    return undefined;
+  }
+
+  return value;
+}
+
 async function readJson(relativePath) {
   const raw = await readFile(resolve(root, relativePath), "utf8");
   return JSON.parse(raw);
+}
+
+async function readGitStatus(gitStatusFile) {
+  if (gitStatusFile !== undefined) {
+    return readFile(gitStatusFile, "utf8");
+  }
+
+  try {
+    const { stdout } = await execFileAsync("git", ["status", "--short", "--branch"], { cwd: root });
+    return stdout;
+  } catch {
+    return undefined;
+  }
+}
+
+function validateGitStatus(status) {
+  if (typeof status !== "string" || status.trim() === "") {
+    return "local branch must be synchronized with its upstream before publishable mode; git status could not be read.";
+  }
+
+  const lines = status.trimEnd().split(/\r?\n/);
+  const branchLine = lines[0] ?? "";
+  const worktreeLines = lines.slice(1);
+
+  if (!branchLine.startsWith("## ")) {
+    return "local branch must be synchronized with its upstream before publishable mode; git branch status is missing.";
+  }
+
+  if (branchLine.includes("[ahead") || branchLine.includes("[behind")) {
+    return `local branch must be synchronized with its upstream before publishable mode; current status is "${branchLine}".`;
+  }
+
+  if (!branchLine.includes("...")) {
+    return "local branch must be synchronized with its upstream before publishable mode; no upstream branch is configured.";
+  }
+
+  if (worktreeLines.length > 0) {
+    return "local worktree must be clean before publishable mode.";
+  }
+
+  return undefined;
 }
 
 function requireString(value, label) {

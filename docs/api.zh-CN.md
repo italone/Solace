@@ -8,18 +8,19 @@
 
 ## 公共根入口
 
-包根入口暴露稳定运行时能力：
+包根入口暴露文档化运行时能力：
 
-| 领域       | API                                                             |
-| ---------- | --------------------------------------------------------------- |
-| App        | `createApp`                                                     |
-| Reactivity | `reactive`、`ref`、`computed`、`effect`、`watch`、`watchEffect` |
-| Rendering  | `h`、`render`、`Fragment`                                       |
-| Components | `defineComponent`、`defineAsyncComponent`                       |
-| Context    | `provide`、`inject`                                             |
-| Lifecycle  | `onMounted`、`onUpdated`、`onUnmounted`                         |
-| Scheduler  | `nextTick`                                                      |
-| Store      | `createStore`                                                   |
+| 领域       | API                                                                                                             |
+| ---------- | --------------------------------------------------------------------------------------------------------------- |
+| App        | `createApp`                                                                                                     |
+| Reactivity | `reactive`、`ref`、`computed`、`effect`、`watch`、`watchEffect`                                                 |
+| Rendering  | `h`、`render`、`Fragment`                                                                                       |
+| Components | `defineComponent`、`defineAsyncComponent`                                                                       |
+| Context    | `provide`、`inject`                                                                                             |
+| Lifecycle  | `onMounted`、`onUpdated`、`onUnmounted`                                                                         |
+| Scheduler  | `nextTick`                                                                                                      |
+| Store      | `createStore`                                                                                                   |
+| Router     | `createRouter`、`createWebHistory`、`createWebHashHistory`、`RouterLink`、`RouterView`、`useRouter`、`useRoute` |
 
 公共 TypeScript 辅助类型包括：
 
@@ -27,6 +28,7 @@
 - 异步组件：`AsyncComponentLoader`、`AsyncComponentOptions`、`AsyncComponentSource`
 - 组件 setup：`ComponentSetupContext`、`EmitFn`、`Slot`、`SlotProps`、`Slots`
 - Store：`Store`、`StoreActionsInput`、`StoreContext`、`StoreGetterContext`、`StoreGetters`、`StoreOptions`
+- Router：`RouteLocationNormalized`、`RouteLocationRaw`、`RouteRecord`、`Router`、`RouterHistory`、`RouterLinkProps`、`RouterOptions`
 - VNode：`ComponentProps`、`ComponentRender`、`ComponentType`、`ComponentVNodeChildren`、`FragmentType`、`VNode`、`VNodeChild`、`VNodeChildren`、`VNodeProps`、`VNodeSlots`、`VNodeType`
 
 ## API 分层与稳定性
@@ -43,6 +45,8 @@
 | `src/**`、`dist/**`、deep subpaths | 私有   | 内部实现细节，不作为兼容性目标                     |
 
 alpha 阶段的兼容性契约有意保持较窄。公开入口应在 patch release 之间保持可用；内部模块、event emit helpers、scheduler 队列、renderer diagnostics、组件实例和生成文件布局可能在不额外通知的情况下变化。
+
+包根入口中的 router exports 属于 alpha API。它们已用于小型 SPA 示例和 package-consumer 验证，但 route guards、嵌套路由记录、scroll behavior、具名路由、懒加载路由、SSR 集成和长期兼容策略仍属于 beta 工作。
 
 大多数应用应从包根入口导入。JSX 子路径通常只通过 `jsxImportSource` 或 bundler 生成导入使用。只有在构建 instrumentation 或需要 event snapshots 的示例时，才直接使用 DevTools 子路径。
 
@@ -412,6 +416,64 @@ Store 行为：
 - `actions` 的第一个参数是 `{ state, getters }`。
 - 读取 store state 或 getters 的组件会通过和其他响应式读取相同的 scheduler 重新渲染。
 - 安装 DevTools listeners 后，store actions 会发出小型 success 或 error summary，不包含 action arguments、results 或 raw state。
+
+## Router
+
+Router 是包根入口中的 beta API，面向小型单页应用示例。当前支持静态路由、动态 params、wildcard fallback records、query 解析/序列化、browser history adapters、`RouterLink`、`RouterView`，并可通过 `createApp(App).use(router)` 安装。
+
+```ts
+import {
+  RouterLink,
+  RouterView,
+  createApp,
+  createRouter,
+  createWebHistory,
+  h,
+  useRoute,
+} from "@italone/solace";
+
+const Home = () => h("p", null, "home");
+const User = () => {
+  const route = useRoute();
+
+  return () => h("p", null, `user:${route.value.params.id}`);
+};
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    { path: "/", component: Home },
+    { path: "/users/:id", component: User },
+    { path: "/:pathMatch(.*)*", component: () => h("p", null, "not found") },
+  ],
+});
+
+const App = () => () =>
+  h("main", null, [h(RouterLink, { to: "/users/42" }, "User"), h(RouterView)]);
+
+createApp(App)
+  .use(router)
+  .mount(document.querySelector("#app") as Element);
+```
+
+### `createRouter({ history, routes })`
+
+创建 router plugin。`routes` 按 path 匹配。静态路由优先于动态路由，`/:pathMatch(.*)*` 可作为 wildcard fallback。`router.currentRoute` 是一个 ref，包含 `{ path, fullPath, query, params, matched }`。
+
+### `createWebHistory()` / `createWebHashHistory()`
+
+创建浏览器 history adapters。普通 path routing 使用 `createWebHistory()`，hash routing 使用 `createWebHashHistory()`。
+
+### `RouterLink` / `RouterView`
+
+`RouterLink` 渲染 anchor，并在主键、无 modifier 的点击中执行客户端导航。`RouterView` 渲染匹配到的 route component；没有匹配时渲染空 Fragment。
+
+当前 beta router 限制：
+
+- 不包含 route names、aliases、redirects、嵌套路由记录、guards、scroll behavior 或 lazy component loading contract。
+- 不包含 SSR、SSG 或 hydration 集成。
+- 直接 URL 访问的 fallback 仍依赖部署宿主配置。
+- unknown route 行为应通过显式 wildcard route 处理。
 
 ## JSX
 

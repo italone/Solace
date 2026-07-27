@@ -6,7 +6,7 @@ const isCli = process.argv[1] === new URL(import.meta.url).pathname;
 
 if (isCli) {
   try {
-    const { help, json, latestBrowserCount, minBrowserCount, paths } = parseArgs(
+    const { help, json, latestBrowserCount, minBrowserCount, minJsdomCount, paths } = parseArgs(
       process.argv.slice(2),
     );
     if (help) {
@@ -15,7 +15,7 @@ if (isCli) {
     } else {
       const summary = await summarizeBenchmarkHistory(paths, { latestBrowserCount });
 
-      validateSummary(summary, { minBrowserCount });
+      validateSummary(summary, { minBrowserCount, minJsdomCount });
 
       if (json) {
         console.log(JSON.stringify(summary));
@@ -34,6 +34,7 @@ export function parseArgs(args) {
   let json = false;
   let latestBrowserCount;
   let minBrowserCount;
+  let minJsdomCount;
   const paths = [];
 
   for (let index = 0; index < args.length; index += 1) {
@@ -56,6 +57,20 @@ export function parseArgs(args) {
     if (arg === "--min-browser-count") {
       minBrowserCount = parsePositiveInteger(args[index + 1], "--min-browser-count");
       index += 1;
+      continue;
+    }
+
+    if (arg === "--min-jsdom-count") {
+      minJsdomCount = parsePositiveInteger(args[index + 1], "--min-jsdom-count");
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith("--min-jsdom-count=")) {
+      minJsdomCount = parsePositiveInteger(
+        arg.slice("--min-jsdom-count=".length),
+        "--min-jsdom-count",
+      );
       continue;
     }
 
@@ -89,6 +104,7 @@ export function parseArgs(args) {
     json,
     latestBrowserCount,
     minBrowserCount,
+    minJsdomCount,
     paths: paths.length === 0 ? defaultHistoryPaths : paths,
   };
 }
@@ -99,6 +115,7 @@ function printHelp() {
 Options:
   --json                         Print the summary as JSON.
   --min-browser-count <count>    Require each browser benchmark scenario to have at least count records.
+  --min-jsdom-count <count>      Require each jsdom benchmark environment to have at least count records.
   --latest-browser-count <count> Summarize only the latest count browser records per scenario.
   -h, --help                     Show this help message.
 `);
@@ -124,21 +141,38 @@ export async function summarizeBenchmarkHistory(paths, { latestBrowserCount } = 
   };
 }
 
-export function validateSummary(summary, { minBrowserCount } = {}) {
-  if (minBrowserCount === undefined) {
+export function validateSummary(summary, { minBrowserCount, minJsdomCount } = {}) {
+  validateGroupMinimum(summary, {
+    groupKind: "browser-benchmark",
+    labelField: "scenario",
+    minCount: minBrowserCount,
+    name: "Browser benchmark",
+  });
+  validateGroupMinimum(summary, {
+    groupKind: "jsdom-benchmark",
+    labelField: "environment",
+    minCount: minJsdomCount,
+    name: "jsdom benchmark",
+  });
+}
+
+function validateGroupMinimum(summary, { groupKind, labelField, minCount, name }) {
+  if (minCount === undefined) {
     return;
   }
 
-  const browserGroups = summary.groups.filter((group) => group.kind === "browser-benchmark");
-  if (browserGroups.length === 0) {
-    throw new Error(`Browser benchmark history has 0 record(s), below required ${minBrowserCount}`);
+  const groups = summary.groups.filter(
+    (group) => group.kind === groupKind && group.task === undefined,
+  );
+  if (groups.length === 0) {
+    throw new Error(`${name} history has 0 record(s), below required ${minCount}`);
   }
 
-  for (const group of browserGroups) {
-    if (group.recordCount < minBrowserCount) {
-      const label = group.scenario ?? "unknown";
+  for (const group of groups) {
+    if (group.recordCount < minCount) {
+      const label = group[labelField] ?? "unknown";
       throw new Error(
-        `Browser benchmark ${label} has ${group.recordCount} record(s), below required ${minBrowserCount}`,
+        `${name} ${label} has ${group.recordCount} record(s), below required ${minCount}`,
       );
     }
   }

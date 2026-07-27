@@ -1,6 +1,7 @@
 import { h } from "./vnode/h";
 import {
   Fragment,
+  type ComponentRender,
   type VNode,
   type VNodeChild,
   type VNodeChildren,
@@ -63,6 +64,7 @@ function normalizeChildren(children: JSXChildren): VNodeChildren {
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace JSX {
   export type Element = VNode;
+  export type ElementType = VNodeType | ((props: never) => VNode | ComponentRender);
   export interface IntrinsicElements {
     [name: string]: VNodeProps & {
       children?: JSXChildren;

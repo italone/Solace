@@ -35,6 +35,11 @@
       "import": "./dist/devtools.js",
       "require": "./dist/devtools.cjs"
     },
+    "./sfc": {
+      "types": "./dist/sfc.d.ts",
+      "import": "./dist/sfc.js",
+      "require": "./dist/sfc.cjs"
+    },
     "./vite": {
       "types": "./dist/vite.d.ts",
       "import": "./dist/vite.js",
@@ -48,6 +53,7 @@
   "scripts": {
     "dev": "vite examples/basic-counter",
     "dev:todo": "vite examples/todo-app",
+    "dev:router": "vite examples/router-basic",
     "dev:sfc": "vite examples/sfc-counter",
     "build": "rollup -c",
     "typecheck": "tsc --noEmit",

@@ -10,18 +10,19 @@ component instances, and VNode factory internals are not part of the compatibili
 
 ## Public Root Export
 
-The package root exposes the stable runtime surface:
+The package root exposes the documented runtime surface:
 
-| Area       | APIs                                                            |
-| ---------- | --------------------------------------------------------------- |
-| App        | `createApp`                                                     |
-| Reactivity | `reactive`, `ref`, `computed`, `effect`, `watch`, `watchEffect` |
-| Rendering  | `h`, `render`, `Fragment`                                       |
-| Components | `defineComponent`, `defineAsyncComponent`                       |
-| Context    | `provide`, `inject`                                             |
-| Lifecycle  | `onMounted`, `onUpdated`, `onUnmounted`                         |
-| Scheduler  | `nextTick`                                                      |
-| Store      | `createStore`                                                   |
+| Area       | APIs                                                                                                            |
+| ---------- | --------------------------------------------------------------------------------------------------------------- |
+| App        | `createApp`                                                                                                     |
+| Reactivity | `reactive`, `ref`, `computed`, `effect`, `watch`, `watchEffect`                                                 |
+| Rendering  | `h`, `render`, `Fragment`                                                                                       |
+| Components | `defineComponent`, `defineAsyncComponent`                                                                       |
+| Context    | `provide`, `inject`                                                                                             |
+| Lifecycle  | `onMounted`, `onUpdated`, `onUnmounted`                                                                         |
+| Scheduler  | `nextTick`                                                                                                      |
+| Store      | `createStore`                                                                                                   |
+| Router     | `createRouter`, `createWebHistory`, `createWebHashHistory`, `RouterLink`, `RouterView`, `useRouter`, `useRoute` |
 
 Public TypeScript helper types include:
 
@@ -29,6 +30,8 @@ Public TypeScript helper types include:
 - Async components: `AsyncComponentLoader`, `AsyncComponentOptions`, `AsyncComponentSource`
 - Component setup: `ComponentSetupContext`, `EmitFn`, `Slot`, `SlotProps`, `Slots`
 - Store: `Store`, `StoreActionsInput`, `StoreContext`, `StoreGetterContext`, `StoreGetters`, `StoreOptions`
+- Router: `RouteLocationNormalized`, `RouteLocationRaw`, `RouteRecord`, `Router`, `RouterHistory`,
+  `RouterLinkProps`, `RouterOptions`
 - VNodes: `ComponentProps`, `ComponentRender`, `ComponentType`, `ComponentVNodeChildren`,
   `FragmentType`, `VNode`, `VNodeChild`, `VNodeChildren`, `VNodeProps`, `VNodeSlots`, `VNodeType`
 
@@ -48,6 +51,10 @@ Use Solace through the documented package entries only:
 The alpha compatibility contract is intentionally narrow. Public entries should remain usable across
 patch releases, while internal modules, event emit helpers, scheduler queues, renderer diagnostics,
 component instances, and generated file layout can change without notice.
+
+The router exports in the package root are alpha APIs. They are documented for small SPA examples and
+package-consumer validation, but route guards, nested route records, scroll behavior, named routes,
+lazy route loading, SSR integration, and a long-term compatibility policy are beta work.
 
 Most applications should import from the root package. Use JSX subpaths only through `jsxImportSource`
 or bundler-generated imports. Use the DevTools subpath only when building instrumentation or examples
@@ -438,6 +445,71 @@ Store behavior:
   reads.
 - When DevTools listeners are installed, store actions emit small success or error summaries without
   action arguments, results, or raw state.
+
+## Router
+
+The router is a beta package-root API for small single-page examples. It supports static routes,
+dynamic params, wildcard fallback records, query parsing/stringifying, browser history adapters,
+`RouterLink`, `RouterView`, and app installation through `createApp(App).use(router)`.
+
+```ts
+import {
+  RouterLink,
+  RouterView,
+  createApp,
+  createRouter,
+  createWebHistory,
+  h,
+  useRoute,
+} from "@italone/solace";
+
+const Home = () => h("p", null, "home");
+const User = () => {
+  const route = useRoute();
+
+  return () => h("p", null, `user:${route.value.params.id}`);
+};
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    { path: "/", component: Home },
+    { path: "/users/:id", component: User },
+    { path: "/:pathMatch(.*)*", component: () => h("p", null, "not found") },
+  ],
+});
+
+const App = () => () =>
+  h("main", null, [h(RouterLink, { to: "/users/42" }, "User"), h(RouterView)]);
+
+createApp(App)
+  .use(router)
+  .mount(document.querySelector("#app") as Element);
+```
+
+### `createRouter({ history, routes })`
+
+Creates a router plugin. `routes` are matched by path. Static routes are prioritized before dynamic
+routes, and `/:pathMatch(.*)*` can be used as a wildcard fallback. `router.currentRoute` is a ref
+containing `{ path, fullPath, query, params, matched }`.
+
+### `createWebHistory()` / `createWebHashHistory()`
+
+Create browser-backed history adapters. Use `createWebHistory()` for normal path routing and
+`createWebHashHistory()` for hash routing.
+
+### `RouterLink` / `RouterView`
+
+`RouterLink` renders an anchor and performs client navigation for primary unmodified clicks.
+`RouterView` renders the matched route component or an empty fragment when no route matches.
+
+Current beta router limitations:
+
+- No route names, aliases, redirects, nested records, guards, scroll behavior, or lazy component
+  loading contract.
+- No SSR, SSG, or hydration integration.
+- Direct URL fallback still depends on the hosting configuration.
+- Unknown-route behavior should be handled by an explicit wildcard route.
 
 ## JSX
 

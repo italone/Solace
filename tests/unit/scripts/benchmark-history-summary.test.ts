@@ -31,6 +31,7 @@ describe("benchmark history summary CLI", () => {
     expect(stdout).toContain("Usage: pnpm benchmark:history -- [options] [history-path...]");
     expect(stdout).toContain("--json");
     expect(stdout).toContain("--min-browser-count <count>");
+    expect(stdout).toContain("--min-jsdom-count <count>");
     expect(stdout).toContain("--latest-browser-count <count>");
   });
 
@@ -429,6 +430,47 @@ describe("benchmark history summary CLI", () => {
     });
   });
 
+  test("accepts jsdom groups that meet the configured minimum record count", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "solace-history-summary-jsdom-min-"));
+    const historyPath = join(tempDir, "history.jsonl");
+    await writeFile(
+      historyPath,
+      [JSON.stringify(createJsdomRecord()), JSON.stringify(createJsdomRecord()), ""].join("\n"),
+      "utf8",
+    );
+
+    const { stdout } = await execFileAsync("node", [
+      "scripts/summarize-benchmark-history.mjs",
+      "--json",
+      "--min-jsdom-count",
+      "2",
+      historyPath,
+    ]);
+    const summary = JSON.parse(stdout) as BenchmarkHistorySummary;
+
+    expect(summary.groups.find((group) => group.kind === "jsdom-benchmark")).toMatchObject({
+      recordCount: 2,
+    });
+  });
+
+  test("fails when jsdom benchmark groups are below the configured minimum record count", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "solace-history-summary-jsdom-low-"));
+    const historyPath = join(tempDir, "history.jsonl");
+    await writeFile(historyPath, `${JSON.stringify(createJsdomRecord())}\n`, "utf8");
+
+    await expect(
+      execFileAsync("node", [
+        "scripts/summarize-benchmark-history.mjs",
+        "--json",
+        "--min-jsdom-count",
+        "2",
+        historyPath,
+      ]),
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("jsdom benchmark jsdom has 1 record(s), below required 2"),
+    });
+  });
+
   test("rejects invalid minimum browser record counts", async () => {
     await expect(
       execFileAsync("node", [
@@ -438,6 +480,14 @@ describe("benchmark history summary CLI", () => {
       ]),
     ).rejects.toMatchObject({
       stderr: expect.stringContaining("--min-browser-count must be a positive integer"),
+    });
+  });
+
+  test("rejects invalid minimum jsdom record counts", async () => {
+    await expect(
+      execFileAsync("node", ["scripts/summarize-benchmark-history.mjs", "--min-jsdom-count", "0"]),
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("--min-jsdom-count must be a positive integer"),
     });
   });
 

@@ -13,6 +13,15 @@ export { defineAsyncComponent } from "./component/async-component";
 export { defineComponent } from "./component/define-component";
 export { inject, provide } from "./component/provide";
 export { createStore } from "./store/store";
+export {
+  RouterLink,
+  RouterView,
+  createRouter,
+  createWebHashHistory,
+  createWebHistory,
+  useRoute,
+  useRouter,
+} from "./router";
 export type {
   AsyncComponentLoader,
   AsyncComponentOptions,
@@ -28,6 +37,15 @@ export type {
   StoreGetters,
   StoreOptions,
 } from "./store/store";
+export type {
+  RouteLocationNormalized,
+  RouteLocationRaw,
+  RouteRecord,
+  Router,
+  RouterHistory,
+  RouterOptions,
+  RouterLinkProps,
+} from "./router";
 export type {
   ComponentProps,
   ComponentRender,

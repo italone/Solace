@@ -12,7 +12,7 @@ The alpha runtime is feature-complete for its declared scope:
 Planned work, in rough priority order:
 
 1. **SFC compiler stabilization** — harden the current `.solace` compiler and `@italone/solace/vite` plugin with public docs, API review, source maps, diagnostics, and compatibility tests.
-2. **First-party router** — design and implement a minimal, reactive router for SPAs.
+2. **First-party router stabilization** — promote the current alpha router core only after public exports, package boundary tests, documentation, and app-level integration coverage are complete.
 3. **SSR / SSG / hydration** — add server-side rendering, static generation, and client hydration capabilities.
 4. **Browser DevTools extension UI** — build a panel on top of the existing `@italone/solace/devtools` API.
 5. **Production adoption guidance** — large-app patterns, performance tuning, migration notes.

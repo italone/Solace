@@ -14,7 +14,8 @@ npm while documentation or release-preparation work is still local or not yet pu
 state.
 
 Before preparing another release, run `pnpm release:readiness -- --publishable` to check package
-metadata and validate package consumption with the packed-consumer smoke test described below.
+metadata, public access configuration, and local Git synchronization. Run `pnpm package:smoke`
+separately to validate package consumption with the packed-consumer smoke test described below.
 
 ## Import Runtime APIs
 
@@ -108,6 +109,43 @@ The compiler is an alpha surface. It intentionally supports a small syntax subse
 diagnostics through Vite transform errors, injects scoped styles at runtime, and currently returns
 `map: null` to match the package policy of not publishing production source maps.
 
+## Use The Beta Router
+
+Solace exposes a beta router from the package root for small SPA examples:
+
+```ts
+import {
+  RouterLink,
+  RouterView,
+  createApp,
+  createRouter,
+  createWebHistory,
+  h,
+} from "@italone/solace";
+
+const Home = () => h("p", null, "home");
+const User = () => h("p", null, "user");
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    { path: "/", component: Home },
+    { path: "/users/:id", component: User },
+  ],
+});
+
+const App = () => () =>
+  h("main", null, [h(RouterLink, { to: "/users/42" }, "User"), h(RouterView)]);
+
+createApp(App)
+  .use(router)
+  .mount(document.querySelector("#app") as Element);
+```
+
+The current router supports path matching, dynamic params, query parsing, browser history adapters,
+`RouterLink`, and `RouterView`. It does not yet include route guards, nested route records, named
+routes, redirects, lazy-route contracts, scroll behavior, SSR, SSG, or hydration.
+
 ## Public Entry Points
 
 - `@italone/solace`: core runtime APIs.
@@ -126,7 +164,7 @@ Before release, run the package consumer smoke test:
 pnpm package:smoke
 ```
 
-The smoke test builds Solace, packs the current package, installs the tarball into a temporary consumer project, typechecks a JSX entry file, and verifies ESM and CJS imports for all public entry points.
+The smoke test builds Solace, packs the current package, installs the tarball into a temporary consumer project, typechecks a JSX entry file, verifies ESM and CJS imports for all public entry points, and runs a Vite production build of a `.solace` file through the packed `@italone/solace/vite` plugin.
 
 For the full local release gate, run:
 

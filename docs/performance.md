@@ -162,6 +162,9 @@ and jsdom task metrics; it does not enforce thresholds.
 Use `pnpm benchmark:history -- --min-browser-count 5` to require each browser benchmark scenario
 to have at least five local history records. This is an opt-in trend quality gate for local or CI
 checks; it is not a timing threshold and does not compare measured performance against a target.
+Use `pnpm benchmark:history -- --min-jsdom-count 5` to require each jsdom benchmark environment to
+have at least five local history records. Combine both minimums before publishing performance
+claims that reference both browser and jsdom behavior.
 Use `pnpm benchmark:history -- --latest-browser-count 5` to summarize only the latest five browser
 records per scenario while leaving jsdom record counts in the summary. This is useful when older
 slow samples dominate full-history p95 and the next runtime hotspot needs a fresher trend window.
@@ -175,6 +178,12 @@ Local history command:
 
 ```bash
 pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
+```
+
+Use this stricter form when a release note or README change makes a performance claim:
+
+```bash
+pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --min-jsdom-count 5 --json
 ```
 
 The local ignored history now contains fresh Chromium production benchmark records from the keyed move-run batching run.

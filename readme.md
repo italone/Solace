@@ -1,6 +1,6 @@
 # Solace
 
-[简体中文](./readme.zh-CN.md)
+[简体中文](./solace/readme.zh-CN.md)
 
 Solace is a TypeScript-first frontend framework for building reactive, component-driven web interfaces.
 
@@ -317,12 +317,13 @@ See [docs/api.md](./docs/api.md) for public API details and examples.
 
 Solace includes Vite examples that exercise different runtime paths:
 
-| Example       | Command          | Coverage                                                 |
-| ------------- | ---------------- | -------------------------------------------------------- |
-| Basic counter | `pnpm dev`       | JSX runtime, reactive state, DOM events                  |
-| Todo app      | `pnpm dev:todo`  | form input, keyed list updates, checkbox state, deletion |
-| Large list    | `pnpm dev:large` | 10,000 keyed rows, targeted class/text updates           |
-| SFC counter   | `pnpm dev:sfc`   | alpha `.solace` compiler and Vite plugin                 |
+| Example       | Command           | Coverage                                                 |
+| ------------- | ----------------- | -------------------------------------------------------- |
+| Basic counter | `pnpm dev`        | JSX runtime, reactive state, DOM events                  |
+| Todo app      | `pnpm dev:todo`   | form input, keyed list updates, checkbox state, deletion |
+| Large list    | `pnpm dev:large`  | 10,000 keyed rows, targeted class/text updates           |
+| Router basic  | `pnpm dev:router` | beta router, params, query, RouterLink                   |
+| SFC counter   | `pnpm dev:sfc`    | alpha `.solace` compiler and Vite plugin                 |
 
 The `examples/sfc-counter` app demonstrates the alpha `.solace` compiler and Vite plugin.
 

@@ -159,8 +159,9 @@ function mountComponent(
 
       const nextTree = instance.render();
       const previousTree = instance.subTree;
+      const updateContainer = previousTree?.el?.parentNode ?? container;
 
-      patch(previousTree, nextTree, container, anchor, instance, instance.appProvides);
+      patch(previousTree, nextTree, updateContainer, anchor, instance, instance.appProvides);
 
       instance.subTree = nextTree;
       instance.vnode.el = nextTree.el;

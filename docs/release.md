@@ -15,7 +15,7 @@ Run the full local gate before preparing a release:
 pnpm release:check
 ```
 
-This runs format check, typecheck, JSX dev typecheck, lint, default tests, package exports tests, coverage thresholds, package consumer smoke, jsdom benchmark smoke, Chromium production browser benchmark, and browser e2e tests.
+This runs format check, typecheck, JSX dev typecheck, lint, default tests, package exports tests, coverage thresholds, package consumer smoke, jsdom benchmark smoke, Chromium production browser benchmark, and browser e2e tests. The package consumer smoke includes packed ESM/CJS import checks, TypeScript consumer checks, router public API checks, and a Vite production build that transforms a `.solace` single-file component through the packed `@italone/solace/vite` plugin.
 
 The GitHub Actions CI workflow keeps these checks split into named steps and also runs both benchmark commands: `pnpm benchmark` and `pnpm benchmark:browser`.
 
@@ -37,6 +37,11 @@ each release:
 ```bash
 pnpm release:readiness -- --publishable
 ```
+
+Publishable mode also checks the local Git state. It fails when the branch is ahead of or behind
+its upstream, when no upstream is configured, or when the working tree is dirty. Use
+`pnpm release:readiness -- --publishable --skip-git-check` only for metadata-only audits where a
+maintainer has explicitly decided not to publish from the current checkout.
 
 ## Prepare A Version
 
@@ -60,6 +65,7 @@ Before publishing, explicitly confirm:
 - npm authentication and organization access are configured,
 - public access is intended,
 - `pnpm release:readiness -- --publishable` passes,
+- the local branch is synchronized with its upstream and the worktree is clean,
 - `pnpm release:check` passes,
 - `pnpm package:smoke` passes after the final version update,
 - Changesets versioning has been run for user-visible changes.
