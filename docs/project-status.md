@@ -15,27 +15,27 @@ Current repository state:
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: local `main` is ahead of `origin/main` by 10 commits; pushing to GitHub failed locally on 2026-07-27 because `github.com:443` was unreachable
-- Phase: alpha released; transitioning to beta planning
+- Remote state: local `main` is synchronized with `origin/main` as of the 2026-07-27 status audit; `git status --short --branch` reports 0 commits ahead and 0 commits behind
+- Phase: alpha released; beta contract stabilization in progress
 
 ## Completion Map
 
-| Area             | Status                       | Evidence                                                                                                                                                         |
-| ---------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App API          | Implemented                  | `createApp`, `mount`, `use`, and app-level `provide` are exported from the package root and documented in `docs/api.md`.                                         |
-| Reactivity       | Implemented                  | `reactive`, `ref`, `computed`, `effect`, `watch`, and `watchEffect` are exported and covered by unit tests.                                                      |
-| Scheduler        | Implemented                  | `nextTick` and batched component updates are implemented with scheduler tests and integration coverage.                                                          |
-| Rendering        | Implemented                  | VNode rendering, DOM patching, Fragment support, keyed diffing, and move-path instrumentation exist in `src/renderer/**`.                                        |
-| Components       | Implemented                  | Function components, setup context, props, emit, slots, lifecycle hooks, provide/inject, and async components are documented and tested.                         |
-| Store            | Implemented                  | `createStore` combines reactive state, computed getters, and named actions, with DevTools action summaries.                                                      |
-| JSX              | Implemented                  | Package exports include `jsx-runtime` and `jsx-dev-runtime`, with JSX examples and typecheck coverage.                                                           |
-| SFC compiler     | Alpha implementation         | `.solace` parsing, template code generation, scoped style injection, and the Vite plugin live in `src/compiler/**` and `src/vite/index.ts`.                      |
-| Router           | Beta first slice             | Matcher, history adapters, query helpers, components, root exports, package export coverage, packed-consumer smoke, and `router-basic` e2e coverage exist.       |
-| DevTools subpath | Implemented as low-level API | `@italone/solace/devtools` exposes listener and recorder APIs, not a browser extension or UI.                                                                    |
-| Examples         | Implemented                  | Basic counter, todo app, large list, and performance benchmark examples exist under `examples/**`.                                                               |
-| Package output   | Implemented                  | Rollup builds ESM, CJS, and type declarations; package export tests and packed-consumer smoke tests validate public entries.                                     |
-| Documentation    | Mostly complete              | English and Chinese README files, API docs, package usage, release, performance, architecture, DevTools, contributing, and security docs exist.                  |
-| Release gates    | Implemented                  | `release:readiness`, `quality`, `release:check`, package smoke tests, benchmarks, and e2e scripts are configured; `release:check` starts with release readiness. |
+| Area             | Status                         | Evidence                                                                                                                                                                            |
+| ---------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App API          | Implemented                    | `createApp`, `mount`, `use`, and app-level `provide` are exported from the package root and documented in `docs/api.md`.                                                            |
+| Reactivity       | Implemented                    | `reactive`, `ref`, `computed`, `effect`, `watch`, and `watchEffect` are exported and covered by unit tests.                                                                         |
+| Scheduler        | Implemented                    | `nextTick` and batched component updates are implemented with scheduler tests and integration coverage.                                                                             |
+| Rendering        | Implemented                    | VNode rendering, DOM patching, Fragment support, keyed diffing, and move-path instrumentation exist in `src/renderer/**`.                                                           |
+| Components       | Implemented                    | Function components, setup context, props, emit, slots, lifecycle hooks, provide/inject, and async components are documented and tested.                                            |
+| Store            | Implemented                    | `createStore` combines reactive state, computed getters, and named actions, with DevTools action summaries.                                                                         |
+| JSX              | Implemented                    | Package exports include `jsx-runtime` and `jsx-dev-runtime`, with JSX examples and typecheck coverage.                                                                              |
+| SFC compiler     | Alpha public contract narrowed | `.solace` parsing, template code generation, scoped style injection, `@italone/solace/sfc`, and `@italone/solace/vite` are documented and covered by package-boundary tests.        |
+| Router           | Beta first slice stabilized    | Matcher, history adapters, query helpers, components, root exports, deferred API boundaries, package export coverage, packed-consumer smoke, and `router-basic` e2e coverage exist. |
+| DevTools subpath | Implemented as low-level API   | `@italone/solace/devtools` exposes listener and recorder APIs, not a browser extension or UI.                                                                                       |
+| Examples         | Implemented                    | Basic counter, todo app, large list, and performance benchmark examples exist under `examples/**`.                                                                                  |
+| Package output   | Implemented                    | Rollup builds ESM, CJS, and type declarations; package export tests and packed-consumer smoke tests validate public entries.                                                        |
+| Documentation    | Mostly complete                | English and Chinese README files, API docs, package usage, release, performance, architecture, DevTools, contributing, and security docs exist.                                     |
+| Release gates    | Implemented                    | `release:readiness`, `quality`, `release:check`, package smoke tests, benchmarks, and e2e scripts are configured; `release:check` starts with release readiness.                    |
 
 ## Validation Coverage
 
@@ -55,7 +55,7 @@ The repository includes these validation layers:
 - Browser e2e tests: `pnpm test:e2e`
 - Full local gate: `pnpm release:check`, which includes `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e`
 
-Recent local release checks have covered the full gate, including package smoke, coverage, browser benchmark, and e2e. Run the commands again before any future completion, merge, or release claim.
+The 2026-07-27 local release check covered the full gate, including release readiness, quality, coverage, package smoke, jsdom benchmark, Chromium production browser benchmark, and e2e. Run the commands again before any future completion, merge, or release claim.
 
 ## Public API Boundary
 
@@ -84,8 +84,8 @@ The alpha compatibility promise applies to documented public entries only. Inter
 
 Solace intentionally does not yet include:
 
-- A stable template/SFC compiler contract. The current `.solace` compiler and Vite plugin are alpha implementation surfaces and still need documentation, API review, and compatibility hardening.
-- A full first-party router contract. The current beta router covers static routes, dynamic params, wildcard fallback routes, query strings, web/hash history, `RouterLink`, `RouterView`, and composition helpers, but nested routes, guards, redirects, lazy route components, scroll behavior, SSR/hydration integration, auth, and permission routing remain deferred.
+- A stable template/SFC compiler contract beyond the current narrow alpha surface. The current `.solace` compiler and Vite plugin are documented for one `<template>`, optional `<script>`, optional `<style>`, Vite transform diagnostics, and `map: null`; syntax expansion remains deferred.
+- A full first-party router contract. The current beta router covers static routes, dynamic params, wildcard fallback routes, query strings, web/hash history, `RouterLink`, `RouterView`, and composition helpers, but nested routes, guards, redirects, lazy route components, scroll behavior, memory history, SSR/hydration integration, auth, and permission routing remain deferred.
 - SSR, SSG, streaming rendering, or hydration.
 - A first-party UI component library.
 - A browser extension DevTools panel.
@@ -108,9 +108,9 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Recommended Next Work
 
-1. **Retry synchronizing the release branch with `origin/main`** once GitHub connectivity is available, or explicitly accept a local-only release-preparation state before the next publish decision.
-2. **Stabilize the public API surface**, including the alpha `.solace` compiler and Vite plugin contract plus the beta router before they are promoted beyond beta.
-3. **Keep public API gates mandatory**: `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e` must run for public API changes.
-4. **Collect benchmark history** for jsdom and browser scenarios before making performance claims; use `--min-browser-count` and `--min-jsdom-count` when a trend window is required.
+1. **Keep `main` synchronized with `origin/main`** before publish decisions; re-run `git status --short --branch` because this document records only the 2026-07-27 audit state.
+2. **Continue stabilizing the SFC/Vite contract without syntax expansion**: keep the public surface limited to `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, and the documented alpha `.solace` block model.
+3. **Continue narrowing the router beta API without adding deferred features**: keep nested routes, guards, redirects, lazy route components, scroll behavior, memory history, SSR/hydration integration, auth, and permissions out of the beta slice until separately designed.
+4. **Keep public API gates mandatory**: `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e` must run for public API changes.
 5. **Plan the next phase** from `docs/roadmap.md`: SSR/SSG/hydration first, then browser DevTools extension UI, then production adoption guidance.
-6. **Update `package.json` metadata** and READMEs as the project matures.
+6. **Collect benchmark history** for jsdom and browser scenarios before making performance claims; use `--min-browser-count` and `--min-jsdom-count` when a trend window is required.
