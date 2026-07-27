@@ -1,0 +1,39 @@
+import { describe, expect, it } from "vitest";
+
+import { createApp, h, inject, nextTick, provide, ref } from "../../src";
+import { renderToString } from "../../src/server";
+
+describe("SSR hydration integration", () => {
+  it("renders HTML on the server and hydrates browser behavior", async () => {
+    const count = ref(0);
+    const App = () => h("button", { onClick: () => count.value++ }, `count: ${count.value}`);
+    const server = renderToString(h(App));
+    const container = document.createElement("div");
+    container.innerHTML = server.html;
+    const button = container.querySelector("button");
+
+    createApp(App).hydrate(container);
+    container.querySelector("button")?.click();
+    await nextTick();
+
+    expect(server.styles).toEqual([]);
+    expect(container.querySelector("button")).toBe(button);
+    expect(container.innerHTML).toBe("<button>count: 1</button>");
+  });
+
+  it("preserves app provide and inject during hydration", () => {
+    const ThemeKey = Symbol("theme");
+    const Child = () => h("span", null, String(inject(ThemeKey, "light")));
+    const App = () => {
+      provide(ThemeKey, "dark");
+      return h(Child);
+    };
+    const server = renderToString(h(App));
+    const container = document.createElement("div");
+    container.innerHTML = server.html;
+
+    createApp(App).hydrate(container);
+
+    expect(container.innerHTML).toBe("<span>dark</span>");
+  });
+});
