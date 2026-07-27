@@ -32,7 +32,7 @@ Solace 当前处于早期 alpha runtime 阶段。仓库功能可运行，并已�
 
 ## Alpha 范围
 
-Solace 当前适合用于学习小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 alpha 不包含 compiler、router、SSR/SSG runtime、hydration、一方 UI 组件、浏览器扩展 DevTools，也不为内部模块提供兼容性承诺。
+Solace 当前适合用于学习小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 alpha 已包含 alpha `.solace` compiler、`@italone/solace/vite` plugin 和 beta 一方 router slice；它还不包含 SSR/SSG runtime、hydration、一方 UI 组件、浏览器扩展 DevTools，也不为内部模块提供兼容性承诺。
 
 ## 快速开始
 

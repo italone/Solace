@@ -32,7 +32,7 @@ See [docs/project-status.md](./docs/project-status.md) for the current completio
 
 ## Alpha Scope
 
-Solace is suitable today for studying a compact frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current alpha does not include a compiler, router, SSR/SSG runtime, hydration, first-party UI components, browser extension DevTools, or a compatibility guarantee for internal modules.
+Solace is suitable today for studying a compact frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current alpha includes an alpha `.solace` compiler, `@italone/solace/vite` plugin, and beta first-party router slice; it does not yet include SSR/SSG runtime, hydration, first-party UI components, browser extension DevTools, or a compatibility guarantee for internal modules.
 
 ## Quick Start
 
