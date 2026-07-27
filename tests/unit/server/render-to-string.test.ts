@@ -1,14 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  Fragment,
-  h,
-  inject,
-  onMounted,
-  onUnmounted,
-  onUpdated,
-  provide,
-} from "../../../src";
+import { Fragment, h, inject, onMounted, onUnmounted, onUpdated, provide } from "../../../src";
 import { renderToString } from "../../../src/server";
 
 describe("renderToString", () => {
@@ -16,10 +8,7 @@ describe("renderToString", () => {
     const Message = () => h("strong", { class: "label" }, "hello");
 
     const result = renderToString(
-      h(Fragment, null, [
-        h("p", { id: "intro", "data-active": true }, "count < 1"),
-        h(Message),
-      ]),
+      h(Fragment, null, [h("p", { id: "intro", "data-active": true }, "count < 1"), h(Message)]),
     );
 
     expect(result).toEqual({
@@ -44,9 +33,7 @@ describe("renderToString", () => {
       ),
     );
 
-    expect(result.html).toBe(
-      '<button title="5 &gt; &quot;4&quot;">Save &amp; continue</button>',
-    );
+    expect(result.html).toBe('<button title="5 &gt; &quot;4&quot;">Save &amp; continue</button>');
   });
 
   it("rejects unsafe element and attribute names", () => {
