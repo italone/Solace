@@ -24,6 +24,22 @@ describe("package exports", () => {
     expect(existsSync(resolve(root, "dist/sfc.d.ts"))).toBe(true);
   });
 
+  it("keeps package exports limited to documented public entries", () => {
+    const packageJson = require(resolve(root, "package.json")) as {
+      exports: Record<string, unknown>;
+    };
+
+    expect(Object.keys(packageJson.exports).sort()).toEqual([
+      ".",
+      "./devtools",
+      "./jsx-dev-runtime",
+      "./jsx-runtime",
+      "./package.json",
+      "./sfc",
+      "./vite",
+    ]);
+  });
+
   it("does not publish production sourcemaps", () => {
     const sourcemaps = readdirSync(resolve(root, "dist"))
       .filter((entry) => entry.endsWith(".map"))
@@ -63,6 +79,10 @@ describe("package exports", () => {
       watch: expect.any(Function),
       watchEffect: expect.any(Function),
     });
+    expect(api).not.toHaveProperty("createMemoryHistory");
+    expect(api).not.toHaveProperty("NavigationGuard");
+    expect(api).not.toHaveProperty("RouteMeta");
+    expect(api).not.toHaveProperty("createSSRRouter");
   });
 
   it("does not expose internal runtime helpers from the package root", async () => {
