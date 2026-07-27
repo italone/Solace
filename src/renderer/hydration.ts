@@ -82,6 +82,7 @@ function hydrateComponent(
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
 ): Node | null {
+  const updateContainer = node.parentNode;
   const instance = createComponentInstance(vnode, parentComponent, appProvides);
   vnode.component = instance;
   setupComponent(instance);
@@ -91,36 +92,45 @@ function hydrateComponent(
   const next = hydrateVNode(subTree, node, instance, instance.appProvides);
   vnode.el = subTree.el;
   instance.isMounted = true;
-  setupHydratedComponentUpdate(instance);
+  clearLifecycleHooks(instance);
+  setupHydratedComponentUpdate(instance, updateContainer);
 
   return next;
 }
 
-function setupHydratedComponentUpdate(instance: ComponentInstance): void {
-  let collectingInitialDependencies = true;
+function setupHydratedComponentUpdate(
+  instance: ComponentInstance,
+  updateContainer: Node | null,
+): void {
+  let hasCollectedHydrationDependencies = false;
   const componentUpdate = (): void => {
     try {
       if (instance.isUnmounted) {
         return;
       }
 
-      const nextTree = instance.render();
-      const previousTree = instance.subTree;
-      const container = previousTree?.el?.parentNode;
+      if (!hasCollectedHydrationDependencies) {
+        instance.render();
+        hasCollectedHydrationDependencies = true;
+        return;
+      }
 
-      if (previousTree !== null && container !== null) {
-        patch(previousTree, nextTree, container, null, instance, instance.appProvides);
+      const previousTree = instance.subTree;
+      const nextTree = instance.render();
+
+      if (previousTree !== null && updateContainer !== null) {
+        patch(previousTree, nextTree, updateContainer, null, instance, instance.appProvides);
       }
 
       instance.subTree = nextTree;
       instance.vnode.el = nextTree.el;
+      clearLifecycleHooks(instance);
     } finally {
       instance.isUpdateQueued = false;
-      collectingInitialDependencies = false;
     }
   };
   const reactiveEffect = new ReactiveEffect(componentUpdate, () => {
-    if (collectingInitialDependencies || instance.update === null || instance.isUpdateQueued) {
+    if (!hasCollectedHydrationDependencies || instance.update === null || instance.isUpdateQueued) {
       return;
     }
 
@@ -131,6 +141,12 @@ function setupHydratedComponentUpdate(instance: ComponentInstance): void {
   instance.effect = reactiveEffect;
   instance.update = reactiveEffect.run.bind(reactiveEffect);
   instance.update();
+}
+
+function clearLifecycleHooks(instance: ComponentInstance): void {
+  instance.mounted.length = 0;
+  instance.updated.length = 0;
+  instance.unmounted.length = 0;
 }
 
 function hydrateFragment(
