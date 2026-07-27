@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -73,5 +73,22 @@ describe("release readiness check CLI", () => {
     expect(stderr).toBe("");
     expect(stdout).toContain("release readiness check passed");
     expect(stdout).toContain("git synchronization: skipped");
+  });
+
+  test("keeps release:check ordered around mandatory public API gates", async () => {
+    const packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
+      scripts?: Record<string, string>;
+    };
+    const releaseCheck = packageJson.scripts?.["release:check"];
+
+    expect(releaseCheck?.split(" && ")).toEqual([
+      "pnpm release:readiness",
+      "pnpm quality",
+      "pnpm test:coverage",
+      "pnpm package:smoke",
+      "pnpm benchmark",
+      "pnpm benchmark:browser",
+      "pnpm test:e2e",
+    ]);
   });
 });
