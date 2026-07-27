@@ -15,10 +15,9 @@ Current repository state:
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: local `main` contains unpublished SSR/hydration implementation commits during the
-  2026-07-27 checkpoint; push and re-run `git status --short --branch` before release or publish
-  decisions
-- Phase: alpha released; beta contract stabilization plus SSR/hydration minimum loop in progress
+- Remote state: local `main` is synchronized with `origin/main` as of the 2026-07-27
+  SSR/hydration checkpoint; re-run `git status --short --branch` before release or publish decisions
+- Phase: alpha released; beta contract stabilization plus SSR/hydration minimum loop implemented
 
 ## Completion Map
 

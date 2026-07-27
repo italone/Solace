@@ -14,10 +14,9 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - 本地 package 版本：`0.0.3`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
-- 本地分支状态：截至 2026-07-27 SSR/hydration 实现 checkpoint，本地 `main` 包含尚未
-  push 的 SSR/hydration 实现提交；发布或 publish 决策前需要先 push，并重新运行
-  `git status --short --branch`
-- 发布阶段：alpha 已发布；beta 契约稳定与 SSR/hydration minimum loop 正在推进
+- 本地分支状态：截至 2026-07-27 SSR/hydration checkpoint，本地 `main` 已与
+  `origin/main` 同步；发布或 publish 决策前仍需重新运行 `git status --short --branch`
+- 发布阶段：alpha 已发布；beta 契约稳定与 SSR/hydration minimum loop 已实现
 
 ## 完成度映射
 
