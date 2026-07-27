@@ -67,7 +67,7 @@ try {
 import type { AsyncComponentOptions, ComponentSetupContext, Plugin, RouteLocationRaw, RouterHistory, StoreContext, StoreGetterContext } from "@italone/solace";
 import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtools";
 import type { DevtoolsEvent } from "@italone/solace/devtools";
-import { renderToString } from "@italone/solace/server";
+import { generateStaticSite, renderToString } from "@italone/solace/server";
 import solacePlugin, { solacePlugin as namedSolacePlugin } from "@italone/solace/vite";
 
 const state = reactive({ count: 0 });
@@ -108,6 +108,16 @@ if (vitePlugin.name !== "solace-sfc" || namedVitePlugin.name !== "solace-sfc") {
 const serverRendered = renderToString(h("p", null, "server"));
 if (serverRendered.html !== "<p>server</p>" || serverRendered.styles.length !== 0) {
   throw new Error("server rendering export mismatch");
+}
+const staticSite = generateStaticSite({
+  routes: [{ path: "/ssg", source: h("p", null, "static") }],
+});
+if (
+  staticSite.pages[0].path !== "/ssg" ||
+  staticSite.pages[0].html !== "<p>static</p>" ||
+  staticSite.pages[0].body !== "<p>static</p>"
+) {
+  throw new Error("static site generation export mismatch");
 }
 
 const store = createStore({

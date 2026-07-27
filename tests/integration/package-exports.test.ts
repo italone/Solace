@@ -160,7 +160,8 @@ describe("package exports", () => {
   it("exports the public server rendering subpath", async () => {
     const server = await import("@italone/solace/server");
 
-    expect(Object.keys(server).sort()).toEqual(["renderToString"]);
+    expect(Object.keys(server).sort()).toEqual(["generateStaticSite", "renderToString"]);
+    expect(server.generateStaticSite).toEqual(expect.any(Function));
     expect(server.renderToString).toEqual(expect.any(Function));
     expect(server).not.toHaveProperty("hydrate");
     expect(server).not.toHaveProperty("patch");
@@ -202,7 +203,8 @@ describe("package exports", () => {
     expect(vite.solacePlugin).toEqual(expect.any(Function));
     expect(Object.keys(vite).sort()).toEqual(["default", "solacePlugin"]);
     expect(Object.keys(sfc)).toEqual([]);
-    expect(Object.keys(server).sort()).toEqual(["renderToString"]);
+    expect(Object.keys(server).sort()).toEqual(["generateStaticSite", "renderToString"]);
+    expect(server.generateStaticSite).toEqual(expect.any(Function));
     expect(server.renderToString).toEqual(expect.any(Function));
   });
 
