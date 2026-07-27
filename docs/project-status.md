@@ -15,8 +15,8 @@ Current repository state:
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: local `main` is 2 commits ahead of `origin/main` as of the 2026-07-27 SSG
-  design checkpoint because recent docs/spec commits have not pushed successfully; re-run
+- Remote state: local `main` is 5 commits ahead of `origin/main` as of the 2026-07-27 SSG core
+  checkpoint because recent docs/spec/code commits have not pushed successfully; re-run
   `git status --short --branch` before release or publish decisions
 - Phase: alpha released; beta contract stabilization plus SSR/hydration minimum loop implemented
 
@@ -90,7 +90,7 @@ Solace intentionally does not yet include:
 
 - A stable template/SFC compiler contract beyond the current narrow alpha surface. The current `.solace` compiler and Vite plugin are documented for one `<template>`, optional `<script>`, optional `<style>`, Vite transform diagnostics, and `map: null`; syntax expansion remains deferred.
 - A full first-party router contract. The current beta router covers static routes, dynamic params, wildcard fallback routes, query strings, web/hash history, `RouterLink`, `RouterView`, and composition helpers, but nested routes, guards, redirects, lazy route components, scroll behavior, memory history, SSR/hydration integration, auth, and permission routing remain deferred.
-- SSG, streaming SSR, async component SSR, production asset manifest integration, server-side style
+- Streaming SSR, async component SSR, production asset manifest integration, server-side style
   collection, and hydration mismatch recovery.
 - A first-party UI component library.
 - A browser extension DevTools panel.
@@ -114,11 +114,11 @@ These gaps should stay visible in promotional material so the project is positio
 ## Recommended Next Work
 
 1. **Keep `main` synchronized with `origin/main`** before publish decisions; this document records
-   that local `main` was 2 commits ahead after the 2026-07-27 SSG design checkpoint because GitHub
+   that local `main` was 5 commits ahead after the 2026-07-27 SSG core checkpoint because GitHub
    push attempts failed, and it must be rechecked with `git status --short --branch`.
 2. **Continue stabilizing the SFC/Vite contract without syntax expansion**: keep the public surface limited to `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, and the documented alpha `.solace` block model.
 3. **Continue narrowing the router beta API without adding deferred features**: keep nested routes, guards, redirects, lazy route components, scroll behavior, memory history, SSR/hydration integration, auth, and permissions out of the beta slice until separately designed.
 4. **Keep public API gates mandatory**: `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e` must run for public API changes.
-5. **Plan the next phase** from `docs/roadmap.md`: SSG and the remaining SSR/hydration hardening
-   first, then browser DevTools extension UI, then production adoption guidance.
+5. **Plan the next phase** from `docs/roadmap.md`: the remaining SSR/hydration hardening first,
+   then browser DevTools extension UI, then production adoption guidance.
 6. **Collect benchmark history** for jsdom and browser scenarios before making performance claims; use `--min-browser-count` and `--min-jsdom-count` when a trend window is required.

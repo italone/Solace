@@ -30,9 +30,7 @@ export interface GenerateStaticSiteResult {
   pages: StaticPage[];
 }
 
-export function generateStaticSite(
-  options: GenerateStaticSiteOptions,
-): GenerateStaticSiteResult {
+export function generateStaticSite(options: GenerateStaticSiteOptions): GenerateStaticSiteResult {
   assertValidRoutes(options.routes);
 
   const seenPaths = new Set<string>();

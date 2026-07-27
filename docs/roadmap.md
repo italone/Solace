@@ -17,8 +17,8 @@ Planned work, in rough priority order:
 4. **SSR / hydration minimum loop** — implemented through `@italone/solace/server` and
    `createApp(App).hydrate(container)` for synchronous VNode/component trees; continue hardening
    styles, mismatch policy, async boundaries, and integration tests before widening the contract.
-5. **SSG** — build static generation on top of `renderToString()` after the SSR/hydration minimum
-   loop is stable.
+5. **SSG core** — implemented on top of `renderToString()` via `generateStaticSite()`; keep
+   filesystem output, manifest integration, router-aware adapters, and style collection deferred.
 6. **Browser DevTools extension UI** — build a panel on top of the existing
    `@italone/solace/devtools` API after SSR/SSG/hydration planning is underway.
 7. **Production adoption guidance** — large-app patterns, performance tuning, migration notes.
