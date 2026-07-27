@@ -461,6 +461,19 @@ Public tooling entry points:
 
 - `@italone/solace/vite`
 
+## Vite Plugin Subpath
+
+Import the alpha `.solace` compiler plugin from `@italone/solace/vite`:
+
+```ts
+import solace, { solacePlugin } from "@italone/solace/vite";
+```
+
+Both the default export and named `solacePlugin` export create the same Vite plugin. The plugin
+transforms files ending in `.solace`, returns JavaScript component modules, and leaves all other file
+ids untouched. Compiler failures are reported as Vite transform errors that include the diagnostic
+code, filename, line, and column when available.
+
 ## DevTools Subpath
 
 DevTools APIs are intentionally not exported from the package root. Import them from

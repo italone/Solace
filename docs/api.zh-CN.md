@@ -435,6 +435,18 @@ Store 行为：
 
 - `@italone/solace/vite`
 
+## Vite Plugin 子路径
+
+从 `@italone/solace/vite` 导入 alpha `.solace` compiler plugin：
+
+```ts
+import solace, { solacePlugin } from "@italone/solace/vite";
+```
+
+默认导出和具名 `solacePlugin` 导出会创建同一个 Vite plugin。该 plugin 只转换以 `.solace`
+结尾的文件，返回 JavaScript component module，并保持其他文件 id 不变。Compiler failure 会作为
+Vite transform error 抛出，并在可用时包含 diagnostic code、filename、line 和 column。
+
 ## DevTools 子路径
 
 DevTools API 有意不从包根入口导出。请从 `@italone/solace/devtools` 导入。

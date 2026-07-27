@@ -317,6 +317,9 @@ Solace 包含多个 Vite 示例，用于覆盖不同运行时路径：
 | Basic counter | `pnpm dev`       | JSX runtime、响应式状态、DOM 事件              |
 | Todo app      | `pnpm dev:todo`  | 表单输入、keyed list 更新、checkbox 状态、删除 |
 | Large list    | `pnpm dev:large` | 10,000 个 keyed rows、定向 class/text 更新     |
+| SFC counter   | `pnpm dev:sfc`   | alpha `.solace` compiler 和 Vite plugin        |
+
+`examples/sfc-counter` 应用演示 alpha `.solace` compiler 和 Vite plugin。
 
 运行浏览器 e2e 覆盖：
 

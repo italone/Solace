@@ -70,6 +70,44 @@ const App = () => (
 createApp(App).mount(document.querySelector("#app") as Element);
 ```
 
+## Use `.solace` Single-File Components
+
+The `@italone/solace/vite` entry exposes the alpha Vite plugin for `.solace` files:
+
+```ts
+import { defineConfig } from "vite";
+import solace from "@italone/solace/vite";
+
+export default defineConfig({
+  plugins: [solace()],
+});
+```
+
+Current `.solace` files support one `<template>`, optional `<script>`, and optional `<style>` block.
+Template expressions use JSX-like braces and runtime identifiers from the script block:
+
+```solace
+<template>
+  <button class="counter" onClick={increment}>
+    count: {count.value}
+  </button>
+</template>
+
+<script>
+  import { ref } from "@italone/solace";
+  const count = ref(0);
+  const increment = () => count.value++;
+</script>
+
+<style>
+  .counter { color: blue; }
+</style>
+```
+
+The compiler is an alpha surface. It intentionally supports a small syntax subset, reports compile
+diagnostics through Vite transform errors, injects scoped styles at runtime, and currently returns
+`map: null` to match the package policy of not publishing production source maps.
+
 ## Public Entry Points
 
 - `@italone/solace`: core runtime APIs.

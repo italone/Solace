@@ -322,6 +322,9 @@ Solace includes Vite examples that exercise different runtime paths:
 | Basic counter | `pnpm dev`       | JSX runtime, reactive state, DOM events                  |
 | Todo app      | `pnpm dev:todo`  | form input, keyed list updates, checkbox state, deletion |
 | Large list    | `pnpm dev:large` | 10,000 keyed rows, targeted class/text updates           |
+| SFC counter   | `pnpm dev:sfc`   | alpha `.solace` compiler and Vite plugin                 |
+
+The `examples/sfc-counter` app demonstrates the alpha `.solace` compiler and Vite plugin.
 
 Run browser e2e coverage:
 

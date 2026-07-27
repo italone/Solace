@@ -1,6 +1,7 @@
 # Examples
 
-Solace includes three Vite examples that exercise the runtime from small state updates to larger keyed lists.
+Solace includes Vite examples that exercise the runtime from small state updates to larger keyed
+lists and alpha `.solace` single-file components.
 
 ## Basic Counter
 
@@ -58,6 +59,24 @@ Coverage:
 - A targeted state update from row 1 to row 5000.
 
 The Playwright test `tests/e2e/large-list.spec.ts` verifies the list renders 10,000 rows and updates the selected row marker.
+
+## SFC Counter
+
+Run:
+
+```bash
+pnpm dev:sfc
+```
+
+Location: `examples/sfc-counter`
+
+Coverage:
+
+- Alpha `.solace` single-file component parsing.
+- `@italone/solace/vite` plugin integration.
+- Template expressions, script identifiers, and scoped style injection.
+
+The SFC example is covered by compiler, Vite plugin, package export, and packed-consumer smoke tests.
 
 ## E2E Validation
 
