@@ -67,6 +67,7 @@ try {
 import type { AsyncComponentOptions, ComponentSetupContext, Plugin, RouteLocationRaw, RouterHistory, StoreContext, StoreGetterContext } from "@italone/solace";
 import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtools";
 import type { DevtoolsEvent } from "@italone/solace/devtools";
+import { renderToString } from "@italone/solace/server";
 import solacePlugin, { solacePlugin as namedSolacePlugin } from "@italone/solace/vite";
 
 const state = reactive({ count: 0 });
@@ -103,6 +104,10 @@ const vitePlugin = solacePlugin();
 const namedVitePlugin = namedSolacePlugin();
 if (vitePlugin.name !== "solace-sfc" || namedVitePlugin.name !== "solace-sfc") {
   throw new Error("vite plugin export mismatch");
+}
+const serverRendered = renderToString(h("p", null, "server"));
+if (serverRendered.html !== "<p>server</p>" || serverRendered.styles.length !== 0) {
+  throw new Error("server rendering export mismatch");
 }
 
 const store = createStore({
@@ -235,7 +240,7 @@ export default {
     [
       "--input-type=module",
       "-e",
-      "const api = await import('@italone/solace'); const runtime = await import('@italone/solace/jsx-runtime'); const dev = await import('@italone/solace/jsx-dev-runtime'); const devtools = await import('@italone/solace/devtools'); const vite = await import('@italone/solace/vite'); if (!api.createApp || !api.createRouter || !api.createWebHistory || !api.RouterLink || !api.RouterView || !api.useRoute || !api.useRouter || !api.defineAsyncComponent || !api.defineComponent || !api.inject || !api.provide || !api.watchEffect || !runtime.jsx || !dev.jsxDEV || !devtools.createDevtoolsRecorder || !devtools.onDevtoolsEvent || devtools.emitDevtoolsEvent || !vite.solacePlugin) process.exit(1);",
+      "const api = await import('@italone/solace'); const runtime = await import('@italone/solace/jsx-runtime'); const dev = await import('@italone/solace/jsx-dev-runtime'); const devtools = await import('@italone/solace/devtools'); const server = await import('@italone/solace/server'); const vite = await import('@italone/solace/vite'); if (!api.createApp || !api.createRouter || !api.createWebHistory || !api.RouterLink || !api.RouterView || !api.useRoute || !api.useRouter || !api.defineAsyncComponent || !api.defineComponent || !api.inject || !api.provide || !api.watchEffect || !runtime.jsx || !dev.jsxDEV || !devtools.createDevtoolsRecorder || !devtools.onDevtoolsEvent || devtools.emitDevtoolsEvent || !server.renderToString || !vite.solacePlugin) process.exit(1);",
     ],
     consumerDir,
   );
@@ -243,7 +248,7 @@ export default {
     "node",
     [
       "-e",
-      "const api = require('@italone/solace'); const runtime = require('@italone/solace/jsx-runtime'); const dev = require('@italone/solace/jsx-dev-runtime'); const devtools = require('@italone/solace/devtools'); const vite = require('@italone/solace/vite'); if (!api.createApp || !api.createRouter || !api.createWebHistory || !api.RouterLink || !api.RouterView || !api.useRoute || !api.useRouter || !api.defineAsyncComponent || !api.defineComponent || !api.inject || !api.provide || !api.watchEffect || !runtime.jsx || !dev.jsxDEV || !devtools.createDevtoolsRecorder || !devtools.onDevtoolsEvent || devtools.emitDevtoolsEvent || !vite.solacePlugin) process.exit(1);",
+      "const api = require('@italone/solace'); const runtime = require('@italone/solace/jsx-runtime'); const dev = require('@italone/solace/jsx-dev-runtime'); const devtools = require('@italone/solace/devtools'); const server = require('@italone/solace/server'); const vite = require('@italone/solace/vite'); if (!api.createApp || !api.createRouter || !api.createWebHistory || !api.RouterLink || !api.RouterView || !api.useRoute || !api.useRouter || !api.defineAsyncComponent || !api.defineComponent || !api.inject || !api.provide || !api.watchEffect || !runtime.jsx || !dev.jsxDEV || !devtools.createDevtoolsRecorder || !devtools.onDevtoolsEvent || devtools.emitDevtoolsEvent || !server.renderToString || !vite.solacePlugin) process.exit(1);",
     ],
     consumerDir,
   );
