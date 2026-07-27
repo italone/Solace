@@ -1,10 +1,13 @@
 import { ReactiveEffect } from "../reactivity/effect";
 import { queueJob } from "../scheduler/scheduler";
 import type { Provides } from "../component/provide";
-import type { VNode } from "../vnode/vnode";
+import { h } from "../vnode/h";
+import type { ComponentType, VNode } from "../vnode/vnode";
 import { patch } from "./diff";
+import { hydrateVNode, SolaceHydrationError } from "./hydration";
 
 export type RenderSource = VNode | (() => VNode);
+export type HydrationSource = VNode | ComponentType;
 type RenderContainer = Element & {
   _solaceRenderEffect?: ReactiveEffect<void>;
   _solaceVNode?: VNode | null;
@@ -25,6 +28,44 @@ export function render(
   stopReactiveRender(renderContainer);
   renderVNode(source, renderContainer, appProvides);
 }
+
+export function hydrate(
+  source: HydrationSource,
+  container: Element,
+  appProvides: Provides | null = null,
+): void {
+  const renderContainer = container as RenderContainer;
+  const getVNode = (): VNode => normalizeHydrationSource(source);
+
+  stopReactiveRender(renderContainer);
+
+  let hydrated = false;
+  const update = (): void => {
+    const vnode = getVNode();
+    if (!hydrated) {
+      hydrateVNode(vnode, renderContainer.firstChild, null, appProvides);
+      renderContainer._solaceVNode = vnode;
+      hydrated = true;
+      return;
+    }
+
+    renderVNode(vnode, renderContainer, appProvides);
+  };
+  const reactiveEffect = new ReactiveEffect(update, () => {
+    queueJob(job);
+  });
+  const runner = reactiveEffect.run.bind(reactiveEffect);
+  const job = (): void => {
+    if (renderContainer._solaceRenderEffect === reactiveEffect) {
+      runner();
+    }
+  };
+
+  renderContainer._solaceRenderEffect = reactiveEffect;
+  runner();
+}
+
+export { SolaceHydrationError };
 
 function renderReactiveSource(
   source: () => VNode,
@@ -58,4 +99,8 @@ function stopReactiveRender(container: RenderContainer): void {
 function renderVNode(vnode: VNode, container: RenderContainer, appProvides: Provides | null): void {
   patch(container._solaceVNode ?? null, vnode, container, null, null, appProvides);
   container._solaceVNode = vnode;
+}
+
+function normalizeHydrationSource(source: HydrationSource): VNode {
+  return typeof source === "function" ? h(source) : source;
 }
