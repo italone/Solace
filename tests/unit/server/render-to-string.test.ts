@@ -35,6 +35,8 @@ describe("renderToString", () => {
         {
           title: '5 > "4"',
           disabled: false,
+          "data-empty": null,
+          "aria-label": undefined,
           onClick: () => undefined,
           key: "ignored",
         },
