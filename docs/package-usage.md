@@ -105,9 +105,12 @@ Template expressions use JSX-like braces and runtime identifiers from the script
 </style>
 ```
 
-The compiler is an alpha surface. It intentionally supports a small syntax subset, reports compile
-diagnostics through Vite transform errors, injects scoped styles at runtime, and currently returns
-`map: null` to match the package policy of not publishing production source maps.
+The public SFC contract is intentionally narrow: use `@italone/solace/vite` as the Vite plugin and
+`@italone/solace/sfc` as the TypeScript type shim for `.solace` imports. The compiler remains an
+alpha surface. It supports a small syntax subset, reports compile diagnostics through Vite transform
+errors, injects scoped styles at runtime, and currently returns `map: null` to match the package
+policy of not publishing production source maps. Parser internals, generated module shape, and
+scoped-style implementation details are not public compatibility targets.
 
 ## Use The Beta Router
 
@@ -152,6 +155,7 @@ routes, redirects, lazy-route contracts, scroll behavior, SSR, SSG, or hydration
 - `@italone/solace/jsx-runtime`: TypeScript automatic JSX runtime.
 - `@italone/solace/jsx-dev-runtime`: development JSX runtime used by Vite.
 - `@italone/solace/devtools`: low-level DevTools listener and recorder APIs.
+- `@italone/solace/sfc`: TypeScript type shim for `.solace` imports.
 - `@italone/solace/vite`: Vite plugin for alpha `.solace` single-file components.
 
 Do not import from `src/**`, `dist/**`, or internal runtime modules directly. Those paths are implementation details and are not part of the package compatibility contract.
@@ -172,7 +176,10 @@ For the full local release gate, run:
 pnpm release:check
 ```
 
-That command runs quality checks including format check, coverage thresholds, package consumer smoke, jsdom benchmark smoke, Chromium production browser benchmark, and browser e2e tests.
+That command runs release readiness, quality checks, coverage thresholds, package consumer smoke,
+jsdom benchmark smoke, Chromium production browser benchmark, and browser e2e tests. For public API
+changes, treat `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e` as mandatory
+gates even when you do not run the full release check.
 
 See `docs/release.md` for versioning and publish steps.
 

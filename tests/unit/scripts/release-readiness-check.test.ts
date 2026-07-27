@@ -9,6 +9,15 @@ import { describe, expect, test } from "vitest";
 const execFileAsync = promisify(execFile);
 
 describe("release readiness check CLI", () => {
+  test("reports mandatory public API gate commands", async () => {
+    const { stdout, stderr } = await execFileAsync("node", ["scripts/release-readiness-check.mjs"]);
+
+    expect(stderr).toBe("");
+    expect(stdout).toContain(
+      "public API gates: pnpm release:readiness, pnpm package:smoke, pnpm test:e2e",
+    );
+  });
+
   test("prints help for publishable and git synchronization options", async () => {
     const { stdout, stderr } = await execFileAsync("node", [
       "scripts/release-readiness-check.mjs",

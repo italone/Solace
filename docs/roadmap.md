@@ -11,11 +11,12 @@ The alpha runtime is feature-complete for its declared scope:
 
 Planned work, in rough priority order:
 
-1. **SFC compiler stabilization** — harden the current `.solace` compiler and `@italone/solace/vite` plugin with public docs, API review, source maps, diagnostics, and compatibility tests.
-2. **First-party router stabilization** — promote the current alpha router core only after public exports, package boundary tests, documentation, and app-level integration coverage are complete.
-3. **SSR / SSG / hydration** — add server-side rendering, static generation, and client hydration capabilities.
-4. **Browser DevTools extension UI** — build a panel on top of the existing `@italone/solace/devtools` API.
-5. **Production adoption guidance** — large-app patterns, performance tuning, migration notes.
+1. **SFC compiler stabilization** — keep the public contract limited to `@italone/solace/vite` and `@italone/solace/sfc`, then harden diagnostics, source-map policy, compatibility tests, and documented syntax before promoting the compiler beyond alpha.
+2. **Router beta stabilization** — keep the beta slice limited to static routes, dynamic params, wildcard fallback routes, query strings, web/hash history, `RouterLink`, `RouterView`, `useRoute`, and `useRouter`; defer nested routes, guards, redirects, lazy route components, scroll behavior, SSR/hydration integration, auth, and permissions.
+3. **Mandatory public API gates** — keep package export tests, packed-consumer smoke, browser e2e, and release readiness required for public API changes.
+4. **SSR / SSG / hydration** — add server-side rendering, static generation, and client hydration capabilities after the SFC and router contracts are stable.
+5. **Browser DevTools extension UI** — build a panel on top of the existing `@italone/solace/devtools` API after SSR/SSG/hydration planning is underway.
+6. **Production adoption guidance** — large-app patterns, performance tuning, migration notes.
 
 ## Out of Scope (for now)
 

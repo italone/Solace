@@ -32,6 +32,9 @@ requireScript("package:smoke");
 requireScript("release:check");
 requireScript("release:version");
 requireScript("release:publish");
+requireReleaseCheckCommand("pnpm release:readiness");
+requireReleaseCheckCommand("pnpm package:smoke");
+requireReleaseCheckCommand("pnpm test:e2e");
 requireReleaseCheckCommand("pnpm benchmark:browser");
 
 if (changesetConfig.access !== "public") {
@@ -88,6 +91,7 @@ if (failures.length > 0) {
   console.log(`package: ${packageJson.name}@${packageJson.version}`);
   console.log(`changeset access: ${changesetConfig.access}`);
   console.log(`mode: ${options.publishable ? "publishable" : "default"}`);
+  console.log("public API gates: pnpm release:readiness, pnpm package:smoke, pnpm test:e2e");
   if (options.publishable) {
     console.log(`git synchronization: ${gitSynchronization}`);
   }

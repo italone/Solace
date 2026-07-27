@@ -15,7 +15,16 @@ Run the full local gate before preparing a release:
 pnpm release:check
 ```
 
-This runs format check, typecheck, JSX dev typecheck, lint, default tests, package exports tests, coverage thresholds, package consumer smoke, jsdom benchmark smoke, Chromium production browser benchmark, and browser e2e tests. The package consumer smoke includes packed ESM/CJS import checks, TypeScript consumer checks, router public API checks, and a Vite production build that transforms a `.solace` single-file component through the packed `@italone/solace/vite` plugin.
+This runs release readiness, format check, typecheck, JSX dev typecheck, lint, default tests,
+package exports tests, coverage thresholds, package consumer smoke, jsdom benchmark smoke, Chromium
+production browser benchmark, and browser e2e tests. The package consumer smoke includes packed
+ESM/CJS import checks, TypeScript consumer checks, router public API checks, and a Vite production
+build that transforms a `.solace` single-file component through the packed `@italone/solace/vite`
+plugin.
+
+For public API changes, `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e` are
+mandatory gates. `pnpm release:check` includes them so release preparation and package-boundary
+drift are checked together.
 
 The GitHub Actions CI workflow keeps these checks split into named steps and also runs both benchmark commands: `pnpm benchmark` and `pnpm benchmark:browser`.
 

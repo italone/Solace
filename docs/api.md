@@ -39,22 +39,27 @@ Public TypeScript helper types include:
 
 Use Solace through the documented package entries only:
 
-| Entry                              | Stability | Purpose                                                    |
-| ---------------------------------- | --------- | ---------------------------------------------------------- |
-| `@italone/solace`                  | Public    | App, reactivity, rendering, components, scheduler, store   |
-| `@italone/solace/jsx-runtime`      | Public    | Automatic JSX runtime used by TypeScript and bundlers      |
-| `@italone/solace/jsx-dev-runtime`  | Public    | Development JSX runtime used by Vite and JSX dev tooling   |
-| `@italone/solace/devtools`         | Public    | Low-level listener and recorder APIs for tooling           |
-| `@italone/solace/vite`             | Public    | Vite plugin for alpha `.solace` single-file components     |
-| `src/**`, `dist/**`, deep subpaths | Private   | Internal implementation details, not compatibility targets |
+| Entry                              | Stability | Purpose                                                     |
+| ---------------------------------- | --------- | ----------------------------------------------------------- |
+| `@italone/solace`                  | Public    | App, reactivity, rendering, components, scheduler, store    |
+| `@italone/solace/jsx-runtime`      | Public    | Automatic JSX runtime used by TypeScript and bundlers       |
+| `@italone/solace/jsx-dev-runtime`  | Public    | Development JSX runtime used by Vite and JSX dev tooling    |
+| `@italone/solace/devtools`         | Public    | Low-level listener and recorder APIs for tooling            |
+| `@italone/solace/sfc`              | Public    | Type shim entry for `.solace` single-file component imports |
+| `@italone/solace/vite`             | Public    | Vite plugin for alpha `.solace` single-file components      |
+| `src/**`, `dist/**`, deep subpaths | Private   | Internal implementation details, not compatibility targets  |
 
 The alpha compatibility contract is intentionally narrow. Public entries should remain usable across
 patch releases, while internal modules, event emit helpers, scheduler queues, renderer diagnostics,
 component instances, and generated file layout can change without notice.
 
-The router exports in the package root are alpha APIs. They are documented for small SPA examples and
-package-consumer validation, but route guards, nested route records, scroll behavior, named routes,
-lazy route loading, SSR integration, and a long-term compatibility policy are beta work.
+The `.solace` compiler contract is currently limited to the documented Vite plugin and the
+`@italone/solace/sfc` type shim. The parser, generated JavaScript shape, scoped-style implementation,
+and internal compiler modules remain alpha implementation details.
+
+The router exports in the package root are beta APIs for small SPA examples. Route guards, nested
+route records, scroll behavior, named routes, lazy route loading, SSR integration, auth, permissions,
+and a long-term router compatibility policy remain deferred.
 
 Most applications should import from the root package. Use JSX subpaths only through `jsxImportSource`
 or bundler-generated imports. Use the DevTools subpath only when building instrumentation or examples

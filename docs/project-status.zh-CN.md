@@ -14,7 +14,7 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - 本地 package 版本：`0.0.3`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
-- 本地分支状态：发布决策前使用 `git status --short --branch` 重新确认
+- 本地分支状态：本地 `main` 领先 `origin/main` 10 个 commits；2026-07-27 本地推送 GitHub 失败，因为 `github.com:443` 无法连接
 - 发布阶段：当前工作流按要求跳过
 
 ## 完成度映射
@@ -34,7 +34,7 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 | 示例            | 已实现              | `examples/**` 下包含 basic counter、todo app、large list 和 performance benchmark 示例。                                                            |
 | 包产物          | 已实现              | Rollup 构建 ESM、CJS 和类型声明；package export tests 和 packed-consumer smoke tests 校验公开入口。                                                 |
 | 文档            | 基本完整            | 已有英文/中文 README、API、package usage、release、performance、architecture、DevTools、contributing 和 security 文档。                             |
-| 发布门禁        | 已实现              | 已配置 `release:readiness`、`quality`、`release:check`、package smoke、benchmark 和 e2e scripts。                                                   |
+| 发布门禁        | 已实现              | 已配置 `release:readiness`、`quality`、`release:check`、package smoke、benchmark 和 e2e scripts；`release:check` 会先运行 release readiness。       |
 
 ## 验证覆盖
 
@@ -52,7 +52,7 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - Chromium 生产构建浏览器 benchmark：`pnpm benchmark:browser`
 - benchmark history 质量门禁：`pnpm benchmark:history -- --min-browser-count <count> --min-jsdom-count <count>`
 - 浏览器 e2e：`pnpm test:e2e`
-- 完整本地门禁：`pnpm release:check`
+- 完整本地门禁：`pnpm release:check`，其中包含 `pnpm release:readiness`、`pnpm package:smoke` 和 `pnpm test:e2e`
 
 最近的本地 release checks 已覆盖完整门禁，包括 package smoke、coverage、browser benchmark 和 e2e。后续在声明完成、合并或发布前，需要重新运行对应命令。
 
@@ -111,9 +111,9 @@ Solace 当前有意不包含：
 
 ## 建议后续工作
 
-1. 将发布分支同步到 `origin/main`，或在下一次发布决策前明确记录 local-only release-preparation 状态。
+1. GitHub 连接恢复后重新尝试将发布分支同步到 `origin/main`，或在下一次发布决策前明确接受 local-only release-preparation 状态。
 2. 保持 README、API、package usage 和 release docs 与真实 npm version、本地分支状态一致。
-3. 稳定公共 API 面，包括 alpha 阶段的 `.solace` compiler、`@italone/solace/vite` plugin 入口和 beta router。
+3. 稳定公共 API 面，包括 alpha 阶段的 `.solace` compiler 与 Vite plugin 契约，以及 beta router。
 4. 在作出性能宣称前，继续收集 jsdom 与 browser benchmark history；需要趋势窗口时使用 `--min-browser-count` 和 `--min-jsdom-count`。
-5. 对所有公共 API 变更保持 package export tests 和 packed-consumer smoke tests 必跑。
+5. 对所有公共 API 变更保持公共 API 门禁必跑：`pnpm release:readiness`、`pnpm package:smoke` 和 `pnpm test:e2e`。
 6. 只有在真正准备 npm 版本时才添加 release notes，避免混淆未发布分支状态和 npm package 状态。
