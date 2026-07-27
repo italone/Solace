@@ -9,13 +9,15 @@ export class SolaceCompileError extends Error {
   readonly code: SolaceCompileErrorOptions["code"];
   readonly filename: string | undefined;
   readonly loc: SourceLocation | undefined;
+  readonly cause: unknown;
 
   constructor(options: SolaceCompileErrorOptions) {
-    super(options.message, { cause: options.cause });
+    super(options.message);
     this.name = "SolaceCompileError";
     this.code = options.code;
     this.filename = options.filename;
     this.loc = options.loc;
+    this.cause = options.cause;
   }
 }
 
