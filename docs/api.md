@@ -55,7 +55,8 @@ component instances, and generated file layout can change without notice.
 
 The `.solace` compiler contract is currently limited to the documented Vite plugin and the
 `@italone/solace/sfc` type shim. The parser, generated JavaScript shape, scoped-style implementation,
-and internal compiler modules remain alpha implementation details.
+and internal compiler modules remain alpha implementation details. Do not import compiler or router
+deep subpaths such as `@italone/solace/compiler`, `@italone/solace/router`, or `@italone/solace/dist/**`.
 
 The router exports in the package root are beta APIs for small SPA examples. Route guards, nested
 route records, scroll behavior, named routes, lazy route loading, SSR integration, auth, permissions,
@@ -549,7 +550,8 @@ import solace, { solacePlugin } from "@italone/solace/vite";
 Both the default export and named `solacePlugin` export create the same Vite plugin. The plugin
 transforms files ending in `.solace`, returns JavaScript component modules, and leaves all other file
 ids untouched. Compiler failures are reported as Vite transform errors that include the diagnostic
-code, filename, line, and column when available.
+code, filename, line, and column when available. This subpath intentionally exports only `default`
+and `solacePlugin`; compiler helpers remain private.
 
 ## DevTools Subpath
 

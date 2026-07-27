@@ -47,7 +47,7 @@
 
 alpha 阶段的兼容性契约有意保持较窄。公开入口应在 patch release 之间保持可用；内部模块、event emit helpers、scheduler 队列、renderer diagnostics、组件实例和生成文件布局可能在不额外通知的情况下变化。
 
-`.solace` compiler 契约当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口。parser、生成 JavaScript 形状、scoped-style 实现和内部 compiler modules 仍属于 alpha 实现细节。
+`.solace` compiler 契约当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口。parser、生成 JavaScript 形状、scoped-style 实现和内部 compiler modules 仍属于 alpha 实现细节。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
 
 包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。route guards、嵌套路由记录、scroll behavior、具名路由、懒加载路由、SSR 集成、auth、permissions 和长期 router 兼容策略仍被推迟。
 
@@ -510,7 +510,8 @@ import solace, { solacePlugin } from "@italone/solace/vite";
 
 默认导出和具名 `solacePlugin` 导出会创建同一个 Vite plugin。该 plugin 只转换以 `.solace`
 结尾的文件，返回 JavaScript component module，并保持其他文件 id 不变。Compiler failure 会作为
-Vite transform error 抛出，并在可用时包含 diagnostic code、filename、line 和 column。
+Vite transform error 抛出，并在可用时包含 diagnostic code、filename、line 和 column。该子路径
+有意只导出 `default` 和 `solacePlugin`；compiler helpers 继续保持私有。
 
 ## DevTools 子路径
 

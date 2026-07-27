@@ -110,7 +110,10 @@ The public SFC contract is intentionally narrow: use `@italone/solace/vite` as t
 alpha surface. It supports a small syntax subset, reports compile diagnostics through Vite transform
 errors, injects scoped styles at runtime, and currently returns `map: null` to match the package
 policy of not publishing production source maps. Parser internals, generated module shape, and
-scoped-style implementation details are not public compatibility targets.
+scoped-style implementation details are not public compatibility targets. The `@italone/solace/vite`
+subpath intentionally exports only `default` and `solacePlugin`; do not import compiler helpers or
+deep subpaths such as `@italone/solace/compiler`, `@italone/solace/router`, or
+`@italone/solace/dist/**`.
 
 ## Use The Beta Router
 

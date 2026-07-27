@@ -134,10 +134,17 @@ describe("package exports", () => {
   it("exports the public Vite plugin subpath", async () => {
     const vite = await import("@italone/solace/vite");
 
+    expect(Object.keys(vite).sort()).toEqual(["default", "solacePlugin"]);
     expect(vite).toMatchObject({
       default: expect.any(Function),
       solacePlugin: expect.any(Function),
     });
+    expect(vite).not.toHaveProperty("compile");
+    expect(vite).not.toHaveProperty("SolaceCompileError");
+    expect(vite).not.toHaveProperty("parseSFC");
+    expect(vite).not.toHaveProperty("parseTemplate");
+    expect(vite).not.toHaveProperty("generateRender");
+    expect(vite).not.toHaveProperty("scopeStyle");
   });
 
   it("exports the SFC type shim subpath", async () => {
@@ -179,7 +186,24 @@ describe("package exports", () => {
     expect(devtools.serializeDevtoolsEvent).toBeUndefined();
     expect(vite.default).toEqual(expect.any(Function));
     expect(vite.solacePlugin).toEqual(expect.any(Function));
+    expect(Object.keys(vite).sort()).toEqual(["default", "solacePlugin"]);
     expect(Object.keys(sfc)).toEqual([]);
+  });
+
+  it("rejects private package subpaths", async () => {
+    const privateSubpaths = [
+      "@italone/solace/compiler",
+      "@italone/solace/router",
+      "@italone/solace/dist/index.js",
+      "@italone/solace/dist/vite.js",
+    ];
+
+    for (const subpath of privateSubpaths) {
+      await expect(import(subpath)).rejects.toThrow(
+        /Package subpath|specifier|Cannot find|not exported/,
+      );
+      expect(() => require(subpath)).toThrow(/Package subpath|specifier|Cannot find|not exported/);
+    }
   });
 
   it("mounts a component with createApp", async () => {
