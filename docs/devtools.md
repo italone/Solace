@@ -13,6 +13,8 @@ lifecycle, private runtime boundary, and safe constraints for future instrumenta
 ## Non-Goals
 
 - No browser extension, custom panel, network transport, storage persistence, or automatic telemetry in the current phase.
+- No SSR/SSG/hydration visualization until those runtime boundaries and event payloads are designed
+  separately.
 
 ## Public API
 
@@ -136,10 +138,13 @@ control but out of package artifacts, so consumers do not accidentally couple to
 14. **Public package boundary guard**: package exports tests verify DevTools internals are not available from the package root.
 15. **Public DevTools subpath**: `@italone/solace/devtools` exposes listener and recorder APIs without internal emit helpers.
 16. **Production artifact boundary**: package builds do not publish JavaScript sourcemaps that expose internal wiring.
-17. **Inspector UI or browser extension**: build only after event payloads prove stable in examples.
+17. **Inspector UI or browser extension**: build only after event payloads prove stable in examples
+    and SSR/SSG/hydration boundaries are stable enough for the UI to avoid guessing about server
+    render or hydration state.
 
 ## Recommendation
 
 Do not implement a DevTools UI yet. The public `@italone/solace/devtools` subpath is a low-level integration surface for examples,
 tests, and future inspector tooling. Build a browser extension or custom panel only after more payloads prove stable in
-real examples.
+real examples and after the SSR/SSG/hydration boundary work described in
+`docs/superpowers/specs/2026-07-28-ssr-ssg-hydration-next-phase-design.md`.

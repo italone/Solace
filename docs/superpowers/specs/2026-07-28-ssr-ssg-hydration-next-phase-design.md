@@ -8,10 +8,10 @@ come before any browser DevTools extension UI work.
 
 ## Current Baseline
 
-The current local release baseline is the 18 local commits ahead of `origin/main` after the SSR style
-collection checkpoint. `git fetch origin main` succeeded on 2026-07-28 and confirmed that the remote
-was not ahead. `git push origin main` then failed because the environment could not connect to
-`github.com:443`, so these 18 local commits are the working release baseline until push succeeds.
+The current local tracking ref shows `main` 1 commit ahead of `origin/main`
+(`803ffdf docs: design devtools extension ui` on top of `3b8c902`). A fresh
+`git fetch origin main` on 2026-07-28 failed because the environment could not connect to
+`github.com:443`, so the true remote state must be rechecked before any release or publish claim.
 
 Implemented baseline:
 
