@@ -65,7 +65,7 @@ describe("useStyle", () => {
     expect(document.head.querySelectorAll('style[data-s-id="abc123"]')).toHaveLength(1);
   });
 
-  it("dedupes server-escaped style text during hydrate", () => {
+  it("dedupes server-rendered raw style text during hydrate", () => {
     const css = '.counter::before { content: "<&>"; }';
     const App = () => {
       useStyle("abc123", css);
@@ -111,6 +111,23 @@ describe("useStyle", () => {
     expect(document.head.querySelectorAll("script")).toHaveLength(0);
     expect(document.head.querySelector('style[data-s-id="abc123"]')?.textContent).toContain(
       "<\\/style>",
+    );
+    expect(() => createApp(App).hydrate(container)).not.toThrow();
+  });
+
+  it("preserves style end tag casing when neutralizing server style text", () => {
+    const css = '.counter::before { content: "</STYLE>"; }';
+    const App = () => {
+      useStyle("abc123", css);
+      return h("button", { class: "counter" }, "count: 0");
+    };
+    const serverRendered = renderToString(h(App));
+    const container = document.createElement("div");
+    document.head.innerHTML = serverRendered.styles.join("");
+    container.innerHTML = serverRendered.html;
+
+    expect(document.head.querySelector('style[data-s-id="abc123"]')?.textContent).toContain(
+      "<\\/STYLE>",
     );
     expect(() => createApp(App).hydrate(container)).not.toThrow();
   });

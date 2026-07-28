@@ -102,7 +102,7 @@ function serializeStyleTag(scopeId: string, css: string): string {
 }
 
 function escapeStyleText(css: string): string {
-  return css.replace(/<\/style/gi, "<\\/style");
+  return css.replace(/<\/(style)/gi, (_match, tagName: string) => `<\\/${tagName}`);
 }
 
 function throwStyleConflict(scopeId: string): never {
