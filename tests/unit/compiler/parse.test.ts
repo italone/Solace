@@ -47,6 +47,15 @@ describe("parseSFC", () => {
       parseSFC("<template><p>one</p></template><style>.one {}</style><style>.two {}</style>"),
     ).toThrow("Duplicate <style> block");
   });
+
+  it("rejects block attributes and custom top-level blocks", () => {
+    expect(() => parseSFC('<template lang="html"><p>one</p></template>')).toThrow(
+      "Attributes on <template> blocks are not supported",
+    );
+    expect(() => parseSFC("<template><p>one</p></template><i18n>{}</i18n>")).toThrow(
+      "Unsupported top-level <i18n> block",
+    );
+  });
 });
 
 describe("parseTemplate", () => {

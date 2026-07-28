@@ -32,6 +32,7 @@ function createParseError(
 }
 
 export function parseSFC(source: string): SFCDescriptor {
+  assertTopLevelBlockContract(source);
   const template = extractBlock(source, "template");
   const script = extractBlock(source, "script");
   const style = extractBlock(source, "style");
@@ -44,6 +45,42 @@ export function parseSFC(source: string): SFCDescriptor {
     style: style?.content,
     styleOffset: style?.offset,
   };
+}
+
+function assertTopLevelBlockContract(source: string): void {
+  const allowedBlocks = new Set(["template", "script", "style"]);
+  const blockPattern = /<([A-Za-z][\w-]*)([^>]*)>/g;
+  let skipUntil = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = blockPattern.exec(source)) !== null) {
+    if (match.index < skipUntil) {
+      continue;
+    }
+
+    const tag = match[1];
+    const attributes = match[2].trim();
+    if (!allowedBlocks.has(tag)) {
+      throw createParseError(source, match.index, `Unsupported top-level <${tag}> block`);
+    }
+
+    if (attributes !== "") {
+      throw createParseError(
+        source,
+        match.index,
+        `Attributes on <${tag}> blocks are not supported`,
+      );
+    }
+
+    const close = `</${tag}>`;
+    const closeIndex = source.indexOf(close, match.index + match[0].length);
+    if (closeIndex === -1) {
+      return;
+    }
+
+    skipUntil = closeIndex + close.length;
+    blockPattern.lastIndex = skipUntil;
+  }
 }
 
 function extractBlock(

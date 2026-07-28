@@ -44,6 +44,7 @@ SFC/Vite stabilization stays focused on the existing contract:
 - Runtime style registration through `useStyle()`.
 - No public Vite plugin options yet; passing options is rejected instead of implying syntax
   expansion.
+- SFC block attributes and custom top-level blocks are rejected until separately designed.
 
 Router stabilization stays focused on the existing beta slice:
 
@@ -54,6 +55,7 @@ Router stabilization stays focused on the existing beta slice:
 - Web/hash history.
 - `RouterLink`, `RouterView`, `useRoute`, and `useRouter`.
 - Deferred route fields and router options are rejected instead of silently widening the beta slice.
+- Dynamic param syntax remains limited to simple `:name` segments plus `/:pathMatch(.*)*`.
 
 Any public API change must keep these hard gates mandatory:
 
@@ -94,6 +96,7 @@ added.
 Required design points:
 
 - Do not read Vite manifests inside `renderToString()`.
+- Reject deferred `manifest`, `clientEntry`, and `router` options in `renderToString()`.
 - Do not infer client entries inside `generateStaticSite()`.
 - Reject deferred `manifest` and `clientEntry` options in `generateStaticSite()` instead of
   silently accepting them.

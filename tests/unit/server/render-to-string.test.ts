@@ -84,4 +84,18 @@ describe("renderToString", () => {
       }).html,
     ).toBe("<span>parent:dark</span>");
   });
+
+  it("rejects deferred manifest and router integration options", () => {
+    expect(() => renderToString(h("p", null, "server"), { manifest: {} } as never)).toThrow(
+      /SSR manifest integration is deferred/,
+    );
+
+    expect(() =>
+      renderToString(h("p", null, "server"), { clientEntry: "/src/main.ts" } as never),
+    ).toThrow(/SSR manifest integration is deferred/);
+
+    expect(() => renderToString(h("p", null, "server"), { router: {} } as never)).toThrow(
+      /Router-aware SSR integration is deferred/,
+    );
+  });
 });

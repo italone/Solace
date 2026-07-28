@@ -60,8 +60,10 @@ The `.solace` compiler contract is currently limited to the documented Vite plug
 modules remain alpha implementation details. Scoped styles are registered through the public
 `useStyle()` runtime helper, but generated module shape and compiler internals are not compatibility
 targets. The Vite plugin does not accept public options yet; passing options throws a `TypeError` so
-syntax expansion is not implied. Do not import compiler or router deep subpaths such as
-`@italone/solace/compiler`, `@italone/solace/router`, or `@italone/solace/dist/**`.
+syntax expansion is not implied. SFC block attributes and custom top-level blocks are rejected; the
+documented block model remains one `<template>`, optional `<script>`, and optional `<style>`. Do not
+import compiler or router deep subpaths such as `@italone/solace/compiler`, `@italone/solace/router`,
+or `@italone/solace/dist/**`.
 
 The router exports in the package root are beta APIs for small SPA examples. Route guards, nested
 route records, scroll behavior, named routes, lazy route loading, SSR integration, auth, permissions,
@@ -149,7 +151,9 @@ VNode and function component trees, escapes text and attributes, omits event pro
 does not run DOM lifecycle hooks. Components can register styles with `useStyle(scopeId, css)`;
 server rendering collects them in `styles` as serialized `<style data-s-id="...">...</style>` tags.
 Use `createApp(App).hydrate(container)` in the browser to attach behavior to matching server HTML and
-reuse existing `style[data-s-id]` tags without duplicating matching styles.
+reuse existing `style[data-s-id]` tags without duplicating matching styles. Passing deferred
+integration options such as `manifest`, `clientEntry`, or `router` to `renderToString()` throws a
+`TypeError`.
 
 Streaming SSR, async component SSR, SSG CLI, production manifest integration, hydration mismatch
 recovery, and router SSR/SSG/hydration integration remain deferred.
@@ -598,6 +602,8 @@ Current beta router limitations:
 - No route names, aliases, redirects, nested records, guards, scroll behavior, or lazy component
   loading contract.
 - No memory history, auth, permissions, SSR, SSG, or hydration integration.
+- Dynamic params are limited to simple `:name` segments plus the documented wildcard
+  `/:pathMatch(.*)*`; optional params, repeat params, and custom regex params throw a `TypeError`.
 - Passing deferred route fields such as `name`, `redirect`, `children`, `beforeEnter`, or `meta`, or
   deferred options such as `scrollBehavior`, throws a `TypeError`.
 - Direct URL fallback still depends on the hosting configuration.

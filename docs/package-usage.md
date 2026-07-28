@@ -111,10 +111,12 @@ alpha surface. It supports a small syntax subset, reports compile diagnostics th
 errors, routes scoped styles through the public `useStyle()` runtime helper, and currently returns
 `map: null` to match the package policy of not publishing production source maps. Parser internals,
 generated module shape, and scoped-style implementation details are not public compatibility
-targets. The plugin does not accept public options yet; passing options throws a `TypeError`. The
-`@italone/solace/vite` subpath intentionally exports only `default` and `solacePlugin`; do not
-import compiler helpers or deep subpaths such as `@italone/solace/compiler`,
-`@italone/solace/router`, or `@italone/solace/dist/**`.
+targets. The plugin does not accept public options yet; passing options throws a `TypeError`. SFC
+block attributes and custom top-level blocks also throw so the syntax remains the documented
+one-template, optional-script, optional-style model. The `@italone/solace/vite` subpath
+intentionally exports only `default` and `solacePlugin`; do not import compiler helpers or deep
+subpaths such as `@italone/solace/compiler`, `@italone/solace/router`, or
+`@italone/solace/dist/**`.
 
 ## Use Server Rendering And SSG
 
@@ -136,7 +138,9 @@ result.styles; // ['<style data-s-id="server-demo">.server-demo { color: blue; }
 
 Use `createApp(App).hydrate(container)` in the browser to attach behavior to matching server HTML.
 Hydration reuses existing `style[data-s-id]` tags for matching `useStyle()` registrations and throws
-on structural mismatches instead of silently replacing incompatible DOM.
+on structural mismatches instead of silently replacing incompatible DOM. Passing deferred
+integration options such as `manifest`, `clientEntry`, or `router` to `renderToString()` throws a
+`TypeError`.
 
 This minimum loop includes synchronous `renderToString()`, in-memory SSG through
 `generateStaticSite()`, server-side style collection, and hydration-safe style dedupe. It does not
@@ -199,6 +203,7 @@ The current router supports path matching, dynamic params, query parsing, browse
 routes, redirects, lazy-route contracts, scroll behavior, memory history, auth, permissions, SSR,
 SSG, or hydration. Passing deferred route fields such as `name`, `redirect`, `children`,
 `beforeEnter`, or `meta`, or deferred options such as `scrollBehavior`, throws a `TypeError`.
+Dynamic params are limited to simple `:name` segments and `/:pathMatch(.*)*` wildcard fallback.
 
 ## Public Entry Points
 

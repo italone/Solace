@@ -38,6 +38,7 @@ export function createMatcher(routes: RouteRecord[]): Matcher {
 }
 
 function compileRoute(record: RouteRecord): CompiledRoute {
+  assertBetaRoutePathSyntax(record.path);
   const normalized = normalizePath(record.path);
 
   if (normalized === "/:pathMatch(.*)*") {
@@ -55,7 +56,9 @@ function compileRoute(record: RouteRecord): CompiledRoute {
   const pattern = segments
     .map((segment) => {
       if (segment.startsWith(":")) {
-        keys.push(segment.slice(1));
+        const key = segment.slice(1);
+        assertBetaParamSyntax(key);
+        keys.push(key);
         score += 1;
         return "([^/]+)";
       }
@@ -73,6 +76,19 @@ function compileRoute(record: RouteRecord): CompiledRoute {
   };
 }
 
+function assertBetaRoutePathSyntax(path: string): void {
+  if (path === "/:pathMatch(.*)*") {
+    return;
+  }
+
+  const segments = path.split("/").filter(Boolean);
+  for (const segment of segments) {
+    if (segment.startsWith(":")) {
+      assertBetaParamSyntax(segment.slice(1));
+    }
+  }
+}
+
 export function normalizePath(path: string): string {
   const withoutQuery = path.split("?")[0] || "/";
   const withLeadingSlash = withoutQuery.startsWith("/") ? withoutQuery : `/${withoutQuery}`;
@@ -84,4 +100,12 @@ export function normalizePath(path: string): string {
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function assertBetaParamSyntax(key: string): void {
+  if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) {
+    return;
+  }
+
+  throw new TypeError(`Deferred router path syntax is not part of the beta contract: :${key}`);
 }

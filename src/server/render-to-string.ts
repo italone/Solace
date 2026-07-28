@@ -26,6 +26,7 @@ export function renderToString(
   source: RenderToStringSource,
   options: RenderToStringOptions = {},
 ): RenderToStringResult {
+  assertNoDeferredIntegrationOptions(options);
   const vnode = normalizeSource(source);
   const sink = createServerStyleSink();
   const html = withStyleSink(sink, () =>
@@ -157,4 +158,22 @@ function assertSafeHtmlName(name: string, kind: "attribute" | "element"): void {
   }
 
   throw new TypeError(`Invalid SSR ${kind} name: ${name}`);
+}
+
+function assertNoDeferredIntegrationOptions(options: RenderToStringOptions): void {
+  if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
+    throw new TypeError(
+      "SSR manifest integration is deferred; compose assets in an app-local shell or adapter.",
+    );
+  }
+
+  if (hasOwn(options, "router")) {
+    throw new TypeError(
+      "Router-aware SSR integration is deferred; pass explicit render sources instead.",
+    );
+  }
+}
+
+function hasOwn(value: object, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(value, key);
 }

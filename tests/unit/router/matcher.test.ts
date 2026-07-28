@@ -46,4 +46,16 @@ describe("router matcher", () => {
     expect(match.matched?.path).toBe("/:pathMatch(.*)*");
     expect(match.params).toEqual({ pathMatch: "missing/path" });
   });
+
+  it("rejects deferred param path syntax", () => {
+    expect(() => createMatcher([{ path: "/users/:id?", component: User }])).toThrow(
+      /Deferred router path syntax/,
+    );
+    expect(() => createMatcher([{ path: "/users/:ids+", component: User }])).toThrow(
+      /Deferred router path syntax/,
+    );
+    expect(() => createMatcher([{ path: "/users/:id(\\d+)", component: User }])).toThrow(
+      /Deferred router path syntax/,
+    );
+  });
 });
