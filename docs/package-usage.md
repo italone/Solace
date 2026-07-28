@@ -143,7 +143,8 @@ include streaming SSR, async component SSR, production asset manifest integratio
 output, router-aware SSG adapters, or hydration mismatch recovery.
 
 `generateStaticSite()` renders explicit route sources in memory and preserves collected
-`renderToString()` styles for custom shells:
+`renderToString()` styles for custom shells. Place `styles.join("")` in `<head>` when composing a
+full HTML document:
 
 ```ts
 const site = generateStaticSite({

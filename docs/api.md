@@ -169,8 +169,9 @@ const site = generateStaticSite({
 site.pages[0].html;
 ```
 
-The first SSG core is in-memory only. Filesystem output, production asset manifests, router-aware
-adapters, and CLI integration remain outside the current public contract.
+Place `styles.join("")` in the document `<head>` when composing a full shell. The first SSG core is
+in-memory only. Filesystem output, production asset manifests, router-aware adapters, and CLI
+integration remain outside the current public contract.
 
 ## Runtime Style Registration
 

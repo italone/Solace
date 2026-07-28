@@ -154,8 +154,9 @@ const site = generateStaticSite({
 site.pages[0].html;
 ```
 
-首个 SSG core 仅为内存 API。filesystem output、production asset manifests、router-aware
-adapters 和 CLI integration 仍不在当前公共契约内。
+组合完整 shell 时，把 `styles.join("")` 放入文档 `<head>`。首个 SSG core 仅为内存 API。
+filesystem output、production asset manifests、router-aware adapters 和 CLI integration
+仍不在当前公共契约内。
 
 ## Runtime Style 注册
 
