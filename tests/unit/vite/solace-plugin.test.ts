@@ -37,7 +37,7 @@ describe("solacePlugin", () => {
     const plugin = solacePlugin();
     const result = transformWith(
       plugin,
-      `<template><button>count</button></template>`,
+      `<template><button class="counter">count</button></template><style>.counter { color: blue; }</style>`,
       "/app/src/App.solace",
     );
 
@@ -47,6 +47,10 @@ describe("solacePlugin", () => {
     );
     expect((result as Exclude<TransformResult, string | null>).code).toContain(
       '_Solace.h("button"',
+    );
+    expect((result as Exclude<TransformResult, string | null>).code).toContain("_Solace.useStyle(");
+    expect((result as Exclude<TransformResult, string | null>).code).not.toContain(
+      'document.createElement("style")',
     );
   });
 
@@ -60,5 +64,17 @@ describe("solacePlugin", () => {
         "/app/src/Broken.solace",
       ),
     ).toThrow(/\/app\/src\/Broken\.solace:1:19/);
+  });
+
+  it("reports duplicate block diagnostics without expanding .solace syntax", () => {
+    const plugin = solacePlugin();
+
+    expect(() =>
+      transformWith(
+        plugin,
+        `<template><p>one</p></template><template><p>two</p></template>`,
+        "/app/src/Duplicate.solace",
+      ),
+    ).toThrow(/\[SFC_PARSE_ERROR\] \/app\/src\/Duplicate\.solace:1:32 Duplicate <template> block/);
   });
 });

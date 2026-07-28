@@ -63,6 +63,11 @@ function extractBlock(
     throw createParseError(source, openIndex, `Missing closing tag </${tag}>`);
   }
 
+  const duplicateOpenIndex = source.indexOf(open, closeIndex + close.length);
+  if (duplicateOpenIndex !== -1) {
+    throw createParseError(source, duplicateOpenIndex, `Duplicate <${tag}> block`);
+  }
+
   const rawContent = source.slice(contentStart, closeIndex);
   const trimmedStart = rawContent.length - rawContent.trimStart().length;
 

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { h } from "../../../src/index";
+import * as rootModule from "../../../src/index";
 import * as routerModule from "../../../src/router";
 import { createRouter } from "../../../src/router/router";
 import type { RouterHistory } from "../../../src/router/types";
@@ -59,6 +60,13 @@ describe("createRouter", () => {
     expect(routerModule).not.toHaveProperty("NavigationGuard");
     expect(routerModule).not.toHaveProperty("RouteMeta");
     expect(routerModule).not.toHaveProperty("createSSRRouter");
+  });
+
+  it("keeps deferred router APIs out of the package root", () => {
+    expect(rootModule).not.toHaveProperty("createMemoryHistory");
+    expect(rootModule).not.toHaveProperty("NavigationGuard");
+    expect(rootModule).not.toHaveProperty("RouteMeta");
+    expect(rootModule).not.toHaveProperty("createSSRRouter");
   });
 
   it("resolves string and object locations", () => {

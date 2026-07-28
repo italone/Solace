@@ -35,6 +35,18 @@ describe("parseSFC", () => {
   it("throws when closing tag is missing", () => {
     expect(() => parseSFC("<template><div>")).toThrow("Missing closing tag");
   });
+
+  it("rejects duplicate top-level blocks", () => {
+    expect(() =>
+      parseSFC("<template><p>one</p></template><template><p>two</p></template>"),
+    ).toThrow("Duplicate <template> block");
+    expect(() =>
+      parseSFC("<template><p>one</p></template><script>one</script><script>two</script>"),
+    ).toThrow("Duplicate <script> block");
+    expect(() =>
+      parseSFC("<template><p>one</p></template><style>.one {}</style><style>.two {}</style>"),
+    ).toThrow("Duplicate <style> block");
+  });
 });
 
 describe("parseTemplate", () => {
