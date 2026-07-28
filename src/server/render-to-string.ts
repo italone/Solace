@@ -4,7 +4,9 @@ import {
   type ComponentInstance,
 } from "../component/component";
 import type { Provides } from "../component/provide";
+import { createServerStyleSink, withStyleSink } from "../component/style";
 import { ShapeFlags } from "../shared/flags";
+import { escapeAttribute, escapeHtml } from "../shared/html";
 import { h } from "../vnode/h";
 import type { ComponentType, VNode, VNodeProps } from "../vnode/vnode";
 
@@ -25,10 +27,14 @@ export function renderToString(
   options: RenderToStringOptions = {},
 ): RenderToStringResult {
   const vnode = normalizeSource(source);
+  const sink = createServerStyleSink();
+  const html = withStyleSink(sink, () =>
+    renderVNodeToString(vnode, null, options.provides ?? null),
+  );
 
   return {
-    html: renderVNodeToString(vnode, null, options.provides ?? null),
-    styles: [],
+    html,
+    styles: sink.styles,
   };
 }
 
@@ -151,12 +157,4 @@ function assertSafeHtmlName(name: string, kind: "attribute" | "element"): void {
   }
 
   throw new TypeError(`Invalid SSR ${kind} name: ${name}`);
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-function escapeAttribute(value: string): string {
-  return escapeHtml(value).replace(/"/g, "&quot;");
 }

@@ -13,6 +13,7 @@ export { defineAsyncComponent } from "./component/async-component";
 export { defineComponent } from "./component/define-component";
 export { inject, provide } from "./component/provide";
 export { createStore } from "./store/store";
+export { useStyle } from "./component/style";
 export {
   RouterLink,
   RouterView,

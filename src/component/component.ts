@@ -12,6 +12,7 @@ import type { ReactiveEffect } from "../reactivity/effect";
 import { setCurrentInstance, type LifecycleHook } from "./lifecycle";
 import { initProps, updateProps } from "./props";
 import type { Provides } from "./provide";
+import { getActiveStyleSink, withStyleSink } from "./style";
 
 export type EmitFn = (event: string, ...args: unknown[]) => void;
 export type SlotProps = Record<string, unknown>;
@@ -95,6 +96,7 @@ export function setupComponent(instance: ComponentInstance): void {
   initProps(instance, instance.vnode.props);
   initSlots(instance, instance.vnode.children);
 
+  const styleSink = getActiveStyleSink();
   let resolvedRender: ComponentRender | null = null;
   let hasResolvedSetup = false;
   const setupContext: ComponentSetupContext = {
@@ -103,18 +105,26 @@ export function setupComponent(instance: ComponentInstance): void {
   };
 
   instance.render = () => {
-    if (resolvedRender !== null) {
-      return resolvedRender();
+    const run = (): VNode => {
+      if (resolvedRender !== null) {
+        return resolvedRender();
+      }
+
+      const setupResult = runComponentSetup(instance, setupContext, hasResolvedSetup);
+      hasResolvedSetup = true;
+      if (typeof setupResult === "function") {
+        resolvedRender = setupResult;
+        return resolvedRender();
+      }
+
+      return setupResult;
+    };
+
+    if (styleSink !== undefined) {
+      return withStyleSink(styleSink, run);
     }
 
-    const setupResult = runComponentSetup(instance, setupContext, hasResolvedSetup);
-    hasResolvedSetup = true;
-    if (typeof setupResult === "function") {
-      resolvedRender = setupResult;
-      return resolvedRender();
-    }
-
-    return setupResult;
+    return run();
   };
 }
 
