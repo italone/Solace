@@ -57,7 +57,7 @@ export function createDocumentStyleSink(document: Document): StyleSink {
 
     const css = styleElement.textContent ?? "";
     const existing = registry.get(scopeId);
-    if (existing !== undefined && existing !== css) {
+    if (existing !== undefined && !isEquivalentStyle(existing, css)) {
       throwStyleConflict(scopeId);
     }
 
@@ -84,10 +84,11 @@ function registerStyle(
 ): void {
   const existing = registry.get(scopeId);
   if (existing !== undefined) {
-    if (existing !== css) {
+    if (!isEquivalentStyle(existing, css)) {
       throwStyleConflict(scopeId);
     }
 
+    registry.set(scopeId, css);
     return;
   }
 
@@ -97,6 +98,10 @@ function registerStyle(
 
 function serializeStyleTag(scopeId: string, css: string): string {
   return `<style data-s-id="${escapeAttribute(scopeId)}">${escapeHtml(css)}</style>`;
+}
+
+function isEquivalentStyle(existing: string, css: string): boolean {
+  return existing === css || existing === escapeHtml(css);
 }
 
 function throwStyleConflict(scopeId: string): never {

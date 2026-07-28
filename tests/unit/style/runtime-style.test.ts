@@ -65,6 +65,24 @@ describe("useStyle", () => {
     expect(document.head.querySelectorAll('style[data-s-id="abc123"]')).toHaveLength(1);
   });
 
+  it("dedupes server-escaped style text during hydrate", () => {
+    const css = '.counter::before { content: "<&>"; }';
+    const App = () => {
+      useStyle("abc123", css);
+      return h("button", { class: "counter" }, "count: 0");
+    };
+    const serverRendered = renderToString(h(App));
+    const container = document.createElement("div");
+    document.head.innerHTML = serverRendered.styles.join("");
+    container.innerHTML = serverRendered.html;
+
+    expect(serverRendered.styles).toEqual([
+      '<style data-s-id="abc123">.counter::before { content: "&lt;&amp;&gt;"; }</style>',
+    ]);
+    expect(() => createApp(App).hydrate(container)).not.toThrow();
+    expect(document.head.querySelectorAll('style[data-s-id="abc123"]')).toHaveLength(1);
+  });
+
   it("does not duplicate preexisting style tags during client-only mount", () => {
     document.head.innerHTML = '<style data-s-id="abc123">.counter { color: blue; }</style>';
     const App = () => {
