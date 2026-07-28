@@ -1,4 +1,4 @@
-import { escapeAttribute, escapeHtml } from "../shared/html";
+import { escapeAttribute } from "../shared/html";
 
 export interface StyleSink {
   register(scopeId: string, css: string): void;
@@ -96,9 +96,13 @@ function registerStyle(
 }
 
 function serializeStyleTag(scopeId: string, css: string): string {
-  const escapedCss = escapeHtml(css);
-  const rawCssAttribute = escapedCss === css ? "" : ` data-s-css="${escapeAttribute(css)}"`;
-  return `<style data-s-id="${escapeAttribute(scopeId)}"${rawCssAttribute}>${escapedCss}</style>`;
+  const serializedCss = escapeStyleText(css);
+  const rawCssAttribute = serializedCss === css ? "" : ` data-s-css="${escapeAttribute(css)}"`;
+  return `<style data-s-id="${escapeAttribute(scopeId)}"${rawCssAttribute}>${serializedCss}</style>`;
+}
+
+function escapeStyleText(css: string): string {
+  return css.replace(/<\/style/gi, "<\\/style");
 }
 
 function throwStyleConflict(scopeId: string): never {

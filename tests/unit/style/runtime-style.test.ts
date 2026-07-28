@@ -77,10 +77,42 @@ describe("useStyle", () => {
     container.innerHTML = serverRendered.html;
 
     expect(serverRendered.styles).toEqual([
-      '<style data-s-id="abc123" data-s-css=".counter::before { content: &quot;&lt;&amp;&gt;&quot;; }">.counter::before { content: "&lt;&amp;&gt;"; }</style>',
+      '<style data-s-id="abc123">.counter::before { content: "<&>"; }</style>',
     ]);
     expect(() => createApp(App).hydrate(container)).not.toThrow();
     expect(document.head.querySelectorAll('style[data-s-id="abc123"]')).toHaveLength(1);
+  });
+
+  it("preserves raw CSS semantics when server styles are parsed into the document", () => {
+    const css = '.a > .b::before { content: "<&>"; background: url("/x?a=1&b=2"); }';
+    const App = () => {
+      useStyle("abc123", css);
+      return h("button", { class: "a" }, "count: 0");
+    };
+    const serverRendered = renderToString(h(App));
+
+    document.head.innerHTML = serverRendered.styles.join("");
+
+    expect(document.head.querySelector('style[data-s-id="abc123"]')?.textContent).toBe(css);
+  });
+
+  it("neutralizes style end tags in server style text", () => {
+    const css = '.counter::before { content: "</style><script>bad()</script>"; }';
+    const App = () => {
+      useStyle("abc123", css);
+      return h("button", { class: "counter" }, "count: 0");
+    };
+    const serverRendered = renderToString(h(App));
+    const container = document.createElement("div");
+    document.head.innerHTML = serverRendered.styles.join("");
+    container.innerHTML = serverRendered.html;
+
+    expect(document.head.querySelectorAll("style")).toHaveLength(1);
+    expect(document.head.querySelectorAll("script")).toHaveLength(0);
+    expect(document.head.querySelector('style[data-s-id="abc123"]')?.textContent).toContain(
+      "<\\/style>",
+    );
+    expect(() => createApp(App).hydrate(container)).not.toThrow();
   });
 
   it("rejects conflicting styles when an existing server style was escaped", () => {
