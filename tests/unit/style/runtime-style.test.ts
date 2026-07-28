@@ -132,7 +132,7 @@ describe("useStyle", () => {
     expect(() => createApp(App).hydrate(container)).not.toThrow();
   });
 
-  it("rejects conflicting styles when an existing server style was escaped", () => {
+  it("rejects conflicting styles when an existing server style is raw text", () => {
     const ServerApp = () => {
       useStyle("abc123", '.counter::before { content: "<&>"; }');
       return h("button", { class: "counter" }, "count: 0");
