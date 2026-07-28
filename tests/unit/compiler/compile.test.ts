@@ -28,7 +28,10 @@ describe("compile", () => {
     expect(result.code).toContain("const count = ref(0);");
     expect(result.code).toContain("const increment = () => count.value++;");
     expect(result.code).toContain("return () => _Solace.h");
+    expect(result.code).toContain("_Solace.useStyle(");
     expect(result.code).toContain("data-s-id");
+    expect(result.code).not.toContain('document.createElement("style")');
+    expect(result.code).not.toContain("appendChild");
   });
 
   it("compiles SFC without style block", () => {

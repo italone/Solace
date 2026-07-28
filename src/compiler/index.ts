@@ -61,10 +61,7 @@ export function compile(source: string, options: CompileOptions = {}): CompileRe
   if (descriptor.style && scopeId !== undefined) {
     const scoped = scopeStyle(descriptor.style, scopeId);
     styleInjection = `
-const _style = document.createElement("style");
-_style.setAttribute("data-s-id", ${JSON.stringify(scopeId)});
-_style.textContent = ${JSON.stringify(scoped)};
-document.head.appendChild(_style);
+_Solace.useStyle(${JSON.stringify(scopeId)}, ${JSON.stringify(scoped)});
 `;
   }
 
