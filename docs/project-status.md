@@ -15,8 +15,9 @@ Current repository state:
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: the current local tracking ref shows `main` 1 commit ahead of `origin/main`
-  (`803ffdf docs: design devtools extension ui` on top of `3b8c902`). A fresh
+- Remote state: local `main` has unpushed documentation status work on top of `origin/main`; the
+  latest local status commit before this refresh was `f66c38a docs: design devtools extension ui` on
+  top of `3b8c902`. A fresh
   `git fetch origin main` on 2026-07-28 failed because this environment could not connect to
   `github.com:443`, so the true remote state must be rechecked before any release or publish claim.
 - Phase: alpha released; beta contract stabilization plus SSR/hydration minimum loop implemented,
@@ -115,9 +116,9 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Recommended Next Work
 
-1. **Synchronize `main` with `origin/main` when GitHub connectivity is available**; the current
-   local tracking ref shows 1 commit ahead, but the latest fetch attempt failed. Recheck with
-   `git fetch origin main` and `git status --short --branch` before publishing.
+1. **Synchronize `main` with `origin/main` when GitHub connectivity is available**; local status work
+   remains unpushed, and the latest fetch attempt failed. Recheck with `git fetch origin main` and
+   `git status --short --branch` before publishing.
 2. **Continue stabilizing the SFC/Vite contract without syntax expansion**: keep the public surface limited to `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, and the documented alpha `.solace` block model.
 3. **Continue narrowing the router beta API without adding deferred features**: keep nested routes, guards, redirects, lazy route components, scroll behavior, memory history, SSR/hydration integration, auth, and permissions out of the beta slice until separately designed.
 4. **Keep public API gates mandatory**: `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e` must run for public API changes.

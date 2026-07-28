@@ -8,8 +8,9 @@ come before any browser DevTools extension UI work.
 
 ## Current Baseline
 
-The current local tracking ref shows `main` 1 commit ahead of `origin/main`
-(`803ffdf docs: design devtools extension ui` on top of `3b8c902`). A fresh
+Local `main` has unpushed documentation status work on top of `origin/main`; the latest local status
+commit before this refresh was `f66c38a docs: design devtools extension ui` on top of `3b8c902`. A
+fresh
 `git fetch origin main` on 2026-07-28 failed because the environment could not connect to
 `github.com:443`, so the true remote state must be rechecked before any release or publish claim.
 

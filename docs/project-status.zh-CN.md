@@ -14,8 +14,8 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - 本地 package 版本：`0.0.3`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
-- 本地分支状态：当前本地 tracking ref 显示 `main` 比 `origin/main` 超前 1 个提交
-  （`803ffdf docs: design devtools extension ui`，基于 `3b8c902`）。2026-07-28 再次执行
+- 本地分支状态：本地 `main` 仍有未 push 的文档状态工作，记录此状态前的最新本地文档提交是
+  `f66c38a docs: design devtools extension ui`，基于 `3b8c902`。2026-07-28 再次执行
   `git fetch origin main` 因当前环境无法连接 `github.com:443` 失败；发布或声明远端同步前必须重新确认真实远端状态。
 - 发布阶段：alpha 已发布；beta 契约稳定与 SSR/hydration minimum loop 已实现，包含
   server-side style collection 和 hydration-safe style dedupe
@@ -117,9 +117,8 @@ Solace 当前有意不包含：
 
 ## 建议后续工作
 
-1. GitHub 网络可用后继续同步 `main` 与 `origin/main`；当前本地 tracking ref 显示仍超前
-   1 个提交，但最新 fetch 已失败。发布前仍需重新运行 `git fetch origin main` 和
-   `git status --short --branch`。
+1. GitHub 网络可用后继续同步 `main` 与 `origin/main`；本地状态工作仍未 push，且最新 fetch 已失败。
+   发布前仍需重新运行 `git fetch origin main` 和 `git status --short --branch`。
 2. 继续稳定 SFC/Vite contract，但不扩语法：公开面保持为 `@italone/solace/sfc`、`@italone/solace/vite`、Vite transform diagnostics 和当前文档化的 alpha `.solace` block model。
 3. 继续收敛 router beta API，但不急着扩功能：nested routes、guards、redirects、lazy route components、scroll behavior、memory history、SSR/hydration 集成、auth 和 permissions 继续保持 deferred。
 4. 对所有公共 API 变更保持公共 API 门禁必跑：`pnpm release:readiness`、`pnpm package:smoke` 和 `pnpm test:e2e`。
