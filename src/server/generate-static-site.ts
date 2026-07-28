@@ -31,6 +31,7 @@ export interface GenerateStaticSiteResult {
 }
 
 export function generateStaticSite(options: GenerateStaticSiteOptions): GenerateStaticSiteResult {
+  assertNoDeferredIntegrationOptions(options);
   assertValidRoutes(options.routes);
 
   const seenPaths = new Set<string>();
@@ -75,4 +76,22 @@ function assertValidRoutes(routes: StaticRoute[]): void {
   if (!Array.isArray(routes) || routes.length === 0) {
     throw new TypeError("SSG routes must be a non-empty array");
   }
+}
+
+function assertNoDeferredIntegrationOptions(options: GenerateStaticSiteOptions): void {
+  if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
+    throw new TypeError(
+      "SSG manifest integration is deferred; compose assets in an app-local shell or adapter.",
+    );
+  }
+
+  if (hasOwn(options, "router")) {
+    throw new TypeError(
+      "Router-aware SSG integration is deferred; pass explicit route sources instead.",
+    );
+  }
+}
+
+function hasOwn(value: object, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(value, key);
 }

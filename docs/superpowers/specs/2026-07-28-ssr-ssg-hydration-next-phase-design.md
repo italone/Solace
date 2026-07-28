@@ -92,6 +92,8 @@ Required design points:
 
 - Do not read Vite manifests inside `renderToString()`.
 - Do not infer client entries inside `generateStaticSite()`.
+- Reject deferred `manifest` and `clientEntry` options in `generateStaticSite()` instead of
+  silently accepting them.
 - Future manifest integration should be an adapter or shell helper, not a server renderer concern.
 
 ### 4. Router Integration Boundary
@@ -103,6 +105,8 @@ Required design points:
 
 - Do not add public `createMemoryHistory()` yet.
 - Do not add nested routes or guards as part of SSR work.
+- Reject deferred `router` integration options in `generateStaticSite()` instead of silently
+  accepting them.
 - Keep app-local explicit route sources as the supported SSG path.
 - Require a separate router SSR design before router-aware SSG adapters.
 

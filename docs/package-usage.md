@@ -142,6 +142,10 @@ This minimum loop includes synchronous `renderToString()`, in-memory SSG through
 include streaming SSR, async component SSR, production asset manifest integration, filesystem SSG
 output, router-aware SSG adapters, or hydration mismatch recovery.
 
+Passing deferred integration fields such as `manifest`, `clientEntry`, or `router` to
+`generateStaticSite()` throws a `TypeError`; compose production assets or router-aware SSG behavior
+in an app-local adapter until those contracts are separately designed.
+
 `generateStaticSite()` renders explicit route sources in memory and preserves collected
 `renderToString()` styles for custom shells. Place `styles.join("")` in `<head>` when composing a
 full HTML document:

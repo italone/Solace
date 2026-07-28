@@ -156,7 +156,9 @@ site.pages[0].html;
 
 组合完整 shell 时，把 `styles.join("")` 放入文档 `<head>`。首个 SSG core 仅为内存 API。
 filesystem output、production asset manifests、router-aware adapters 和 CLI integration
-仍不在当前公共契约内。
+仍不在当前公共契约内。向 `generateStaticSite()` 传入 `manifest`、`clientEntry` 或 `router`
+这类 deferred integration 字段会抛出 `TypeError`，避免使用者误以为 production manifest 或
+router-aware SSG 行为已经受支持。
 
 ## Runtime Style 注册
 

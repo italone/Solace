@@ -171,7 +171,9 @@ site.pages[0].html;
 
 Place `styles.join("")` in the document `<head>` when composing a full shell. The first SSG core is
 in-memory only. Filesystem output, production asset manifests, router-aware adapters, and CLI
-integration remain outside the current public contract.
+integration remain outside the current public contract. Passing deferred integration fields such as
+`manifest`, `clientEntry`, or `router` to `generateStaticSite()` throws a `TypeError` so consumers do
+not accidentally couple to unsupported production manifest or router-aware SSG behavior.
 
 ## Runtime Style Registration
 
