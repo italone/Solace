@@ -26,6 +26,12 @@ describe("solacePlugin", () => {
     expect(defaultPlugin.enforce).toBe(plugin.enforce);
   });
 
+  it("rejects plugin options while the SFC contract is syntax-stable", () => {
+    expect(() => solacePlugin({ customBlocks: true } as never)).toThrow(
+      /Solace Vite plugin options are not part of the public contract/,
+    );
+  });
+
   it("ignores non-Solace files", () => {
     const plugin = solacePlugin();
     const result = transformWith(plugin, "export default 1;", "/app/src/main.ts");

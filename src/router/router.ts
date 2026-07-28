@@ -9,6 +9,7 @@ export const routerKey = Symbol("Solace.router");
 export const routeKey = Symbol("Solace.route");
 
 export function createRouter(options: RouterOptions): Router {
+  assertRouterOptionsContract(options);
   const matcher = createMatcher(options.routes);
   let stopListening: (() => void) | null = null;
   const currentRoute = ref(resolveLocation(options.history.location()));
@@ -82,4 +83,22 @@ function normalizeRawLocation(to: RouteLocationRaw): string {
   }
 
   return `${to.path || "/"}${stringifyQuery(to.query)}`;
+}
+
+function assertRouterOptionsContract(options: RouterOptions): void {
+  for (const key of Object.keys(options)) {
+    if (key !== "history" && key !== "routes") {
+      throw new TypeError(`Deferred router option is not part of the beta contract: ${key}`);
+    }
+  }
+
+  for (const route of options.routes) {
+    for (const key of Object.keys(route)) {
+      if (key !== "path" && key !== "component") {
+        throw new TypeError(
+          `Deferred router route record field is not part of the beta contract: ${key}`,
+        );
+      }
+    }
+  }
 }

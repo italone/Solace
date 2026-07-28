@@ -42,6 +42,8 @@ SFC/Vite stabilization stays focused on the existing contract:
 - Vite transform diagnostics.
 - `map: null`.
 - Runtime style registration through `useStyle()`.
+- No public Vite plugin options yet; passing options is rejected instead of implying syntax
+  expansion.
 
 Router stabilization stays focused on the existing beta slice:
 
@@ -51,6 +53,7 @@ Router stabilization stays focused on the existing beta slice:
 - Query strings.
 - Web/hash history.
 - `RouterLink`, `RouterView`, `useRoute`, and `useRouter`.
+- Deferred route fields and router options are rejected instead of silently widening the beta slice.
 
 Any public API change must keep these hard gates mandatory:
 

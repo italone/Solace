@@ -2,7 +2,13 @@ import type { Plugin } from "vite";
 
 import { compile, SolaceCompileError } from "../compiler/index";
 
-export function solacePlugin(): Plugin {
+export function solacePlugin(...options: never[]): Plugin {
+  if (options.length > 0) {
+    throw new TypeError(
+      "Solace Vite plugin options are not part of the public contract; keep .solace syntax stable.",
+    );
+  }
+
   return {
     name: "solace-sfc",
     enforce: "pre",

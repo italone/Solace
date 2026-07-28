@@ -59,12 +59,14 @@ The `.solace` compiler contract is currently limited to the documented Vite plug
 `@italone/solace/sfc` type shim. The parser, generated JavaScript shape, and internal compiler
 modules remain alpha implementation details. Scoped styles are registered through the public
 `useStyle()` runtime helper, but generated module shape and compiler internals are not compatibility
-targets. Do not import compiler or router deep subpaths such as `@italone/solace/compiler`,
-`@italone/solace/router`, or `@italone/solace/dist/**`.
+targets. The Vite plugin does not accept public options yet; passing options throws a `TypeError` so
+syntax expansion is not implied. Do not import compiler or router deep subpaths such as
+`@italone/solace/compiler`, `@italone/solace/router`, or `@italone/solace/dist/**`.
 
 The router exports in the package root are beta APIs for small SPA examples. Route guards, nested
 route records, scroll behavior, named routes, lazy route loading, SSR integration, auth, permissions,
-and a long-term router compatibility policy remain deferred.
+and a long-term router compatibility policy remain deferred. Passing deferred route record fields or
+router options throws a `TypeError` instead of silently widening the beta contract.
 
 Most applications should import from the root package. Use `@italone/solace/server` only from
 server-side code. Use JSX subpaths only through `jsxImportSource` or bundler-generated imports. Use
@@ -596,6 +598,8 @@ Current beta router limitations:
 - No route names, aliases, redirects, nested records, guards, scroll behavior, or lazy component
   loading contract.
 - No memory history, auth, permissions, SSR, SSG, or hydration integration.
+- Passing deferred route fields such as `name`, `redirect`, `children`, `beforeEnter`, or `meta`, or
+  deferred options such as `scrollBehavior`, throws a `TypeError`.
 - Direct URL fallback still depends on the hosting configuration.
 - Unknown-route behavior should be handled by an explicit wildcard route.
 

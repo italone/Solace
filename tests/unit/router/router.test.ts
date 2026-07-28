@@ -69,6 +69,35 @@ describe("createRouter", () => {
     expect(rootModule).not.toHaveProperty("createSSRRouter");
   });
 
+  it("rejects deferred route record fields instead of silently enabling them", () => {
+    const deferredRecords = [
+      { path: "/nested", component: Home, children: [{ path: "child", component: User }] },
+      { path: "/guarded", component: Home, beforeEnter: () => true },
+      { path: "/redirect", component: Home, redirect: "/" },
+      { path: "/meta", component: Home, meta: { requiresAuth: true } },
+      { path: "/named", component: Home, name: "home" },
+    ];
+
+    for (const route of deferredRecords) {
+      expect(() =>
+        createRouter({
+          history: createMemoryLikeHistory(),
+          routes: [route] as never,
+        }),
+      ).toThrow(/Deferred router route record field/);
+    }
+  });
+
+  it("rejects deferred router options instead of widening the beta contract", () => {
+    expect(() =>
+      createRouter({
+        history: createMemoryLikeHistory(),
+        routes: [{ path: "/", component: Home }],
+        scrollBehavior: () => ({ left: 0, top: 0 }),
+      } as never),
+    ).toThrow(/Deferred router option/);
+  });
+
   it("resolves string and object locations", () => {
     const router = createRouter({
       history: createMemoryLikeHistory(),

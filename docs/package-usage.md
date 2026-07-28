@@ -111,8 +111,9 @@ alpha surface. It supports a small syntax subset, reports compile diagnostics th
 errors, routes scoped styles through the public `useStyle()` runtime helper, and currently returns
 `map: null` to match the package policy of not publishing production source maps. Parser internals,
 generated module shape, and scoped-style implementation details are not public compatibility
-targets. The `@italone/solace/vite` subpath intentionally exports only `default` and `solacePlugin`;
-do not import compiler helpers or deep subpaths such as `@italone/solace/compiler`,
+targets. The plugin does not accept public options yet; passing options throws a `TypeError`. The
+`@italone/solace/vite` subpath intentionally exports only `default` and `solacePlugin`; do not
+import compiler helpers or deep subpaths such as `@italone/solace/compiler`,
 `@italone/solace/router`, or `@italone/solace/dist/**`.
 
 ## Use Server Rendering And SSG
@@ -196,7 +197,8 @@ createApp(App)
 The current router supports path matching, dynamic params, query parsing, browser history adapters,
 `RouterLink`, and `RouterView`. It does not yet include route guards, nested route records, named
 routes, redirects, lazy-route contracts, scroll behavior, memory history, auth, permissions, SSR,
-SSG, or hydration.
+SSG, or hydration. Passing deferred route fields such as `name`, `redirect`, `children`,
+`beforeEnter`, or `meta`, or deferred options such as `scrollBehavior`, throws a `TypeError`.
 
 ## Public Entry Points
 

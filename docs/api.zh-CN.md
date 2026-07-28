@@ -50,9 +50,9 @@
 
 alpha 阶段的兼容性契约有意保持较窄。公开入口应在 patch release 之间保持可用；内部模块、event emit helpers、scheduler 队列、renderer diagnostics、组件实例和生成文件布局可能在不额外通知的情况下变化。
 
-`.solace` compiler 契约当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口。parser、生成 JavaScript 形状和内部 compiler modules 仍属于 alpha 实现细节。scoped style 会通过公开的 `useStyle()` runtime helper 注册，但生成模块形状和 compiler 内部实现不属于兼容性目标。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
+`.solace` compiler 契约当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口。parser、生成 JavaScript 形状和内部 compiler modules 仍属于 alpha 实现细节。scoped style 会通过公开的 `useStyle()` runtime helper 注册，但生成模块形状和 compiler 内部实现不属于兼容性目标。Vite plugin 还没有公开 options；传入 options 会抛出 `TypeError`，避免暗示语法扩展。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
 
-包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。route guards、嵌套路由记录、scroll behavior、具名路由、懒加载路由、SSR 集成、auth、permissions 和长期 router 兼容策略仍被推迟。
+包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。route guards、嵌套路由记录、scroll behavior、具名路由、懒加载路由、SSR 集成、auth、permissions 和长期 router 兼容策略仍被推迟。传入 deferred route record fields 或 router options 会抛出 `TypeError`，而不是静默扩大 beta contract。
 
 大多数应用应从包根入口导入。`@italone/solace/server` 只应在 server-side 代码中使用。JSX
 子路径通常只通过 `jsxImportSource` 或 bundler 生成导入使用。只有在构建 instrumentation 或需要
@@ -556,6 +556,8 @@ createApp(App)
 
 - 不包含 route names、aliases、redirects、嵌套路由记录、guards、scroll behavior 或 lazy component loading contract。
 - 不包含 memory history、auth、permissions、SSR、SSG 或 hydration 集成。
+- 传入 `name`、`redirect`、`children`、`beforeEnter`、`meta` 等 deferred route fields，或
+  `scrollBehavior` 等 deferred options，会抛出 `TypeError`。
 - 直接 URL 访问的 fallback 仍依赖部署宿主配置。
 - unknown route 行为应通过显式 wildcard route 处理。
 
