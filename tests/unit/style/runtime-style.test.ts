@@ -77,7 +77,7 @@ describe("useStyle", () => {
     container.innerHTML = serverRendered.html;
 
     expect(serverRendered.styles).toEqual([
-      '<style data-s-id="abc123">.counter::before { content: "&lt;&amp;&gt;"; }</style>',
+      '<style data-s-id="abc123" data-s-css=".counter::before { content: &quot;&lt;&amp;&gt;&quot;; }">.counter::before { content: "&lt;&amp;&gt;"; }</style>',
     ]);
     expect(() => createApp(App).hydrate(container)).not.toThrow();
     expect(document.head.querySelectorAll('style[data-s-id="abc123"]')).toHaveLength(1);
@@ -98,6 +98,19 @@ describe("useStyle", () => {
     container.innerHTML = serverRendered.html;
 
     expect(() => createApp(ClientApp).hydrate(container)).toThrow(/style conflict/i);
+  });
+
+  it("rejects literal entity styles that conflict with raw CSS", () => {
+    document.head.innerHTML =
+      '<style data-s-id="abc123">.counter::before { content: "&lt;"; }</style>';
+    const App = () => {
+      useStyle("abc123", '.counter::before { content: "<"; }');
+      return h("button", { class: "counter" }, "count: 0");
+    };
+    const container = document.createElement("div");
+    container.innerHTML = '<button class="counter">count: 0</button>';
+
+    expect(() => createApp(App).hydrate(container)).toThrow(/style conflict/i);
   });
 
   it("does not duplicate preexisting style tags during client-only mount", () => {
