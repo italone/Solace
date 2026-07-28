@@ -200,6 +200,99 @@ router.resolve(targetRoute);
 `,
   );
   await writeFile(
+    join(consumerDir, "src", "public-contract-types.ts"),
+    `import { createRouter, h } from "@italone/solace";
+import type { RouteRecord, RouterOptions } from "@italone/solace";
+import type { GenerateStaticSiteOptions, RenderToStringOptions } from "@italone/solace/server";
+import { solacePlugin } from "@italone/solace/vite";
+
+const Home = () => h("p", null, "home");
+
+function acceptRouteRecord(record: RouteRecord): RouteRecord {
+  return record;
+}
+
+function acceptRouterOptions(options: RouterOptions): RouterOptions {
+  return options;
+}
+
+function acceptSSGOptions(options: GenerateStaticSiteOptions): GenerateStaticSiteOptions {
+  return options;
+}
+
+function acceptRenderOptions(options: RenderToStringOptions): RenderToStringOptions {
+  return options;
+}
+
+solacePlugin();
+acceptRouteRecord({ path: "/", component: Home });
+acceptRouterOptions({
+  history: {
+    location: () => "/",
+    push: () => undefined,
+    replace: () => undefined,
+    listen: () => () => undefined,
+    back: () => undefined,
+    forward: () => undefined,
+  },
+  routes: [{ path: "/", component: Home }],
+});
+acceptSSGOptions({ routes: [{ path: "/", source: h("p", null, "home") }] });
+acceptRenderOptions({ context: { title: "Home" } });
+
+// @ts-expect-error Vite plugin options are not part of the public SFC contract
+solacePlugin({ customBlocks: true });
+
+// @ts-expect-error nested route records are deferred
+acceptRouteRecord({ path: "/nested", component: Home, children: [] });
+
+// @ts-expect-error route guards are deferred
+acceptRouteRecord({ path: "/guarded", component: Home, beforeEnter: () => true });
+
+// @ts-expect-error redirects are deferred
+acceptRouteRecord({ path: "/redirect", component: Home, redirect: "/" });
+
+// @ts-expect-error route meta is deferred
+acceptRouteRecord({ path: "/meta", component: Home, meta: {} });
+
+// @ts-expect-error named routes are deferred
+acceptRouteRecord({ path: "/named", component: Home, name: "home" });
+
+// @ts-expect-error scroll behavior is deferred
+acceptRouterOptions({ history: {} as never, routes: [], scrollBehavior: () => undefined });
+
+// @ts-expect-error production manifest integration is deferred
+acceptSSGOptions({ routes: [{ path: "/", source: h("p") }], manifest: {} });
+
+// @ts-expect-error client entry inference is deferred
+acceptSSGOptions({ routes: [{ path: "/", source: h("p") }], clientEntry: "/src/main.ts" });
+
+// @ts-expect-error router-aware SSG adapters are deferred
+acceptSSGOptions({ routes: [{ path: "/", source: h("p") }], router: {} });
+
+// @ts-expect-error renderToString does not read production manifests
+acceptRenderOptions({ manifest: {} });
+
+// @ts-expect-error renderToString does not infer client entries
+acceptRenderOptions({ clientEntry: "/src/main.ts" });
+
+// @ts-expect-error router-aware SSR integration is deferred
+acceptRenderOptions({ router: {} });
+
+createRouter({
+  history: {
+    location: () => "/",
+    push: () => undefined,
+    replace: () => undefined,
+    listen: () => () => undefined,
+    back: () => undefined,
+    forward: () => undefined,
+  },
+  routes: [{ path: "/", component: Home }],
+});
+`,
+  );
+  await writeFile(
     join(consumerDir, "src", "SfcSmoke.solace"),
     `<template>
   <button class="sfc-smoke" onClick={increment}>

@@ -31,6 +31,12 @@ acceptSSGOptions({ routes: [{ path: "/", source: h("p") }], router: {} });
 // @ts-expect-error renderToString does not read production manifests
 acceptRenderOptions({ manifest: {} });
 
+// @ts-expect-error renderToString does not infer client entries
+acceptRenderOptions({ clientEntry: "/src/main.ts" });
+
+// @ts-expect-error router-aware SSR integration is deferred
+acceptRenderOptions({ router: {} });
+
 describe("server public contract types", () => {
   it("keeps manifest and router integration out of the public SSR/SSG options", () => {
     expect(true).toBe(true);
