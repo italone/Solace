@@ -8,11 +8,9 @@ come before any browser DevTools extension UI work.
 
 ## Current Baseline
 
-Local `main` has unpushed documentation status work on top of `origin/main`; the latest local status
-commit before this refresh was `f66c38a docs: design devtools extension ui` on top of `3b8c902`. A
-fresh
-`git fetch origin main` on 2026-07-28 failed because the environment could not connect to
-`github.com:443`, so the true remote state must be rechecked before any release or publish claim.
+Local `main` and `origin/main` are in sync after a successful `git push origin main` on 2026-07-28.
+Future release or publish claims must still recheck the remote with `git fetch origin main` and
+`git status --short --branch`.
 
 Implemented baseline:
 

@@ -15,11 +15,9 @@ Current repository state:
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: local `main` has unpushed documentation status work on top of `origin/main`; the
-  latest local status commit before this refresh was `f66c38a docs: design devtools extension ui` on
-  top of `3b8c902`. A fresh
-  `git fetch origin main` on 2026-07-28 failed because this environment could not connect to
-  `github.com:443`, so the true remote state must be rechecked before any release or publish claim.
+- Remote state: local `main` and `origin/main` are in sync after a successful
+  `git push origin main` on 2026-07-28. Recheck with `git fetch origin main` and
+  `git status --short --branch` before any future release or publish claim.
 - Phase: alpha released; beta contract stabilization plus SSR/hydration minimum loop implemented,
   including server-side style collection and hydration-safe style dedupe
 
@@ -116,8 +114,8 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Recommended Next Work
 
-1. **Synchronize `main` with `origin/main` when GitHub connectivity is available**; local status work
-   remains unpushed, and the latest fetch attempt failed. Recheck with `git fetch origin main` and
+1. **Keep `main` synchronized with `origin/main` before release work**; the latest push succeeded,
+   but release preparation should still recheck with `git fetch origin main` and
    `git status --short --branch` before publishing.
 2. **Continue stabilizing the SFC/Vite contract without syntax expansion**: keep the public surface limited to `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, and the documented alpha `.solace` block model.
 3. **Continue narrowing the router beta API without adding deferred features**: keep nested routes, guards, redirects, lazy route components, scroll behavior, memory history, SSR/hydration integration, auth, and permissions out of the beta slice until separately designed.
