@@ -15,9 +15,15 @@ Current repository state:
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: local `main` and `origin/main` are in sync after a successful
-  `git push origin main` on 2026-07-28. Recheck with `git fetch origin main` and
-  `git status --short --branch` before any future release or publish claim.
+- Remote state: local `main` is intentionally not pushed and is `ahead 3` from
+  `origin/main` as the current local working baseline. `origin/main` is at
+  `c2ed19a fix: harden ssg manifest and router boundaries`; the local baseline adds
+  `05dedea fix: harden sfc and router beta boundaries` and
+  `a98e7d9 fix: tighten sfc router ssr boundary checks`, plus the current package
+  consumer boundary hardening commit. Recheck with
+  `git fetch origin main`, `git status --short --branch`, and
+  `git rev-list --left-right --count origin/main...HEAD` before any future
+  release, publish, or synchronization claim.
 - Phase: alpha released; beta contract stabilization plus SSR/hydration minimum loop implemented,
   including server-side style collection and hydration-safe style dedupe
 
@@ -114,9 +120,11 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Recommended Next Work
 
-1. **Keep `main` synchronized with `origin/main` before release work**; the latest push succeeded,
-   but release preparation should still recheck with `git fetch origin main` and
-   `git status --short --branch` before publishing.
+1. **Keep the current local `ahead 3` baseline explicit until push is requested**; do not publish
+   from an ambiguous branch state. Before release preparation, either push/synchronize `main` or
+   explicitly accept the local baseline after rechecking with `git fetch origin main`,
+   `git status --short --branch`, and
+   `git rev-list --left-right --count origin/main...HEAD`.
 2. **Continue stabilizing the SFC/Vite contract without syntax expansion**: keep the public surface limited to `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, and the documented alpha `.solace` block model.
 3. **Continue narrowing the router beta API without adding deferred features**: keep nested routes, guards, redirects, lazy route components, scroll behavior, memory history, SSR/hydration integration, auth, and permissions out of the beta slice until separately designed.
 4. **Keep public API gates mandatory**: `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e` must run for public API changes.

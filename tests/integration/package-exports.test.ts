@@ -181,6 +181,14 @@ describe("package exports", () => {
     expect(vite).not.toHaveProperty("scopeStyle");
   });
 
+  it("enforces the public Vite plugin contract from the package subpath", async () => {
+    const vite = await import("@italone/solace/vite");
+
+    expect(() => vite.solacePlugin({ customBlocks: true } as never)).toThrow(
+      /Solace Vite plugin options are not part of the public contract/,
+    );
+  });
+
   it("exports the SFC type shim subpath", async () => {
     const sfc = await import("@italone/solace/sfc");
 
@@ -195,6 +203,73 @@ describe("package exports", () => {
     expect(server.renderToString).toEqual(expect.any(Function));
     expect(server).not.toHaveProperty("hydrate");
     expect(server).not.toHaveProperty("patch");
+  });
+
+  it("enforces router beta boundaries from the package root", async () => {
+    const api = await import("@italone/solace");
+    const history = {
+      location: () => "/",
+      push: () => undefined,
+      replace: () => undefined,
+      listen: () => () => undefined,
+      back: () => undefined,
+      forward: () => undefined,
+    };
+    const Home = () => api.h("p", null, "home");
+
+    expect(() =>
+      api.createRouter({
+        history,
+        routes: [{ path: "/nested", component: Home, children: [] }],
+      } as never),
+    ).toThrow(/Deferred router route record field/);
+    expect(() =>
+      api.createRouter({
+        history,
+        routes: [{ path: "/", component: Home }],
+        scrollBehavior: () => ({ left: 0, top: 0 }),
+      } as never),
+    ).toThrow(/Deferred router option/);
+    expect(() =>
+      api.createRouter({
+        history,
+        routes: [{ path: "/users/:id?", component: Home }],
+      }),
+    ).toThrow(/Deferred router path syntax/);
+  });
+
+  it("enforces SSR and SSG manifest/router boundaries from the server subpath", async () => {
+    const server = await import("@italone/solace/server");
+    const source = null as never;
+
+    expect(() => server.renderToString(source, { manifest: {} } as never)).toThrow(
+      /SSR manifest integration is deferred/,
+    );
+    expect(() => server.renderToString(source, { clientEntry: "/src/main.ts" } as never)).toThrow(
+      /SSR manifest integration is deferred/,
+    );
+    expect(() => server.renderToString(source, { router: {} } as never)).toThrow(
+      /Router-aware SSR integration is deferred/,
+    );
+
+    expect(() =>
+      server.generateStaticSite({
+        routes: [{ path: "/", source }],
+        manifest: {},
+      } as never),
+    ).toThrow(/SSG manifest integration is deferred/);
+    expect(() =>
+      server.generateStaticSite({
+        routes: [{ path: "/", source }],
+        clientEntry: "/src/main.ts",
+      } as never),
+    ).toThrow(/SSG manifest integration is deferred/);
+    expect(() =>
+      server.generateStaticSite({
+        routes: [{ path: "/", source }],
+        router: {},
+      } as never),
+    ).toThrow(/Router-aware SSG integration is deferred/);
   });
 
   it("supports CommonJS package exports", () => {

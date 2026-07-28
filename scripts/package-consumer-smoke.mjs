@@ -236,6 +236,88 @@ export default {
 };
 `,
   );
+  await writeFile(
+    join(consumerDir, "boundary-smoke.mjs"),
+    `import * as api from "@italone/solace";
+import * as server from "@italone/solace/server";
+import solacePlugin, { solacePlugin as namedSolacePlugin } from "@italone/solace/vite";
+
+const history = {
+  location: () => "/",
+  push: () => undefined,
+  replace: () => undefined,
+  listen: () => () => undefined,
+  back: () => undefined,
+  forward: () => undefined,
+};
+const Home = () => api.h("p", null, "home");
+
+function expectThrows(label, fn, pattern) {
+  try {
+    fn();
+  } catch (error) {
+    if (pattern.test(String(error?.message ?? error))) {
+      return;
+    }
+    throw new Error(\`\${label} threw an unexpected error: \${String(error?.message ?? error)}\`);
+  }
+  throw new Error(\`\${label} did not throw\`);
+}
+
+if (solacePlugin().name !== "solace-sfc" || namedSolacePlugin().name !== "solace-sfc") {
+  throw new Error("vite plugin export mismatch");
+}
+expectThrows("vite plugin options", () => solacePlugin({ customBlocks: true }), /Solace Vite plugin options are not part of the public contract/);
+expectThrows("router deferred route fields", () => api.createRouter({ history, routes: [{ path: "/nested", component: Home, children: [] }] }), /Deferred router route record field/);
+expectThrows("router deferred options", () => api.createRouter({ history, routes: [{ path: "/", component: Home }], scrollBehavior: () => ({ left: 0, top: 0 }) }), /Deferred router option/);
+expectThrows("router deferred path syntax", () => api.createRouter({ history, routes: [{ path: "/users/:id?", component: Home }] }), /Deferred router path syntax/);
+expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest integration is deferred/);
+expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
+expectThrows("SSG manifest option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], manifest: {} }), /SSG manifest integration is deferred/);
+expectThrows("SSG router option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], router: {} }), /Router-aware SSG integration is deferred/);
+`,
+  );
+  await writeFile(
+    join(consumerDir, "boundary-smoke.cjs"),
+    `const api = require("@italone/solace");
+const server = require("@italone/solace/server");
+const vite = require("@italone/solace/vite");
+
+const history = {
+  location: () => "/",
+  push: () => undefined,
+  replace: () => undefined,
+  listen: () => () => undefined,
+  back: () => undefined,
+  forward: () => undefined,
+};
+const Home = () => api.h("p", null, "home");
+
+function expectThrows(label, fn, pattern) {
+  try {
+    fn();
+  } catch (error) {
+    if (pattern.test(String(error && error.message ? error.message : error))) {
+      return;
+    }
+    throw new Error(label + " threw an unexpected error: " + String(error && error.message ? error.message : error));
+  }
+  throw new Error(label + " did not throw");
+}
+
+if (vite.solacePlugin().name !== "solace-sfc" || vite.default().name !== "solace-sfc") {
+  throw new Error("vite plugin export mismatch");
+}
+expectThrows("vite plugin options", () => vite.solacePlugin({ customBlocks: true }), /Solace Vite plugin options are not part of the public contract/);
+expectThrows("router deferred route fields", () => api.createRouter({ history, routes: [{ path: "/nested", component: Home, children: [] }] }), /Deferred router route record field/);
+expectThrows("router deferred options", () => api.createRouter({ history, routes: [{ path: "/", component: Home }], scrollBehavior: () => ({ left: 0, top: 0 }) }), /Deferred router option/);
+expectThrows("router deferred path syntax", () => api.createRouter({ history, routes: [{ path: "/users/:id?", component: Home }] }), /Deferred router path syntax/);
+expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest integration is deferred/);
+expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
+expectThrows("SSG manifest option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], manifest: {} }), /SSG manifest integration is deferred/);
+expectThrows("SSG router option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], router: {} }), /Router-aware SSG integration is deferred/);
+`,
+  );
 
   await run("pnpm", ["install", "--ignore-scripts"], consumerDir);
   await run(resolve(root, "node_modules/.bin/tsc"), ["-p", consumerDir], root);
@@ -262,6 +344,8 @@ export default {
     ],
     consumerDir,
   );
+  await run("node", ["boundary-smoke.mjs"], consumerDir);
+  await run("node", ["boundary-smoke.cjs"], consumerDir);
 
   console.log("package consumer smoke passed");
 } finally {
