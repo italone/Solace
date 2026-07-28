@@ -108,31 +108,52 @@ Template expressions use JSX-like braces and runtime identifiers from the script
 The public SFC contract is intentionally narrow: use `@italone/solace/vite` as the Vite plugin and
 `@italone/solace/sfc` as the TypeScript type shim for `.solace` imports. The compiler remains an
 alpha surface. It supports a small syntax subset, reports compile diagnostics through Vite transform
-errors, injects scoped styles at runtime, and currently returns `map: null` to match the package
-policy of not publishing production source maps. Parser internals, generated module shape, and
-scoped-style implementation details are not public compatibility targets. The `@italone/solace/vite`
-subpath intentionally exports only `default` and `solacePlugin`; do not import compiler helpers or
-deep subpaths such as `@italone/solace/compiler`, `@italone/solace/router`, or
-`@italone/solace/dist/**`.
+errors, routes scoped styles through the public `useStyle()` runtime helper, and currently returns
+`map: null` to match the package policy of not publishing production source maps. Parser internals,
+generated module shape, and scoped-style implementation details are not public compatibility
+targets. The `@italone/solace/vite` subpath intentionally exports only `default` and `solacePlugin`;
+do not import compiler helpers or deep subpaths such as `@italone/solace/compiler`,
+`@italone/solace/router`, or `@italone/solace/dist/**`.
 
-## Use Server Rendering
+## Use Server Rendering And SSG
 
-The first server rendering entry is `@italone/solace/server`:
+The server entry is `@italone/solace/server`:
 
 ```ts
-import { h } from "@italone/solace";
-import { renderToString } from "@italone/solace/server";
+import { h, useStyle } from "@italone/solace";
+import { generateStaticSite, renderToString } from "@italone/solace/server";
 
-const result = renderToString(h("p", null, "server"));
+const App = () => {
+  useStyle("server-demo", ".server-demo { color: blue; }");
+  return h("p", { class: "server-demo" }, "server");
+};
+
+const result = renderToString(h(App));
 result.html;
-result.styles;
+result.styles; // ['<style data-s-id="server-demo">.server-demo { color: blue; }</style>']
 ```
 
 Use `createApp(App).hydrate(container)` in the browser to attach behavior to matching server HTML.
-Hydration throws on structural mismatches instead of silently replacing incompatible DOM.
+Hydration reuses existing `style[data-s-id]` tags for matching `useStyle()` registrations and throws
+on structural mismatches instead of silently replacing incompatible DOM.
 
-This minimum loop does not include SSG, streaming SSR, async component SSR, production asset
-manifest integration, server-side style collection, or hydration mismatch recovery.
+This minimum loop includes synchronous `renderToString()`, in-memory SSG through
+`generateStaticSite()`, server-side style collection, and hydration-safe style dedupe. It does not
+include streaming SSR, async component SSR, production asset manifest integration, filesystem SSG
+output, router-aware SSG adapters, or hydration mismatch recovery.
+
+`generateStaticSite()` renders explicit route sources in memory and preserves collected
+`renderToString()` styles for custom shells:
+
+```ts
+const site = generateStaticSite({
+  routes: [{ path: "/", source: h(App) }],
+  shell: ({ body, styles }) =>
+    `<!doctype html><html><head>${styles.join("")}</head><body>${body}</body></html>`,
+});
+
+site.pages[0].html;
+```
 
 ## Use The Beta Router
 
@@ -178,7 +199,7 @@ SSG, or hydration.
 - `@italone/solace/jsx-runtime`: TypeScript automatic JSX runtime.
 - `@italone/solace/jsx-dev-runtime`: development JSX runtime used by Vite.
 - `@italone/solace/devtools`: low-level DevTools listener and recorder APIs.
-- `@italone/solace/server`: first server rendering API for synchronous VNode trees.
+- `@italone/solace/server`: server rendering and in-memory SSG for synchronous trees.
 - `@italone/solace/sfc`: TypeScript type shim for `.solace` imports.
 - `@italone/solace/vite`: Vite plugin for alpha `.solace` single-file components.
 

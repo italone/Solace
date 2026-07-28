@@ -3,8 +3,8 @@
 [简体中文](./api.zh-CN.md)
 
 This document describes the public Solace runtime API. Import runtime features from the package
-root, server rendering from `@italone/solace/server`, JSX support from the JSX subpaths, and DevTools
-integration from `@italone/solace/devtools`.
+root, server rendering and SSG from `@italone/solace/server`, JSX support from the JSX subpaths, and
+DevTools integration from `@italone/solace/devtools`.
 
 Internal files under `src/**`, generated files under `dist/**`, scheduler queues, shape flags,
 component instances, and VNode factory internals are not part of the compatibility contract.
@@ -17,7 +17,7 @@ The package root exposes the documented runtime surface:
 | ---------- | --------------------------------------------------------------------------------------------------------------- |
 | App        | `createApp`                                                                                                     |
 | Reactivity | `reactive`, `ref`, `computed`, `effect`, `watch`, `watchEffect`                                                 |
-| Rendering  | `h`, `render`, `Fragment`                                                                                       |
+| Rendering  | `h`, `render`, `Fragment`, `useStyle`                                                                           |
 | Components | `defineComponent`, `defineAsyncComponent`                                                                       |
 | Context    | `provide`, `inject`                                                                                             |
 | Lifecycle  | `onMounted`, `onUpdated`, `onUnmounted`                                                                         |
@@ -46,7 +46,7 @@ Use Solace through the documented package entries only:
 | `@italone/solace/jsx-runtime`      | Public    | Automatic JSX runtime used by TypeScript and bundlers       |
 | `@italone/solace/jsx-dev-runtime`  | Public    | Development JSX runtime used by Vite and JSX dev tooling    |
 | `@italone/solace/devtools`         | Public    | Low-level listener and recorder APIs for tooling            |
-| `@italone/solace/server`           | Public    | First server rendering API for synchronous VNode trees      |
+| `@italone/solace/server`           | Public    | Server rendering and in-memory SSG for synchronous trees    |
 | `@italone/solace/sfc`              | Public    | Type shim entry for `.solace` single-file component imports |
 | `@italone/solace/vite`             | Public    | Vite plugin for alpha `.solace` single-file components      |
 | `src/**`, `dist/**`, deep subpaths | Private   | Internal implementation details, not compatibility targets  |
@@ -56,9 +56,11 @@ patch releases, while internal modules, event emit helpers, scheduler queues, re
 component instances, and generated file layout can change without notice.
 
 The `.solace` compiler contract is currently limited to the documented Vite plugin and the
-`@italone/solace/sfc` type shim. The parser, generated JavaScript shape, scoped-style implementation,
-and internal compiler modules remain alpha implementation details. Do not import compiler or router
-deep subpaths such as `@italone/solace/compiler`, `@italone/solace/router`, or `@italone/solace/dist/**`.
+`@italone/solace/sfc` type shim. The parser, generated JavaScript shape, and internal compiler
+modules remain alpha implementation details. Scoped styles are registered through the public
+`useStyle()` runtime helper, but generated module shape and compiler internals are not compatibility
+targets. Do not import compiler or router deep subpaths such as `@italone/solace/compiler`,
+`@italone/solace/router`, or `@italone/solace/dist/**`.
 
 The router exports in the package root are beta APIs for small SPA examples. Route guards, nested
 route records, scroll behavior, named routes, lazy route loading, SSR integration, auth, permissions,
@@ -131,22 +133,67 @@ createApp(App)
 
 ## Server Rendering Subpath
 
-Import the first SSR API from `@italone/solace/server`:
+Import SSR and SSG APIs from `@italone/solace/server`:
 
 ```ts
 import { h } from "@italone/solace";
-import { renderToString } from "@italone/solace/server";
+import { generateStaticSite, renderToString } from "@italone/solace/server";
 
 const result = renderToString(h("p", null, "server"));
 ```
 
 `renderToString(source)` returns `{ html, styles }`. The first server renderer supports synchronous
 VNode and function component trees, escapes text and attributes, omits event props from HTML, and
-does not run DOM lifecycle hooks. Use `createApp(App).hydrate(container)` in the browser to attach
-behavior to matching server HTML.
+does not run DOM lifecycle hooks. Components can register styles with `useStyle(scopeId, css)`;
+server rendering collects them in `styles` as serialized `<style data-s-id="...">...</style>` tags.
+Use `createApp(App).hydrate(container)` in the browser to attach behavior to matching server HTML and
+reuse existing `style[data-s-id]` tags without duplicating matching styles.
 
-Streaming SSR, async component SSR, SSG CLI, production manifest integration, style collection, and
-hydration mismatch recovery remain deferred.
+Streaming SSR, async component SSR, SSG CLI, production manifest integration, hydration mismatch
+recovery, and router SSR/SSG/hydration integration remain deferred.
+
+### `generateStaticSite(options)`
+
+`generateStaticSite({ routes, shell })` renders explicit route entries through `renderToString()` and
+returns `{ pages }`. Each route must have a unique path beginning with `/`, plus a `source` accepted
+by `renderToString()`. Optional route-level `provides` values are passed into rendering, and optional
+route `context` is forwarded to the shell.
+
+```ts
+const site = generateStaticSite({
+  routes: [{ path: "/", source: h("h1", null, "Home") }],
+  shell: ({ body, styles }) =>
+    `<!doctype html><html><head>${styles.join("")}</head><body>${body}</body></html>`,
+});
+
+site.pages[0].html;
+```
+
+The first SSG core is in-memory only. Filesystem output, production asset manifests, router-aware
+adapters, and CLI integration remain outside the current public contract.
+
+## Runtime Style Registration
+
+Register render-tree styles with `useStyle(scopeId, css)` from the package root:
+
+```ts
+import { h, useStyle } from "@italone/solace";
+import { renderToString } from "@italone/solace/server";
+
+const App = () => {
+  useStyle("counter", ".counter { color: blue; }");
+  return h("button", { class: "counter" }, "server");
+};
+
+const result = renderToString(h(App));
+result.styles; // ['<style data-s-id="counter">.counter { color: blue; }</style>']
+```
+
+`useStyle(scopeId, css)` must run while rendering a component. During server rendering, the style is
+registered in the current `renderToString()` request scope. During browser `mount()` and `hydrate()`,
+Solace writes through a document-backed style sink and dedupes existing `style[data-s-id]` tags by
+`scopeId`. Reusing the same `scopeId` with different CSS in the same sink is treated as a style
+conflict.
 
 ## Reactivity
 

@@ -2,7 +2,7 @@
 
 [English](./api.md)
 
-本文档描述 Solace 的公共运行时 API。运行时能力从包根入口导入，server rendering 从
+本文档描述 Solace 的公共运行时 API。运行时能力从包根入口导入，server rendering 和 SSG 从
 `@italone/solace/server` 导入，JSX 支持从 JSX 子路径导入，DevTools 集成从
 `@italone/solace/devtools` 导入。
 
@@ -16,7 +16,7 @@
 | ---------- | --------------------------------------------------------------------------------------------------------------- |
 | App        | `createApp`                                                                                                     |
 | Reactivity | `reactive`、`ref`、`computed`、`effect`、`watch`、`watchEffect`                                                 |
-| Rendering  | `h`、`render`、`Fragment`                                                                                       |
+| Rendering  | `h`、`render`、`Fragment`、`useStyle`                                                                           |
 | Components | `defineComponent`、`defineAsyncComponent`                                                                       |
 | Context    | `provide`、`inject`                                                                                             |
 | Lifecycle  | `onMounted`、`onUpdated`、`onUnmounted`                                                                         |
@@ -43,14 +43,14 @@
 | `@italone/solace/jsx-runtime`      | 公开   | TypeScript 和 bundler 使用的 automatic JSX runtime |
 | `@italone/solace/jsx-dev-runtime`  | 公开   | Vite 和 JSX dev tooling 使用的开发环境 JSX runtime |
 | `@italone/solace/devtools`         | 公开   | 面向 tooling 的底层 listener 和 recorder API       |
-| `@italone/solace/server`           | 公开   | 面向同步 VNode tree 的首个 server rendering API    |
+| `@italone/solace/server`           | 公开   | 面向同步 tree 的 server rendering 和内存 SSG       |
 | `@italone/solace/sfc`              | 公开   | `.solace` 单文件组件 import 的类型声明入口         |
 | `@italone/solace/vite`             | 公开   | alpha `.solace` 单文件组件的 Vite plugin           |
 | `src/**`、`dist/**`、deep subpaths | 私有   | 内部实现细节，不作为兼容性目标                     |
 
 alpha 阶段的兼容性契约有意保持较窄。公开入口应在 patch release 之间保持可用；内部模块、event emit helpers、scheduler 队列、renderer diagnostics、组件实例和生成文件布局可能在不额外通知的情况下变化。
 
-`.solace` compiler 契约当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口。parser、生成 JavaScript 形状、scoped-style 实现和内部 compiler modules 仍属于 alpha 实现细节。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
+`.solace` compiler 契约当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口。parser、生成 JavaScript 形状和内部 compiler modules 仍属于 alpha 实现细节。scoped style 会通过公开的 `useStyle()` runtime helper 注册，但生成模块形状和 compiler 内部实现不属于兼容性目标。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
 
 包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。route guards、嵌套路由记录、scroll behavior、具名路由、懒加载路由、SSR 集成、auth、permissions 和长期 router 兼容策略仍被推迟。
 
@@ -119,21 +119,65 @@ createApp(App)
 
 ## Server Rendering 子路径
 
-首个 SSR API 从 `@italone/solace/server` 导入：
+SSR 和 SSG API 从 `@italone/solace/server` 导入：
 
 ```ts
 import { h } from "@italone/solace";
-import { renderToString } from "@italone/solace/server";
+import { generateStaticSite, renderToString } from "@italone/solace/server";
 
 const result = renderToString(h("p", null, "server"));
 ```
 
 `renderToString(source)` 返回 `{ html, styles }`。首个 server renderer 支持同步 VNode 和函数
 组件树，会转义文本和属性，从 HTML 中省略事件 props，并且不会运行 DOM 生命周期 hooks。浏览器端
-使用 `createApp(App).hydrate(container)` 为匹配的 server HTML 附加行为。
+组件可通过 `useStyle(scopeId, css)` 注册样式；server rendering 会把它们收集到 `styles` 中，
+以完整的 `<style data-s-id="...">...</style>` 字符串返回。浏览器端使用
+`createApp(App).hydrate(container)` 为匹配的 server HTML 附加行为，并复用已有
+`style[data-s-id]` 标签，避免重复插入匹配样式。
 
-Streaming SSR、async component SSR、SSG CLI、production manifest integration、style
-collection 和 hydration mismatch recovery 仍保持 deferred。
+Streaming SSR、async component SSR、SSG CLI、production manifest integration、hydration
+mismatch recovery 和 router SSR/SSG/hydration 集成仍保持 deferred。
+
+### `generateStaticSite(options)`
+
+`generateStaticSite({ routes, shell })` 会通过 `renderToString()` 渲染显式 route entries，并返回
+`{ pages }`。每个 route 都必须有以 `/` 开头且唯一的 path，以及可被 `renderToString()` 接收的
+`source`。可选的 route `provides` 会传入 rendering；可选的 route `context` 会继续传给 shell。
+
+```ts
+const site = generateStaticSite({
+  routes: [{ path: "/", source: h("h1", null, "Home") }],
+  shell: ({ body, styles }) =>
+    `<!doctype html><html><head>${styles.join("")}</head><body>${body}</body></html>`,
+});
+
+site.pages[0].html;
+```
+
+首个 SSG core 仅为内存 API。filesystem output、production asset manifests、router-aware
+adapters 和 CLI integration 仍不在当前公共契约内。
+
+## Runtime Style 注册
+
+从包根入口使用 `useStyle(scopeId, css)` 注册渲染树样式：
+
+```ts
+import { h, useStyle } from "@italone/solace";
+import { renderToString } from "@italone/solace/server";
+
+const App = () => {
+  useStyle("counter", ".counter { color: blue; }");
+  return h("button", { class: "counter" }, "server");
+};
+
+const result = renderToString(h(App));
+result.styles; // ['<style data-s-id="counter">.counter { color: blue; }</style>']
+```
+
+`useStyle(scopeId, css)` 必须在组件渲染期间运行。server rendering 会把样式注册到当前
+`renderToString()` 请求作用域；浏览器 `mount()` 和 `hydrate()` 会通过 document-backed style
+sink 写入样式，并按 `scopeId` 去重已有 `style[data-s-id]` 标签。在同一个 sink 中用同一个
+`scopeId` 注册不同 CSS 会被视为样式冲突。
 
 ## Reactivity
 

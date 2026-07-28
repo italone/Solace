@@ -1,6 +1,6 @@
 # Solace
 
-[English](./solace/readme.md)
+[English](./readme.md)
 
 Solace 是一个 TypeScript-first 的前端框架，用于构建响应式、组件驱动的 Web 界面。
 
@@ -23,7 +23,7 @@ Solace 当前处于早期 alpha runtime 阶段。仓库功能可运行，并已�
 
 当前完成度摘要：
 
-- App、响应式、渲染、组件、上下文、生命周期、调度器、store、JSX、SSR/hydration minimum loop 和底层 DevTools 集成已经通过文档化公开入口暴露。
+- App、响应式、渲染、组件、上下文、生命周期、调度器、store、JSX、SSR/hydration minimum loop、SSG core、runtime style registration 和底层 DevTools 集成已经通过文档化公开入口暴露。
 - 包产物包含 ESM、CJS、TypeScript declarations、JSX runtime 子路径、`@italone/solace/server`，以及 `@italone/solace/devtools` 子路径。
 - 验证覆盖 format、typecheck、lint、单元测试、集成测试、包导出测试、覆盖率阈值、packed-consumer 冒烟测试、jsdom benchmark、Chromium 生产构建浏览器 benchmark 和浏览器 e2e 测试。
 - npm 发布是独立的维护者决策。本地可以先准备版本，但不一定已经 push 到 GitHub 或发布到 npm。
@@ -32,7 +32,7 @@ Solace 当前处于早期 alpha runtime 阶段。仓库功能可运行，并已�
 
 ## Alpha 范围
 
-Solace 当前适合用于学习小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 alpha 已包含 alpha `.solace` compiler、`@italone/solace/vite` plugin、beta 一方 router slice，以及通过 `@italone/solace/server` 和 `createApp(App).hydrate(container)` 暴露的 minimum SSR/hydration loop；它还不包含 SSG、streaming SSR、async SSR、一方 UI 组件、浏览器扩展 DevTools，也不为内部模块提供兼容性承诺。
+Solace 当前适合用于学习小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 alpha 已包含 alpha `.solace` compiler、`@italone/solace/vite` plugin、beta 一方 router slice、通过 `generateStaticSite()` 暴露的 SSG core，以及通过 `@italone/solace/server` 和 `createApp(App).hydrate(container)` 暴露的 minimum SSR/hydration loop；它还不包含 streaming SSR、async SSR、production asset manifest integration、一方 UI 组件、浏览器扩展 DevTools，也不为内部模块提供兼容性承诺。
 
 ## 快速开始
 
@@ -435,7 +435,7 @@ pnpm release:readiness
 
 ## 路线图
 
-当前重点是运行时稳定性、renderer 性能、包版本协调和文档质量。等核心运行时契约稳定后，后续可以继续扩展 compiler tooling、router 集成、SSR/SSG、hydration、浏览器 DevTools 和生态适配器。
+当前重点是稳定 SFC/Vite contract、收敛 router beta API、设计 SSR/SSG/hydration、协调 package/version 状态和维护文档质量。等核心运行时契约稳定后，后续可以继续扩展 browser DevTools、生产落地指南和生态适配器。
 
 ## 贡献
 
