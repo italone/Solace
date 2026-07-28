@@ -83,6 +83,23 @@ describe("useStyle", () => {
     expect(document.head.querySelectorAll('style[data-s-id="abc123"]')).toHaveLength(1);
   });
 
+  it("rejects conflicting styles when an existing server style was escaped", () => {
+    const ServerApp = () => {
+      useStyle("abc123", '.counter::before { content: "<&>"; }');
+      return h("button", { class: "counter" }, "count: 0");
+    };
+    const ClientApp = () => {
+      useStyle("abc123", '.counter::before { content: ">&<"; }');
+      return h("button", { class: "counter" }, "count: 0");
+    };
+    const serverRendered = renderToString(h(ServerApp));
+    const container = document.createElement("div");
+    document.head.innerHTML = serverRendered.styles.join("");
+    container.innerHTML = serverRendered.html;
+
+    expect(() => createApp(ClientApp).hydrate(container)).toThrow(/style conflict/i);
+  });
+
   it("does not duplicate preexisting style tags during client-only mount", () => {
     document.head.innerHTML = '<style data-s-id="abc123">.counter { color: blue; }</style>';
     const App = () => {
