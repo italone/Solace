@@ -32,6 +32,9 @@ describe("hydrate", () => {
     container.innerHTML = "<span>server</span>";
 
     expect(() => hydrate(h("button", null, "server"), container)).toThrow(SolaceHydrationError);
+    expect(() => hydrate(h("button", null, "server"), container)).toThrow(
+      /path root: expected <button> but found <span>/i,
+    );
   });
 
   it("throws on text mismatches", () => {
@@ -39,6 +42,18 @@ describe("hydrate", () => {
     container.innerHTML = "<button>server</button>";
 
     expect(() => hydrate(h("button", null, "client"), container)).toThrow(SolaceHydrationError);
+    expect(() => hydrate(h("button", null, "client"), container)).toThrow(
+      /path root\/button: expected text "client" but found "server"/i,
+    );
+  });
+
+  it("reports nested mismatch paths during hydration", () => {
+    const container = document.createElement("div");
+    container.innerHTML = "<section><span>server</span></section>";
+
+    expect(() => hydrate(h("section", null, [h("button", null, "server")]), container)).toThrow(
+      /path root\/section\[0\]: expected <button> but found <span>/i,
+    );
   });
 
   it("does not patch non-event props during the first component hydration pass", () => {

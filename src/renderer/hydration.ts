@@ -24,21 +24,24 @@ export function hydrateVNode(
   node: Node | null,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
+  path = "root",
 ): Node | null {
   if (node === null) {
-    throw new SolaceHydrationError(`Missing DOM node for ${describeVNode(vnode)}`);
+    throw new SolaceHydrationError(
+      `Hydration mismatch at path ${path}: missing DOM node for ${describeVNode(vnode)}`,
+    );
   }
 
   if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
-    return hydrateElement(vnode, node, parentComponent, appProvides);
+    return hydrateElement(vnode, node, parentComponent, appProvides, path);
   }
 
   if (vnode.shapeFlag & ShapeFlags.COMPONENT) {
-    return hydrateComponent(vnode, node, parentComponent, appProvides);
+    return hydrateComponent(vnode, node, parentComponent, appProvides, path);
   }
 
   if (vnode.shapeFlag & ShapeFlags.FRAGMENT) {
-    return hydrateFragment(vnode, node, parentComponent, appProvides);
+    return hydrateFragment(vnode, node, parentComponent, appProvides, path);
   }
 
   return node.nextSibling;
@@ -49,10 +52,11 @@ function hydrateElement(
   node: Node,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
+  path: string,
 ): Node | null {
   if (!(node instanceof Element) || node.tagName.toLowerCase() !== String(vnode.type)) {
     throw new SolaceHydrationError(
-      `Expected <${String(vnode.type)}> but found ${describeDomNode(node)}`,
+      `Hydration mismatch at path ${path}: expected <${String(vnode.type)}> but found ${describeDomNode(node)}`,
     );
   }
 
@@ -63,14 +67,20 @@ function hydrateElement(
     const expected = vnode.children as string;
     if (node.textContent !== expected) {
       throw new SolaceHydrationError(
-        `Text mismatch in <${String(vnode.type)}>: expected "${expected}" but found "${node.textContent ?? ""}"`,
+        `Hydration mismatch at path ${describeElementTextPath(path, vnode)}: expected text "${expected}" but found "${node.textContent ?? ""}"`,
       );
     }
     return node.nextSibling;
   }
 
   if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-    hydrateChildren(vnode.children as VNode[], node.firstChild, parentComponent, appProvides);
+    hydrateChildren(
+      vnode.children as VNode[],
+      node.firstChild,
+      parentComponent,
+      appProvides,
+      describeElementTextPath(path, vnode),
+    );
   }
 
   return node.nextSibling;
@@ -81,6 +91,7 @@ function hydrateComponent(
   node: Node,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
+  path: string,
 ): Node | null {
   const updateContainer = node.parentNode;
   const instance = createComponentInstance(vnode, parentComponent, appProvides);
@@ -89,7 +100,7 @@ function hydrateComponent(
 
   const subTree = instance.render();
   instance.subTree = subTree;
-  const next = hydrateVNode(subTree, node, instance, instance.appProvides);
+  const next = hydrateVNode(subTree, node, instance, instance.appProvides, path);
   vnode.el = subTree.el;
   instance.isMounted = true;
   clearLifecycleHooks(instance);
@@ -154,14 +165,15 @@ function hydrateFragment(
   node: Node,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
+  path: string,
 ): Node | null {
   if (!(vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN)) {
     return node;
   }
 
   let current: Node | null = node;
-  for (const child of vnode.children as VNode[]) {
-    current = hydrateVNode(child, current, parentComponent, appProvides);
+  for (const [index, child] of (vnode.children as VNode[]).entries()) {
+    current = hydrateVNode(child, current, parentComponent, appProvides, `${path}[${index}]`);
   }
   vnode.el = (vnode.children as VNode[])[0]?.el ?? null;
 
@@ -173,10 +185,11 @@ function hydrateChildren(
   firstNode: ChildNode | null,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
+  parentPath: string,
 ): void {
   let current: Node | null = firstNode;
-  for (const child of children) {
-    current = hydrateVNode(child, current, parentComponent, appProvides);
+  for (const [index, child] of children.entries()) {
+    current = hydrateVNode(child, current, parentComponent, appProvides, `${parentPath}[${index}]`);
   }
 }
 
@@ -200,4 +213,8 @@ function describeVNode(vnode: VNode): string {
 
 function describeDomNode(node: Node): string {
   return node instanceof Element ? `<${node.tagName.toLowerCase()}>` : node.nodeName;
+}
+
+function describeElementTextPath(path: string, vnode: VNode): string {
+  return `${path}/${String(vnode.type)}`;
 }
