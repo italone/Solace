@@ -610,6 +610,7 @@ createApp(App)
 Creates a router plugin. `routes` are matched by path. Static routes are prioritized before dynamic
 routes, and `/:pathMatch(.*)*` can be used as a wildcard fallback. `router.currentRoute` is a ref
 containing `{ path, fullPath, query, params, matched }`.
+Route record paths must be strings; invalid path shapes are rejected before matcher compilation.
 Object route locations are limited to `{ path, query }`; named locations, hash, and params objects
 are rejected until those router contracts are separately designed.
 

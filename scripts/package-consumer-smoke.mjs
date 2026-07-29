@@ -395,6 +395,7 @@ if (solacePlugin().name !== "solace-sfc" || namedSolacePlugin().name !== "solace
 expectThrows("vite plugin options", () => solacePlugin({ customBlocks: true }), /Solace Vite plugin options are not part of the public contract/);
 expectThrows("vite plugin query transforms", () => solacePlugin().transform("<template><p>raw</p></template>", "/app/src/App.solace?raw"), /Solace Vite plugin query transforms are not part of the public contract/);
 expectThrows("router deferred route fields", () => api.createRouter({ history, routes: [{ path: "/nested", component: Home, children: [] }] }), /Deferred router route record field/);
+expectThrows("router invalid route path", () => api.createRouter({ history, routes: [{ path: 42, component: Home }] }), /Router route record path must be a string/);
 expectThrows("router deferred options", () => api.createRouter({ history, routes: [{ path: "/", component: Home }], scrollBehavior: () => ({ left: 0, top: 0 }) }), /Deferred router option/);
 expectThrows("router deferred path syntax", () => api.createRouter({ history, routes: [{ path: "/users/:id?", component: Home }] }), /Deferred router path syntax/);
 const router = api.createRouter({ history, routes: [{ path: "/", component: Home }] });
@@ -446,6 +447,7 @@ if (vite.solacePlugin().name !== "solace-sfc" || vite.default().name !== "solace
 expectThrows("vite plugin options", () => vite.solacePlugin({ customBlocks: true }), /Solace Vite plugin options are not part of the public contract/);
 expectThrows("vite plugin query transforms", () => vite.solacePlugin().transform("<template><p>raw</p></template>", "/app/src/App.solace?raw"), /Solace Vite plugin query transforms are not part of the public contract/);
 expectThrows("router deferred route fields", () => api.createRouter({ history, routes: [{ path: "/nested", component: Home, children: [] }] }), /Deferred router route record field/);
+expectThrows("router invalid route path", () => api.createRouter({ history, routes: [{ path: 42, component: Home }] }), /Router route record path must be a string/);
 expectThrows("router deferred options", () => api.createRouter({ history, routes: [{ path: "/", component: Home }], scrollBehavior: () => ({ left: 0, top: 0 }) }), /Deferred router option/);
 expectThrows("router deferred path syntax", () => api.createRouter({ history, routes: [{ path: "/users/:id?", component: Home }] }), /Deferred router path syntax/);
 const router = api.createRouter({ history, routes: [{ path: "/", component: Home }] });

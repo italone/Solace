@@ -101,6 +101,10 @@ function assertRouterOptionsContract(options: RouterOptions): void {
         );
       }
     }
+
+    if (typeof route.path !== "string") {
+      throw new TypeError("Router route record path must be a string");
+    }
   }
 }
 

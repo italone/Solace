@@ -88,6 +88,15 @@ describe("createRouter", () => {
     }
   });
 
+  it("rejects invalid route record paths before compiling matchers", () => {
+    expect(() =>
+      createRouter({
+        history: createMemoryLikeHistory(),
+        routes: [{ path: 42, component: Home }],
+      } as never),
+    ).toThrow(/Router route record path must be a string/);
+  });
+
   it("rejects deferred router options instead of widening the beta contract", () => {
     expect(() =>
       createRouter({

@@ -226,6 +226,12 @@ describe("package exports", () => {
     expect(() =>
       api.createRouter({
         history,
+        routes: [{ path: 42, component: Home }],
+      } as never),
+    ).toThrow(/Router route record path must be a string/);
+    expect(() =>
+      api.createRouter({
+        history,
         routes: [{ path: "/", component: Home }],
         scrollBehavior: () => ({ left: 0, top: 0 }),
       } as never),
