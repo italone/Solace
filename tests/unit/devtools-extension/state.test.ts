@@ -2,9 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import type { DevtoolsEvent } from "@italone/solace/devtools";
 import {
+  clearTimeline,
   createPanelState,
   filterTimeline,
+  getSelectedTimelineRow,
   recordDevtoolsEvent,
+  selectTimelineEvent,
   setPanelPaused,
   setRecorderLimit,
 } from "../../../examples/devtools-extension/src/panel/state";
@@ -172,5 +175,24 @@ describe("devtools extension panel state", () => {
       "component:update",
       "component:unmount",
     ]);
+  });
+
+  it("selects event details and clears the current session view", () => {
+    const state = [
+      componentMount,
+      {
+        type: "component:update",
+        id: 1,
+        name: "Counter",
+      } satisfies DevtoolsEvent,
+    ].reduce((panelState, event, index) => {
+      return recordDevtoolsEvent(panelState, event, { now: index + 1 });
+    }, createPanelState());
+    const selected = selectTimelineEvent(state, "timeline-1");
+    const cleared = clearTimeline(selected);
+
+    expect(getSelectedTimelineRow(selected)?.event).toBe(componentMount);
+    expect(cleared.events).toEqual([]);
+    expect(cleared.selectedEventId).toBeNull();
   });
 });
