@@ -15,7 +15,7 @@ Current repository state:
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: local `main` is intentionally not pushed and is `ahead 7` from
+- Remote state: local `main` is intentionally not pushed and is `ahead 9` from
   `origin/main` as the current local working baseline. `origin/main` is at
   `c2ed19a fix: harden ssg manifest and router boundaries`; the local baseline adds
   `05dedea fix: harden sfc and router beta boundaries` and
@@ -120,7 +120,7 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Recommended Next Work
 
-1. **Keep the current local `ahead 7` baseline explicit until push is requested**; do not publish
+1. **Keep the current local `ahead 9` baseline explicit until push is requested**; do not publish
    from an ambiguous branch state. Before release preparation, either push/synchronize `main` or
    explicitly accept the local baseline after rechecking with `git fetch origin main`,
    `git status --short --branch`, and

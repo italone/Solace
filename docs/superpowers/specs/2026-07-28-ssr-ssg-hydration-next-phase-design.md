@@ -8,7 +8,7 @@ come before any browser DevTools extension UI work.
 
 ## Current Baseline
 
-Local `main` is intentionally not pushed and is currently documented as `ahead 7` from
+Local `main` is intentionally not pushed and is currently documented as `ahead 9` from
 `origin/main` after the hydration mismatch recovery work. Future release, publish, push, or sync
 claims must still recheck the remote with `git fetch origin main`, `git status --short --branch`,
 and `git rev-list --left-right --count origin/main...HEAD`.
