@@ -46,6 +46,7 @@ export function hydrate(
   appProvides: Provides | null = null,
   options: HydrationOptions = {},
 ): void {
+  assertNoDeferredIntegrationOptions(options);
   const renderContainer = container as RenderContainer;
   const styleSink = createDocumentStyleSink(container.ownerDocument);
   const getVNode = (): VNode => normalizeHydrationSource(source);
@@ -113,6 +114,20 @@ function shouldRecoverHydrationMismatch(
   return options.recover === true && error instanceof SolaceHydrationError;
 }
 
+function assertNoDeferredIntegrationOptions(options: HydrationOptions): void {
+  if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
+    throw new TypeError(
+      "Hydration manifest integration is deferred; compose assets in an app-local shell or adapter.",
+    );
+  }
+
+  if (hasOwn(options, "router")) {
+    throw new TypeError(
+      "Router-aware hydration integration is deferred; pass explicit render sources instead.",
+    );
+  }
+}
+
 function renderReactiveSource(
   source: () => VNode,
   container: RenderContainer,
@@ -150,4 +165,8 @@ function renderVNode(vnode: VNode, container: RenderContainer, appProvides: Prov
 
 function normalizeHydrationSource(source: HydrationSource): VNode {
   return typeof source === "function" ? h(source) : source;
+}
+
+function hasOwn(value: object, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(value, key);
 }

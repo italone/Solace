@@ -120,6 +120,26 @@ describe("generateStaticSite", () => {
     ).toThrow(/Router-aware SSG integration is deferred/);
   });
 
+  it("rejects deferred route-level manifest and router integration options", () => {
+    expect(() =>
+      generateStaticSite({
+        routes: [{ path: "/", source: h("p", null, "home"), manifest: {} }],
+      } as never),
+    ).toThrow(/SSG route manifest integration is deferred/);
+
+    expect(() =>
+      generateStaticSite({
+        routes: [{ path: "/", source: h("p", null, "home"), clientEntry: "/src/main.ts" }],
+      } as never),
+    ).toThrow(/SSG route manifest integration is deferred/);
+
+    expect(() =>
+      generateStaticSite({
+        routes: [{ path: "/", source: h("p", null, "home"), router: {} }],
+      } as never),
+    ).toThrow(/Router-aware SSG route integration is deferred/);
+  });
+
   it("threads app-level provides into route rendering", () => {
     const ThemeKey = Symbol("theme");
     const Page = () => {

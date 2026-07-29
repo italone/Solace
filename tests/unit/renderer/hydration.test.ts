@@ -104,6 +104,25 @@ describe("hydrate", () => {
     expect(() => hydrate(App, container, null, { recover: true })).toThrow("setup failed");
   });
 
+  it("rejects deferred hydration integration options at runtime", () => {
+    const container = document.createElement("div");
+    container.innerHTML = "<button>server</button>";
+
+    expect(() =>
+      hydrate(h("button", null, "server"), container, null, { manifest: {} } as never),
+    ).toThrow(/Hydration manifest integration is deferred/);
+
+    expect(() =>
+      hydrate(h("button", null, "server"), container, null, {
+        clientEntry: "/src/main.ts",
+      } as never),
+    ).toThrow(/Hydration manifest integration is deferred/);
+
+    expect(() =>
+      hydrate(h("button", null, "server"), container, null, { router: {} } as never),
+    ).toThrow(/Router-aware hydration integration is deferred/);
+  });
+
   it("reports nested mismatch paths during hydration", () => {
     const container = document.createElement("div");
     container.innerHTML = "<section><span>server</span></section>";

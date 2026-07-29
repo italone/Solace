@@ -147,6 +147,7 @@ const result = renderToString(h("p", null, "server"));
 用 client VNode tree 替换不匹配的容器内容，并让后续响应式更新继续走普通 renderer path。向
 `renderToString()` 传入 `manifest`、`clientEntry` 或 `router` 这类 deferred integration
 options 会抛出 `TypeError`。
+向 `hydrate()` 传入同样的 deferred 字段也会在运行时直接拒绝。
 Hydration mismatch 错误会带结构化的 `kind`、`path`、`expected` 和 `actual` 字段，便于
 区分 missing node、extra node、元素标签不一致和文本不一致。
 
@@ -161,6 +162,8 @@ deferred。
 `source`。可选的 route `provides` 会传入 rendering；可选的 route `context` 会继续传给 shell。
 shell 会收到 `styles` 和 `context` 的只读副本，因此 shell 里的 mutation 不会回写到返回的
 page 元数据。
+route entry 上的 `manifest`、`clientEntry` 或 `router` 字段会被运行时拒绝，避免 SSG 契约
+被静默扩宽。
 
 ```ts
 const site = generateStaticSite({

@@ -165,6 +165,7 @@ mismatches by default. `createApp(App).hydrate(container, { recover: true })` ca
 `SolaceHydrationError`, replaces the mismatched container contents with the client VNode tree, and
 keeps later reactive updates on the normal renderer path. Passing deferred integration options such
 as `manifest`, `clientEntry`, or `router` to `renderToString()` throws a `TypeError`.
+Passing the same deferred integration fields to `hydrate()` is also rejected at runtime.
 Hydration mismatch errors include structured `kind`, `path`, `expected`, and `actual` fields so
 callers can distinguish missing nodes, extra nodes, element tag mismatches, and text mismatches.
 
@@ -180,6 +181,8 @@ by `renderToString()`. Optional route-level `provides` values are passed into re
 route `context` is forwarded to the shell.
 The shell receives read-only copies of `styles` and `context`, so shell mutations do not feed back
 into the returned page metadata.
+Passing deferred `manifest`, `clientEntry`, or `router` fields on a route entry is rejected at
+runtime to keep the SSG contract narrow.
 
 ```ts
 const site = generateStaticSite({

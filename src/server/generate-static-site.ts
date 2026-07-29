@@ -38,6 +38,8 @@ export function generateStaticSite(options: GenerateStaticSiteOptions): Generate
 
   const seenPaths = new Set<string>();
   const pages = options.routes.map((route) => {
+    assertNoDeferredRouteIntegrationOptions(route);
+
     if (!route.path.startsWith("/")) {
       throw new TypeError(`SSG route path must start with "/": ${route.path}`);
     }
@@ -97,4 +99,18 @@ function assertNoDeferredIntegrationOptions(options: GenerateStaticSiteOptions):
 
 function hasOwn(value: object, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(value, key);
+}
+
+function assertNoDeferredRouteIntegrationOptions(route: StaticRoute): void {
+  if (hasOwn(route, "manifest") || hasOwn(route, "clientEntry")) {
+    throw new TypeError(
+      "SSG route manifest integration is deferred; compose assets in an app-local shell or adapter.",
+    );
+  }
+
+  if (hasOwn(route, "router")) {
+    throw new TypeError(
+      "Router-aware SSG route integration is deferred; pass explicit route sources instead.",
+    );
+  }
 }
