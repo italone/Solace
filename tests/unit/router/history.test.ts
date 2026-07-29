@@ -38,4 +38,28 @@ describe("router history", () => {
     history.push("/settings");
     expect(window.location.hash).toBe("#/settings");
   });
+
+  it("normalizes blank and relative hash locations", () => {
+    window.history.replaceState(null, "", "/#");
+    const blankHistory = createWebHashHistory();
+    expect(blankHistory.location()).toBe("/");
+
+    window.history.replaceState(null, "", "/#settings?tab=profile");
+    const relativeHistory = createWebHashHistory();
+    expect(relativeHistory.location()).toBe("/settings?tab=profile");
+  });
+
+  it("cleans up hash history listeners", () => {
+    const history = createWebHashHistory();
+    const listener = vi.fn();
+    const stop = history.listen(listener);
+
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    stop();
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    expect(listener).toHaveBeenCalledTimes(2);
+  });
 });
