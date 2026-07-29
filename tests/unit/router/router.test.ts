@@ -10,7 +10,9 @@ const Home = () => h("div", null, "home");
 const User = Home;
 const NotFound = Home;
 
-function createMemoryLikeHistory(initial = "/"): RouterHistory & { emit(): void } {
+function createMemoryLikeHistory(
+  initial = "/",
+): RouterHistory & { emit(): void; listenerCount(): number } {
   let current = initial;
   const listeners = new Set<() => void>();
 
@@ -32,6 +34,9 @@ function createMemoryLikeHistory(initial = "/"): RouterHistory & { emit(): void 
       for (const listener of listeners) {
         listener();
       }
+    },
+    listenerCount() {
+      return listeners.size;
     },
   };
 }
@@ -156,6 +161,36 @@ describe("createRouter", () => {
     );
   });
 
+  it("normalizes supported string locations to canonical full paths", () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory(),
+      routes: [{ path: "/users/:id", component: User }],
+    });
+
+    expect(router.resolve("").fullPath).toBe("/");
+    expect(router.resolve("users/42///?tab=profile").fullPath).toBe("/users/42?tab=profile");
+    expect(router.resolve("/users/42///?tag=a&tag=b")).toMatchObject({
+      path: "/users/42",
+      fullPath: "/users/42?tag=a&tag=b",
+      params: { id: "42" },
+      query: { tag: ["a", "b"] },
+    });
+  });
+
+  it("normalizes supported object locations to canonical full paths", () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory(),
+      routes: [{ path: "/users/:id", component: User }],
+    });
+
+    expect(router.resolve({ path: "users/7///", query: { tab: "profile" } })).toMatchObject({
+      path: "/users/7",
+      fullPath: "/users/7?tab=profile",
+      params: { id: "7" },
+      query: { tab: "profile" },
+    });
+  });
+
   it("updates currentRoute when navigating", () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({
@@ -182,6 +217,18 @@ describe("createRouter", () => {
     history.emit();
 
     expect(router.currentRoute.value.matched).toBeNull();
+  });
+
+  it("replaces the previous history listener on repeated install", () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({ history, routes: [{ path: "/", component: Home }] });
+    const app = { provide: vi.fn(), use: vi.fn(), mount: vi.fn() };
+
+    router.install(app as never);
+    expect(history.listenerCount()).toBe(1);
+
+    router.install(app as never);
+    expect(history.listenerCount()).toBe(1);
   });
 
   it("matches wildcard routes", () => {
