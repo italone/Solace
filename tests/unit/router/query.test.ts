@@ -35,4 +35,24 @@ describe("router query helpers", () => {
   it("stringifies repeated array keys", () => {
     expect(stringifyQuery({ tag: ["a", "b"] })).toBe("?tag=a&tag=b");
   });
+
+  it("parses bare keys and keeps plus signs literal", () => {
+    expect(parseQuery("?flag&plus=a+b")).toEqual({ flag: "", plus: "a+b" });
+  });
+
+  it("throws a stable TypeError for malformed percent encoding", () => {
+    expect(() => parseQuery("?broken=%E0%A4%A")).toThrow(TypeError);
+    expect(() => parseQuery("?broken=%E0%A4%A")).toThrow(
+      /Router query contains malformed percent encoding/,
+    );
+  });
+
+  it("stringifies encoded keys and skips nullish array entries", () => {
+    expect(
+      stringifyQuery({
+        "redirect to": "/users/1",
+        tag: ["a", null, "b", undefined],
+      }),
+    ).toBe("?redirect%20to=%2Fusers%2F1&tag=a&tag=b");
+  });
 });

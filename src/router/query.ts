@@ -17,8 +17,8 @@ export function parseQuery(search: string): Query {
     }
 
     const [rawKey, rawValue = ""] = part.split("=");
-    const key = decodeURIComponent(rawKey);
-    const value = decodeURIComponent(rawValue);
+    const key = decodeQueryComponent(rawKey);
+    const value = decodeQueryComponent(rawValue);
     const existing = query[key];
 
     if (existing === undefined) {
@@ -55,4 +55,16 @@ function pushQueryPart(parts: string[], key: string, value: QueryInputValue): vo
   }
 
   parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`);
+}
+
+function decodeQueryComponent(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch (error) {
+    if (error instanceof URIError) {
+      throw new TypeError("Router query contains malformed percent encoding");
+    }
+
+    throw error;
+  }
 }
