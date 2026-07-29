@@ -65,6 +65,14 @@ describe("renderToString", () => {
     expect(renderToString(App).html).toBe("<p>component source</p>");
   });
 
+  it("rejects async component SSR instead of rendering an empty subtree", () => {
+    const AsyncApp = async () => h("p", null, "async");
+    const AsyncSetupApp = () => async () => h("p", null, "async setup");
+
+    expect(() => renderToString(AsyncApp as never)).toThrow(/Async SSR is deferred/);
+    expect(() => renderToString(h(AsyncSetupApp as never))).toThrow(/Async SSR is deferred/);
+  });
+
   it("preserves component provide chains and app-level provides", () => {
     const Child = () => {
       const message = inject("message", "missing");

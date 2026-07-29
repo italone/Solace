@@ -375,6 +375,7 @@ const history = {
   forward: () => undefined,
 };
 const Home = () => api.h("p", null, "home");
+const AsyncPage = async () => api.h("p", null, "async");
 
 function expectThrows(label, fn, pattern) {
   try {
@@ -404,6 +405,7 @@ expectThrows("router deferred push location fields", () => router.push({ path: "
 expectThrows("router deferred replace location fields", () => router.replace({ path: "/users/1", params: { id: "1" } }), /Deferred router location field/);
 expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest integration is deferred/);
 expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
+expectThrows("async SSR", () => server.renderToString(api.h(AsyncPage)), /Async SSR is deferred/);
 expectThrows("SSG manifest option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], manifest: {} }), /SSG manifest integration is deferred/);
 expectThrows("SSG router option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], router: {} }), /Router-aware SSG integration is deferred/);
 `,
@@ -423,6 +425,7 @@ const history = {
   forward: () => undefined,
 };
 const Home = () => api.h("p", null, "home");
+const AsyncPage = async () => api.h("p", null, "async");
 
 function expectThrows(label, fn, pattern) {
   try {
@@ -452,6 +455,7 @@ expectThrows("router deferred push location fields", () => router.push({ path: "
 expectThrows("router deferred replace location fields", () => router.replace({ path: "/users/1", params: { id: "1" } }), /Deferred router location field/);
 expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest integration is deferred/);
 expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
+expectThrows("async SSR", () => server.renderToString(api.h(AsyncPage)), /Async SSR is deferred/);
 expectThrows("SSG manifest option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], manifest: {} }), /SSG manifest integration is deferred/);
 expectThrows("SSG router option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], router: {} }), /Router-aware SSG integration is deferred/);
 `,

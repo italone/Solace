@@ -8,7 +8,7 @@ come before any browser DevTools extension UI work.
 
 ## Current Baseline
 
-Local `main` is intentionally not pushed and is currently documented as `ahead 2` from
+Local `main` is intentionally not pushed and is currently documented as `ahead 3` from
 `origin/main` after the latest pushed baseline. Future release, publish, push, or sync claims must
 still recheck the remote with `git fetch origin main`, `git status --short --branch`, and
 `git rev-list --left-right --count origin/main...HEAD`.
@@ -16,6 +16,8 @@ still recheck the remote with `git fetch origin main`, `git status --short --bra
 Implemented baseline:
 
 - `renderToString()` renders synchronous VNode/component trees.
+- `renderToString()` rejects async or thenable SSR sources with a `TypeError` until async SSR is
+  separately designed.
 - `renderToString().styles` returns serialized `<style data-s-id="...">...</style>` strings.
 - `useStyle(scopeId, css)` is the shared runtime style registration path.
 - `hydrate()` reuses matching server style tags and dedupes by `data-s-id`.

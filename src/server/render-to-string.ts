@@ -52,6 +52,8 @@ function renderVNodeToString(
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
 ): string {
+  assertNoAsyncSSRSource(vnode);
+
   if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
     return renderElementToString(vnode, parentComponent, appProvides);
   }
@@ -146,6 +148,23 @@ function renderAttributes(props: VNodeProps | null): string {
 
 function isVNode(value: unknown): value is VNode {
   return value !== null && typeof value === "object" && "shapeFlag" in value && "type" in value;
+}
+
+function assertNoAsyncSSRSource(value: unknown): void {
+  if (isThenable(value)) {
+    throw new TypeError(
+      "Async SSR is deferred; renderToString() currently accepts synchronous render trees only.",
+    );
+  }
+}
+
+function isThenable(value: unknown): value is PromiseLike<unknown> {
+  return (
+    (typeof value === "object" || typeof value === "function") &&
+    value !== null &&
+    "then" in value &&
+    typeof (value as { then?: unknown }).then === "function"
+  );
 }
 
 function isEventProp(key: string): boolean {

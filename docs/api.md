@@ -165,6 +165,8 @@ mismatches by default. `createApp(App).hydrate(container, { recover: true })` ca
 `SolaceHydrationError`, replaces the mismatched container contents with the client VNode tree, and
 keeps later reactive updates on the normal renderer path. Passing deferred integration options such
 as `manifest`, `clientEntry`, or `router` to `renderToString()` throws a `TypeError`.
+Async or thenable render trees are also rejected with a `TypeError` because async SSR remains
+deferred.
 Passing the same deferred integration fields to `hydrate()` is also rejected at runtime.
 Hydration mismatch errors include structured `kind`, `path`, `expected`, and `actual` fields so
 callers can distinguish missing nodes, extra nodes, element tag mismatches, and text mismatches.

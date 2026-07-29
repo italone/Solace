@@ -152,6 +152,8 @@ This minimum loop includes synchronous `renderToString()`, in-memory SSG through
 include streaming SSR, async component SSR, production asset manifest integration, filesystem SSG
 output, router-aware SSG adapters, or automatic hydration mismatch recovery beyond the explicit
 `recover` deopt.
+Async or thenable SSR render trees are explicitly rejected with a `TypeError` instead of being
+rendered as an empty subtree.
 
 Passing deferred integration fields such as `manifest`, `clientEntry`, or `router` to
 `generateStaticSite()` throws a `TypeError`; route-level `manifest`, `clientEntry`, and `router`
