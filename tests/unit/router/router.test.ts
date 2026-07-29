@@ -97,6 +97,15 @@ describe("createRouter", () => {
     ).toThrow(/Router route record path must be a string/);
   });
 
+  it("rejects invalid route lists before compiling matchers", () => {
+    expect(() =>
+      createRouter({
+        history: createMemoryLikeHistory(),
+        routes: null,
+      } as never),
+    ).toThrow(/Router routes must be an array/);
+  });
+
   it("rejects deferred router options instead of widening the beta contract", () => {
     expect(() =>
       createRouter({

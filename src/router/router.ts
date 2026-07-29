@@ -93,6 +93,10 @@ function assertRouterOptionsContract(options: RouterOptions): void {
     }
   }
 
+  if (!Array.isArray(options.routes)) {
+    throw new TypeError("Router routes must be an array");
+  }
+
   for (const route of options.routes) {
     for (const key of Object.keys(route)) {
       if (key !== "path" && key !== "component") {

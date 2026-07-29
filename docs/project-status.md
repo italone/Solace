@@ -15,9 +15,9 @@ Current repository state:
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: local `main` is intentionally not pushed and is `ahead 6` from
+- Remote state: local `main` is intentionally not pushed and is `ahead 7` from
   `origin/main` as the current local working baseline. `origin/main` is at
-  `20bbff9 docs: refresh local baseline status`; the local baseline adds the current router location boundary hardening commit, the current SFC/Vite query plus router location shape boundary hardening commit, the current async SSR boundary hardening commit, the current hydration mismatch cleanup hardening commit, the current SSG route path runtime boundary hardening commit, and the current router route record path runtime boundary hardening commit. Recheck with
+  `20bbff9 docs: refresh local baseline status`; the local baseline adds the current router location boundary hardening commit, the current SFC/Vite query plus router location shape boundary hardening commit, the current async SSR boundary hardening commit, the current hydration mismatch cleanup hardening commit, the current SSG route path runtime boundary hardening commit, the current router route record path runtime boundary hardening commit, and the current router routes list runtime boundary hardening commit. Recheck with
   `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future
   release, publish, or synchronization claim.
@@ -36,7 +36,7 @@ Current repository state:
 | Store            | Implemented                    | `createStore` combines reactive state, computed getters, and named actions, with DevTools action summaries.                                                                                                                                                                                                                                                                                                      |
 | JSX              | Implemented                    | Package exports include `jsx-runtime` and `jsx-dev-runtime`, with JSX examples and typecheck coverage.                                                                                                                                                                                                                                                                                                           |
 | SFC compiler     | Alpha public contract narrowed | `.solace` parsing, template code generation, runtime-helper style injection, `@italone/solace/sfc`, `@italone/solace/vite`, rejected plugin options, and rejected `.solace?*` query transforms are documented and covered by package-boundary tests.                                                                                                                                                             |
-| Router           | Beta first slice stabilized    | Matcher, history adapters, query helpers, components, root exports, deferred API boundaries, route record path guards, object location shape guards, package export coverage, packed-consumer smoke, and `router-basic` e2e coverage exist.                                                                                                                                                                      |
+| Router           | Beta first slice stabilized    | Matcher, history adapters, query helpers, components, root exports, deferred API boundaries, routes list guards, route record path guards, object location shape guards, package export coverage, packed-consumer smoke, and `router-basic` e2e coverage exist.                                                                                                                                                  |
 | SSR/hydration    | Minimum loop implemented       | `renderToString()` renders synchronous trees, rejects async/thenable SSR sources, and collects `useStyle()` output, while `generateStaticSite()` enforces explicit string route paths and `createApp(App).hydrate(container)` attaches behavior, dedupes matching style tags, reports structured hydration mismatches, cleans up failed root hydration effects, and supports explicit `{ recover: true }` deopt. |
 | DevTools subpath | Implemented as low-level API   | `@italone/solace/devtools` exposes listener and recorder APIs, not a browser extension or UI.                                                                                                                                                                                                                                                                                                                    |
 | Examples         | Implemented                    | Basic counter, todo app, large list, and performance benchmark examples exist under `examples/**`.                                                                                                                                                                                                                                                                                                               |
@@ -118,7 +118,7 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Recommended Next Work
 
-1. **Keep the current local `ahead 6` baseline explicit until push is requested**; do not publish
+1. **Keep the current local `ahead 7` baseline explicit until push is requested**; do not publish
    from an ambiguous branch state. Before release preparation, either push/synchronize `main` or
    explicitly accept the local baseline after rechecking with `git fetch origin main`,
    `git status --short --branch`, and

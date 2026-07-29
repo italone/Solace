@@ -232,6 +232,12 @@ describe("package exports", () => {
     expect(() =>
       api.createRouter({
         history,
+        routes: null,
+      } as never),
+    ).toThrow(/Router routes must be an array/);
+    expect(() =>
+      api.createRouter({
+        history,
         routes: [{ path: "/", component: Home }],
         scrollBehavior: () => ({ left: 0, top: 0 }),
       } as never),

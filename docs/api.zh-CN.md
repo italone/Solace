@@ -569,7 +569,8 @@ createApp(App)
 ### `createRouter({ history, routes })`
 
 创建 router plugin。`routes` 按 path 匹配。静态路由优先于动态路由，`/:pathMatch(.*)*` 可作为 wildcard fallback。`router.currentRoute` 是一个 ref，包含 `{ path, fullPath, query, params, matched }`。
-route record path 必须是字符串；无效的 path 形状会在 matcher 编译前被拒绝。
+`routes` 必须是数组，route record path 必须是字符串；无效的 route list 或 path 形状会在
+matcher 编译前被拒绝。
 object route location 目前只支持 `{ path, query }`；named location、hash 和 params object 会被
 拒绝，直到这些 router 契约被单独设计。
 
