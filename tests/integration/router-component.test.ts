@@ -11,15 +11,22 @@ import {
 } from "../../src/index";
 import type { RouterHistory } from "../../src/router/types";
 
-function createMemoryLikeHistory(initial = "/"): RouterHistory {
+function createMemoryLikeHistory(initial = "/"): RouterHistory & {
+  pushedPaths: string[];
+  replacedPaths: string[];
+} {
   let current = initial;
   const listeners = new Set<() => void>();
+  const pushedPaths: string[] = [];
+  const replacedPaths: string[] = [];
   return {
     location: () => current,
     push(path) {
+      pushedPaths.push(path);
       current = path;
     },
     replace(path) {
+      replacedPaths.push(path);
       current = path;
     },
     listen(listener) {
@@ -31,6 +38,8 @@ function createMemoryLikeHistory(initial = "/"): RouterHistory {
       for (const listener of listeners) listener();
     },
     forward() {},
+    pushedPaths,
+    replacedPaths,
   };
 }
 
@@ -79,5 +88,65 @@ describe("router components", () => {
       .mount(container);
 
     expect(container.innerHTML).toBe("");
+  });
+
+  it("does not navigate RouterLink clicks that the browser should handle", () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: () => h("p", null, "home") },
+        { path: "/users/:id", component: () => h("p", null, "user") },
+      ],
+    });
+    const App = () => () =>
+      h("main", null, [
+        h(RouterLink, { to: "/users/42", id: "meta-link" }, "Meta"),
+        h(
+          RouterLink,
+          {
+            to: "/users/43",
+            id: "prevented-link",
+            onClick: (event: MouseEvent) => event.preventDefault(),
+          },
+          "Prevented",
+        ),
+        h(RouterView),
+      ]);
+    const container = document.createElement("div");
+
+    createApp(App).use(router).mount(container);
+    container
+      .querySelector<HTMLAnchorElement>("#meta-link")
+      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, metaKey: true }));
+    container.querySelector<HTMLAnchorElement>("#prevented-link")?.click();
+
+    expect(history.pushedPaths).toEqual([]);
+    expect(router.currentRoute.value.fullPath).toBe("/");
+  });
+
+  it("uses replace navigation when RouterLink replace is true", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: () => h("p", { id: "home" }, "home") },
+        { path: "/users/:id", component: () => h("p", { id: "user" }, "user") },
+      ],
+    });
+    const App = () => () =>
+      h("main", null, [
+        h(RouterLink, { to: "/users/99", id: "replace-link", replace: true }, "Replace"),
+        h(RouterView),
+      ]);
+    const container = document.createElement("div");
+
+    createApp(App).use(router).mount(container);
+    container.querySelector<HTMLAnchorElement>("#replace-link")?.click();
+    await nextTick();
+
+    expect(history.pushedPaths).toEqual([]);
+    expect(history.replacedPaths).toEqual(["/users/99"]);
+    expect(container.querySelector("#user")?.textContent).toBe("user");
   });
 });
