@@ -118,6 +118,8 @@ import { createApp } from "@italone/solace";
 createApp(App).hydrate(document.querySelector("#app") as Element);
 ```
 
+When hydration throws without `recover: true`, the failed root hydration effect is cleaned up before
+the error is rethrown, so later reactive changes do not keep retrying a failed server tree.
 Use `recover: true` only when the client should deopt a mismatched server tree into a fresh client
 render:
 
@@ -163,8 +165,9 @@ Use `createApp(App).hydrate(container)` in the browser to attach behavior to mat
 reuse existing `style[data-s-id]` tags without duplicating matching styles. Hydration throws on
 mismatches by default. `createApp(App).hydrate(container, { recover: true })` catches
 `SolaceHydrationError`, replaces the mismatched container contents with the client VNode tree, and
-keeps later reactive updates on the normal renderer path. Passing deferred integration options such
-as `manifest`, `clientEntry`, or `router` to `renderToString()` throws a `TypeError`.
+keeps later reactive updates on the normal renderer path. Without `recover: true`, failed hydration
+cleans up the root hydration effect before rethrowing the mismatch. Passing deferred integration
+options such as `manifest`, `clientEntry`, or `router` to `renderToString()` throws a `TypeError`.
 Async or thenable render trees are also rejected with a `TypeError` because async SSR remains
 deferred.
 Passing the same deferred integration fields to `hydrate()` is also rejected at runtime.

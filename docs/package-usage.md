@@ -141,7 +141,8 @@ Use `createApp(App).hydrate(container)` in the browser to attach behavior to mat
 Hydration reuses existing `style[data-s-id]` tags for matching `useStyle()` registrations and throws
 on structural mismatches by default. Pass `{ recover: true }` to explicitly replace mismatched
 server DOM with the client VNode tree while keeping later reactive updates on the normal renderer
-path. Passing deferred integration options such as `manifest`, `clientEntry`, or `router` to
+path. Without `{ recover: true }`, failed hydration cleans up the root hydration effect before
+rethrowing the mismatch. Passing deferred integration options such as `manifest`, `clientEntry`, or `router` to
 `renderToString()` throws a `TypeError`, and `hydrate()` rejects the same fields at runtime.
 Hydration mismatch errors expose stable path information plus `kind`, `expected`, and `actual`
 fields so missing nodes, extra nodes, element tag mismatches, and text mismatches can be diagnosed

@@ -104,6 +104,21 @@ describe("hydrate", () => {
     expect(() => hydrate(App, container, null, { recover: true })).toThrow("setup failed");
   });
 
+  it("cleans up root hydration effects after unrecovered mismatches", async () => {
+    const count = ref(0);
+    const container = document.createElement("div");
+    container.innerHTML = "<span>server</span>";
+    const App = () => h("button", null, `count: ${count.value}`);
+
+    expect(() => hydrate(App, container)).toThrow(SolaceHydrationError);
+    expect((container as { _solaceRenderEffect?: unknown })._solaceRenderEffect).toBeUndefined();
+
+    count.value = 1;
+    await nextTick();
+
+    expect(container.innerHTML).toBe("<span>server</span>");
+  });
+
   it("rejects deferred hydration integration options at runtime", () => {
     const container = document.createElement("div");
     container.innerHTML = "<button>server</button>";

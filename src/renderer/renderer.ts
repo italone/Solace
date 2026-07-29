@@ -77,7 +77,16 @@ export function hydrate(
   };
 
   renderContainer._solaceRenderEffect = reactiveEffect;
-  runner();
+  try {
+    runner();
+  } catch (error) {
+    if (renderContainer._solaceRenderEffect === reactiveEffect) {
+      reactiveEffect.stop();
+      renderContainer._solaceRenderEffect = undefined;
+    }
+
+    throw error;
+  }
 }
 
 export { SolaceHydrationError };

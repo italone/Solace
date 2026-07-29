@@ -14,10 +14,10 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - 本地 package 版本：`0.0.3`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
-- 本地分支状态：当前按要求暂不 push，本地 `main` 相对 `origin/main` 为 `ahead 3`，这三个
+- 本地分支状态：当前按要求暂不 push，本地 `main` 相对 `origin/main` 为 `ahead 4`，这四个
   本地提交就是当前工作基线。`origin/main` 位于
   `20bbff9 docs: refresh local baseline status`；本地基线新增当前 router location boundary
-  hardening 提交、当前 SFC/Vite query 和 router location shape boundary hardening 提交，以及当前 async SSR boundary hardening 提交。后续发布、同步或声明远端状态前，
+  hardening 提交、当前 SFC/Vite query 和 router location shape boundary hardening 提交、当前 async SSR boundary hardening 提交，以及当前 hydration mismatch cleanup hardening 提交。后续发布、同步或声明远端状态前，
   需重新运行 `git fetch origin main`、`git status --short --branch` 和
   `git rev-list --left-right --count origin/main...HEAD`。
 - 发布阶段：alpha 已发布；beta 契约稳定与 SSR/hydration minimum loop 已实现，包含
@@ -25,23 +25,23 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 
 ## 完成度映射
 
-| 领域            | 状态                 | 依据                                                                                                                                                                                                                              |
-| --------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App API         | 已实现               | `createApp`、`mount`、`use` 和 app-level `provide` 已从包根入口导出，并在 `docs/api.zh-CN.md` 中记录。                                                                                                                            |
-| 响应式          | 已实现               | `reactive`、`ref`、`computed`、`effect`、`watch` 和 `watchEffect` 已导出，并有单元测试覆盖。                                                                                                                                      |
-| 调度器          | 已实现               | `nextTick` 和组件批处理更新已实现，并有 scheduler 测试和集成覆盖。                                                                                                                                                                |
-| 渲染器          | 已实现               | `src/renderer/**` 已包含 VNode 渲染、DOM patch、Fragment、keyed diff 和 move-path instrumentation。                                                                                                                               |
-| 组件            | 已实现               | 函数组件、setup context、props、emit、slots、生命周期、provide/inject 和异步组件均已文档化并测试。                                                                                                                                |
-| Store           | 已实现               | `createStore` 组合 reactive state、computed getters 和 named actions，并包含 DevTools action summaries。                                                                                                                          |
-| JSX             | 已实现               | package exports 包含 `jsx-runtime` 和 `jsx-dev-runtime`，并有 JSX 示例和 typecheck 覆盖。                                                                                                                                         |
-| SFC compiler    | alpha 公开契约已收窄 | `.solace` 解析、template codegen、runtime-helper style 注入、`@italone/solace/sfc`、`@italone/solace/vite`、被拒绝的 plugin options 和被拒绝的 `.solace?*` query transforms 已文档化，并有 package-boundary tests 覆盖。          |
-| Router          | beta 首个切片已稳定  | matcher、history adapters、query helpers、components、root exports、deferred API 边界、object location shape guards、package export 覆盖、packed-consumer smoke 和 `router-basic` e2e 覆盖均已存在。                              |
-| SSR/hydration   | minimum loop 已实现  | `renderToString()` 可渲染同步树、拒绝 async/thenable SSR 来源并收集 `useStyle()` 输出，`createApp(App).hydrate(container)` 可附加行为、去重匹配 style tags、报告结构化 hydration mismatch，并支持显式 `{ recover: true }` deopt。 |
-| DevTools 子路径 | 已作为底层 API 实现  | `@italone/solace/devtools` 暴露 listener 和 recorder API，但不是浏览器扩展或 UI。                                                                                                                                                 |
-| 示例            | 已实现               | `examples/**` 下包含 basic counter、todo app、large list 和 performance benchmark 示例。                                                                                                                                          |
-| 包产物          | 已实现               | Rollup 构建 ESM、CJS 和类型声明；package export tests 和 packed-consumer smoke tests 校验公开入口。                                                                                                                               |
-| 文档            | 基本完整             | 已有英文/中文 README、API、package usage、release、performance、architecture、DevTools、contributing 和 security 文档。                                                                                                           |
-| 发布门禁        | 已实现               | 已配置 `release:readiness`、`quality`、`release:check`、package smoke、benchmark 和 e2e scripts；`release:check` 会先运行 release readiness。                                                                                     |
+| 领域            | 状态                 | 依据                                                                                                                                                                                                                                                                 |
+| --------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App API         | 已实现               | `createApp`、`mount`、`use` 和 app-level `provide` 已从包根入口导出，并在 `docs/api.zh-CN.md` 中记录。                                                                                                                                                               |
+| 响应式          | 已实现               | `reactive`、`ref`、`computed`、`effect`、`watch` 和 `watchEffect` 已导出，并有单元测试覆盖。                                                                                                                                                                         |
+| 调度器          | 已实现               | `nextTick` 和组件批处理更新已实现，并有 scheduler 测试和集成覆盖。                                                                                                                                                                                                   |
+| 渲染器          | 已实现               | `src/renderer/**` 已包含 VNode 渲染、DOM patch、Fragment、keyed diff 和 move-path instrumentation。                                                                                                                                                                  |
+| 组件            | 已实现               | 函数组件、setup context、props、emit、slots、生命周期、provide/inject 和异步组件均已文档化并测试。                                                                                                                                                                   |
+| Store           | 已实现               | `createStore` 组合 reactive state、computed getters 和 named actions，并包含 DevTools action summaries。                                                                                                                                                             |
+| JSX             | 已实现               | package exports 包含 `jsx-runtime` 和 `jsx-dev-runtime`，并有 JSX 示例和 typecheck 覆盖。                                                                                                                                                                            |
+| SFC compiler    | alpha 公开契约已收窄 | `.solace` 解析、template codegen、runtime-helper style 注入、`@italone/solace/sfc`、`@italone/solace/vite`、被拒绝的 plugin options 和被拒绝的 `.solace?*` query transforms 已文档化，并有 package-boundary tests 覆盖。                                             |
+| Router          | beta 首个切片已稳定  | matcher、history adapters、query helpers、components、root exports、deferred API 边界、object location shape guards、package export 覆盖、packed-consumer smoke 和 `router-basic` e2e 覆盖均已存在。                                                                 |
+| SSR/hydration   | minimum loop 已实现  | `renderToString()` 可渲染同步树、拒绝 async/thenable SSR 来源并收集 `useStyle()` 输出，`createApp(App).hydrate(container)` 可附加行为、去重匹配 style tags、报告结构化 hydration mismatch、清理失败的 root hydration effects，并支持显式 `{ recover: true }` deopt。 |
+| DevTools 子路径 | 已作为底层 API 实现  | `@italone/solace/devtools` 暴露 listener 和 recorder API，但不是浏览器扩展或 UI。                                                                                                                                                                                    |
+| 示例            | 已实现               | `examples/**` 下包含 basic counter、todo app、large list 和 performance benchmark 示例。                                                                                                                                                                             |
+| 包产物          | 已实现               | Rollup 构建 ESM、CJS 和类型声明；package export tests 和 packed-consumer smoke tests 校验公开入口。                                                                                                                                                                  |
+| 文档            | 基本完整             | 已有英文/中文 README、API、package usage、release、performance、architecture、DevTools、contributing 和 security 文档。                                                                                                                                              |
+| 发布门禁        | 已实现               | 已配置 `release:readiness`、`quality`、`release:check`、package smoke、benchmark 和 e2e scripts；`release:check` 会先运行 release readiness。                                                                                                                        |
 
 ## 验证覆盖
 
@@ -121,7 +121,7 @@ Solace 当前有意不包含：
 
 ## 建议后续工作
 
-1. 在用户要求 push 前，继续明确当前本地 `ahead 3` 工作基线；不要在分支状态含糊时发布。
+1. 在用户要求 push 前，继续明确当前本地 `ahead 4` 工作基线；不要在分支状态含糊时发布。
    发布准备前，要么 push/同步 `main`，要么在重新运行 `git fetch origin main`、
    `git status --short --branch` 和
    `git rev-list --left-right --count origin/main...HEAD` 后明确接受本地基线。

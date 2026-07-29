@@ -8,7 +8,7 @@ come before any browser DevTools extension UI work.
 
 ## Current Baseline
 
-Local `main` is intentionally not pushed and is currently documented as `ahead 3` from
+Local `main` is intentionally not pushed and is currently documented as `ahead 4` from
 `origin/main` after the latest pushed baseline. Future release, publish, push, or sync claims must
 still recheck the remote with `git fetch origin main`, `git status --short --branch`, and
 `git rev-list --left-right --count origin/main...HEAD`.
@@ -23,6 +23,7 @@ Implemented baseline:
 - `hydrate()` reuses matching server style tags and dedupes by `data-s-id`.
 - `hydrate()` throws structured `SolaceHydrationError` diagnostics by default and supports explicit
   `{ recover: true }` deopt to replace mismatched server DOM with the client tree.
+- Failed unrecovered hydration cleans up the root hydration effect before rethrowing the mismatch.
 - `generateStaticSite()` provides in-memory SSG on top of `renderToString()`.
 - `@italone/solace/vite` and `@italone/solace/sfc` remain the only public SFC/Vite entries.
 - `@italone/solace/vite` rejects options and `.solace?*` query transforms until those sub-request
@@ -84,6 +85,7 @@ Required design points:
 - Keep recovery opt-in through `{ recover: true }`.
 - Only recover `SolaceHydrationError`; non-hydration errors and style conflicts must continue to
   throw.
+- Clean up failed root hydration effects before rethrowing unrecovered mismatches.
 - Automatic or router-aware recovery remains deferred until SSR/SSG/router boundaries are separately
   designed.
 

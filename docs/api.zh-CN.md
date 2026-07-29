@@ -101,6 +101,8 @@ import { createApp } from "@italone/solace";
 createApp(App).hydrate(document.querySelector("#app") as Element);
 ```
 
+当 hydration 在未传 `recover: true` 的情况下抛错时，失败的 root hydration effect 会先被清理，
+因此后续响应式变化不会持续重试已经失败的 server tree。
 只有在客户端需要把不匹配的 server tree 降级为 fresh client render 时，才显式传入
 `recover: true`：
 
@@ -144,8 +146,9 @@ const result = renderToString(h("p", null, "server"));
 `createApp(App).hydrate(container)` 为匹配的 server HTML 附加行为，并复用已有
 `style[data-s-id]` 标签，避免重复插入匹配样式。Hydration 默认在 mismatch 时抛错；
 `createApp(App).hydrate(container, { recover: true })` 会捕获 `SolaceHydrationError`，
-用 client VNode tree 替换不匹配的容器内容，并让后续响应式更新继续走普通 renderer path。向
-`renderToString()` 传入 `manifest`、`clientEntry` 或 `router` 这类 deferred integration
+用 client VNode tree 替换不匹配的容器内容，并让后续响应式更新继续走普通 renderer path。未传
+`recover: true` 时，失败的 hydration 会在重新抛出 mismatch 前清理 root hydration effect。
+向 `renderToString()` 传入 `manifest`、`clientEntry` 或 `router` 这类 deferred integration
 options 会抛出 `TypeError`。
 async 或 thenable render tree 也会抛出 `TypeError`，因为 async SSR 仍处于 deferred 状态。
 向 `hydrate()` 传入同样的 deferred 字段也会在运行时直接拒绝。
