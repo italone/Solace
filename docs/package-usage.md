@@ -141,6 +141,9 @@ Hydration reuses existing `style[data-s-id]` tags for matching `useStyle()` regi
 on structural mismatches instead of silently replacing incompatible DOM. Passing deferred
 integration options such as `manifest`, `clientEntry`, or `router` to `renderToString()` throws a
 `TypeError`.
+Hydration mismatch errors expose stable path information plus `kind`, `expected`, and `actual`
+fields so missing nodes, extra nodes, element tag mismatches, and text mismatches can be diagnosed
+without guessing from a single message string.
 
 This minimum loop includes synchronous `renderToString()`, in-memory SSG through
 `generateStaticSite()`, server-side style collection, and hydration-safe style dedupe. It does not

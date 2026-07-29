@@ -12,10 +12,35 @@ import type { VNode, VNodeProps } from "../vnode/vnode";
 import { patch } from "./diff";
 import { patchProp } from "./dom";
 
+export type HydrationMismatchKind =
+  "missing-node" | "extra-node" | "element-tag-mismatch" | "text-mismatch";
+
+interface HydrationMismatchDetails {
+  kind: HydrationMismatchKind;
+  path: string;
+  expected: string;
+  actual: string;
+  message: string;
+}
+
 export class SolaceHydrationError extends Error {
-  constructor(message: string) {
+  readonly kind?: HydrationMismatchKind;
+  readonly path?: string;
+  readonly expected?: string;
+  readonly actual?: string;
+
+  constructor(messageOrDetails: string | HydrationMismatchDetails) {
+    const message =
+      typeof messageOrDetails === "string" ? messageOrDetails : messageOrDetails.message;
     super(message);
     this.name = "SolaceHydrationError";
+
+    if (typeof messageOrDetails !== "string") {
+      this.kind = messageOrDetails.kind;
+      this.path = messageOrDetails.path;
+      this.expected = messageOrDetails.expected;
+      this.actual = messageOrDetails.actual;
+    }
   }
 }
 
@@ -27,9 +52,13 @@ export function hydrateVNode(
   path = "root",
 ): Node | null {
   if (node === null) {
-    throw new SolaceHydrationError(
-      `Hydration mismatch at path ${path}: missing DOM node for ${describeVNode(vnode)}`,
-    );
+    throwHydrationMismatch({
+      kind: "missing-node",
+      path,
+      expected: describeVNode(vnode),
+      actual: "null",
+      message: `Hydration mismatch at path ${path}: missing DOM node for ${describeVNode(vnode)}`,
+    });
   }
 
   if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
@@ -55,9 +84,13 @@ function hydrateElement(
   path: string,
 ): Node | null {
   if (!(node instanceof Element) || node.tagName.toLowerCase() !== String(vnode.type)) {
-    throw new SolaceHydrationError(
-      `Hydration mismatch at path ${path}: expected <${String(vnode.type)}> but found ${describeDomNode(node)}`,
-    );
+    throwHydrationMismatch({
+      kind: "element-tag-mismatch",
+      path,
+      expected: `<${String(vnode.type)}>`,
+      actual: describeDomNode(node),
+      message: `Hydration mismatch at path ${path}: expected <${String(vnode.type)}> but found ${describeDomNode(node)}`,
+    });
   }
 
   vnode.el = node;
@@ -66,21 +99,28 @@ function hydrateElement(
   if (vnode.shapeFlag & ShapeFlags.TEXT_CHILDREN) {
     const expected = vnode.children as string;
     if (node.textContent !== expected) {
-      throw new SolaceHydrationError(
-        `Hydration mismatch at path ${describeElementTextPath(path, vnode)}: expected text "${expected}" but found "${node.textContent ?? ""}"`,
-      );
+      const textPath = describeElementTextPath(path, vnode);
+      throwHydrationMismatch({
+        kind: "text-mismatch",
+        path: textPath,
+        expected: `text "${expected}"`,
+        actual: `text "${node.textContent ?? ""}"`,
+        message: `Hydration mismatch at path ${textPath}: expected text "${expected}" but found "${node.textContent ?? ""}"`,
+      });
     }
     return node.nextSibling;
   }
 
   if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-    hydrateChildren(
+    const childPath = describeElementTextPath(path, vnode);
+    const next = hydrateChildren(
       vnode.children as VNode[],
       node.firstChild,
       parentComponent,
       appProvides,
-      describeElementTextPath(path, vnode),
+      childPath,
     );
+    assertNoExtraDomNode(next, `${childPath}[${(vnode.children as VNode[]).length}]`);
   }
 
   return node.nextSibling;
@@ -186,11 +226,13 @@ function hydrateChildren(
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
   parentPath: string,
-): void {
+): Node | null {
   let current: Node | null = firstNode;
   for (const [index, child] of children.entries()) {
     current = hydrateVNode(child, current, parentComponent, appProvides, `${parentPath}[${index}]`);
   }
+
+  return current;
 }
 
 function hydrateProps(el: Element, props: VNodeProps | null): void {
@@ -217,4 +259,22 @@ function describeDomNode(node: Node): string {
 
 function describeElementTextPath(path: string, vnode: VNode): string {
   return `${path}/${String(vnode.type)}`;
+}
+
+export function assertNoExtraDomNode(node: Node | null, path: string): void {
+  if (node === null) {
+    return;
+  }
+
+  throwHydrationMismatch({
+    kind: "extra-node",
+    path,
+    expected: "no DOM node",
+    actual: describeDomNode(node),
+    message: `Hydration mismatch at path ${path}: expected no DOM node but found ${describeDomNode(node)}`,
+  });
+}
+
+function throwHydrationMismatch(details: HydrationMismatchDetails): never {
+  throw new SolaceHydrationError(details);
 }

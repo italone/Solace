@@ -135,6 +135,8 @@ const result = renderToString(h("p", null, "server"));
 `createApp(App).hydrate(container)` 为匹配的 server HTML 附加行为，并复用已有
 `style[data-s-id]` 标签，避免重复插入匹配样式。向 `renderToString()` 传入 `manifest`、
 `clientEntry` 或 `router` 这类 deferred integration options 会抛出 `TypeError`。
+Hydration mismatch 错误会带结构化的 `kind`、`path`、`expected` 和 `actual` 字段，便于
+区分 missing node、extra node、元素标签不一致和文本不一致。
 
 Streaming SSR、async component SSR、SSG CLI、production manifest integration、hydration
 mismatch recovery 和 router SSR/SSG/hydration 集成仍保持 deferred。

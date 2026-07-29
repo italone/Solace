@@ -5,7 +5,7 @@ import { createDocumentStyleSink, withStyleSink, type StyleSink } from "../compo
 import { h } from "../vnode/h";
 import type { ComponentType, VNode } from "../vnode/vnode";
 import { patch } from "./diff";
-import { hydrateVNode, SolaceHydrationError } from "./hydration";
+import { assertNoExtraDomNode, hydrateVNode, SolaceHydrationError } from "./hydration";
 
 export type RenderSource = VNode | (() => VNode);
 export type HydrationSource = VNode | ComponentType;
@@ -47,7 +47,8 @@ export function hydrate(
     withStyleSink(styleSink, () => {
       const vnode = getVNode();
       if (!hydrated) {
-        hydrateVNode(vnode, renderContainer.firstChild, null, appProvides);
+        const next = hydrateVNode(vnode, renderContainer.firstChild, null, appProvides);
+        assertNoExtraDomNode(next, "root[1]");
         renderContainer._solaceVNode = vnode;
         hydrated = true;
         return;

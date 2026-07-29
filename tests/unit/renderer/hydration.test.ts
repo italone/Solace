@@ -14,6 +14,17 @@ import {
 import { hydrate, SolaceHydrationError } from "../../../src/renderer/renderer";
 
 describe("hydrate", () => {
+  function captureHydrationError(fn: () => void): SolaceHydrationError {
+    try {
+      fn();
+    } catch (error) {
+      expect(error).toBeInstanceOf(SolaceHydrationError);
+      return error as SolaceHydrationError;
+    }
+
+    throw new Error("Expected hydration to throw");
+  }
+
   it("attaches events to existing DOM and preserves the original element", () => {
     const container = document.createElement("div");
     container.innerHTML = "<button>count: 0</button>";
@@ -30,21 +41,29 @@ describe("hydrate", () => {
   it("throws on structural mismatches", () => {
     const container = document.createElement("div");
     container.innerHTML = "<span>server</span>";
+    const error = captureHydrationError(() => hydrate(h("button", null, "server"), container));
 
-    expect(() => hydrate(h("button", null, "server"), container)).toThrow(SolaceHydrationError);
-    expect(() => hydrate(h("button", null, "server"), container)).toThrow(
-      /path root: expected <button> but found <span>/i,
-    );
+    expect(error.message).toMatch(/path root: expected <button> but found <span>/i);
+    expect(error).toMatchObject({
+      kind: "element-tag-mismatch",
+      path: "root",
+      expected: "<button>",
+      actual: "<span>",
+    });
   });
 
   it("throws on text mismatches", () => {
     const container = document.createElement("div");
     container.innerHTML = "<button>server</button>";
+    const error = captureHydrationError(() => hydrate(h("button", null, "client"), container));
 
-    expect(() => hydrate(h("button", null, "client"), container)).toThrow(SolaceHydrationError);
-    expect(() => hydrate(h("button", null, "client"), container)).toThrow(
-      /path root\/button: expected text "client" but found "server"/i,
-    );
+    expect(error.message).toMatch(/path root\/button: expected text "client" but found "server"/i);
+    expect(error).toMatchObject({
+      kind: "text-mismatch",
+      path: "root/button",
+      expected: 'text "client"',
+      actual: 'text "server"',
+    });
   });
 
   it("reports nested mismatch paths during hydration", () => {
@@ -54,6 +73,48 @@ describe("hydrate", () => {
     expect(() => hydrate(h("section", null, [h("button", null, "server")]), container)).toThrow(
       /path root\/section\[0\]: expected <button> but found <span>/i,
     );
+  });
+
+  it("reports missing child nodes during hydration", () => {
+    const container = document.createElement("div");
+    container.innerHTML = "<ul><li>one</li></ul>";
+    const error = captureHydrationError(() =>
+      hydrate(h("ul", null, [h("li", null, "one"), h("li", null, "two")]), container),
+    );
+
+    expect(error).toMatchObject({
+      kind: "missing-node",
+      path: "root/ul[1]",
+      expected: "<li>",
+      actual: "null",
+    });
+    expect(error.message).toMatch(/path root\/ul\[1\]: missing DOM node for <li>/i);
+  });
+
+  it("reports extra child and root nodes during hydration", () => {
+    const childContainer = document.createElement("div");
+    childContainer.innerHTML = "<ul><li>one</li><li>extra</li></ul>";
+    const childError = captureHydrationError(() =>
+      hydrate(h("ul", null, [h("li", null, "one")]), childContainer),
+    );
+
+    expect(childError).toMatchObject({
+      kind: "extra-node",
+      path: "root/ul[1]",
+      expected: "no DOM node",
+      actual: "<li>",
+    });
+
+    const rootContainer = document.createElement("div");
+    rootContainer.innerHTML = "<p>one</p><p>extra</p>";
+    const rootError = captureHydrationError(() => hydrate(h("p", null, "one"), rootContainer));
+
+    expect(rootError).toMatchObject({
+      kind: "extra-node",
+      path: "root[1]",
+      expected: "no DOM node",
+      actual: "<p>",
+    });
   });
 
   it("does not patch non-event props during the first component hydration pass", () => {

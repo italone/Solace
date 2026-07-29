@@ -14,12 +14,12 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - 本地 package 版本：`0.0.3`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
-- 本地分支状态：当前按要求暂不 push，本地 `main` 相对 `origin/main` 为 `ahead 4`，这四个
+- 本地分支状态：当前按要求暂不 push，本地 `main` 相对 `origin/main` 为 `ahead 5`，这五个
   本地提交就是当前工作基线。`origin/main` 位于
   `c2ed19a fix: harden ssg manifest and router boundaries`；本地基线新增
   `05dedea fix: harden sfc and router beta boundaries` 和
   `a98e7d9 fix: tighten sfc router ssr boundary checks`，以及当前 package consumer boundary
-  hardening 提交和当前 public contract type hardening 提交。后续发布、同步或声明远端状态前，
+  hardening 提交、当前 public contract type hardening 提交和当前 hydration diagnostics hardening 提交。后续发布、同步或声明远端状态前，
   需重新运行 `git fetch origin main`、`git status --short --branch` 和
   `git rev-list --left-right --count origin/main...HEAD`。
 - 发布阶段：alpha 已发布；beta 契约稳定与 SSR/hydration minimum loop 已实现，包含
@@ -122,7 +122,7 @@ Solace 当前有意不包含：
 
 ## 建议后续工作
 
-1. 在用户要求 push 前，继续明确当前本地 `ahead 4` 工作基线；不要在分支状态含糊时发布。
+1. 在用户要求 push 前，继续明确当前本地 `ahead 5` 工作基线；不要在分支状态含糊时发布。
    发布准备前，要么 push/同步 `main`，要么在重新运行 `git fetch origin main`、
    `git status --short --branch` 和
    `git rev-list --left-right --count origin/main...HEAD` 后明确接受本地基线。

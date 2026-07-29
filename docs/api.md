@@ -154,6 +154,8 @@ Use `createApp(App).hydrate(container)` in the browser to attach behavior to mat
 reuse existing `style[data-s-id]` tags without duplicating matching styles. Passing deferred
 integration options such as `manifest`, `clientEntry`, or `router` to `renderToString()` throws a
 `TypeError`.
+Hydration mismatch errors include structured `kind`, `path`, `expected`, and `actual` fields so
+callers can distinguish missing nodes, extra nodes, element tag mismatches, and text mismatches.
 
 Streaming SSR, async component SSR, SSG CLI, production manifest integration, hydration mismatch
 recovery, and router SSR/SSG/hydration integration remain deferred.
