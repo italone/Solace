@@ -219,6 +219,8 @@ SSG, or hydration. Passing deferred route fields such as `name`, `redirect`, `ch
 Object route locations only support `{ path, query }`; named locations, hash, and params objects are
 rejected. Dynamic params are limited to simple `:name` segments and `/:pathMatch(.*)*` wildcard
 fallback.
+Supported path locations normalize to a leading slash and trim trailing slashes except for `/`;
+malformed query percent encoding throws a `TypeError`.
 
 ## Public Entry Points
 
