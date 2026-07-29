@@ -7,10 +7,10 @@ import { solacePlugin } from "./src/vite/index";
 function resolveSolaceAlias(): Record<string, string> {
   try {
     return {
-      "@italone/solace": fileURLToPath(new URL("./src/index.ts", import.meta.url)),
       "@italone/solace/devtools": fileURLToPath(
         new URL("./src/devtools/index.ts", import.meta.url),
       ),
+      "@italone/solace": fileURLToPath(new URL("./src/index.ts", import.meta.url)),
     };
   } catch {
     return {};

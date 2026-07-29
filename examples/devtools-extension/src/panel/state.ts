@@ -98,7 +98,9 @@ export function setRecorderLimit(state: PanelState, limit: number): PanelState {
   const selectedEventId =
     state.selectedEventId !== null && events.some((row) => row.id === state.selectedEventId)
       ? state.selectedEventId
-      : (events.at(-1)?.id ?? null);
+      : events.length > 0
+        ? events[events.length - 1].id
+        : null;
 
   return {
     ...state,

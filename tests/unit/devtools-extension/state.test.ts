@@ -31,7 +31,7 @@ describe("devtools extension panel state", () => {
   });
 
   it("filters timeline rows by event family", () => {
-    const state = [
+    const events: DevtoolsEvent[] = [
       componentMount,
       {
         type: "scheduler:flush",
@@ -63,7 +63,8 @@ describe("devtools extension panel state", () => {
         status: "success",
         durationMs: 4,
       },
-    ].reduce((panelState, event, index) => {
+    ];
+    const state = events.reduce((panelState, event, index) => {
       return recordDevtoolsEvent(panelState, event, { now: index + 1 });
     }, createPanelState());
 
@@ -149,7 +150,7 @@ describe("devtools extension panel state", () => {
 
   it("applies a numeric recorder limit by trimming the oldest buffered rows first", () => {
     const limited = setRecorderLimit(createPanelState(), 2);
-    const state = [
+    const events: DevtoolsEvent[] = [
       componentMount,
       {
         type: "component:update",
@@ -161,7 +162,8 @@ describe("devtools extension panel state", () => {
         id: 1,
         name: "Counter",
       },
-    ].reduce((panelState, event, index) => {
+    ];
+    const state = events.reduce((panelState, event, index) => {
       return recordDevtoolsEvent(panelState, event, { now: index + 1 });
     }, limited);
 
