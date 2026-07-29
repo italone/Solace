@@ -144,4 +144,40 @@ describe("generateStaticSite", () => {
       }),
     );
   });
+
+  it("isolates shell mutations from collected styles and route context", () => {
+    const routeContext = { title: "Home" };
+    const observedShellInput: {
+      path?: string;
+      body?: string;
+      styles?: string[];
+      title?: unknown;
+    } = {};
+    const shell = vi.fn(({ body, styles, context }) => {
+      observedShellInput.path = "/";
+      observedShellInput.body = body;
+      observedShellInput.styles = [...styles];
+      observedShellInput.title = context.title;
+      (styles as string[]).push("mutated");
+      (context as Record<string, unknown>).title = "Changed";
+
+      return `<!doctype html><html data-title="${String(context.title)}"><body>${body}<style>${styles.join(",")}</style></body></html>`;
+    });
+
+    const site = generateStaticSite({
+      routes: [{ path: "/", source: h("h1", null, "home"), context: routeContext }],
+      shell,
+    });
+
+    expect(routeContext).toEqual({ title: "Home" });
+    expect(observedShellInput).toEqual({
+      path: "/",
+      body: "<p>rendered</p>",
+      styles: ["scoped.css"],
+      title: "Home",
+    });
+    expect(site.pages[0].styles).toEqual(["scoped.css"]);
+    expect(site.pages[0].html).toContain('data-title="Changed"');
+    expect(site.pages[0].html).toContain("scoped.css,mutated");
+  });
 });

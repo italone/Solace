@@ -166,6 +166,8 @@ recovery, and router SSR/SSG/hydration integration remain deferred.
 returns `{ pages }`. Each route must have a unique path beginning with `/`, plus a `source` accepted
 by `renderToString()`. Optional route-level `provides` values are passed into rendering, and optional
 route `context` is forwarded to the shell.
+The shell receives read-only copies of `styles` and `context`, so shell mutations do not feed back
+into the returned page metadata.
 
 ```ts
 const site = generateStaticSite({

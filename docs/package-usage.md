@@ -157,6 +157,8 @@ in an app-local adapter until those contracts are separately designed.
 `generateStaticSite()` renders explicit route sources in memory and preserves collected
 `renderToString()` styles for custom shells. Place `styles.join("")` in `<head>` when composing a
 full HTML document:
+The shell receives read-only copies of `styles` and `context`, so shell-local mutation does not
+feed back into the returned page metadata.
 
 ```ts
 const site = generateStaticSite({

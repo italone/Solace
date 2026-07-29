@@ -15,12 +15,12 @@ Current repository state:
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: local `main` is intentionally not pushed and is `ahead 5` from
+- Remote state: local `main` is intentionally not pushed and is `ahead 6` from
   `origin/main` as the current local working baseline. `origin/main` is at
   `c2ed19a fix: harden ssg manifest and router boundaries`; the local baseline adds
   `05dedea fix: harden sfc and router beta boundaries` and
   `a98e7d9 fix: tighten sfc router ssr boundary checks`, plus the current package
-  consumer boundary hardening commit, the current public contract type hardening commit, and the current hydration diagnostics hardening commit. Recheck with
+  consumer boundary hardening commit, the current public contract type hardening commit, the current hydration diagnostics hardening commit, and the current SSG shell/style contract hardening commit. Recheck with
   `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future
   release, publish, or synchronization claim.
@@ -29,23 +29,23 @@ Current repository state:
 
 ## Completion Map
 
-| Area             | Status                         | Evidence                                                                                                                                                                             |
-| ---------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| App API          | Implemented                    | `createApp`, `mount`, `use`, and app-level `provide` are exported from the package root and documented in `docs/api.md`.                                                             |
-| Reactivity       | Implemented                    | `reactive`, `ref`, `computed`, `effect`, `watch`, and `watchEffect` are exported and covered by unit tests.                                                                          |
-| Scheduler        | Implemented                    | `nextTick` and batched component updates are implemented with scheduler tests and integration coverage.                                                                              |
-| Rendering        | Implemented                    | VNode rendering, DOM patching, Fragment support, keyed diffing, and move-path instrumentation exist in `src/renderer/**`.                                                            |
-| Components       | Implemented                    | Function components, setup context, props, emit, slots, lifecycle hooks, provide/inject, and async components are documented and tested.                                             |
-| Store            | Implemented                    | `createStore` combines reactive state, computed getters, and named actions, with DevTools action summaries.                                                                          |
-| JSX              | Implemented                    | Package exports include `jsx-runtime` and `jsx-dev-runtime`, with JSX examples and typecheck coverage.                                                                               |
-| SFC compiler     | Alpha public contract narrowed | `.solace` parsing, template code generation, runtime-helper style injection, `@italone/solace/sfc`, and `@italone/solace/vite` are documented and covered by package-boundary tests. |
-| Router           | Beta first slice stabilized    | Matcher, history adapters, query helpers, components, root exports, deferred API boundaries, package export coverage, packed-consumer smoke, and `router-basic` e2e coverage exist.  |
-| SSR/hydration    | Minimum loop implemented       | `renderToString()` renders synchronous trees and collects `useStyle()` output, while `createApp(App).hydrate(container)` attaches behavior and dedupes matching style tags.          |
-| DevTools subpath | Implemented as low-level API   | `@italone/solace/devtools` exposes listener and recorder APIs, not a browser extension or UI.                                                                                        |
-| Examples         | Implemented                    | Basic counter, todo app, large list, and performance benchmark examples exist under `examples/**`.                                                                                   |
-| Package output   | Implemented                    | Rollup builds ESM, CJS, and type declarations; package export tests and packed-consumer smoke tests validate public entries.                                                         |
-| Documentation    | Mostly complete                | English and Chinese README files, API docs, package usage, release, performance, architecture, DevTools, contributing, and security docs exist.                                      |
-| Release gates    | Implemented                    | `release:readiness`, `quality`, `release:check`, package smoke tests, benchmarks, and e2e scripts are configured; `release:check` starts with release readiness.                     |
+| Area             | Status                         | Evidence                                                                                                                                                                                                              |
+| ---------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App API          | Implemented                    | `createApp`, `mount`, `use`, and app-level `provide` are exported from the package root and documented in `docs/api.md`.                                                                                              |
+| Reactivity       | Implemented                    | `reactive`, `ref`, `computed`, `effect`, `watch`, and `watchEffect` are exported and covered by unit tests.                                                                                                           |
+| Scheduler        | Implemented                    | `nextTick` and batched component updates are implemented with scheduler tests and integration coverage.                                                                                                               |
+| Rendering        | Implemented                    | VNode rendering, DOM patching, Fragment support, keyed diffing, and move-path instrumentation exist in `src/renderer/**`.                                                                                             |
+| Components       | Implemented                    | Function components, setup context, props, emit, slots, lifecycle hooks, provide/inject, and async components are documented and tested.                                                                              |
+| Store            | Implemented                    | `createStore` combines reactive state, computed getters, and named actions, with DevTools action summaries.                                                                                                           |
+| JSX              | Implemented                    | Package exports include `jsx-runtime` and `jsx-dev-runtime`, with JSX examples and typecheck coverage.                                                                                                                |
+| SFC compiler     | Alpha public contract narrowed | `.solace` parsing, template code generation, runtime-helper style injection, `@italone/solace/sfc`, and `@italone/solace/vite` are documented and covered by package-boundary tests.                                  |
+| Router           | Beta first slice stabilized    | Matcher, history adapters, query helpers, components, root exports, deferred API boundaries, package export coverage, packed-consumer smoke, and `router-basic` e2e coverage exist.                                   |
+| SSR/hydration    | Minimum loop implemented       | `renderToString()` renders synchronous trees and collects `useStyle()` output, while `createApp(App).hydrate(container)` attaches behavior, dedupes matching style tags, and reports structured hydration mismatches. |
+| DevTools subpath | Implemented as low-level API   | `@italone/solace/devtools` exposes listener and recorder APIs, not a browser extension or UI.                                                                                                                         |
+| Examples         | Implemented                    | Basic counter, todo app, large list, and performance benchmark examples exist under `examples/**`.                                                                                                                    |
+| Package output   | Implemented                    | Rollup builds ESM, CJS, and type declarations; package export tests and packed-consumer smoke tests validate public entries.                                                                                          |
+| Documentation    | Mostly complete                | English and Chinese README files, API docs, package usage, release, performance, architecture, DevTools, contributing, and security docs exist.                                                                       |
+| Release gates    | Implemented                    | `release:readiness`, `quality`, `release:check`, package smoke tests, benchmarks, and e2e scripts are configured; `release:check` starts with release readiness.                                                      |
 
 ## Validation Coverage
 
@@ -120,7 +120,7 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Recommended Next Work
 
-1. **Keep the current local `ahead 5` baseline explicit until push is requested**; do not publish
+1. **Keep the current local `ahead 6` baseline explicit until push is requested**; do not publish
    from an ambiguous branch state. Before release preparation, either push/synchronize `main` or
    explicitly accept the local baseline after rechecking with `git fetch origin main`,
    `git status --short --branch`, and

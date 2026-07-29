@@ -16,14 +16,16 @@ export interface StaticPage {
   styles: string[];
 }
 
+export interface StaticShellPage {
+  path: string;
+  body: string;
+  styles: readonly string[];
+  context: Readonly<Record<string, unknown>>;
+}
+
 export interface GenerateStaticSiteOptions {
   routes: StaticRoute[];
-  shell?: (page: {
-    path: string;
-    body: string;
-    styles: string[];
-    context: Record<string, unknown>;
-  }) => string;
+  shell?: (page: StaticShellPage) => string;
 }
 
 export interface GenerateStaticSiteResult {
@@ -46,18 +48,19 @@ export function generateStaticSite(options: GenerateStaticSiteOptions): Generate
 
     seenPaths.add(route.path);
 
-    const context = route.context ?? {};
+    const context = { ...(route.context ?? {}) };
     const rendered = renderToString(route.source, {
-      context,
+      context: { ...context },
       provides: route.provides,
     });
     const body = rendered.html;
+    const styles = [...rendered.styles];
     const html = options.shell
       ? options.shell({
           path: route.path,
           body,
-          styles: rendered.styles,
-          context,
+          styles: [...styles],
+          context: { ...context },
         })
       : body;
 
@@ -65,7 +68,7 @@ export function generateStaticSite(options: GenerateStaticSiteOptions): Generate
       path: route.path,
       html,
       body,
-      styles: rendered.styles,
+      styles,
     };
   });
 
