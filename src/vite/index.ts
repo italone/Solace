@@ -13,7 +13,14 @@ export function solacePlugin(...options: never[]): Plugin {
     name: "solace-sfc",
     enforce: "pre",
     transform(code, id) {
-      if (!id.endsWith(".solace")) {
+      const request = parseSolaceRequest(id);
+      if (request === "query") {
+        throw new TypeError(
+          "Solace Vite plugin query transforms are not part of the public contract; import bare .solace files only.",
+        );
+      }
+
+      if (request === "non-solace") {
         return null;
       }
 
@@ -32,6 +39,17 @@ export function solacePlugin(...options: never[]): Plugin {
       }
     },
   };
+}
+
+type SolaceRequestKind = "bare" | "query" | "non-solace";
+
+function parseSolaceRequest(id: string): SolaceRequestKind {
+  const queryIndex = id.indexOf("?");
+  if (queryIndex === -1) {
+    return id.endsWith(".solace") ? "bare" : "non-solace";
+  }
+
+  return id.slice(0, queryIndex).endsWith(".solace") ? "query" : "non-solace";
 }
 
 function formatViteCompileError(error: SolaceCompileError): string {

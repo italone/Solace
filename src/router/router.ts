@@ -83,7 +83,7 @@ function normalizeRawLocation(to: RouteLocationRaw): string {
   }
 
   assertRouterLocationContract(to);
-  return `${to.path || "/"}${stringifyQuery(to.query)}`;
+  return `${to.path}${stringifyQuery(to.query)}`;
 }
 
 function assertRouterOptionsContract(options: RouterOptions): void {
@@ -104,12 +104,22 @@ function assertRouterOptionsContract(options: RouterOptions): void {
   }
 }
 
-function assertRouterLocationContract(location: { path: string; query?: unknown }): void {
+function assertRouterLocationContract(location: {
+  path?: unknown;
+  query?: unknown;
+}): asserts location is {
+  path: string;
+  query?: unknown;
+} {
   for (const key of Object.keys(location)) {
     if (key !== "path" && key !== "query") {
       throw new TypeError(
         `Deferred router location field is not part of the beta contract: ${key}`,
       );
     }
+  }
+
+  if (typeof location.path !== "string") {
+    throw new TypeError("Router location path must be a string");
   }
 }

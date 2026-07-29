@@ -8,7 +8,7 @@ come before any browser DevTools extension UI work.
 
 ## Current Baseline
 
-Local `main` is intentionally not pushed and is currently documented as `ahead 1` from
+Local `main` is intentionally not pushed and is currently documented as `ahead 2` from
 `origin/main` after the latest pushed baseline. Future release, publish, push, or sync claims must
 still recheck the remote with `git fetch origin main`, `git status --short --branch`, and
 `git rev-list --left-right --count origin/main...HEAD`.
@@ -23,7 +23,9 @@ Implemented baseline:
   `{ recover: true }` deopt to replace mismatched server DOM with the client tree.
 - `generateStaticSite()` provides in-memory SSG on top of `renderToString()`.
 - `@italone/solace/vite` and `@italone/solace/sfc` remain the only public SFC/Vite entries.
-- Router beta remains limited to the current SPA slice.
+- `@italone/solace/vite` rejects options and `.solace?*` query transforms until those sub-request
+  semantics are designed.
+- Router beta remains limited to the current SPA slice and rejects deferred object location fields.
 
 ## Non-Goals
 

@@ -104,6 +104,12 @@ describe("createRouter", () => {
       routes: [{ path: "/", component: Home }],
     });
 
+    expect(() => router.resolve({ query: { tab: "profile" } } as never)).toThrow(
+      /Router location path must be a string/,
+    );
+    expect(() => router.resolve({ path: 42 } as never)).toThrow(
+      /Router location path must be a string/,
+    );
     expect(() => router.resolve({ path: "/users/1", hash: "#profile" } as never)).toThrow(
       /Deferred router location field/,
     );

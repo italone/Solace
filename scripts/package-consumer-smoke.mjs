@@ -204,7 +204,7 @@ router.resolve(targetRoute);
   await writeFile(
     join(consumerDir, "src", "public-contract-types.ts"),
     `import { createRouter, h } from "@italone/solace";
-import type { HydrationOptions, RouteRecord, RouterOptions } from "@italone/solace";
+import type { HydrationOptions, RouteLocationRaw, RouteRecord, RouterOptions } from "@italone/solace";
 import type { GenerateStaticSiteOptions, RenderToStringOptions } from "@italone/solace/server";
 import { solacePlugin } from "@italone/solace/vite";
 
@@ -216,6 +216,10 @@ function acceptRouteRecord(record: RouteRecord): RouteRecord {
 
 function acceptRouterOptions(options: RouterOptions): RouterOptions {
   return options;
+}
+
+function acceptRouteLocationRaw(location: RouteLocationRaw): RouteLocationRaw {
+  return location;
 }
 
 function acceptSSGOptions(options: GenerateStaticSiteOptions): GenerateStaticSiteOptions {
@@ -243,6 +247,8 @@ acceptRouterOptions({
   },
   routes: [{ path: "/", component: Home }],
 });
+acceptRouteLocationRaw("/");
+acceptRouteLocationRaw({ path: "/", query: { tab: "profile" } });
 acceptSSGOptions({ routes: [{ path: "/", source: h("p", null, "home") }] });
 acceptRenderOptions({ context: { title: "Home" } });
 acceptHydrationOptions({ recover: true });
@@ -273,6 +279,18 @@ acceptRouteRecord({ path: "/named", component: Home, name: "home" });
 
 // @ts-expect-error scroll behavior is deferred
 acceptRouterOptions({ history: {} as never, routes: [], scrollBehavior: () => undefined });
+
+// @ts-expect-error named locations are deferred
+acceptRouteLocationRaw({ name: "home" });
+
+// @ts-expect-error hash locations are deferred
+acceptRouteLocationRaw({ path: "/", hash: "#section" });
+
+// @ts-expect-error params locations are deferred
+acceptRouteLocationRaw({ path: "/users/1", params: { id: "1" } });
+
+// @ts-expect-error object locations must include a string path
+acceptRouteLocationRaw({ query: { tab: "profile" } });
 
 // @ts-expect-error production manifest integration is deferred
 acceptSSGOptions({ routes: [{ path: "/", source: h("p") }], manifest: {} });
@@ -374,10 +392,13 @@ if (solacePlugin().name !== "solace-sfc" || namedSolacePlugin().name !== "solace
   throw new Error("vite plugin export mismatch");
 }
 expectThrows("vite plugin options", () => solacePlugin({ customBlocks: true }), /Solace Vite plugin options are not part of the public contract/);
+expectThrows("vite plugin query transforms", () => solacePlugin().transform("<template><p>raw</p></template>", "/app/src/App.solace?raw"), /Solace Vite plugin query transforms are not part of the public contract/);
 expectThrows("router deferred route fields", () => api.createRouter({ history, routes: [{ path: "/nested", component: Home, children: [] }] }), /Deferred router route record field/);
 expectThrows("router deferred options", () => api.createRouter({ history, routes: [{ path: "/", component: Home }], scrollBehavior: () => ({ left: 0, top: 0 }) }), /Deferred router option/);
 expectThrows("router deferred path syntax", () => api.createRouter({ history, routes: [{ path: "/users/:id?", component: Home }] }), /Deferred router path syntax/);
 const router = api.createRouter({ history, routes: [{ path: "/", component: Home }] });
+expectThrows("router missing location path", () => router.resolve({ query: { tab: "profile" } }), /Router location path must be a string/);
+expectThrows("router invalid location path", () => router.resolve({ path: 42 }), /Router location path must be a string/);
 expectThrows("router deferred location fields", () => router.resolve({ path: "/users/1", hash: "#profile" }), /Deferred router location field/);
 expectThrows("router deferred push location fields", () => router.push({ path: "/users/1", name: "user" }), /Deferred router location field/);
 expectThrows("router deferred replace location fields", () => router.replace({ path: "/users/1", params: { id: "1" } }), /Deferred router location field/);
@@ -419,10 +440,13 @@ if (vite.solacePlugin().name !== "solace-sfc" || vite.default().name !== "solace
   throw new Error("vite plugin export mismatch");
 }
 expectThrows("vite plugin options", () => vite.solacePlugin({ customBlocks: true }), /Solace Vite plugin options are not part of the public contract/);
+expectThrows("vite plugin query transforms", () => vite.solacePlugin().transform("<template><p>raw</p></template>", "/app/src/App.solace?raw"), /Solace Vite plugin query transforms are not part of the public contract/);
 expectThrows("router deferred route fields", () => api.createRouter({ history, routes: [{ path: "/nested", component: Home, children: [] }] }), /Deferred router route record field/);
 expectThrows("router deferred options", () => api.createRouter({ history, routes: [{ path: "/", component: Home }], scrollBehavior: () => ({ left: 0, top: 0 }) }), /Deferred router option/);
 expectThrows("router deferred path syntax", () => api.createRouter({ history, routes: [{ path: "/users/:id?", component: Home }] }), /Deferred router path syntax/);
 const router = api.createRouter({ history, routes: [{ path: "/", component: Home }] });
+expectThrows("router missing location path", () => router.resolve({ query: { tab: "profile" } }), /Router location path must be a string/);
+expectThrows("router invalid location path", () => router.resolve({ path: 42 }), /Router location path must be a string/);
 expectThrows("router deferred location fields", () => router.resolve({ path: "/users/1", hash: "#profile" }), /Deferred router location field/);
 expectThrows("router deferred push location fields", () => router.push({ path: "/users/1", name: "user" }), /Deferred router location field/);
 expectThrows("router deferred replace location fields", () => router.replace({ path: "/users/1", params: { id: "1" } }), /Deferred router location field/);

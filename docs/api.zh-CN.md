@@ -564,6 +564,8 @@ createApp(App)
 ### `createRouter({ history, routes })`
 
 创建 router plugin。`routes` 按 path 匹配。静态路由优先于动态路由，`/:pathMatch(.*)*` 可作为 wildcard fallback。`router.currentRoute` 是一个 ref，包含 `{ path, fullPath, query, params, matched }`。
+object route location 目前只支持 `{ path, query }`；named location、hash 和 params object 会被
+拒绝，直到这些 router 契约被单独设计。
 
 ### `createWebHistory()` / `createWebHashHistory()`
 
@@ -616,9 +618,9 @@ import solace, { solacePlugin } from "@italone/solace/vite";
 ```
 
 默认导出和具名 `solacePlugin` 导出会创建同一个 Vite plugin。该 plugin 只转换以 `.solace`
-结尾的文件，返回 JavaScript component module，并保持其他文件 id 不变。Compiler failure 会作为
-Vite transform error 抛出，并在可用时包含 diagnostic code、filename、line 和 column。该子路径
-有意只导出 `default` 和 `solacePlugin`；compiler helpers 继续保持私有。
+结尾的文件，返回 JavaScript component module，并保持其他文件 id 不变。基于 query 的
+`.solace?*` transform 会被拒绝，直到 sub-request 语义被单独设计。Compiler failure 会作为 Vite
+transform error 抛出，并在可用时包含 diagnostic code、filename、line 和 column。该子路径有意只导出 `default` 和 `solacePlugin`；compiler helpers 继续保持私有。
 
 ## DevTools 子路径
 

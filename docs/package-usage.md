@@ -112,6 +112,7 @@ errors, routes scoped styles through the public `useStyle()` runtime helper, and
 `map: null` to match the package policy of not publishing production source maps. Parser internals,
 generated module shape, and scoped-style implementation details are not public compatibility
 targets. The plugin does not accept public options yet; passing options throws a `TypeError`. SFC
+query transforms such as `.solace?raw` are rejected until sub-request semantics are designed. SFC
 block attributes and custom top-level blocks also throw so the syntax remains the documented
 one-template, optional-script, optional-style model. The `@italone/solace/vite` subpath
 intentionally exports only `default` and `solacePlugin`; do not import compiler helpers or deep
@@ -211,7 +212,9 @@ The current router supports path matching, dynamic params, query parsing, browse
 routes, redirects, lazy-route contracts, scroll behavior, memory history, auth, permissions, SSR,
 SSG, or hydration. Passing deferred route fields such as `name`, `redirect`, `children`,
 `beforeEnter`, or `meta`, or deferred options such as `scrollBehavior`, throws a `TypeError`.
-Dynamic params are limited to simple `:name` segments and `/:pathMatch(.*)*` wildcard fallback.
+Object route locations only support `{ path, query }`; named locations, hash, and params objects are
+rejected. Dynamic params are limited to simple `:name` segments and `/:pathMatch(.*)*` wildcard
+fallback.
 
 ## Public Entry Points
 

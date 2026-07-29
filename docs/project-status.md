@@ -15,9 +15,9 @@ Current repository state:
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: local `main` is intentionally not pushed and is `ahead 1` from
+- Remote state: local `main` is intentionally not pushed and is `ahead 2` from
   `origin/main` as the current local working baseline. `origin/main` is at
-  `20bbff9 docs: refresh local baseline status`; the local baseline adds the current router location boundary hardening commit. Recheck with
+  `20bbff9 docs: refresh local baseline status`; the local baseline adds the current router location boundary hardening commit and the current SFC/Vite query plus router location shape boundary hardening commit. Recheck with
   `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future
   release, publish, or synchronization claim.
@@ -35,8 +35,8 @@ Current repository state:
 | Components       | Implemented                    | Function components, setup context, props, emit, slots, lifecycle hooks, provide/inject, and async components are documented and tested.                                                                                                                           |
 | Store            | Implemented                    | `createStore` combines reactive state, computed getters, and named actions, with DevTools action summaries.                                                                                                                                                        |
 | JSX              | Implemented                    | Package exports include `jsx-runtime` and `jsx-dev-runtime`, with JSX examples and typecheck coverage.                                                                                                                                                             |
-| SFC compiler     | Alpha public contract narrowed | `.solace` parsing, template code generation, runtime-helper style injection, `@italone/solace/sfc`, and `@italone/solace/vite` are documented and covered by package-boundary tests.                                                                               |
-| Router           | Beta first slice stabilized    | Matcher, history adapters, query helpers, components, root exports, deferred API boundaries, package export coverage, packed-consumer smoke, and `router-basic` e2e coverage exist.                                                                                |
+| SFC compiler     | Alpha public contract narrowed | `.solace` parsing, template code generation, runtime-helper style injection, `@italone/solace/sfc`, `@italone/solace/vite`, rejected plugin options, and rejected `.solace?*` query transforms are documented and covered by package-boundary tests.               |
+| Router           | Beta first slice stabilized    | Matcher, history adapters, query helpers, components, root exports, deferred API boundaries, object location shape guards, package export coverage, packed-consumer smoke, and `router-basic` e2e coverage exist.                                                  |
 | SSR/hydration    | Minimum loop implemented       | `renderToString()` renders synchronous trees and collects `useStyle()` output, while `createApp(App).hydrate(container)` attaches behavior, dedupes matching style tags, reports structured hydration mismatches, and supports explicit `{ recover: true }` deopt. |
 | DevTools subpath | Implemented as low-level API   | `@italone/solace/devtools` exposes listener and recorder APIs, not a browser extension or UI.                                                                                                                                                                      |
 | Examples         | Implemented                    | Basic counter, todo app, large list, and performance benchmark examples exist under `examples/**`.                                                                                                                                                                 |
@@ -117,7 +117,7 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Recommended Next Work
 
-1. **Keep the current local `ahead 1` baseline explicit until push is requested**; do not publish
+1. **Keep the current local `ahead 2` baseline explicit until push is requested**; do not publish
    from an ambiguous branch state. Before release preparation, either push/synchronize `main` or
    explicitly accept the local baseline after rechecking with `git fetch origin main`,
    `git status --short --branch`, and

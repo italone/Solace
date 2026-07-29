@@ -39,6 +39,17 @@ describe("solacePlugin", () => {
     expect(result).toBeNull();
   });
 
+  it("rejects Solace file query transforms while the SFC contract is syntax-stable", () => {
+    const plugin = solacePlugin();
+
+    expect(() =>
+      transformWith(plugin, "<template><p>raw</p></template>", "/app/src/App.solace?raw"),
+    ).toThrow(/Solace Vite plugin query transforms are not part of the public contract/);
+    expect(() =>
+      transformWith(plugin, "<template><p>style</p></template>", "/app/src/App.solace?type=style"),
+    ).toThrow(/Solace Vite plugin query transforms are not part of the public contract/);
+  });
+
   it("transforms .solace files and keeps source maps disabled", () => {
     const plugin = solacePlugin();
     const result = transformWith(

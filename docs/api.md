@@ -605,6 +605,8 @@ createApp(App)
 Creates a router plugin. `routes` are matched by path. Static routes are prioritized before dynamic
 routes, and `/:pathMatch(.*)*` can be used as a wildcard fallback. `router.currentRoute` is a ref
 containing `{ path, fullPath, query, params, matched }`.
+Object route locations are limited to `{ path, query }`; named locations, hash, and params objects
+are rejected until those router contracts are separately designed.
 
 ### `createWebHistory()` / `createWebHashHistory()`
 
@@ -661,9 +663,10 @@ import solace, { solacePlugin } from "@italone/solace/vite";
 
 Both the default export and named `solacePlugin` export create the same Vite plugin. The plugin
 transforms files ending in `.solace`, returns JavaScript component modules, and leaves all other file
-ids untouched. Compiler failures are reported as Vite transform errors that include the diagnostic
-code, filename, line, and column when available. This subpath intentionally exports only `default`
-and `solacePlugin`; compiler helpers remain private.
+ids untouched. Query-based `.solace?*` transforms are rejected until sub-request semantics are
+separately designed. Compiler failures are reported as Vite transform errors that include the
+diagnostic code, filename, line, and column when available. This subpath intentionally exports only
+`default` and `solacePlugin`; compiler helpers remain private.
 
 ## DevTools Subpath
 
