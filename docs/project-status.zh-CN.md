@@ -14,10 +14,7 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - 本地 package 版本：`0.0.4`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
-- 本地分支状态：当前环境无法同步 GitHub 上的 `0.0.4` release baseline，因此 npm publish 时
-  本地 `main` 相对 `origin/main` 为 `ahead 8`。后续发布、同步或声明远端状态前，需重新运行
-  `git fetch origin main`、`git status --short --branch` 和
-  `git rev-list --left-right --count origin/main...HEAD`。
+- 本地分支状态：截至 2026-07-29，本地 `main` release baseline 已与 `origin/main` 同步。后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
 - 发布阶段：alpha 已发布；beta 契约稳定与 SSR/hydration minimum loop 已实现，包含
   server-side style collection 和 hydration-safe style dedupe
 
@@ -59,7 +56,7 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - 浏览器 e2e：`pnpm test:e2e`
 - 完整本地门禁：`pnpm release:check`，其中包含 `pnpm release:readiness`、`pnpm package:smoke` 和 `pnpm test:e2e`
 
-2026-07-27 的本地 release check 已覆盖完整门禁，包括 release readiness、quality、coverage、package smoke、jsdom benchmark、Chromium 生产构建 browser benchmark 和 e2e。后续在声明完成、合并或发布前，需要重新运行对应命令。
+2026-07-29 的本地 release check 已覆盖完整门禁，包括 release readiness、quality、coverage、package smoke、jsdom benchmark、Chromium 生产构建 browser benchmark 和 e2e。后续在声明完成、合并或发布前，需要重新运行对应命令。
 
 ## 公共 API 边界
 
@@ -119,9 +116,7 @@ Solace 当前有意不包含：
 
 ## 建议后续工作
 
-1. GitHub 连接恢复后，先同步当前本地 `ahead 8` release baseline。下一次发布准备前，push/同步
-   `main`，并重新运行 `git fetch origin main`、`git status --short --branch` 和
-   `git rev-list --left-right --count origin/main...HEAD`。
+1. 后续发布前继续保持 release baseline 同步。下一次发布准备前，重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
 2. 继续稳定 SFC/Vite contract，但不扩语法：公开面保持为 `@italone/solace/sfc`、`@italone/solace/vite`、Vite transform diagnostics 和当前文档化的 alpha `.solace` block model。
 3. 继续收敛 router beta API，但不急着扩功能：nested routes、guards、redirects、lazy route components、scroll behavior、memory history、SSR/hydration 集成、auth 和 permissions 继续保持 deferred。
 4. 对所有公共 API 变更保持公共 API 门禁必跑：`pnpm release:readiness`、`pnpm package:smoke` 和 `pnpm test:e2e`。

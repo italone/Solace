@@ -15,9 +15,8 @@ Current repository state:
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: GitHub synchronization for the `0.0.4` release baseline was unavailable from this
-  environment, so local `main` is `ahead 8` from `origin/main` at publish time. Recheck with
-  `git fetch origin main`, `git status --short --branch`, and
+- Remote state: the local `main` release baseline has been synchronized with `origin/main` as of
+  2026-07-29. Recheck with `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
   synchronization claim.
 - Phase: alpha released; beta contract stabilization plus SSR/hydration minimum loop implemented,
@@ -61,7 +60,7 @@ The repository includes these validation layers:
 - Browser e2e tests: `pnpm test:e2e`
 - Full local gate: `pnpm release:check`, which includes `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e`
 
-The 2026-07-27 local release check covered the full gate, including release readiness, quality, coverage, package smoke, jsdom benchmark, Chromium production browser benchmark, and e2e. Run the commands again before any future completion, merge, or release claim.
+The 2026-07-29 local release check covered the full gate, including release readiness, quality, coverage, package smoke, jsdom benchmark, Chromium production browser benchmark, and e2e. Run the commands again before any future completion, merge, or release claim.
 
 ## Public API Boundary
 
@@ -117,9 +116,8 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Recommended Next Work
 
-1. **Synchronize the current local `ahead 8` release baseline when GitHub connectivity is available**.
-   Before the next release preparation, push/synchronize `main` after rechecking with
-   `git fetch origin main`, `git status --short --branch`, and
+1. **Keep the release baseline synchronized before any future publish**. Before the next release
+   preparation, recheck `main` with `git fetch origin main`, `git status --short --branch`, and
    `git rev-list --left-right --count origin/main...HEAD`.
 2. **Continue stabilizing the SFC/Vite contract without syntax expansion**: keep the public surface limited to `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, and the documented alpha `.solace` block model.
 3. **Continue narrowing the router beta API without adding deferred features**: keep nested routes, guards, redirects, lazy route components, scroll behavior, memory history, SSR/hydration integration, auth, and permissions out of the beta slice until separately designed.

@@ -34,6 +34,6 @@
 
 - `vitest.config.ts` 已排除 `.worktrees/**` 与 `**/node_modules/**`，`pnpm test` 仅扫描框架测试文件。
 - `pnpm quality` 已通过 format、typecheck、JSX dev typecheck、lint、默认测试、package build 和 package exports 测试。
-- `package.json` 已设置 `"private": true`，在用户明确批准前不执行 `release:version` 或 `release:publish`。
-- `pnpm release:readiness` 已在默认非发布模式通过，publishability 在 private 状态下按预期跳过。
+- `package.json` 已设置 `"private": false`，`@italone/solace@0.0.4` 已作为 public alpha 包发布。
+- `pnpm release:readiness` 已在默认模式通过；后续发布前必须运行 `pnpm release:readiness -- --publishable` 并确认本地分支与 upstream 同步。
 - browser benchmark history 已支持 full-history、minimum count gate 和 latest-window summary，用于后续性能趋势判断。
