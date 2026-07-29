@@ -377,6 +377,10 @@ expectThrows("vite plugin options", () => solacePlugin({ customBlocks: true }), 
 expectThrows("router deferred route fields", () => api.createRouter({ history, routes: [{ path: "/nested", component: Home, children: [] }] }), /Deferred router route record field/);
 expectThrows("router deferred options", () => api.createRouter({ history, routes: [{ path: "/", component: Home }], scrollBehavior: () => ({ left: 0, top: 0 }) }), /Deferred router option/);
 expectThrows("router deferred path syntax", () => api.createRouter({ history, routes: [{ path: "/users/:id?", component: Home }] }), /Deferred router path syntax/);
+const router = api.createRouter({ history, routes: [{ path: "/", component: Home }] });
+expectThrows("router deferred location fields", () => router.resolve({ path: "/users/1", hash: "#profile" }), /Deferred router location field/);
+expectThrows("router deferred push location fields", () => router.push({ path: "/users/1", name: "user" }), /Deferred router location field/);
+expectThrows("router deferred replace location fields", () => router.replace({ path: "/users/1", params: { id: "1" } }), /Deferred router location field/);
 expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest integration is deferred/);
 expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
 expectThrows("SSG manifest option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], manifest: {} }), /SSG manifest integration is deferred/);
@@ -418,6 +422,10 @@ expectThrows("vite plugin options", () => vite.solacePlugin({ customBlocks: true
 expectThrows("router deferred route fields", () => api.createRouter({ history, routes: [{ path: "/nested", component: Home, children: [] }] }), /Deferred router route record field/);
 expectThrows("router deferred options", () => api.createRouter({ history, routes: [{ path: "/", component: Home }], scrollBehavior: () => ({ left: 0, top: 0 }) }), /Deferred router option/);
 expectThrows("router deferred path syntax", () => api.createRouter({ history, routes: [{ path: "/users/:id?", component: Home }] }), /Deferred router path syntax/);
+const router = api.createRouter({ history, routes: [{ path: "/", component: Home }] });
+expectThrows("router deferred location fields", () => router.resolve({ path: "/users/1", hash: "#profile" }), /Deferred router location field/);
+expectThrows("router deferred push location fields", () => router.push({ path: "/users/1", name: "user" }), /Deferred router location field/);
+expectThrows("router deferred replace location fields", () => router.replace({ path: "/users/1", params: { id: "1" } }), /Deferred router location field/);
 expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest integration is deferred/);
 expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
 expectThrows("SSG manifest option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], manifest: {} }), /SSG manifest integration is deferred/);

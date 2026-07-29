@@ -98,6 +98,23 @@ describe("createRouter", () => {
     ).toThrow(/Deferred router option/);
   });
 
+  it("rejects deferred route location fields instead of ignoring them", () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory(),
+      routes: [{ path: "/", component: Home }],
+    });
+
+    expect(() => router.resolve({ path: "/users/1", hash: "#profile" } as never)).toThrow(
+      /Deferred router location field/,
+    );
+    expect(() => router.push({ path: "/users/1", name: "user" } as never)).toThrow(
+      /Deferred router location field/,
+    );
+    expect(() => router.replace({ path: "/users/1", params: { id: "1" } } as never)).toThrow(
+      /Deferred router location field/,
+    );
+  });
+
   it("resolves string and object locations", () => {
     const router = createRouter({
       history: createMemoryLikeHistory(),

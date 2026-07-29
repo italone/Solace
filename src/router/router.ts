@@ -82,6 +82,7 @@ function normalizeRawLocation(to: RouteLocationRaw): string {
     return to === "" ? "/" : to;
   }
 
+  assertRouterLocationContract(to);
   return `${to.path || "/"}${stringifyQuery(to.query)}`;
 }
 
@@ -99,6 +100,16 @@ function assertRouterOptionsContract(options: RouterOptions): void {
           `Deferred router route record field is not part of the beta contract: ${key}`,
         );
       }
+    }
+  }
+}
+
+function assertRouterLocationContract(location: { path: string; query?: unknown }): void {
+  for (const key of Object.keys(location)) {
+    if (key !== "path" && key !== "query") {
+      throw new TypeError(
+        `Deferred router location field is not part of the beta contract: ${key}`,
+      );
     }
   }
 }
