@@ -8,7 +8,7 @@ come before any browser DevTools extension UI work.
 
 ## Current Baseline
 
-Local `main` is intentionally not pushed and is currently documented as `ahead 4` from
+Local `main` is intentionally not pushed and is currently documented as `ahead 5` from
 `origin/main` after the latest pushed baseline. Future release, publish, push, or sync claims must
 still recheck the remote with `git fetch origin main`, `git status --short --branch`, and
 `git rev-list --left-right --count origin/main...HEAD`.
@@ -25,6 +25,7 @@ Implemented baseline:
   `{ recover: true }` deopt to replace mismatched server DOM with the client tree.
 - Failed unrecovered hydration cleans up the root hydration effect before rethrowing the mismatch.
 - `generateStaticSite()` provides in-memory SSG on top of `renderToString()`.
+- `generateStaticSite()` rejects non-string route paths before rendering route sources.
 - `@italone/solace/vite` and `@italone/solace/sfc` remain the only public SFC/Vite entries.
 - `@italone/solace/vite` rejects options and `.solace?*` query transforms until those sub-request
   semantics are designed.

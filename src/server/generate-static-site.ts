@@ -40,6 +40,10 @@ export function generateStaticSite(options: GenerateStaticSiteOptions): Generate
   const pages = options.routes.map((route) => {
     assertNoDeferredRouteIntegrationOptions(route);
 
+    if (typeof route.path !== "string") {
+      throw new TypeError("SSG route path must be a string");
+    }
+
     if (!route.path.startsWith("/")) {
       throw new TypeError(`SSG route path must start with "/": ${route.path}`);
     }

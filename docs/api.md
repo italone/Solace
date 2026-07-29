@@ -181,9 +181,9 @@ deferred.
 ### `generateStaticSite(options)`
 
 `generateStaticSite({ routes, shell })` renders explicit route entries through `renderToString()` and
-returns `{ pages }`. Each route must have a unique path beginning with `/`, plus a `source` accepted
-by `renderToString()`. Optional route-level `provides` values are passed into rendering, and optional
-route `context` is forwarded to the shell.
+returns `{ pages }`. Each route must have a string path that begins with `/` and is unique, plus a
+`source` accepted by `renderToString()`. Optional route-level `provides` values are passed into
+rendering, and optional route `context` is forwarded to the shell.
 The shell receives read-only copies of `styles` and `context`, so shell mutations do not feed back
 into the returned page metadata.
 Passing deferred `manifest`, `clientEntry`, or `router` fields on a route entry is rejected at

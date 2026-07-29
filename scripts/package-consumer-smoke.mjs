@@ -406,6 +406,7 @@ expectThrows("router deferred replace location fields", () => router.replace({ p
 expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest integration is deferred/);
 expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
 expectThrows("async SSR", () => server.renderToString(api.h(AsyncPage)), /Async SSR is deferred/);
+expectThrows("SSG invalid route path", () => server.generateStaticSite({ routes: [{ path: 42, source: api.h("p", null, "home") }] }), /SSG route path must be a string/);
 expectThrows("SSG manifest option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], manifest: {} }), /SSG manifest integration is deferred/);
 expectThrows("SSG router option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], router: {} }), /Router-aware SSG integration is deferred/);
 `,
@@ -456,6 +457,7 @@ expectThrows("router deferred replace location fields", () => router.replace({ p
 expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest integration is deferred/);
 expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
 expectThrows("async SSR", () => server.renderToString(api.h(AsyncPage)), /Async SSR is deferred/);
+expectThrows("SSG invalid route path", () => server.generateStaticSite({ routes: [{ path: 42, source: api.h("p", null, "home") }] }), /SSG route path must be a string/);
 expectThrows("SSG manifest option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], manifest: {} }), /SSG manifest integration is deferred/);
 expectThrows("SSG router option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], router: {} }), /Router-aware SSG integration is deferred/);
 `,

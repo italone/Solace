@@ -162,8 +162,9 @@ deferred。
 ### `generateStaticSite(options)`
 
 `generateStaticSite({ routes, shell })` 会通过 `renderToString()` 渲染显式 route entries，并返回
-`{ pages }`。每个 route 都必须有以 `/` 开头且唯一的 path，以及可被 `renderToString()` 接收的
-`source`。可选的 route `provides` 会传入 rendering；可选的 route `context` 会继续传给 shell。
+`{ pages }`。每个 route 都必须有字符串 path，且 path 需要以 `/` 开头并保持唯一；同时需要有可被
+`renderToString()` 接收的 `source`。可选的 route `provides` 会传入 rendering；可选的 route
+`context` 会继续传给 shell。
 shell 会收到 `styles` 和 `context` 的只读副本，因此 shell 里的 mutation 不会回写到返回的
 page 元数据。
 route entry 上的 `manifest`、`clientEntry` 或 `router` 字段会被运行时拒绝，避免 SSG 契约

@@ -270,6 +270,12 @@ describe("package exports", () => {
         router: {},
       } as never),
     ).toThrow(/Router-aware SSG integration is deferred/);
+
+    expect(() =>
+      server.generateStaticSite({
+        routes: [{ path: 42, source }],
+      } as never),
+    ).toThrow(/SSG route path must be a string/);
   });
 
   it("supports CommonJS package exports", () => {

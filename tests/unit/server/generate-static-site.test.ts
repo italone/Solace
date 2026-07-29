@@ -83,6 +83,12 @@ describe("generateStaticSite", () => {
 
     expect(() =>
       generateStaticSite({
+        routes: [{ path: 42, source: h("p", null, "bad") }],
+      } as never),
+    ).toThrow(/SSG route path must be a string/);
+
+    expect(() =>
+      generateStaticSite({
         routes: [{ path: "about", source: h("p", null, "bad") }],
       }),
     ).toThrow(TypeError);

@@ -159,7 +159,8 @@ rendered as an empty subtree.
 Passing deferred integration fields such as `manifest`, `clientEntry`, or `router` to
 `generateStaticSite()` throws a `TypeError`; route-level `manifest`, `clientEntry`, and `router`
 fields are rejected too. Compose production assets or router-aware SSG behavior in an app-local
-adapter until those contracts are separately designed.
+adapter until those contracts are separately designed. Route paths must be strings before rendering
+starts, so malformed SSG route inputs fail with a stable `TypeError`.
 
 `generateStaticSite()` renders explicit route sources in memory and preserves collected
 `renderToString()` styles for custom shells. Place `styles.join("")` in `<head>` when composing a
