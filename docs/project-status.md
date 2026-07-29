@@ -6,21 +6,20 @@ This document summarizes the current completion level of Solace as an open-sourc
 
 ## Summary
 
-Solace is an alpha runtime that has been published to npm as `@italone/solace@0.0.3`. It provides a working public API, package exports, examples, tests, benchmarks, and release checks. It is suitable as a compact educational and experimental frontend framework, but it should not be described as a mature production replacement for React, Vue, Svelte, or similar ecosystems.
+Solace is an alpha runtime that has been published to npm as `@italone/solace@0.0.4`. It provides a working public API, package exports, examples, tests, benchmarks, and release checks. It is suitable as a compact educational and experimental frontend framework, but it should not be described as a mature production replacement for React, Vue, Svelte, or similar ecosystems.
 
 Current repository state:
 
 - Package name: `@italone/solace`
-- Published version: `0.0.3`
+- Published version: `0.0.4`
 - npm dist-tag: `latest`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: local `main` is intentionally not pushed and is `ahead 7` from
-  `origin/main` as the current local working baseline. `origin/main` is at
-  `20bbff9 docs: refresh local baseline status`; the local baseline adds the current router location boundary hardening commit, the current SFC/Vite query plus router location shape boundary hardening commit, the current async SSR boundary hardening commit, the current hydration mismatch cleanup hardening commit, the current SSG route path runtime boundary hardening commit, the current router route record path runtime boundary hardening commit, and the current router routes list runtime boundary hardening commit. Recheck with
+- Remote state: GitHub synchronization for the `0.0.4` release baseline was unavailable from this
+  environment, so local `main` is `ahead 8` from `origin/main` at publish time. Recheck with
   `git fetch origin main`, `git status --short --branch`, and
-  `git rev-list --left-right --count origin/main...HEAD` before any future
-  release, publish, or synchronization claim.
+  `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
+  synchronization claim.
 - Phase: alpha released; beta contract stabilization plus SSR/hydration minimum loop implemented,
   including server-side style collection and hydration-safe style dedupe
 
@@ -107,7 +106,7 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Release Coordination State
 
-`@italone/solace@0.0.3` has been published to npm. Future releases should follow the same checklist:
+`@italone/solace@0.0.4` has been published to npm. Future releases should follow the same checklist:
 
 1. Confirm `origin/main` is in sync with the local release branch.
 2. Confirm the target version is not already published.
@@ -118,10 +117,9 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Recommended Next Work
 
-1. **Keep the current local `ahead 7` baseline explicit until push is requested**; do not publish
-   from an ambiguous branch state. Before release preparation, either push/synchronize `main` or
-   explicitly accept the local baseline after rechecking with `git fetch origin main`,
-   `git status --short --branch`, and
+1. **Synchronize the current local `ahead 8` release baseline when GitHub connectivity is available**.
+   Before the next release preparation, push/synchronize `main` after rechecking with
+   `git fetch origin main`, `git status --short --branch`, and
    `git rev-list --left-right --count origin/main...HEAD`.
 2. **Continue stabilizing the SFC/Vite contract without syntax expansion**: keep the public surface limited to `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, and the documented alpha `.solace` block model.
 3. **Continue narrowing the router beta API without adding deferred features**: keep nested routes, guards, redirects, lazy route components, scroll behavior, memory history, SSR/hydration integration, auth, and permissions out of the beta slice until separately designed.

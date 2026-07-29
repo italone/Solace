@@ -8,10 +8,10 @@ come before any browser DevTools extension UI work.
 
 ## Current Baseline
 
-Local `main` is intentionally not pushed and is currently documented as `ahead 7` from
-`origin/main` after the latest pushed baseline. Future release, publish, push, or sync claims must
-still recheck the remote with `git fetch origin main`, `git status --short --branch`, and
-`git rev-list --left-right --count origin/main...HEAD`.
+GitHub synchronization for the `0.0.4` release baseline was unavailable from this environment, so
+local `main` is documented as `ahead 8` from `origin/main` at publish time. Future release, publish,
+push, or sync claims must still recheck the remote with `git fetch origin main`,
+`git status --short --branch`, and `git rev-list --left-right --count origin/main...HEAD`.
 
 Implemented baseline:
 

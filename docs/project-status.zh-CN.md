@@ -11,14 +11,12 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 当前本地仓库状态：
 
 - 包名：`@italone/solace`
-- 本地 package 版本：`0.0.3`
+- 本地 package 版本：`0.0.4`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
-- 本地分支状态：当前按要求暂不 push，本地 `main` 相对 `origin/main` 为 `ahead 7`，这七个
-  本地提交就是当前工作基线。`origin/main` 位于
-  `20bbff9 docs: refresh local baseline status`；本地基线新增当前 router location boundary
-  hardening 提交、当前 SFC/Vite query 和 router location shape boundary hardening 提交、当前 async SSR boundary hardening 提交、当前 hydration mismatch cleanup hardening 提交、当前 SSG route path runtime boundary hardening 提交、当前 router route record path runtime boundary hardening 提交，以及当前 router routes list runtime boundary hardening 提交。后续发布、同步或声明远端状态前，
-  需重新运行 `git fetch origin main`、`git status --short --branch` 和
+- 本地分支状态：当前环境无法同步 GitHub 上的 `0.0.4` release baseline，因此 npm publish 时
+  本地 `main` 相对 `origin/main` 为 `ahead 8`。后续发布、同步或声明远端状态前，需重新运行
+  `git fetch origin main`、`git status --short --branch` 和
   `git rev-list --left-right --count origin/main...HEAD`。
 - 发布阶段：alpha 已发布；beta 契约稳定与 SSR/hydration minimum loop 已实现，包含
   server-side style collection 和 hydration-safe style dedupe
@@ -121,10 +119,9 @@ Solace 当前有意不包含：
 
 ## 建议后续工作
 
-1. 在用户要求 push 前，继续明确当前本地 `ahead 7` 工作基线；不要在分支状态含糊时发布。
-   发布准备前，要么 push/同步 `main`，要么在重新运行 `git fetch origin main`、
-   `git status --short --branch` 和
-   `git rev-list --left-right --count origin/main...HEAD` 后明确接受本地基线。
+1. GitHub 连接恢复后，先同步当前本地 `ahead 8` release baseline。下一次发布准备前，push/同步
+   `main`，并重新运行 `git fetch origin main`、`git status --short --branch` 和
+   `git rev-list --left-right --count origin/main...HEAD`。
 2. 继续稳定 SFC/Vite contract，但不扩语法：公开面保持为 `@italone/solace/sfc`、`@italone/solace/vite`、Vite transform diagnostics 和当前文档化的 alpha `.solace` block model。
 3. 继续收敛 router beta API，但不急着扩功能：nested routes、guards、redirects、lazy route components、scroll behavior、memory history、SSR/hydration 集成、auth 和 permissions 继续保持 deferred。
 4. 对所有公共 API 变更保持公共 API 门禁必跑：`pnpm release:readiness`、`pnpm package:smoke` 和 `pnpm test:e2e`。

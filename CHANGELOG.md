@@ -1,5 +1,13 @@
 # @italone/solace
 
+## 0.0.4
+
+### Patch Changes
+
+- 8c1f4d7: Batch consecutive moved keyed children into DocumentFragment inserts and expand public readiness documentation.
+- Harden public SFC/Vite, router, SSR, SSG, and hydration boundaries with explicit runtime rejections
+  for deferred or malformed inputs.
+
 ## 0.0.3 — 2026-07-24
 
 ### Patch Changes
