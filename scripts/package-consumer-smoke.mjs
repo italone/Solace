@@ -64,13 +64,14 @@ try {
   await writeFile(
     join(consumerDir, "src", "main.tsx"),
     `import { RouterLink, RouterView, createApp, createRouter, createStore, createWebHashHistory, createWebHistory, defineAsyncComponent, defineComponent, h, inject, reactive, useRoute, useRouter, watchEffect } from "@italone/solace";
-import type { AsyncComponentOptions, ComponentSetupContext, Plugin, RouteLocationRaw, RouterHistory, StoreContext, StoreGetterContext } from "@italone/solace";
+import type { AsyncComponentOptions, ComponentSetupContext, HydrationOptions, Plugin, RouteLocationRaw, RouterHistory, StoreContext, StoreGetterContext } from "@italone/solace";
 import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtools";
 import type { DevtoolsEvent } from "@italone/solace/devtools";
 import { generateStaticSite, renderToString } from "@italone/solace/server";
 import solacePlugin, { solacePlugin as namedSolacePlugin } from "@italone/solace/vite";
 
 const state = reactive({ count: 0 });
+const hydrationOptions: HydrationOptions = { recover: true };
 const stopWatching = watchEffect(() => state.count);
 stopWatching();
 const ThemeKey = Symbol("theme");
@@ -196,13 +197,14 @@ const App = () => () =>
   ]);
 
 createApp(App).use(appPlugin, "enabled").mount(document.createElement("main"));
+createApp(() => h("p", null, "client")).hydrate(document.createElement("main"), hydrationOptions);
 router.resolve(targetRoute);
 `,
   );
   await writeFile(
     join(consumerDir, "src", "public-contract-types.ts"),
     `import { createRouter, h } from "@italone/solace";
-import type { RouteRecord, RouterOptions } from "@italone/solace";
+import type { HydrationOptions, RouteRecord, RouterOptions } from "@italone/solace";
 import type { GenerateStaticSiteOptions, RenderToStringOptions } from "@italone/solace/server";
 import { solacePlugin } from "@italone/solace/vite";
 
@@ -224,6 +226,10 @@ function acceptRenderOptions(options: RenderToStringOptions): RenderToStringOpti
   return options;
 }
 
+function acceptHydrationOptions(options: HydrationOptions): HydrationOptions {
+  return options;
+}
+
 solacePlugin();
 acceptRouteRecord({ path: "/", component: Home });
 acceptRouterOptions({
@@ -239,9 +245,16 @@ acceptRouterOptions({
 });
 acceptSSGOptions({ routes: [{ path: "/", source: h("p", null, "home") }] });
 acceptRenderOptions({ context: { title: "Home" } });
+acceptHydrationOptions({ recover: true });
 
 // @ts-expect-error Vite plugin options are not part of the public SFC contract
 solacePlugin({ customBlocks: true });
+
+// @ts-expect-error hydration recovery is boolean-only
+acceptHydrationOptions({ recover: "yes" });
+
+// @ts-expect-error production manifest integration is not part of the hydration public contract
+acceptHydrationOptions({ manifest: {} });
 
 // @ts-expect-error nested route records are deferred
 acceptRouteRecord({ path: "/nested", component: Home, children: [] });

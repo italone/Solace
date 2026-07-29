@@ -130,4 +130,17 @@ describe("createApp", () => {
     expect(container.querySelector("button")).toBe(button);
     expect(container.innerHTML).toBe("<button>count: 1</button>");
   });
+
+  it("recovers root hydration mismatches when recovery is enabled", async () => {
+    const count = ref(0);
+    const container = document.createElement("div");
+    container.innerHTML = "<span>server</span>";
+    const App = () => h("button", { onClick: () => count.value++ }, `count: ${count.value}`);
+
+    createApp(App).hydrate(container, { recover: true });
+    container.querySelector("button")?.click();
+    await nextTick();
+
+    expect(container.innerHTML).toBe("<button>count: 1</button>");
+  });
 });

@@ -1,7 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import { h } from "../../../src";
+import type { App, HydrationOptions } from "../../../src";
 import type { GenerateStaticSiteOptions, RenderToStringOptions } from "../../../src/server";
+
+function acceptHydrationOptions(options: HydrationOptions): HydrationOptions {
+  return options;
+}
+
+function acceptAppHydrate(app: App, container: Element): App {
+  app.hydrate(container, { recover: true });
+  return app;
+}
 
 function acceptSSGOptions(options: GenerateStaticSiteOptions): GenerateStaticSiteOptions {
   return options;
@@ -22,6 +32,15 @@ acceptSSGOptions({
 acceptRenderOptions({
   context: { title: "Home" },
 });
+
+acceptHydrationOptions({});
+acceptHydrationOptions({ recover: true });
+
+// @ts-expect-error hydration recovery is boolean-only
+acceptHydrationOptions({ recover: "yes" });
+
+// @ts-expect-error production manifest integration is not part of the hydration public contract
+acceptHydrationOptions({ manifest: {} });
 
 // @ts-expect-error production manifest integration is not part of the SSG public contract
 acceptSSGOptions({ routes: [{ path: "/", source: h("p") }], manifest: {} });
@@ -59,6 +78,7 @@ acceptShell(({ context }) => {
 
 describe("server public contract types", () => {
   it("keeps manifest and router integration out of the public SSR/SSG options", () => {
+    expect(acceptAppHydrate).toEqual(expect.any(Function));
     expect(true).toBe(true);
   });
 });

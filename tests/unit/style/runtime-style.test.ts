@@ -149,6 +149,25 @@ describe("useStyle", () => {
     expect(() => createApp(ClientApp).hydrate(container)).toThrow(/style conflict/i);
   });
 
+  it("does not recover style conflicts as hydration mismatches", () => {
+    const ServerApp = () => {
+      useStyle("abc123", ".counter { color: blue; }");
+      return h("span", { class: "counter" }, "server");
+    };
+    const ClientApp = () => {
+      useStyle("abc123", ".counter { color: red; }");
+      return h("button", { class: "counter" }, "client");
+    };
+    const serverRendered = renderToString(h(ServerApp));
+    const container = document.createElement("div");
+    document.head.innerHTML = serverRendered.styles.join("");
+    container.innerHTML = serverRendered.html;
+
+    expect(() => createApp(ClientApp).hydrate(container, { recover: true })).toThrow(
+      /style conflict/i,
+    );
+  });
+
   it("rejects literal entity styles that conflict with raw CSS", () => {
     document.head.innerHTML =
       '<style data-s-id="abc123">.counter::before { content: "&lt;"; }</style>';

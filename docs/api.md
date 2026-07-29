@@ -91,7 +91,7 @@ createApp(App).mount(document.querySelector("#app") as Element);
 Returns:
 
 - `mount(container: Element): void`
-- `hydrate(container: Element): void`
+- `hydrate(container: Element, options?: HydrationOptions): void`
 - `provide(key, value): App`
 - `use(plugin, ...options): App`
 
@@ -110,12 +110,21 @@ createApp(App)
   .mount(document.querySelector("#app") as Element);
 ```
 
-Hydration is explicit:
+Hydration is explicit and keeps throw-on-mismatch as the default:
 
 ```ts
 import { createApp } from "@italone/solace";
 
 createApp(App).hydrate(document.querySelector("#app") as Element);
+```
+
+Use `recover: true` only when the client should deopt a mismatched server tree into a fresh client
+render:
+
+```ts
+import { createApp } from "@italone/solace";
+
+createApp(App).hydrate(document.querySelector("#app") as Element, { recover: true });
 ```
 
 `use()` installs a plugin once per app instance. A plugin can be a function or an object with an
@@ -151,14 +160,17 @@ VNode and function component trees, escapes text and attributes, omits event pro
 does not run DOM lifecycle hooks. Components can register styles with `useStyle(scopeId, css)`;
 server rendering collects them in `styles` as serialized `<style data-s-id="...">...</style>` tags.
 Use `createApp(App).hydrate(container)` in the browser to attach behavior to matching server HTML and
-reuse existing `style[data-s-id]` tags without duplicating matching styles. Passing deferred
-integration options such as `manifest`, `clientEntry`, or `router` to `renderToString()` throws a
-`TypeError`.
+reuse existing `style[data-s-id]` tags without duplicating matching styles. Hydration throws on
+mismatches by default. `createApp(App).hydrate(container, { recover: true })` catches
+`SolaceHydrationError`, replaces the mismatched container contents with the client VNode tree, and
+keeps later reactive updates on the normal renderer path. Passing deferred integration options such
+as `manifest`, `clientEntry`, or `router` to `renderToString()` throws a `TypeError`.
 Hydration mismatch errors include structured `kind`, `path`, `expected`, and `actual` fields so
 callers can distinguish missing nodes, extra nodes, element tag mismatches, and text mismatches.
 
 Streaming SSR, async component SSR, SSG CLI, production manifest integration, hydration mismatch
-recovery, and router SSR/SSG/hydration integration remain deferred.
+auto-recovery beyond the explicit `recover` deopt, and router SSR/SSG/hydration integration remain
+deferred.
 
 ### `generateStaticSite(options)`
 

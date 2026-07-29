@@ -75,7 +75,7 @@ createApp(App).mount(document.querySelector("#app") as Element);
 返回：
 
 - `mount(container: Element): void`
-- `hydrate(container: Element): void`
+- `hydrate(container: Element, options?: HydrationOptions): void`
 - `provide(key, value): App`
 - `use(plugin, ...options): App`
 
@@ -93,12 +93,21 @@ createApp(App)
   .mount(document.querySelector("#app") as Element);
 ```
 
-Hydration 是显式 API：
+Hydration 是显式 API，默认仍会在 mismatch 时抛错：
 
 ```ts
 import { createApp } from "@italone/solace";
 
 createApp(App).hydrate(document.querySelector("#app") as Element);
+```
+
+只有在客户端需要把不匹配的 server tree 降级为 fresh client render 时，才显式传入
+`recover: true`：
+
+```ts
+import { createApp } from "@italone/solace";
+
+createApp(App).hydrate(document.querySelector("#app") as Element, { recover: true });
 ```
 
 `use()` 会在每个 app 实例中安装一次插件。插件可以是函数，也可以是带 `install()` 方法的对象。
@@ -133,13 +142,17 @@ const result = renderToString(h("p", null, "server"));
 组件可通过 `useStyle(scopeId, css)` 注册样式；server rendering 会把它们收集到 `styles` 中，
 以完整的 `<style data-s-id="...">...</style>` 字符串返回。浏览器端使用
 `createApp(App).hydrate(container)` 为匹配的 server HTML 附加行为，并复用已有
-`style[data-s-id]` 标签，避免重复插入匹配样式。向 `renderToString()` 传入 `manifest`、
-`clientEntry` 或 `router` 这类 deferred integration options 会抛出 `TypeError`。
+`style[data-s-id]` 标签，避免重复插入匹配样式。Hydration 默认在 mismatch 时抛错；
+`createApp(App).hydrate(container, { recover: true })` 会捕获 `SolaceHydrationError`，
+用 client VNode tree 替换不匹配的容器内容，并让后续响应式更新继续走普通 renderer path。向
+`renderToString()` 传入 `manifest`、`clientEntry` 或 `router` 这类 deferred integration
+options 会抛出 `TypeError`。
 Hydration mismatch 错误会带结构化的 `kind`、`path`、`expected` 和 `actual` 字段，便于
 区分 missing node、extra node、元素标签不一致和文本不一致。
 
 Streaming SSR、async component SSR、SSG CLI、production manifest integration、hydration
-mismatch recovery 和 router SSR/SSG/hydration 集成仍保持 deferred。
+mismatch 的自动恢复（显式 `recover` deopt 之外）和 router SSR/SSG/hydration 集成仍保持
+deferred。
 
 ### `generateStaticSite(options)`
 

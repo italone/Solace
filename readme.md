@@ -123,14 +123,16 @@ modules under `src/**` and generated files under `dist/**` are implementation de
 
 - `createApp(rootComponent)`
 - `app.mount(container)`
-- `app.hydrate(container)`
+- `app.hydrate(container, options?)`
 - `app.use(plugin, ...options)`
 - `app.provide(key, value)`
 
 `createApp()` accepts a component or an already-created VNode, renders it into a DOM container, or
-hydrates matching server-rendered DOM. It returns a chainable app instance. `app.use()` installs
-function plugins or object plugins with an `install()` method once per app instance. `app.provide()`
-registers app-level values that descendants can read with `inject()`.
+hydrates matching server-rendered DOM. Hydration throws on mismatches by default; pass
+`{ recover: true }` to explicitly replace mismatched server DOM with the client tree. It returns a
+chainable app instance. `app.use()` installs function plugins or object plugins with an `install()`
+method once per app instance. `app.provide()` registers app-level values that descendants can read
+with `inject()`.
 
 ```ts
 import { createApp, h } from "@italone/solace";

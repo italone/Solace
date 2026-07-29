@@ -36,4 +36,20 @@ describe("SSR hydration integration", () => {
 
     expect(container.innerHTML).toBe("<span>dark</span>");
   });
+
+  it("can recover a mismatched SSR shell into the client tree", async () => {
+    const count = ref(0);
+    const ServerApp = () => h("span", null, "server");
+    const ClientApp = () =>
+      h("button", { onClick: () => count.value++ }, `client count: ${count.value}`);
+    const server = renderToString(h(ServerApp));
+    const container = document.createElement("div");
+    container.innerHTML = server.html;
+
+    createApp(ClientApp).hydrate(container, { recover: true });
+    container.querySelector("button")?.click();
+    await nextTick();
+
+    expect(container.innerHTML).toBe("<button>client count: 1</button>");
+  });
 });

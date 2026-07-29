@@ -123,12 +123,13 @@ Solace 保持较小的公共 API 面。包根入口是稳定的运行时入口�
 
 - `createApp(rootComponent)`
 - `app.mount(container)`
-- `app.hydrate(container)`
+- `app.hydrate(container, options?)`
 - `app.use(plugin, ...options)`
 - `app.provide(key, value)`
 
 `createApp()` 接收组件或已经创建好的 VNode，可将其渲染到 DOM 容器中，也可 hydrate 匹配的
-server-rendered DOM，并返回可链式调用的 app 实例。`app.use()` 可以安装函数插件，也可以安装带
+server-rendered DOM。Hydration 默认在 mismatch 时抛错；传入 `{ recover: true }` 可显式用
+client tree 替换不匹配的 server DOM。它返回可链式调用的 app 实例。`app.use()` 可以安装函数插件，也可以安装带
 `install()` 方法的对象插件，同一个插件在每个 app 实例中只会安装一次。`app.provide()` 注册应用级值，后代组件可以通过 `inject()` 读取。
 
 ```ts

@@ -138,9 +138,10 @@ result.styles; // ['<style data-s-id="server-demo">.server-demo { color: blue; }
 
 Use `createApp(App).hydrate(container)` in the browser to attach behavior to matching server HTML.
 Hydration reuses existing `style[data-s-id]` tags for matching `useStyle()` registrations and throws
-on structural mismatches instead of silently replacing incompatible DOM. Passing deferred
-integration options such as `manifest`, `clientEntry`, or `router` to `renderToString()` throws a
-`TypeError`.
+on structural mismatches by default. Pass `{ recover: true }` to explicitly replace mismatched
+server DOM with the client VNode tree while keeping later reactive updates on the normal renderer
+path. Passing deferred integration options such as `manifest`, `clientEntry`, or `router` to
+`renderToString()` throws a `TypeError`.
 Hydration mismatch errors expose stable path information plus `kind`, `expected`, and `actual`
 fields so missing nodes, extra nodes, element tag mismatches, and text mismatches can be diagnosed
 without guessing from a single message string.
@@ -148,7 +149,8 @@ without guessing from a single message string.
 This minimum loop includes synchronous `renderToString()`, in-memory SSG through
 `generateStaticSite()`, server-side style collection, and hydration-safe style dedupe. It does not
 include streaming SSR, async component SSR, production asset manifest integration, filesystem SSG
-output, router-aware SSG adapters, or hydration mismatch recovery.
+output, router-aware SSG adapters, or automatic hydration mismatch recovery beyond the explicit
+`recover` deopt.
 
 Passing deferred integration fields such as `manifest`, `clientEntry`, or `router` to
 `generateStaticSite()` throws a `TypeError`; compose production assets or router-aware SSG behavior

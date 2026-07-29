@@ -5,10 +5,19 @@ import { createDocumentStyleSink, withStyleSink, type StyleSink } from "../compo
 import { h } from "../vnode/h";
 import type { ComponentType, VNode } from "../vnode/vnode";
 import { patch } from "./diff";
-import { assertNoExtraDomNode, hydrateVNode, SolaceHydrationError } from "./hydration";
+import {
+  assertNoExtraDomNode,
+  hydrateVNode,
+  SolaceHydrationError,
+  stopHydratedComponentUpdates,
+  type HydrationContext,
+} from "./hydration";
 
 export type RenderSource = VNode | (() => VNode);
 export type HydrationSource = VNode | ComponentType;
+export interface HydrationOptions {
+  recover?: boolean;
+}
 type RenderContainer = Element & {
   _solaceRenderEffect?: ReactiveEffect<void>;
   _solaceVNode?: VNode | null;
@@ -35,6 +44,7 @@ export function hydrate(
   source: HydrationSource,
   container: Element,
   appProvides: Provides | null = null,
+  options: HydrationOptions = {},
 ): void {
   const renderContainer = container as RenderContainer;
   const styleSink = createDocumentStyleSink(container.ownerDocument);
@@ -47,9 +57,7 @@ export function hydrate(
     withStyleSink(styleSink, () => {
       const vnode = getVNode();
       if (!hydrated) {
-        const next = hydrateVNode(vnode, renderContainer.firstChild, null, appProvides);
-        assertNoExtraDomNode(next, "root[1]");
-        renderContainer._solaceVNode = vnode;
+        hydrateInitialTree(vnode, renderContainer, appProvides, options);
         hydrated = true;
         return;
       }
@@ -72,6 +80,38 @@ export function hydrate(
 }
 
 export { SolaceHydrationError };
+
+function hydrateInitialTree(
+  vnode: VNode,
+  container: RenderContainer,
+  appProvides: Provides | null,
+  options: HydrationOptions,
+): void {
+  const context: HydrationContext = { hydratedInstances: [] };
+
+  try {
+    const next = hydrateVNode(vnode, container.firstChild, null, appProvides, context);
+    assertNoExtraDomNode(next, "root[1]");
+    container._solaceVNode = vnode;
+  } catch (error) {
+    stopHydratedComponentUpdates(context);
+
+    if (!shouldRecoverHydrationMismatch(error, options)) {
+      throw error;
+    }
+
+    container.textContent = "";
+    container._solaceVNode = null;
+    renderVNode(vnode, container, appProvides);
+  }
+}
+
+function shouldRecoverHydrationMismatch(
+  error: unknown,
+  options: HydrationOptions,
+): error is SolaceHydrationError {
+  return options.recover === true && error instanceof SolaceHydrationError;
+}
 
 function renderReactiveSource(
   source: () => VNode,

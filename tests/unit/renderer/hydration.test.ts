@@ -66,6 +66,44 @@ describe("hydrate", () => {
     });
   });
 
+  it("recovers from structural mismatches when recovery is enabled", () => {
+    const container = document.createElement("div");
+    container.innerHTML = "<span>server</span>";
+    const serverNode = container.firstChild;
+    const onClick = vi.fn();
+
+    hydrate(h("button", { onClick }, "client"), container, null, { recover: true });
+
+    const button = container.querySelector("button");
+    expect(container.firstChild).not.toBe(serverNode);
+    expect(container.innerHTML).toBe("<button>client</button>");
+    button?.click();
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps reactive updates working after recovery", async () => {
+    const count = ref(0);
+    const container = document.createElement("div");
+    container.innerHTML = "<span>server</span>";
+    const App = () => h("button", { onClick: () => count.value++ }, `count: ${count.value}`);
+
+    hydrate(App, container, null, { recover: true });
+    container.querySelector("button")?.click();
+    await nextTick();
+
+    expect(container.innerHTML).toBe("<button>count: 1</button>");
+  });
+
+  it("does not recover from non-hydration errors", () => {
+    const container = document.createElement("div");
+    container.innerHTML = "<button>server</button>";
+    const App = () => {
+      throw new Error("setup failed");
+    };
+
+    expect(() => hydrate(App, container, null, { recover: true })).toThrow("setup failed");
+  });
+
   it("reports nested mismatch paths during hydration", () => {
     const container = document.createElement("div");
     container.innerHTML = "<section><span>server</span></section>";

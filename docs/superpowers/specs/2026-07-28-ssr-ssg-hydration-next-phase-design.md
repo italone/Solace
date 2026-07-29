@@ -8,9 +8,10 @@ come before any browser DevTools extension UI work.
 
 ## Current Baseline
 
-Local `main` and `origin/main` are in sync after a successful `git push origin main` on 2026-07-28.
-Future release or publish claims must still recheck the remote with `git fetch origin main` and
-`git status --short --branch`.
+Local `main` is intentionally not pushed and is currently documented as `ahead 7` from
+`origin/main` after the hydration mismatch recovery work. Future release, publish, push, or sync
+claims must still recheck the remote with `git fetch origin main`, `git status --short --branch`,
+and `git rev-list --left-right --count origin/main...HEAD`.
 
 Implemented baseline:
 
@@ -18,6 +19,8 @@ Implemented baseline:
 - `renderToString().styles` returns serialized `<style data-s-id="...">...</style>` strings.
 - `useStyle(scopeId, css)` is the shared runtime style registration path.
 - `hydrate()` reuses matching server style tags and dedupes by `data-s-id`.
+- `hydrate()` throws structured `SolaceHydrationError` diagnostics by default and supports explicit
+  `{ recover: true }` deopt to replace mismatched server DOM with the client tree.
 - `generateStaticSite()` provides in-memory SSG on top of `renderToString()`.
 - `@italone/solace/vite` and `@italone/solace/sfc` remain the only public SFC/Vite entries.
 - Router beta remains limited to the current SPA slice.
@@ -67,14 +70,18 @@ Any public API change must keep these hard gates mandatory:
 
 ### 1. Hydration Mismatch Policy
 
-The minimum loop throws on structural mismatch. The next phase should make that failure mode easier
-to diagnose without adding best-effort recovery yet.
+The minimum loop throws on structural mismatch by default. The current next-phase contract adds
+structured diagnostics and an explicit deopt recovery option without making recovery implicit.
 
 Required design points:
 
 - Preserve throw-on-mismatch as the default.
 - Include node path, expected shape, and actual DOM shape in the error where practical.
-- Keep recovery/deopt behavior deferred until the diagnostics are stable.
+- Keep recovery opt-in through `{ recover: true }`.
+- Only recover `SolaceHydrationError`; non-hydration errors and style conflicts must continue to
+  throw.
+- Automatic or router-aware recovery remains deferred until SSR/SSG/router boundaries are separately
+  designed.
 
 ### 2. SSR/SSG Shell Contract
 
