@@ -39,6 +39,8 @@ export type BrowserBenchmarkHistoryResult =
       reorderMs: number;
       unmountMs: number;
       firstRowText: string;
+      middleRowText?: string;
+      lastRowText?: string;
       remainingNodesAfterUnmount: number;
       domMutationCounts: DomMutationCounts;
       movePathCounts: MovePathCounts;

@@ -9,6 +9,12 @@ import {
 
 type KeyedReorderShape = "reverse" | "sorted" | "swap-neighbors" | "shuffle" | "shift-window";
 
+type KeyedReorderRowTexts = {
+  firstRowText: string;
+  middleRowText: string;
+  lastRowText: string;
+};
+
 type BrowserBenchmarkScenario =
   "large-list" | { scenario: "keyed-reorder"; shape: KeyedReorderShape };
 
@@ -38,6 +44,8 @@ type BrowserBenchmarkResult = {
       shape: KeyedReorderShape;
       reorderMs: number;
       firstRowText: string;
+      middleRowText: string;
+      lastRowText: string;
       domMutationCounts: DomMutationCounts;
       movePathCounts: MovePathCounts;
     }
@@ -90,6 +98,49 @@ function applyKeyedReorderShape(rowOrder: number[], shape: KeyedReorderShape): n
       const windowSize = 100;
       return [...rowOrder.slice(-windowSize), ...rowOrder.slice(0, -windowSize)];
     }
+  }
+}
+
+function readKeyedReorderRowTexts(container: Element): KeyedReorderRowTexts {
+  const rowNodes = container.querySelectorAll("#rows > div");
+  const middleIndex = Math.floor(rowNodes.length / 2);
+
+  return {
+    firstRowText: rowNodes[0]?.textContent?.trim() ?? "",
+    middleRowText: rowNodes[middleIndex]?.textContent?.trim() ?? "",
+    lastRowText: rowNodes[rowNodes.length - 1]?.textContent?.trim() ?? "",
+  };
+}
+
+function getExpectedKeyedReorderRows(shape: KeyedReorderShape): KeyedReorderRowTexts {
+  switch (shape) {
+    case "reverse":
+      return { firstRowText: "Row 10000", middleRowText: "Row 5000", lastRowText: "Row 1" };
+    case "sorted":
+      return { firstRowText: "Row 1", middleRowText: "Row 5001", lastRowText: "Row 10000" };
+    case "swap-neighbors":
+      return { firstRowText: "Row 2", middleRowText: "Row 5002", lastRowText: "Row 9999" };
+    case "shuffle":
+      return { firstRowText: "Row 9898", middleRowText: "Row 6576", lastRowText: "Row 2524" };
+    case "shift-window":
+      return { firstRowText: "Row 9901", middleRowText: "Row 4901", lastRowText: "Row 9900" };
+  }
+}
+
+function assertKeyedReorderRows(shape: KeyedReorderShape, actualRows: KeyedReorderRowTexts): void {
+  const expectedRows = getExpectedKeyedReorderRows(shape);
+
+  if (
+    actualRows.firstRowText !== expectedRows.firstRowText ||
+    actualRows.middleRowText !== expectedRows.middleRowText ||
+    actualRows.lastRowText !== expectedRows.lastRowText
+  ) {
+    throw new Error(
+      `Unexpected keyed reorder ${shape} row order: ${JSON.stringify({
+        expected: expectedRows,
+        actual: actualRows,
+      })}`,
+    );
   }
 }
 
@@ -325,8 +376,8 @@ async function runKeyedReorderBenchmark(shape: KeyedReorderShape): Promise<Brows
       return now() - reorderStart;
     }),
   );
-  const reorderedFirstRow = container.querySelector("#rows > div:first-child");
-  const firstRowText = reorderedFirstRow?.textContent?.trim() ?? "";
+  const rowTexts = readKeyedReorderRowTexts(container);
+  assertKeyedReorderRows(shape, rowTexts);
 
   const unmountStart = now();
   render(<section id="benchmark-complete">complete</section>, container);
@@ -340,7 +391,7 @@ async function runKeyedReorderBenchmark(shape: KeyedReorderShape): Promise<Brows
     initialRenderMs,
     reorderMs,
     unmountMs,
-    firstRowText,
+    ...rowTexts,
     remainingNodesAfterUnmount,
     domMutationCounts,
     movePathCounts,

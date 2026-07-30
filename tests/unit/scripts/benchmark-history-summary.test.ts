@@ -161,6 +161,9 @@ describe("benchmark history summary CLI", () => {
             initialRenderMs: 10,
             reorderMs: 5,
             unmountMs: 1,
+            firstRowText: "Row 10000",
+            middleRowText: "Row 5000",
+            lastRowText: "Row 1",
           }),
         ),
         JSON.stringify(
@@ -179,6 +182,9 @@ describe("benchmark history summary CLI", () => {
             initialRenderMs: 20,
             reorderMs: 4,
             unmountMs: 1,
+            firstRowText: "Row 1",
+            middleRowText: "Row 5001",
+            lastRowText: "Row 10000",
           }),
         ),
         JSON.stringify(
@@ -517,22 +523,42 @@ type BrowserRecordOptions =
       initialRenderMs: number;
       reorderMs: number;
       unmountMs: number;
+      firstRowText?: string;
+      middleRowText?: string;
+      lastRowText?: string;
     };
 
 function createBrowserRecord(options: BrowserRecordOptions) {
-  const scenario = options.scenario ?? "large-list";
+  if (options.scenario === "keyed-reorder") {
+    return {
+      kind: "browser-benchmark",
+      status: "passed",
+      sampleCount: 1,
+      summary: {
+        ...options,
+        scenario: "keyed-reorder",
+        rows: 10_000,
+        firstRowText: options.firstRowText ?? "Row 10000",
+        middleRowText: options.middleRowText ?? "Row 5000",
+        lastRowText: options.lastRowText ?? "Row 1",
+        remainingNodesAfterUnmount: 0,
+        metadata: {
+          browserName: "chromium",
+          sampleSize: 1,
+        },
+      },
+    };
+  }
 
   return {
     kind: "browser-benchmark",
     status: "passed",
     sampleCount: 1,
     summary: {
-      scenario,
-      rows: 10_000,
       ...options,
-      ...(scenario === "large-list"
-        ? { selectedText: "Row 5000 selected" }
-        : { firstRowText: "Row 10000" }),
+      scenario: "large-list",
+      rows: 10_000,
+      selectedText: "Row 5000 selected",
       remainingNodesAfterUnmount: 0,
       metadata: {
         browserName: "chromium",

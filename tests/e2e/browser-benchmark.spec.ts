@@ -30,6 +30,8 @@ type BrowserBenchmarkResult =
       reorderMs: number;
       unmountMs: number;
       firstRowText: string;
+      middleRowText: string;
+      lastRowText: string;
       remainingNodesAfterUnmount: number;
       domMutationCounts: DomMutationCounts;
       movePathCounts: MovePathCounts;
@@ -65,6 +67,25 @@ const browserBenchmarkScenarios: BrowserBenchmarkScenario[] = [
 ];
 
 const rowCount = 10_000;
+
+function getExpectedKeyedReorderRows(shape: KeyedReorderShape): {
+  firstRowText: string;
+  middleRowText: string;
+  lastRowText: string;
+} {
+  switch (shape) {
+    case "reverse":
+      return { firstRowText: "Row 10000", middleRowText: "Row 5000", lastRowText: "Row 1" };
+    case "sorted":
+      return { firstRowText: "Row 1", middleRowText: "Row 5001", lastRowText: "Row 10000" };
+    case "swap-neighbors":
+      return { firstRowText: "Row 2", middleRowText: "Row 5002", lastRowText: "Row 9999" };
+    case "shuffle":
+      return { firstRowText: "Row 9898", middleRowText: "Row 6576", lastRowText: "Row 2524" };
+    case "shift-window":
+      return { firstRowText: "Row 9901", middleRowText: "Row 4901", lastRowText: "Row 9900" };
+  }
+}
 
 test("measures browser benchmark scenarios in a production browser build", async ({
   browser,
@@ -136,6 +157,10 @@ function expectBrowserBenchmarkResult(
   expect(result.scenario).toBe("keyed-reorder");
   expect(result.shape).toBe(scenario.shape);
   expectFinitePositive(result.reorderMs);
+  const expectedRows = getExpectedKeyedReorderRows(scenario.shape);
+  expect(result.firstRowText).toBe(expectedRows.firstRowText);
+  expect(result.middleRowText).toBe(expectedRows.middleRowText);
+  expect(result.lastRowText).toBe(expectedRows.lastRowText);
   expectDomMutationCounts(result.domMutationCounts);
   expectMovePathCounts(result.movePathCounts);
   expect(result.movePathCounts.keyedMiddleSegments).toBeLessThanOrEqual(1);
@@ -151,7 +176,6 @@ function expectBrowserBenchmarkResult(
 
   switch (scenario.shape) {
     case "reverse":
-      expect(result.firstRowText).toBe(`Row ${rowCount}`);
       expect(result.movePathCounts.keyedMiddleSegments).toBe(1);
       expect(result.movePathCounts.matchedOldChildren).toBe(rowCount);
       expect(result.movePathCounts.lisLength).toBe(1);
@@ -161,7 +185,6 @@ function expectBrowserBenchmarkResult(
       expect(result.domMutationCounts.insertBefore).toBe(1);
       break;
     case "sorted":
-      expect(result.firstRowText).toBe("Row 1");
       expect(result.movePathCounts.keyedMiddleSegments).toBe(0);
       expect(result.movePathCounts.matchedOldChildren).toBe(0);
       expect(result.movePathCounts.lisLength).toBe(0);
@@ -171,7 +194,6 @@ function expectBrowserBenchmarkResult(
       expect(result.domMutationCounts.insertBefore).toBe(0);
       break;
     case "swap-neighbors":
-      expect(result.firstRowText).toBe("Row 2");
       expect(result.movePathCounts.keyedMiddleSegments).toBe(1);
       expect(result.movePathCounts.matchedOldChildren).toBe(rowCount);
       expect(result.movePathCounts.lisLength).toBe(rowCount / 2);
@@ -195,7 +217,6 @@ function expectBrowserBenchmarkResult(
       break;
     case "shift-window": {
       const windowSize = 100;
-      expect(result.firstRowText).toBe(`Row ${rowCount - windowSize + 1}`);
       expect(result.movePathCounts.keyedMiddleSegments).toBe(1);
       expect(result.movePathCounts.matchedOldChildren).toBe(rowCount);
       expect(result.movePathCounts.lisLength).toBe(rowCount - windowSize);
