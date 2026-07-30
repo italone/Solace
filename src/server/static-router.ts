@@ -38,7 +38,19 @@ export function createStaticRoutesFromRouter(options: StaticRouterOptions): Stat
 }
 
 function assertStaticRouterOptions(options: StaticRouterOptions): void {
-  if (!Array.isArray(options?.routes)) {
+  if (options === null || typeof options !== "object") {
+    throw new TypeError("Static router options must be an object");
+  }
+
+  for (const key of Object.keys(options)) {
+    if (key !== "routes" && key !== "paths" && key !== "context" && key !== "provides") {
+      throw new TypeError(
+        `Deferred static router option is not part of the beta contract: ${key}`,
+      );
+    }
+  }
+
+  if (!Array.isArray(options.routes)) {
     throw new TypeError("Static router routes must be an array");
   }
 
@@ -77,7 +89,7 @@ function resolveStaticRouterPath(matcher: Matcher, rawFullPath: string): RouteLo
   const searchIndex = rawFullPath.indexOf("?");
   const rawPath = searchIndex === -1 ? rawFullPath : rawFullPath.slice(0, searchIndex);
   const rawSearch = searchIndex === -1 ? "" : rawFullPath.slice(searchIndex);
-  const resolved = matcher.resolve(rawPath || "/");
+  const resolved = resolveMatcherPath(matcher, rawPath || "/");
   const query = parseQuery(rawSearch);
   const fullPath = `${resolved.path}${stringifyQuery(query)}`;
 
@@ -86,4 +98,19 @@ function resolveStaticRouterPath(matcher: Matcher, rawFullPath: string): RouteLo
     fullPath,
     query,
   };
+}
+
+function resolveMatcherPath(
+  matcher: Matcher,
+  path: string,
+): Pick<RouteLocationNormalized, "path" | "params" | "matched"> {
+  try {
+    return matcher.resolve(path);
+  } catch (error) {
+    if (error instanceof URIError) {
+      throw new TypeError("Static router path contains malformed percent encoding");
+    }
+
+    throw error;
+  }
 }

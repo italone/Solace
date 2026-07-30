@@ -99,6 +99,16 @@ describe("createStaticRoutesFromRouter", () => {
   });
 
   it("rejects invalid adapter inputs with stable TypeErrors", () => {
+    expect(() => createStaticRoutesFromRouter(null as unknown as never)).toThrow(
+      /Static router options must be an object/,
+    );
+    expect(() =>
+      createStaticRoutesFromRouter({
+        routes: createRoutes(),
+        paths: ["/"],
+        router: {},
+      } as never),
+    ).toThrow(/Deferred static router option is not part of the beta contract: router/);
     expect(() =>
       createStaticRoutesFromRouter({ routes: null as unknown as RouteRecord[], paths: ["/"] }),
     ).toThrow(TypeError("Static router routes must be an array"));
@@ -111,6 +121,15 @@ describe("createStaticRoutesFromRouter", () => {
         paths: [42 as unknown as string],
       }),
     ).toThrow(TypeError("Static router path must be a string"));
+  });
+
+  it("throws a stable TypeError for malformed path percent encoding", () => {
+    expect(() =>
+      createStaticRoutesFromRouter({
+        routes: [{ path: "/users/:id", component: User }],
+        paths: ["/users/%E0%A4%A"],
+      }),
+    ).toThrow(/Static router path contains malformed percent encoding/);
   });
 
   it("rejects route records with non-string paths", () => {
