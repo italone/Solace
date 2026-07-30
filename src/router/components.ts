@@ -1,8 +1,9 @@
 import type { ComponentRender, VNodeProps } from "../vnode/vnode";
 import { Fragment } from "../vnode/vnode";
 import { h } from "../vnode/h";
-import { useRoute, useRouter } from "./router";
-import type { LazyRouteComponent, RouteComponent, RouteLocationRaw } from "./types";
+import { inject, provide } from "../component/provide";
+import { routerViewDepthKey, useRoute, useRouter } from "./router";
+import type { LazyRouteComponent, RouteComponent, RouteLocationRaw, RouteRecord } from "./types";
 
 export interface RouterLinkProps extends VNodeProps {
   to: RouteLocationRaw;
@@ -48,13 +49,34 @@ export function RouterLink(
 
 export function RouterView(): ComponentRender {
   const route = useRoute();
+  const depth = inject<number>(routerViewDepthKey, 0);
+  provide(routerViewDepthKey, depth + 1);
 
   return () => {
-    const component = route.value.matched[0]?.component;
+    const record = getRenderableRecord(route.value.matched, depth);
+    const component = record?.component;
     return component == null || isLazyRouteComponent(component)
       ? h(Fragment, null, [])
       : h(component);
   };
+}
+
+function getRenderableRecord(records: RouteRecord[], depth: number): RouteRecord | undefined {
+  let renderable = 0;
+
+  for (const record of records) {
+    if (record.component == null || isLazyRouteComponent(record.component)) {
+      continue;
+    }
+
+    if (renderable === depth) {
+      return record;
+    }
+
+    renderable += 1;
+  }
+
+  return undefined;
 }
 
 function isLazyRouteComponent(

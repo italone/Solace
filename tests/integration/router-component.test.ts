@@ -44,6 +44,75 @@ function createMemoryLikeHistory(initial = "/"): RouterHistory & {
 }
 
 describe("router components", () => {
+  it("renders nested RouterView depth for parent and child records", async () => {
+    const DashboardLayout = () => () =>
+      h("section", { id: "layout" }, [h("h1", null, "Dashboard"), h(RouterView)]);
+    const Settings = () => h("p", { id: "settings" }, "settings");
+    const router = createRouter({
+      history: createMemoryLikeHistory("/dashboard/settings"),
+      routes: [
+        {
+          path: "/dashboard",
+          component: DashboardLayout,
+          children: [{ path: "settings", component: Settings }],
+        },
+      ],
+    });
+    const container = document.createElement("div");
+
+    createApp(() => h(RouterView))
+      .use(router)
+      .mount(container);
+    await nextTick();
+
+    expect(container.querySelector("#layout h1")?.textContent).toBe("Dashboard");
+    expect(container.querySelector("#settings")?.textContent).toBe("settings");
+  });
+
+  it("renders index children under parent layouts", async () => {
+    const DashboardLayout = () => () => h("section", { id: "layout" }, h(RouterView));
+    const DashboardHome = () => h("p", { id: "home" }, "dashboard-home");
+    const router = createRouter({
+      history: createMemoryLikeHistory("/dashboard"),
+      routes: [
+        {
+          path: "/dashboard",
+          component: DashboardLayout,
+          children: [{ path: "", component: DashboardHome }],
+        },
+      ],
+    });
+    const container = document.createElement("div");
+
+    createApp(() => h(RouterView))
+      .use(router)
+      .mount(container);
+    await nextTick();
+
+    expect(container.querySelector("#home")?.textContent).toBe("dashboard-home");
+  });
+
+  it("does not consume RouterView depth for layout-less grouping records", async () => {
+    const Settings = () => h("p", { id: "settings" }, "settings");
+    const router = createRouter({
+      history: createMemoryLikeHistory("/admin/settings"),
+      routes: [
+        {
+          path: "/admin",
+          children: [{ path: "settings", component: Settings }],
+        },
+      ],
+    });
+    const container = document.createElement("div");
+
+    createApp(() => h(RouterView))
+      .use(router)
+      .mount(container);
+    await nextTick();
+
+    expect(container.querySelector("#settings")?.textContent).toBe("settings");
+  });
+
   it("renders the matched route and updates after RouterLink click", async () => {
     const Home = () => h("p", { id: "home" }, "home");
     const User = () => {

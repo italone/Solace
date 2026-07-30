@@ -13,6 +13,7 @@ import type {
 
 export const routerKey = Symbol("Solace.router");
 export const routeKey = Symbol("Solace.route");
+export const routerViewDepthKey = Symbol("Solace.routerViewDepth");
 
 const allowedRouteRecordFields = new Set([
   "path",
