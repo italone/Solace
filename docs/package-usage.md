@@ -190,6 +190,7 @@ import {
   createRouter,
   createWebHistory,
   h,
+  lazyRoute,
 } from "@italone/solace";
 
 const Home = () => h("p", null, "home");
@@ -199,6 +200,14 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: "/", component: Home },
+    { path: "/legacy", redirect: "/" },
+    {
+      path: "/dashboard",
+      component: () => h("section", null, [h("h2", null, "Dashboard"), h(RouterView)]),
+      beforeEnter: () => true,
+      meta: { section: "dashboard" },
+      children: [{ path: "report", component: lazyRoute(() => import("./Report")) }],
+    },
     { path: "/users/:id", component: User },
   ],
 });
@@ -211,11 +220,12 @@ createApp(App)
   .mount(document.querySelector("#app") as Element);
 ```
 
-The current router supports path matching, dynamic params, query parsing, browser history adapters,
-`RouterLink`, and `RouterView`. It does not yet include route guards, nested route records, named
-routes, redirects, lazy-route contracts, scroll behavior, memory history, auth, permissions, SSR,
-SSG, or hydration. Passing deferred route fields such as `name`, `redirect`, `children`,
-`beforeEnter`, or `meta`, or deferred options such as `scrollBehavior`, throws a `TypeError`.
+The current beta router supports path matching, dynamic params, query parsing, browser history
+adapters, nested route records, redirects, global `beforeEach` guards, route-level `beforeEnter`
+guards, route `meta`, `lazyRoute()` route components, `RouterLink`, and `RouterView`. It does not
+yet include route names, aliases, route props, scroll behavior, memory history, auth, permissions,
+SSR, SSG, or hydration router integration. Passing still-deferred route fields such as `name`,
+`alias`, or `props`, or deferred options such as `scrollBehavior`, throws a `TypeError`.
 Object route locations only support `{ path, query }`; named locations, hash, and params objects are
 rejected. Dynamic params are limited to simple `:name` segments and `/:pathMatch(.*)*` wildcard
 fallback.

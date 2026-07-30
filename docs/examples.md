@@ -75,9 +75,12 @@ Coverage:
 - Beta `RouterView` and `RouterLink` rendering.
 - Dynamic route params.
 - Query string parsing.
+- Nested route rendering.
+- Redirects, route guards, and lazy route components.
 - Hash history navigation without server rewrite support.
 
-The Playwright test `tests/e2e/router-basic.spec.ts` verifies home, user, and not-found navigation.
+The Playwright test `tests/e2e/router-basic.spec.ts` verifies home, user, redirect, guarded
+dashboard, nested settings, lazy report, and not-found navigation.
 
 ## SFC Counter
 

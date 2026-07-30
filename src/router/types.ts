@@ -11,10 +11,7 @@ export interface LazyRouteComponent {
 }
 
 export type NavigationGuardResult =
-  | void
-  | boolean
-  | RouteLocationRaw
-  | Promise<void | boolean | RouteLocationRaw>;
+  void | boolean | RouteLocationRaw | Promise<void | boolean | RouteLocationRaw>;
 
 export type NavigationGuard = (
   to: RouteLocationNormalized,
