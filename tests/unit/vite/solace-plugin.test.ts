@@ -83,6 +83,14 @@ describe("solacePlugin", () => {
     ).toThrow("[SFC_PARSE_ERROR] /app/src/Broken.solace:1:19 Unclosed interpolation expression");
   });
 
+  it("reports missing template diagnostics without a source location", () => {
+    const plugin = solacePlugin();
+
+    expect(() => transformWith(plugin, `<script></script>`, "/app/src/App.solace")).toThrow(
+      "[SFC_MISSING_TEMPLATE] /app/src/App.solace Missing <template> block",
+    );
+  });
+
   it("reports duplicate block diagnostics without expanding .solace syntax", () => {
     const plugin = solacePlugin();
 
