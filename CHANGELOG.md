@@ -1,5 +1,11 @@
 # @italone/solace
 
+## 0.0.5
+
+### Patch Changes
+
+- Add a DevTools browser extension panel workflow with timeline filtering, pause/resume controls, sanitized public event relay, and extension e2e coverage.
+
 ## 0.0.4
 
 ### Patch Changes
