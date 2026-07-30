@@ -4,6 +4,7 @@ import { ref } from "../reactivity/ref";
 import { createMatcher } from "./matcher";
 import { parseQuery, stringifyQuery } from "./query";
 import type {
+  NavigationGuard,
   RouteLocationNormalized,
   RouteLocationRaw,
   RouteRecord,
@@ -40,6 +41,7 @@ export function createRouter(options: RouterOptions): Router {
   assertRouterOptionsContract(options);
   const matcher = createMatcher(options.routes);
   const redirectLimit = 16;
+  const beforeEachGuards: NavigationGuard[] = [];
   let stopListening: (() => void) | null = null;
   const currentRoute = ref(resolveLocation(options.history.location()));
 
@@ -63,8 +65,15 @@ export function createRouter(options: RouterOptions): Router {
     back: () => options.history.back(),
     forward: () => options.history.forward(),
     resolve: resolveLocation,
-    beforeEach() {
-      return () => undefined;
+    beforeEach(guard: NavigationGuard) {
+      beforeEachGuards.push(guard);
+
+      return () => {
+        const index = beforeEachGuards.indexOf(guard);
+        if (index >= 0) {
+          beforeEachGuards.splice(index, 1);
+        }
+      };
     },
   };
 
@@ -75,33 +84,71 @@ export function createRouter(options: RouterOptions): Router {
     mode: "push" | "replace",
   ): Promise<RouteLocationNormalized> {
     const from = currentRoute.value;
-    const redirected = resolveRedirects(resolveLocation(to), from);
+    const finalRoute = await resolveNavigation(resolveLocation(to), from);
 
-    if (mode === "replace") {
-      options.history.replace(redirected.fullPath);
-    } else {
-      options.history.push(redirected.fullPath);
+    if (finalRoute === false) {
+      return from;
     }
 
-    currentRoute.value = redirected;
-    return redirected;
+    if (mode === "replace") {
+      options.history.replace(finalRoute.fullPath);
+    } else {
+      options.history.push(finalRoute.fullPath);
+    }
+
+    currentRoute.value = finalRoute;
+    return finalRoute;
+  }
+
+  async function resolveNavigation(
+    initial: RouteLocationNormalized,
+    from: RouteLocationNormalized,
+    state: RedirectState = { count: 0 },
+  ): Promise<RouteLocationNormalized | false> {
+    const redirected = resolveRedirects(initial, from, state);
+    const guarded = await runGuards(redirected, from);
+
+    if (guarded === false) {
+      return false;
+    }
+
+    if (guarded === true) {
+      return redirected;
+    }
+
+    if (state.count >= redirectLimit) {
+      throw new RouterNavigationError(
+        "Router redirect loop detected",
+        "redirect-loop",
+        from,
+        redirected,
+      );
+    }
+
+    if (state.redirectedFrom === undefined) {
+      state.redirectedFrom = redirected;
+    }
+
+    state.count += 1;
+    return resolveNavigation(resolveLocation(guarded), from, state);
   }
 
   function resolveRedirects(
     initial: RouteLocationNormalized,
     from: RouteLocationNormalized,
+    state: RedirectState,
   ): RouteLocationNormalized {
     let target = initial;
-    let redirectedFrom: RouteLocationNormalized | undefined;
-    let redirects = 0;
 
     while (true) {
       const redirect = getLastMatchedRecord(target)?.redirect;
       if (redirect === undefined) {
-        return redirectedFrom === undefined ? target : { ...target, redirectedFrom };
+        return state.redirectedFrom === undefined
+          ? target
+          : { ...target, redirectedFrom: state.redirectedFrom };
       }
 
-      if (redirects >= redirectLimit) {
+      if (state.count >= redirectLimit) {
         throw new RouterNavigationError(
           "Router redirect loop detected",
           "redirect-loop",
@@ -110,13 +157,41 @@ export function createRouter(options: RouterOptions): Router {
         );
       }
 
-      if (redirectedFrom === undefined) {
-        redirectedFrom = target;
+      if (state.redirectedFrom === undefined) {
+        state.redirectedFrom = target;
       }
 
       target = resolveLocation(typeof redirect === "function" ? redirect(target) : redirect);
-      redirects += 1;
+      state.count += 1;
     }
+  }
+
+  async function runGuards(
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized,
+  ): Promise<true | false | RouteLocationRaw> {
+    const guards = [
+      ...beforeEachGuards,
+      ...to.matched.flatMap((record) => normalizeGuards(record.beforeEnter)),
+    ];
+
+    try {
+      for (const guard of guards) {
+        const result = await guard(to, from);
+
+        if (result === false) {
+          return false;
+        }
+
+        if (result !== undefined && result !== true) {
+          return result;
+        }
+      }
+    } catch {
+      throw new RouterNavigationError("Router guard rejected", "guard-rejected", from, to);
+    }
+
+    return true;
   }
 
   function resolveLocation(to: RouteLocationRaw): RouteLocationNormalized {
@@ -136,8 +211,21 @@ export function createRouter(options: RouterOptions): Router {
   }
 }
 
+interface RedirectState {
+  count: number;
+  redirectedFrom?: RouteLocationNormalized;
+}
+
 function getLastMatchedRecord(route: RouteLocationNormalized): RouteRecord | undefined {
   return route.matched[route.matched.length - 1];
+}
+
+function normalizeGuards(guards: RouteRecord["beforeEnter"]): NavigationGuard[] {
+  if (guards === undefined) {
+    return [];
+  }
+
+  return Array.isArray(guards) ? guards : [guards];
 }
 
 export function useRouter(): Router {

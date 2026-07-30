@@ -332,6 +332,154 @@ describe("createRouter", () => {
     expect(router.currentRoute.value.fullPath).toBe("/");
   });
 
+  it("runs global beforeEach guards in registration order", async () => {
+    const calls: string[] = [];
+    const router = createRouter({
+      history: createMemoryLikeHistory("/"),
+      routes: [
+        { path: "/", component: Home },
+        { path: "/users/:id", component: User },
+      ],
+    });
+
+    router.beforeEach((to, from) => {
+      calls.push(`first:${from.fullPath}->${to.fullPath}`);
+    });
+    router.beforeEach((to) => {
+      calls.push(`second:${to.params.id}`);
+    });
+
+    await router.push("/users/42");
+
+    expect(calls).toEqual(["first:/->/users/42", "second:42"]);
+  });
+
+  it("waits for asynchronous beforeEach guards", async () => {
+    const calls: string[] = [];
+    const router = createRouter({
+      history: createMemoryLikeHistory("/"),
+      routes: [
+        { path: "/", component: Home },
+        { path: "/users/:id", component: User },
+      ],
+    });
+
+    router.beforeEach(async (to) => {
+      await Promise.resolve();
+      calls.push(to.fullPath);
+    });
+
+    await router.push("/users/42");
+
+    expect(calls).toEqual(["/users/42"]);
+  });
+
+  it("unsubscribes global beforeEach guards", async () => {
+    const guard = vi.fn();
+    const router = createRouter({
+      history: createMemoryLikeHistory("/"),
+      routes: [
+        { path: "/", component: Home },
+        { path: "/users/:id", component: User },
+      ],
+    });
+    const stop = router.beforeEach(guard);
+
+    stop();
+    await router.push("/users/42");
+
+    expect(guard).not.toHaveBeenCalled();
+  });
+
+  it("runs route beforeEnter guards from parent to child", async () => {
+    const calls: string[] = [];
+    const router = createRouter({
+      history: createMemoryLikeHistory("/"),
+      routes: [
+        { path: "/", component: Home },
+        {
+          path: "/dashboard",
+          component: Home,
+          beforeEnter: () => {
+            calls.push("parent");
+          },
+          children: [
+            {
+              path: "settings",
+              component: User,
+              beforeEnter: [
+                () => {
+                  calls.push("child-a");
+                },
+                () => {
+                  calls.push("child-b");
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    await router.push("/dashboard/settings");
+
+    expect(calls).toEqual(["parent", "child-a", "child-b"]);
+  });
+
+  it("cancels navigation when a guard returns false", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/blocked", component: User },
+      ],
+    });
+    router.beforeEach(() => false);
+
+    const result = await router.push("/blocked");
+
+    expect(result.fullPath).toBe("/");
+    expect(router.currentRoute.value.fullPath).toBe("/");
+    expect(history.pushedPaths).toEqual([]);
+  });
+
+  it("redirects when a guard returns a location", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/blocked", component: User },
+        { path: "/login", component: Home },
+      ],
+    });
+    router.beforeEach((to) => (to.fullPath === "/blocked" ? "/login" : true));
+
+    const result = await router.push("/blocked");
+
+    expect(result.fullPath).toBe("/login");
+    expect(history.pushedPaths).toEqual(["/login"]);
+  });
+
+  it("rejects guard errors without mutating history or current route", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/boom", component: User },
+      ],
+    });
+    router.beforeEach(() => {
+      throw new Error("guard exploded");
+    });
+
+    await expect(router.push("/boom")).rejects.toThrow(/Router guard rejected/);
+    expect(history.pushedPaths).toEqual([]);
+    expect(router.currentRoute.value.fullPath).toBe("/");
+  });
+
   it("updates from history listeners after install", () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({ history, routes: [{ path: "/", component: Home }] });

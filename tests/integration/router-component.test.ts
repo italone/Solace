@@ -43,6 +43,12 @@ function createMemoryLikeHistory(initial = "/"): RouterHistory & {
   };
 }
 
+async function settleRouterLinkNavigation(): Promise<void> {
+  await Promise.resolve();
+  await Promise.resolve();
+  await nextTick();
+}
+
 describe("router components", () => {
   it("renders nested RouterView depth for parent and child records", async () => {
     const DashboardLayout = () => () =>
@@ -141,9 +147,9 @@ describe("router components", () => {
     expect(container.querySelector("#home")?.textContent).toBe("home");
 
     container.querySelector<HTMLAnchorElement>("#user-link")?.click();
+    await settleRouterLinkNavigation();
     expect(router.currentRoute.value.fullPath).toBe("/users/42?tab=profile");
     expect(router.currentRoute.value.matched[0]?.component).toBe(User);
-    await nextTick();
 
     expect(container.querySelector("#user")?.textContent).toBe("user:42:profile");
   });
@@ -227,7 +233,7 @@ describe("router components", () => {
 
     createApp(App).use(router).mount(container);
     container.querySelector<HTMLAnchorElement>("#replace-link")?.click();
-    await nextTick();
+    await settleRouterLinkNavigation();
 
     expect(history.pushedPaths).toEqual([]);
     expect(history.replacedPaths).toEqual(["/users/99"]);
