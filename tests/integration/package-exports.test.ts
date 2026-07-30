@@ -198,9 +198,16 @@ describe("package exports", () => {
   it("exports the public server rendering subpath", async () => {
     const server = await import("@italone/solace/server");
 
-    expect(Object.keys(server).sort()).toEqual(["generateStaticSite", "renderToString"]);
+    expect(Object.keys(server).sort()).toEqual([
+      "createStaticRoutesFromRouter",
+      "generateStaticSite",
+      "renderToString",
+      "resolveStaticAssets",
+    ]);
+    expect(server.createStaticRoutesFromRouter).toEqual(expect.any(Function));
     expect(server.generateStaticSite).toEqual(expect.any(Function));
     expect(server.renderToString).toEqual(expect.any(Function));
+    expect(server.resolveStaticAssets).toEqual(expect.any(Function));
     expect(server).not.toHaveProperty("hydrate");
     expect(server).not.toHaveProperty("patch");
   });
@@ -251,8 +258,9 @@ describe("package exports", () => {
   });
 
   it("enforces SSR and SSG manifest/router boundaries from the server subpath", async () => {
+    const api = await import("@italone/solace");
     const server = await import("@italone/solace/server");
-    const source = null as never;
+    const source = (() => api.h("p", null, "home")) as never;
 
     expect(() => server.renderToString(source, { manifest: {} } as never)).toThrow(
       /SSR manifest integration is deferred/,
@@ -264,18 +272,36 @@ describe("package exports", () => {
       /Router-aware SSR integration is deferred/,
     );
 
+    const site = server.generateStaticSite({
+      routes: [{ path: "/", source }],
+      manifest: {
+        "src/main.ts": {
+          file: "assets/main.js",
+          css: ["assets/main.css"],
+        },
+      },
+      clientEntry: "src/main.ts",
+      shell: ({ body, assets }) =>
+        `<!doctype html><html><head>${assets.stylesheets.join("")}</head><body>${body}${assets.scripts.join("")}</body></html>`,
+    });
+
+    expect(site.pages[0].html).toContain('<link rel="stylesheet" href="/assets/main.css">');
+    expect(site.pages[0].html).toContain(
+      '<script type="module" src="/assets/main.js"></script>',
+    );
+
     expect(() =>
       server.generateStaticSite({
         routes: [{ path: "/", source }],
         manifest: {},
       } as never),
-    ).toThrow(/SSG manifest integration is deferred/);
+    ).toThrow(/SSG manifest integration requires both manifest and clientEntry/);
     expect(() =>
       server.generateStaticSite({
         routes: [{ path: "/", source }],
         clientEntry: "/src/main.ts",
       } as never),
-    ).toThrow(/SSG manifest integration is deferred/);
+    ).toThrow(/SSG manifest integration requires both manifest and clientEntry/);
     expect(() =>
       server.generateStaticSite({
         routes: [{ path: "/", source }],
@@ -288,6 +314,22 @@ describe("package exports", () => {
         routes: [{ path: 42, source }],
       } as never),
     ).toThrow(/SSG route path must be a string/);
+
+    const staticRoutes = server.createStaticRoutesFromRouter({
+      routes: [{ path: "/users/:id", component: source }],
+      paths: ["/users/42?tab=profile"],
+    });
+
+    expect(staticRoutes[0]).toMatchObject({
+      path: "/users/42?tab=profile",
+      source,
+    });
+    expect(staticRoutes[0].context?.route).toMatchObject({
+      path: "/users/42",
+      fullPath: "/users/42?tab=profile",
+      params: { id: "42" },
+      query: { tab: "profile" },
+    });
   });
 
   it("supports CommonJS package exports", () => {
@@ -326,9 +368,16 @@ describe("package exports", () => {
     expect(vite.solacePlugin).toEqual(expect.any(Function));
     expect(Object.keys(vite).sort()).toEqual(["default", "solacePlugin"]);
     expect(Object.keys(sfc)).toEqual([]);
-    expect(Object.keys(server).sort()).toEqual(["generateStaticSite", "renderToString"]);
+    expect(Object.keys(server).sort()).toEqual([
+      "createStaticRoutesFromRouter",
+      "generateStaticSite",
+      "renderToString",
+      "resolveStaticAssets",
+    ]);
+    expect(server.createStaticRoutesFromRouter).toEqual(expect.any(Function));
     expect(server.generateStaticSite).toEqual(expect.any(Function));
     expect(server.renderToString).toEqual(expect.any(Function));
+    expect(server.resolveStaticAssets).toEqual(expect.any(Function));
   });
 
   it("rejects private package subpaths", async () => {

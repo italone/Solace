@@ -46,7 +46,7 @@ Use Solace through the documented package entries only:
 | `@italone/solace/jsx-runtime`      | Public    | Automatic JSX runtime used by TypeScript and bundlers       |
 | `@italone/solace/jsx-dev-runtime`  | Public    | Development JSX runtime used by Vite and JSX dev tooling    |
 | `@italone/solace/devtools`         | Public    | Low-level listener and recorder APIs consumed by tooling    |
-| `@italone/solace/server`           | Public    | Server rendering and in-memory SSG for synchronous trees    |
+| `@italone/solace/server`           | Public    | Server rendering, in-memory SSG, and static asset helpers   |
 | `@italone/solace/sfc`              | Public    | Type shim entry for `.solace` single-file component imports |
 | `@italone/solace/vite`             | Public    | Vite plugin for alpha `.solace` single-file components      |
 | `src/**`, `dist/**`, deep subpaths | Private   | Internal implementation details, not compatibility targets  |
@@ -153,7 +153,12 @@ Import SSR and SSG APIs from `@italone/solace/server`:
 
 ```ts
 import { h } from "@italone/solace";
-import { generateStaticSite, renderToString } from "@italone/solace/server";
+import {
+  createStaticRoutesFromRouter,
+  generateStaticSite,
+  renderToString,
+  resolveStaticAssets,
+} from "@italone/solace/server";
 
 const result = renderToString(h("p", null, "server"));
 ```
@@ -175,9 +180,9 @@ Passing the same deferred integration fields to `hydrate()` is also rejected at 
 Hydration mismatch errors include structured `kind`, `path`, `expected`, and `actual` fields so
 callers can distinguish missing nodes, extra nodes, element tag mismatches, and text mismatches.
 
-Streaming SSR, async component SSR, SSG CLI, production manifest integration, hydration mismatch
-auto-recovery beyond the explicit `recover` deopt, and router SSR/SSG/hydration integration remain
-deferred.
+Streaming SSR, async component SSR, SSG CLI, filesystem output, route crawling, hydration mismatch
+auto-recovery beyond the explicit `recover` deopt, router-aware SSR, and router-aware hydration
+remain deferred.
 
 ### `generateStaticSite(options)`
 
@@ -187,6 +192,11 @@ returns `{ pages }`. Each route must have a string path that begins with `/` and
 rendering, and optional route `context` is forwarded to the shell.
 The shell receives read-only copies of `styles` and `context`, so shell mutations do not feed back
 into the returned page metadata.
+When app-level `manifest` and `clientEntry` are provided together, `generateStaticSite()` resolves
+production asset tags once and passes them to each shell as `assets`. The shell owns placement of
+`assets.modulePreloads`, `assets.stylesheets`, collected `styles`, and `assets.scripts`. Supplying
+only `manifest` or only `clientEntry` throws a `TypeError`. Route-level `manifest` and `clientEntry`
+fields remain rejected.
 Passing deferred `manifest`, `clientEntry`, or `router` fields on a route entry is rejected at
 runtime to keep the SSG contract narrow.
 
@@ -201,10 +211,28 @@ site.pages[0].html;
 ```
 
 Place `styles.join("")` in the document `<head>` when composing a full shell. The first SSG core is
-in-memory only. Filesystem output, production asset manifests, router-aware adapters, and CLI
-integration remain outside the current public contract. Passing deferred integration fields such as
-`manifest`, `clientEntry`, or `router` to `generateStaticSite()` throws a `TypeError` so consumers do
-not accidentally couple to unsupported production manifest or router-aware SSG behavior.
+in-memory only. Filesystem output, route crawling, app-level `router`, and CLI integration remain
+outside the current public contract.
+
+### `resolveStaticAssets(options)`
+
+`resolveStaticAssets({ manifest, entry, base })` converts a Vite-like production manifest and a
+client entry id into complete HTML tag strings. Imported chunks are walked before the entry chunk,
+CSS files are deduped in first-seen order, imported JavaScript files become `modulepreload` links,
+and the entry file becomes the single module script. `base` defaults to `/` and is normalized to one
+trailing slash.
+
+### `createStaticRoutesFromRouter(options)`
+
+`createStaticRoutesFromRouter({ routes, paths })` converts beta router records and explicit concrete
+paths into `generateStaticSite()` routes. Each generated route renders the matched component and gets
+a default `{ route }` context containing `{ path, fullPath, query, params, matched }`. Optional
+`context(route)` shallow-merges after the default context, and optional `provides(route)` is passed
+to `renderToString()` for that route.
+
+This adapter does not install the router plugin, does not enable `useRoute()` during SSR, does not
+render nested `RouterView` trees, and does not crawl or infer dynamic params. Use explicit paths such
+as `/users/42`; do not pass `/users/:id` as a path to render.
 
 ## Runtime Style Registration
 
