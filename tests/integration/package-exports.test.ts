@@ -260,7 +260,7 @@ describe("package exports", () => {
   it("enforces SSR and SSG manifest/router boundaries from the server subpath", async () => {
     const api = await import("@italone/solace");
     const server = await import("@italone/solace/server");
-    const source = () => api.h("p", null, "home");
+    const source = (() => api.h("p", null, "home")) as never;
 
     expect(() => server.renderToString(source, { manifest: {} } as never)).toThrow(
       /SSR manifest integration is deferred/,
