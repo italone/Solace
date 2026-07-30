@@ -6,6 +6,13 @@ export {
   type StaticRoute,
 } from "./generate-static-site";
 export {
+  resolveStaticAssets,
+  type ResolveStaticAssetOptions,
+  type StaticAssetManifest,
+  type StaticAssetManifestChunk,
+  type StaticAssetTags,
+} from "./static-assets";
+export {
   renderToString,
   type RenderToStringOptions,
   type RenderToStringResult,

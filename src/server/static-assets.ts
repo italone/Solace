@@ -1,0 +1,100 @@
+import { escapeAttribute } from "../shared/html";
+
+export type StaticAssetManifest = Record<string, StaticAssetManifestChunk>;
+
+export interface StaticAssetManifestChunk {
+  file: string;
+  css?: readonly string[];
+  imports?: readonly string[];
+}
+
+export interface StaticAssetTags {
+  modulePreloads: string[];
+  stylesheets: string[];
+  scripts: string[];
+}
+
+export interface ResolveStaticAssetOptions {
+  manifest: StaticAssetManifest;
+  entry: string;
+  base?: string;
+}
+
+export function resolveStaticAssets(options: ResolveStaticAssetOptions): StaticAssetTags {
+  const base = normalizeAssetBase(options.base ?? "/");
+  const orderedChunkIds: string[] = [];
+  const visited = new Set<string>();
+
+  visitManifestChunk(options.manifest, options.entry, visited, orderedChunkIds);
+
+  const cssFiles: string[] = [];
+  const seenCss = new Set<string>();
+
+  for (const chunkId of orderedChunkIds) {
+    const chunk = options.manifest[chunkId];
+    for (const cssFile of chunk.css ?? []) {
+      if (seenCss.has(cssFile)) {
+        continue;
+      }
+
+      seenCss.add(cssFile);
+      cssFiles.push(cssFile);
+    }
+  }
+
+  const importedChunkIds = orderedChunkIds.filter((chunkId) => chunkId !== options.entry);
+  const entryChunk = options.manifest[options.entry];
+
+  return {
+    modulePreloads: importedChunkIds.map((chunkId) =>
+      renderModulePreloadTag(joinAssetBase(base, options.manifest[chunkId].file)),
+    ),
+    stylesheets: cssFiles.map((file) => renderStylesheetTag(joinAssetBase(base, file))),
+    scripts: [renderModuleScriptTag(joinAssetBase(base, entryChunk.file))],
+  };
+}
+
+function visitManifestChunk(
+  manifest: StaticAssetManifest,
+  chunkId: string,
+  visited: Set<string>,
+  orderedChunkIds: string[],
+): void {
+  if (visited.has(chunkId)) {
+    return;
+  }
+
+  const chunk = manifest[chunkId];
+  if (chunk === undefined) {
+    throw new TypeError(`Static asset manifest entry not found: ${chunkId}`);
+  }
+
+  visited.add(chunkId);
+
+  for (const importedChunkId of chunk.imports ?? []) {
+    visitManifestChunk(manifest, importedChunkId, visited, orderedChunkIds);
+  }
+
+  orderedChunkIds.push(chunkId);
+}
+
+function normalizeAssetBase(base: string): string {
+  const withoutTrailingSlashes = base.replace(/\/+$/, "");
+  return withoutTrailingSlashes === "" ? "/" : `${withoutTrailingSlashes}/`;
+}
+
+function joinAssetBase(base: string, file: string): string {
+  return `${base}${file.replace(/^\/+/, "")}`;
+}
+
+function renderModulePreloadTag(href: string): string {
+  return `<link rel="modulepreload" href="${escapeAttribute(href)}">`;
+}
+
+function renderStylesheetTag(href: string): string {
+  return `<link rel="stylesheet" href="${escapeAttribute(href)}">`;
+}
+
+function renderModuleScriptTag(src: string): string {
+  return `<script type="module" src="${escapeAttribute(src)}"></script>`;
+}
