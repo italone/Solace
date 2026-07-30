@@ -45,6 +45,8 @@ const keyedReorderSummary: BrowserBenchmarkHistorySummary = {
   reorderMs: 2,
   unmountMs: 1,
   firstRowText: "Row 10000",
+  middleRowText: "Row 5000",
+  lastRowText: "Row 1",
   remainingNodesAfterUnmount: 0,
   domMutationCounts: {
     insertBefore: 9999,
@@ -61,6 +63,53 @@ const keyedReorderSummary: BrowserBenchmarkHistorySummary = {
     lisLength: 1,
     stableMoveSkips: 1,
     movedExistingChildren: 9999,
+    movedExistingBatches: 1,
+    anchorLookups: 0,
+  },
+  metadata: {
+    packageName: "@italone/solace",
+    packageVersion: "0.0.0",
+    node: process.version,
+    platform: "darwin",
+    release: "test",
+    arch: "arm64",
+    cpuModel: "test",
+    logicalCpuCount: 1,
+    totalMemoryBytes: 1,
+    browserName: "chromium",
+    browserVersion: "test",
+    projectName: "chromium",
+    sampleSize: 1,
+    runAt: "2026-07-15T00:00:00.000Z",
+  },
+};
+
+const shiftWindowKeyedReorderSummary: BrowserBenchmarkHistorySummary = {
+  scenario: "keyed-reorder",
+  shape: "shift-window",
+  rows: 10_000,
+  initialRenderMs: 1,
+  reorderMs: 3,
+  unmountMs: 1,
+  firstRowText: "Row 9901",
+  middleRowText: "Row 4901",
+  lastRowText: "Row 9900",
+  remainingNodesAfterUnmount: 0,
+  domMutationCounts: {
+    insertBefore: 1,
+    setAttribute: 0,
+    removeAttribute: 0,
+    textContent: 0,
+    removeChild: 0,
+  },
+  movePathCounts: {
+    keyedMiddleSegments: 1,
+    matchedOldChildren: 10_000,
+    newChildrenMounted: 0,
+    removedOldChildren: 0,
+    lisLength: 9_900,
+    stableMoveSkips: 9_900,
+    movedExistingChildren: 100,
     movedExistingBatches: 1,
     anchorLookups: 0,
   },
@@ -174,6 +223,8 @@ describe("browser benchmark history", () => {
         shape: "reverse",
         reorderMs: 2,
         firstRowText: "Row 10000",
+        middleRowText: "Row 5000",
+        lastRowText: "Row 1",
         domMutationCounts: {
           insertBefore: 9999,
           setAttribute: 0,
@@ -191,6 +242,33 @@ describe("browser benchmark history", () => {
           movedExistingChildren: 9999,
           anchorLookups: 0,
         },
+      });
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("appends keyed reorder row-order evidence for another shape", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "solace-browser-benchmark-history-"));
+    const historyPath = join(tempDir, "nested", "browser.jsonl");
+
+    try {
+      await appendBrowserBenchmarkHistory(historyPath, shiftWindowKeyedReorderSummary);
+
+      const [line] = (await readFile(historyPath, "utf8")).trim().split("\n");
+      const record = JSON.parse(line) as {
+        kind: string;
+        status: string;
+        sampleCount: number;
+        summary: BrowserBenchmarkHistorySummary;
+      };
+
+      expect(record.summary).toMatchObject({
+        scenario: "keyed-reorder",
+        shape: "shift-window",
+        firstRowText: "Row 9901",
+        middleRowText: "Row 4901",
+        lastRowText: "Row 9900",
       });
     } finally {
       await rm(tempDir, { recursive: true, force: true });
