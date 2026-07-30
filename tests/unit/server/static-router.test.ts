@@ -112,4 +112,43 @@ describe("createStaticRoutesFromRouter", () => {
       }),
     ).toThrow(TypeError("Static router path must be a string"));
   });
+
+  it("rejects route records with non-string paths", () => {
+    expect(() =>
+      createStaticRoutesFromRouter({
+        routes: [{ path: 42, component: Home } as unknown as RouteRecord],
+        paths: ["/"],
+      }),
+    ).toThrow(/Static router route record path must be a string/);
+  });
+
+  it("rejects route records with deferred beta fields", () => {
+    for (const field of ["children", "redirect", "beforeEnter", "meta", "name"]) {
+      expect(() =>
+        createStaticRoutesFromRouter({
+          routes: [{ path: "/", component: Home, [field]: {} } as unknown as RouteRecord],
+          paths: ["/"],
+        }),
+      ).toThrow(
+        new TypeError(
+          `Deferred static router route record field is not part of the beta contract: ${field}`,
+        ),
+      );
+    }
+  });
+
+  it("rejects route records with missing or non-function components", () => {
+    expect(() =>
+      createStaticRoutesFromRouter({
+        routes: [{ path: "/" } as unknown as RouteRecord],
+        paths: ["/"],
+      }),
+    ).toThrow(/Static router route record component must be a function/);
+    expect(() =>
+      createStaticRoutesFromRouter({
+        routes: [{ path: "/", component: "home" } as unknown as RouteRecord],
+        paths: ["/"],
+      }),
+    ).toThrow(/Static router route record component must be a function/);
+  });
 });

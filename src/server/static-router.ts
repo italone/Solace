@@ -42,8 +42,30 @@ function assertStaticRouterOptions(options: StaticRouterOptions): void {
     throw new TypeError("Static router routes must be an array");
   }
 
+  for (const route of options.routes) {
+    assertStaticRouterRouteRecord(route);
+  }
+
   if (!Array.isArray(options.paths) || options.paths.length === 0) {
     throw new TypeError("Static router paths must be a non-empty array");
+  }
+}
+
+function assertStaticRouterRouteRecord(route: RouteRecord): void {
+  for (const key of Object.keys(route)) {
+    if (key !== "path" && key !== "component") {
+      throw new TypeError(
+        `Deferred static router route record field is not part of the beta contract: ${key}`,
+      );
+    }
+  }
+
+  if (typeof route.path !== "string") {
+    throw new TypeError("Static router route record path must be a string");
+  }
+
+  if (typeof route.component !== "function") {
+    throw new TypeError("Static router route record component must be a function");
   }
 }
 
