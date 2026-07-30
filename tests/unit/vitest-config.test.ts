@@ -17,4 +17,10 @@ describe("vitest config", () => {
     expect(excludes).toContain("node_modules/**");
     expect(excludes).toContain("**/node_modules/**");
   });
+
+  it("keeps example applications out of release coverage thresholds", () => {
+    const coverageExcludes = config.test?.coverage?.exclude ?? [];
+
+    expect(coverageExcludes).toContain("examples/**");
+  });
 });

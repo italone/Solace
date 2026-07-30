@@ -34,6 +34,7 @@ export default defineConfig({
     ],
     coverage: {
       provider: "v8",
+      exclude: ["examples/**"],
       thresholds: {
         statements: 90,
         lines: 90,
