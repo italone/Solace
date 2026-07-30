@@ -80,7 +80,9 @@ describe("solacePlugin", () => {
         `<template><button>{count</button></template>`,
         "/app/src/Broken.solace",
       ),
-    ).toThrow(/\/app\/src\/Broken\.solace:1:19/);
+    ).toThrow(
+      "[SFC_PARSE_ERROR] /app/src/Broken.solace:1:19 Unclosed interpolation expression",
+    );
   });
 
   it("reports duplicate block diagnostics without expanding .solace syntax", () => {

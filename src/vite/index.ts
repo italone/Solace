@@ -2,6 +2,7 @@ import type { Plugin } from "vite";
 
 import { formatSolaceCompileError } from "../compiler/diagnostics";
 import { compile, SolaceCompileError } from "../compiler/index";
+import { createSolaceTransformResult } from "./transform-result";
 
 export function solacePlugin(...options: never[]): Plugin {
   if (options.length > 0) {
@@ -27,10 +28,7 @@ export function solacePlugin(...options: never[]): Plugin {
 
       try {
         const result = compile(code, { id });
-        return {
-          code: result.code,
-          map: null,
-        };
+        return createSolaceTransformResult(result.code);
       } catch (error) {
         if (error instanceof SolaceCompileError) {
           throw new Error(formatSolaceCompileError(error));
