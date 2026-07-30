@@ -76,27 +76,42 @@ describe("createRouter", () => {
     expect(rootModule).not.toHaveProperty("createSSRRouter");
   });
 
-  it("accepts widened beta route record fields and rejects still-deferred fields", () => {
+  it("accepts newly designed beta route fields", () => {
     expect(() =>
       createRouter({
         history: createMemoryLikeHistory(),
         routes: [
           {
-            path: "/nested",
+            path: "/dashboard",
             component: Home,
-            children: [{ path: "child", component: User }],
+            meta: { section: "dashboard" },
             beforeEnter: () => true,
-            redirect: "/",
-            meta: { requiresAuth: true },
+            redirect: "/dashboard/home",
+            children: [
+              {
+                path: "home",
+                component: User,
+                meta: { title: "home" },
+                beforeEnter: [() => true],
+                redirect: "/dashboard/home",
+              },
+            ],
           },
         ],
       }),
     ).not.toThrow();
+  });
 
+  it("keeps still-deferred route record fields rejected", () => {
     const deferredRecords = [
       { path: "/named", component: Home, name: "home" },
       { path: "/alias", component: Home, alias: "/a" },
       { path: "/props", component: Home, props: true },
+      {
+        path: "/parent",
+        component: Home,
+        children: [{ path: "named", component: User, name: "child" }],
+      },
     ];
 
     for (const route of deferredRecords) {
@@ -107,6 +122,21 @@ describe("createRouter", () => {
         }),
       ).toThrow(/Deferred router route record field/);
     }
+  });
+
+  it("rejects non-array child route records", () => {
+    expect(() =>
+      createRouter({
+        history: createMemoryLikeHistory(),
+        routes: [
+          {
+            path: "/dashboard",
+            component: Home,
+            children: { path: "home", component: User },
+          },
+        ],
+      } as never),
+    ).toThrow(/Router route record children must be an array/);
   });
 
   it("rejects invalid route record paths before compiling matchers", () => {

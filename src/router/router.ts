@@ -3,10 +3,25 @@ import { inject } from "../component/provide";
 import { ref } from "../reactivity/ref";
 import { createMatcher } from "./matcher";
 import { parseQuery, stringifyQuery } from "./query";
-import type { RouteLocationNormalized, RouteLocationRaw, Router, RouterOptions } from "./types";
+import type {
+  RouteLocationNormalized,
+  RouteLocationRaw,
+  RouteRecord,
+  Router,
+  RouterOptions,
+} from "./types";
 
 export const routerKey = Symbol("Solace.router");
 export const routeKey = Symbol("Solace.route");
+
+const allowedRouteRecordFields = new Set([
+  "path",
+  "component",
+  "children",
+  "redirect",
+  "beforeEnter",
+  "meta",
+]);
 
 export function createRouter(options: RouterOptions): Router {
   assertRouterOptionsContract(options);
@@ -103,23 +118,30 @@ function assertRouterOptionsContract(options: RouterOptions): void {
   }
 
   for (const route of options.routes) {
-    for (const key of Object.keys(route)) {
-      if (
-        key !== "path" &&
-        key !== "component" &&
-        key !== "children" &&
-        key !== "redirect" &&
-        key !== "beforeEnter" &&
-        key !== "meta"
-      ) {
-        throw new TypeError(
-          `Deferred router route record field is not part of the beta contract: ${key}`,
-        );
-      }
+    assertRouteRecordContract(route);
+  }
+}
+
+function assertRouteRecordContract(route: RouteRecord): void {
+  for (const key of Object.keys(route)) {
+    if (!allowedRouteRecordFields.has(key)) {
+      throw new TypeError(
+        `Deferred router route record field is not part of the beta contract: ${key}`,
+      );
+    }
+  }
+
+  if (typeof route.path !== "string") {
+    throw new TypeError("Router route record path must be a string");
+  }
+
+  if (route.children !== undefined) {
+    if (!Array.isArray(route.children)) {
+      throw new TypeError("Router route record children must be an array");
     }
 
-    if (typeof route.path !== "string") {
-      throw new TypeError("Router route record path must be a string");
+    for (const child of route.children) {
+      assertRouteRecordContract(child);
     }
   }
 }
