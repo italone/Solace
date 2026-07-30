@@ -35,23 +35,25 @@
 In `tests/unit/router/query.test.ts`, append these tests inside `describe("router query helpers", () => { ... })`:
 
 ```ts
-  it("parses bare keys and keeps plus signs literal", () => {
-    expect(parseQuery("?flag&plus=a+b")).toEqual({ flag: "", plus: "a+b" });
-  });
+it("parses bare keys and keeps plus signs literal", () => {
+  expect(parseQuery("?flag&plus=a+b")).toEqual({ flag: "", plus: "a+b" });
+});
 
-  it("throws a stable TypeError for malformed percent encoding", () => {
-    expect(() => parseQuery("?broken=%E0%A4%A")).toThrow(TypeError);
-    expect(() => parseQuery("?broken=%E0%A4%A")).toThrow(/Router query contains malformed percent encoding/);
-  });
+it("throws a stable TypeError for malformed percent encoding", () => {
+  expect(() => parseQuery("?broken=%E0%A4%A")).toThrow(TypeError);
+  expect(() => parseQuery("?broken=%E0%A4%A")).toThrow(
+    /Router query contains malformed percent encoding/,
+  );
+});
 
-  it("stringifies encoded keys and skips nullish array entries", () => {
-    expect(
-      stringifyQuery({
-        "redirect to": "/users/1",
-        tag: ["a", null, "b", undefined],
-      }),
-    ).toBe("?redirect%20to=%2Fusers%2F1&tag=a&tag=b");
-  });
+it("stringifies encoded keys and skips nullish array entries", () => {
+  expect(
+    stringifyQuery({
+      "redirect to": "/users/1",
+      tag: ["a", null, "b", undefined],
+    }),
+  ).toBe("?redirect%20to=%2Fusers%2F1&tag=a&tag=b");
+});
 ```
 
 - [ ] **Step 2: Run query tests to verify RED**
@@ -69,15 +71,15 @@ Expected: the malformed percent encoding test fails because `decodeURIComponent(
 In `src/router/query.ts`, replace the two direct `decodeURIComponent()` calls in `parseQuery()`:
 
 ```ts
-    const key = decodeURIComponent(rawKey);
-    const value = decodeURIComponent(rawValue);
+const key = decodeURIComponent(rawKey);
+const value = decodeURIComponent(rawValue);
 ```
 
 with:
 
 ```ts
-    const key = decodeQueryComponent(rawKey);
-    const value = decodeQueryComponent(rawValue);
+const key = decodeQueryComponent(rawKey);
+const value = decodeQueryComponent(rawValue);
 ```
 
 Then add this helper at the end of `src/router/query.ts`:
@@ -128,29 +130,29 @@ git commit -m "fix: stabilize router query boundaries"
 In `tests/unit/router/history.test.ts`, append these tests inside `describe("router history", () => { ... })`:
 
 ```ts
-  it("normalizes blank and relative hash locations", () => {
-    window.history.replaceState(null, "", "/#");
-    const blankHistory = createWebHashHistory();
-    expect(blankHistory.location()).toBe("/");
+it("normalizes blank and relative hash locations", () => {
+  window.history.replaceState(null, "", "/#");
+  const blankHistory = createWebHashHistory();
+  expect(blankHistory.location()).toBe("/");
 
-    window.history.replaceState(null, "", "/#settings?tab=profile");
-    const relativeHistory = createWebHashHistory();
-    expect(relativeHistory.location()).toBe("/settings?tab=profile");
-  });
+  window.history.replaceState(null, "", "/#settings?tab=profile");
+  const relativeHistory = createWebHashHistory();
+  expect(relativeHistory.location()).toBe("/settings?tab=profile");
+});
 
-  it("cleans up hash history listeners", () => {
-    const history = createWebHashHistory();
-    const listener = vi.fn();
-    const stop = history.listen(listener);
+it("cleans up hash history listeners", () => {
+  const history = createWebHashHistory();
+  const listener = vi.fn();
+  const stop = history.listen(listener);
 
-    window.dispatchEvent(new HashChangeEvent("hashchange"));
-    window.dispatchEvent(new PopStateEvent("popstate"));
-    stop();
-    window.dispatchEvent(new HashChangeEvent("hashchange"));
-    window.dispatchEvent(new PopStateEvent("popstate"));
+  window.dispatchEvent(new HashChangeEvent("hashchange"));
+  window.dispatchEvent(new PopStateEvent("popstate"));
+  stop();
+  window.dispatchEvent(new HashChangeEvent("hashchange"));
+  window.dispatchEvent(new PopStateEvent("popstate"));
 
-    expect(listener).toHaveBeenCalledTimes(2);
-  });
+  expect(listener).toHaveBeenCalledTimes(2);
+});
 ```
 
 - [ ] **Step 2: Run history tests**
@@ -209,47 +211,47 @@ Then add `listenerCount()` to the returned object:
 In `tests/unit/router/router.test.ts`, append these tests inside `describe("createRouter", () => { ... })`:
 
 ```ts
-  it("normalizes supported string locations to canonical full paths", () => {
-    const router = createRouter({
-      history: createMemoryLikeHistory(),
-      routes: [{ path: "/users/:id", component: User }],
-    });
-
-    expect(router.resolve("").fullPath).toBe("/");
-    expect(router.resolve("users/42///?tab=profile").fullPath).toBe("/users/42?tab=profile");
-    expect(router.resolve("/users/42///?tag=a&tag=b")).toMatchObject({
-      path: "/users/42",
-      fullPath: "/users/42?tag=a&tag=b",
-      params: { id: "42" },
-      query: { tag: ["a", "b"] },
-    });
+it("normalizes supported string locations to canonical full paths", () => {
+  const router = createRouter({
+    history: createMemoryLikeHistory(),
+    routes: [{ path: "/users/:id", component: User }],
   });
 
-  it("normalizes supported object locations to canonical full paths", () => {
-    const router = createRouter({
-      history: createMemoryLikeHistory(),
-      routes: [{ path: "/users/:id", component: User }],
-    });
+  expect(router.resolve("").fullPath).toBe("/");
+  expect(router.resolve("users/42///?tab=profile").fullPath).toBe("/users/42?tab=profile");
+  expect(router.resolve("/users/42///?tag=a&tag=b")).toMatchObject({
+    path: "/users/42",
+    fullPath: "/users/42?tag=a&tag=b",
+    params: { id: "42" },
+    query: { tag: ["a", "b"] },
+  });
+});
 
-    expect(router.resolve({ path: "users/7///", query: { tab: "profile" } })).toMatchObject({
-      path: "/users/7",
-      fullPath: "/users/7?tab=profile",
-      params: { id: "7" },
-      query: { tab: "profile" },
-    });
+it("normalizes supported object locations to canonical full paths", () => {
+  const router = createRouter({
+    history: createMemoryLikeHistory(),
+    routes: [{ path: "/users/:id", component: User }],
   });
 
-  it("replaces the previous history listener on repeated install", () => {
-    const history = createMemoryLikeHistory("/");
-    const router = createRouter({ history, routes: [{ path: "/", component: Home }] });
-    const app = { provide: vi.fn(), use: vi.fn(), mount: vi.fn() };
-
-    router.install(app as never);
-    expect(history.listenerCount()).toBe(1);
-
-    router.install(app as never);
-    expect(history.listenerCount()).toBe(1);
+  expect(router.resolve({ path: "users/7///", query: { tab: "profile" } })).toMatchObject({
+    path: "/users/7",
+    fullPath: "/users/7?tab=profile",
+    params: { id: "7" },
+    query: { tab: "profile" },
   });
+});
+
+it("replaces the previous history listener on repeated install", () => {
+  const history = createMemoryLikeHistory("/");
+  const router = createRouter({ history, routes: [{ path: "/", component: Home }] });
+  const app = { provide: vi.fn(), use: vi.fn(), mount: vi.fn() };
+
+  router.install(app as never);
+  expect(history.listenerCount()).toBe(1);
+
+  router.install(app as never);
+  expect(history.listenerCount()).toBe(1);
+});
 ```
 
 - [ ] **Step 3: Run router tests**
@@ -299,8 +301,8 @@ function createMemoryLikeHistory(initial = "/"): RouterHistory & {
 Add arrays before the return statement:
 
 ```ts
-  const pushedPaths: string[] = [];
-  const replacedPaths: string[] = [];
+const pushedPaths: string[] = [];
+const replacedPaths: string[] = [];
 ```
 
 Then change `push()` and `replace()` to record paths:
@@ -328,65 +330,65 @@ Finally expose the arrays at the end of the returned object:
 In `tests/integration/router-component.test.ts`, append these tests inside `describe("router components", () => { ... })`:
 
 ```ts
-  it("does not navigate RouterLink clicks that the browser should handle", () => {
-    const history = createMemoryLikeHistory("/");
-    const router = createRouter({
-      history,
-      routes: [
-        { path: "/", component: () => h("p", null, "home") },
-        { path: "/users/:id", component: () => h("p", null, "user") },
-      ],
-    });
-    const App = () => () =>
-      h("main", null, [
-        h(RouterLink, { to: "/users/42", id: "meta-link" }, "Meta"),
-        h(
-          RouterLink,
-          {
-            to: "/users/43",
-            id: "prevented-link",
-            onClick: (event: MouseEvent) => event.preventDefault(),
-          },
-          "Prevented",
-        ),
-        h(RouterView),
-      ]);
-    const container = document.createElement("div");
-
-    createApp(App).use(router).mount(container);
-    container
-      .querySelector<HTMLAnchorElement>("#meta-link")
-      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, metaKey: true }));
-    container.querySelector<HTMLAnchorElement>("#prevented-link")?.click();
-
-    expect(history.pushedPaths).toEqual([]);
-    expect(router.currentRoute.value.fullPath).toBe("/");
+it("does not navigate RouterLink clicks that the browser should handle", () => {
+  const history = createMemoryLikeHistory("/");
+  const router = createRouter({
+    history,
+    routes: [
+      { path: "/", component: () => h("p", null, "home") },
+      { path: "/users/:id", component: () => h("p", null, "user") },
+    ],
   });
+  const App = () => () =>
+    h("main", null, [
+      h(RouterLink, { to: "/users/42", id: "meta-link" }, "Meta"),
+      h(
+        RouterLink,
+        {
+          to: "/users/43",
+          id: "prevented-link",
+          onClick: (event: MouseEvent) => event.preventDefault(),
+        },
+        "Prevented",
+      ),
+      h(RouterView),
+    ]);
+  const container = document.createElement("div");
 
-  it("uses replace navigation when RouterLink replace is true", async () => {
-    const history = createMemoryLikeHistory("/");
-    const router = createRouter({
-      history,
-      routes: [
-        { path: "/", component: () => h("p", { id: "home" }, "home") },
-        { path: "/users/:id", component: () => h("p", { id: "user" }, "user") },
-      ],
-    });
-    const App = () => () =>
-      h("main", null, [
-        h(RouterLink, { to: "/users/99", id: "replace-link", replace: true }, "Replace"),
-        h(RouterView),
-      ]);
-    const container = document.createElement("div");
+  createApp(App).use(router).mount(container);
+  container
+    .querySelector<HTMLAnchorElement>("#meta-link")
+    ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, metaKey: true }));
+  container.querySelector<HTMLAnchorElement>("#prevented-link")?.click();
 
-    createApp(App).use(router).mount(container);
-    container.querySelector<HTMLAnchorElement>("#replace-link")?.click();
-    await nextTick();
+  expect(history.pushedPaths).toEqual([]);
+  expect(router.currentRoute.value.fullPath).toBe("/");
+});
 
-    expect(history.pushedPaths).toEqual([]);
-    expect(history.replacedPaths).toEqual(["/users/99"]);
-    expect(container.querySelector("#user")?.textContent).toBe("user");
+it("uses replace navigation when RouterLink replace is true", async () => {
+  const history = createMemoryLikeHistory("/");
+  const router = createRouter({
+    history,
+    routes: [
+      { path: "/", component: () => h("p", { id: "home" }, "home") },
+      { path: "/users/:id", component: () => h("p", { id: "user" }, "user") },
+    ],
   });
+  const App = () => () =>
+    h("main", null, [
+      h(RouterLink, { to: "/users/99", id: "replace-link", replace: true }, "Replace"),
+      h(RouterView),
+    ]);
+  const container = document.createElement("div");
+
+  createApp(App).use(router).mount(container);
+  container.querySelector<HTMLAnchorElement>("#replace-link")?.click();
+  await nextTick();
+
+  expect(history.pushedPaths).toEqual([]);
+  expect(history.replacedPaths).toEqual(["/users/99"]);
+  expect(container.querySelector("#user")?.textContent).toBe("user");
+});
 ```
 
 - [ ] **Step 3: Run router component integration tests**

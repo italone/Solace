@@ -29,23 +29,23 @@
 In `tests/unit/router/query.test.ts`, append these tests inside `describe("router query helpers", () => { ... })`:
 
 ```ts
-  it("preserves equals signs after the first query separator", () => {
-    expect(parseQuery("?q=a=b")).toEqual({ q: "a=b" });
-  });
+it("preserves equals signs after the first query separator", () => {
+  expect(parseQuery("?q=a=b")).toEqual({ q: "a=b" });
+});
 
-  it("preserves equals signs for repeated query keys", () => {
-    expect(parseQuery("?q=a=b&q=c=d")).toEqual({ q: ["a=b", "c=d"] });
-  });
+it("preserves equals signs for repeated query keys", () => {
+  expect(parseQuery("?q=a=b&q=c=d")).toEqual({ q: ["a=b", "c=d"] });
+});
 
-  it("parses empty query keys explicitly", () => {
-    expect(parseQuery("?=value")).toEqual({ "": "value" });
-  });
+it("parses empty query keys explicitly", () => {
+  expect(parseQuery("?=value")).toEqual({ "": "value" });
+});
 
-  it("decodes encoded equals signs inside values", () => {
-    expect(parseQuery("?redirect=%2Fusers%2F1%3Ftab%3Da")).toEqual({
-      redirect: "/users/1?tab=a",
-    });
+it("decodes encoded equals signs inside values", () => {
+  expect(parseQuery("?redirect=%2Fusers%2F1%3Ftab%3Da")).toEqual({
+    redirect: "/users/1?tab=a",
   });
+});
 ```
 
 - [ ] **Step 2: Run query tests to verify RED**
@@ -63,13 +63,13 @@ Expected: the first two new tests fail because `parseQuery()` currently truncate
 In `src/router/query.ts`, replace this line in `parseQuery()`:
 
 ```ts
-    const [rawKey, rawValue = ""] = part.split("=");
+const [rawKey, rawValue = ""] = part.split("=");
 ```
 
 with:
 
 ```ts
-    const [rawKey, rawValue] = splitQueryPart(part);
+const [rawKey, rawValue] = splitQueryPart(part);
 ```
 
 Then add this helper before `decodeQueryComponent()`:
