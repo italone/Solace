@@ -77,7 +77,9 @@ describe("package exports", () => {
       reactive: expect.any(Function),
       ref: expect.any(Function),
       RouterLink: expect.any(Function),
+      RouterNavigationError: expect.any(Function),
       RouterView: expect.any(Function),
+      lazyRoute: expect.any(Function),
       useRoute: expect.any(Function),
       useRouter: expect.any(Function),
       useStyle: expect.any(Function),
@@ -87,6 +89,7 @@ describe("package exports", () => {
     expect(Object.keys(api).sort()).toEqual([
       "Fragment",
       "RouterLink",
+      "RouterNavigationError",
       "RouterView",
       "computed",
       "createApp",
@@ -99,6 +102,7 @@ describe("package exports", () => {
       "effect",
       "h",
       "inject",
+      "lazyRoute",
       "nextTick",
       "onMounted",
       "onUnmounted",
@@ -227,9 +231,36 @@ describe("package exports", () => {
     expect(() =>
       api.createRouter({
         history,
-        routes: [{ path: "/nested", component: Home, children: [] }],
+        routes: [
+          {
+            path: "/dashboard",
+            component: Home,
+            meta: { section: "dashboard" },
+            beforeEnter: () => true,
+            redirect: "/dashboard/home",
+            children: [
+              {
+                path: "home",
+                component: api.lazyRoute(() => Promise.resolve(Home)),
+                meta: { title: "home" },
+              },
+            ],
+          },
+        ],
       } as never),
-    ).toThrow(/Deferred router route record field/);
+    ).not.toThrow();
+    for (const route of [
+      { path: "/named", component: Home, name: "home" },
+      { path: "/alias", component: Home, alias: "/a" },
+      { path: "/props", component: Home, props: true },
+    ]) {
+      expect(() =>
+        api.createRouter({
+          history,
+          routes: [route],
+        } as never),
+      ).toThrow(/Deferred router route record field/);
+    }
     expect(() =>
       api.createRouter({
         history,
@@ -286,9 +317,7 @@ describe("package exports", () => {
     });
 
     expect(site.pages[0].html).toContain('<link rel="stylesheet" href="/assets/main.css">');
-    expect(site.pages[0].html).toContain(
-      '<script type="module" src="/assets/main.js"></script>',
-    );
+    expect(site.pages[0].html).toContain('<script type="module" src="/assets/main.js"></script>');
 
     expect(() =>
       server.generateStaticSite({
@@ -351,7 +380,9 @@ describe("package exports", () => {
     expect(api.provide).toEqual(expect.any(Function));
     expect(api.reactive).toEqual(expect.any(Function));
     expect(api.RouterLink).toEqual(expect.any(Function));
+    expect(api.RouterNavigationError).toEqual(expect.any(Function));
     expect(api.RouterView).toEqual(expect.any(Function));
+    expect(api.lazyRoute).toEqual(expect.any(Function));
     expect(api.useRoute).toEqual(expect.any(Function));
     expect(api.useRouter).toEqual(expect.any(Function));
     expect(api.watchEffect).toEqual(expect.any(Function));

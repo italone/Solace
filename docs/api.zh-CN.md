@@ -12,17 +12,17 @@
 
 包根入口暴露文档化运行时能力：
 
-| 领域       | API                                                                                                             |
-| ---------- | --------------------------------------------------------------------------------------------------------------- |
-| App        | `createApp`                                                                                                     |
-| Reactivity | `reactive`、`ref`、`computed`、`effect`、`watch`、`watchEffect`                                                 |
-| Rendering  | `h`、`render`、`Fragment`、`useStyle`                                                                           |
-| Components | `defineComponent`、`defineAsyncComponent`                                                                       |
-| Context    | `provide`、`inject`                                                                                             |
-| Lifecycle  | `onMounted`、`onUpdated`、`onUnmounted`                                                                         |
-| Scheduler  | `nextTick`                                                                                                      |
-| Store      | `createStore`                                                                                                   |
-| Router     | `createRouter`、`createWebHistory`、`createWebHashHistory`、`RouterLink`、`RouterView`、`useRouter`、`useRoute` |
+| 领域       | API                                                                                                                                                   |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App        | `createApp`                                                                                                                                           |
+| Reactivity | `reactive`、`ref`、`computed`、`effect`、`watch`、`watchEffect`                                                                                       |
+| Rendering  | `h`、`render`、`Fragment`、`useStyle`                                                                                                                 |
+| Components | `defineComponent`、`defineAsyncComponent`                                                                                                             |
+| Context    | `provide`、`inject`                                                                                                                                   |
+| Lifecycle  | `onMounted`、`onUpdated`、`onUnmounted`                                                                                                               |
+| Scheduler  | `nextTick`                                                                                                                                            |
+| Store      | `createStore`                                                                                                                                         |
+| Router     | `createRouter`、`createWebHistory`、`createWebHashHistory`、`RouterLink`、`RouterView`、`RouterNavigationError`、`lazyRoute`、`useRouter`、`useRoute` |
 
 公共 TypeScript 辅助类型包括：
 
@@ -30,7 +30,7 @@
 - 异步组件：`AsyncComponentLoader`、`AsyncComponentOptions`、`AsyncComponentSource`
 - 组件 setup：`ComponentSetupContext`、`EmitFn`、`Slot`、`SlotProps`、`Slots`
 - Store：`Store`、`StoreActionsInput`、`StoreContext`、`StoreGetterContext`、`StoreGetters`、`StoreOptions`
-- Router：`RouteLocationNormalized`、`RouteLocationRaw`、`RouteRecord`、`Router`、`RouterHistory`、`RouterLinkProps`、`RouterOptions`
+- Router：`LazyRouteComponent`、`NavigationGuard`、`NavigationGuardResult`、`RouteComponent`、`RouteLocationNormalized`、`RouteLocationRaw`、`RouteRecord`、`Router`、`RouterHistory`、`RouterLinkProps`、`RouterOptions`
 - VNode：`ComponentProps`、`ComponentRender`、`ComponentType`、`ComponentVNodeChildren`、`FragmentType`、`VNode`、`VNodeChild`、`VNodeChildren`、`VNodeProps`、`VNodeSlots`、`VNodeType`
 
 ## API 分层与稳定性
@@ -52,7 +52,7 @@ alpha 阶段的兼容性契约有意保持较窄。公开入口应在 patch rele
 
 `.solace` compiler 契约当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口。parser、生成 JavaScript 形状和内部 compiler modules 仍属于 alpha 实现细节。scoped style 会通过公开的 `useStyle()` runtime helper 注册，但生成模块形状和 compiler 内部实现不属于兼容性目标。Vite plugin 还没有公开 options；传入 options 会抛出 `TypeError`，避免暗示语法扩展。SFC block attributes 和自定义顶层 blocks 会被拒绝；文档化 block model 仍是一个 `<template>`、可选 `<script>` 和可选 `<style>`。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
 
-包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。route guards、嵌套路由记录、scroll behavior、具名路由、懒加载路由、SSR 集成、auth、permissions 和长期 router 兼容策略仍被推迟。传入 deferred route record fields 或 router options 会抛出 `TypeError`，而不是静默扩大 beta contract。
+包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。当前支持 nested route records、redirects、全局 `beforeEach` guards、route-level `beforeEnter` guards、route `meta`，以及通过 `lazyRoute()` 声明的 route lazy components。route names、aliases、route props、scroll behavior、memory history、SSR/SSG/hydration router integration、auth、permissions 和长期 router 兼容策略仍被推迟。传入仍 deferred 的 route record fields 或 router options 会抛出 `TypeError`，而不是静默扩大 beta contract。
 
 大多数应用应从包根入口导入。`@italone/solace/server` 只应在 server-side 代码中使用。JSX
 子路径通常只通过 `jsxImportSource` 或 bundler 生成导入使用。只有在构建 instrumentation 或需要
@@ -553,7 +553,7 @@ Store 行为：
 
 ## Router
 
-Router 是包根入口中的 beta API，面向小型单页应用示例。当前支持静态路由、动态 params、wildcard fallback records、query 解析/序列化、browser history adapters、`RouterLink`、`RouterView`，并可通过 `createApp(App).use(router)` 安装。
+Router 是包根入口中的 beta API，面向小型单页应用示例。当前支持静态路由、动态 params、wildcard fallback records、query 解析/序列化、browser history adapters、nested route records、redirects、全局 `beforeEach` guards、route-level `beforeEnter` guards、route `meta`、通过 `lazyRoute()` 声明的 route lazy components、`RouterLink`、`RouterView`，并可通过 `createApp(App).use(router)` 安装。
 
 ```ts
 import {
@@ -563,6 +563,7 @@ import {
   createRouter,
   createWebHistory,
   h,
+  lazyRoute,
   useRoute,
 } from "@italone/solace";
 
@@ -578,9 +579,23 @@ const router = createRouter({
   routes: [
     { path: "/", component: Home },
     { path: "/users/:id", component: User },
+    { path: "/old-dashboard", redirect: "/dashboard" },
+    {
+      path: "/dashboard",
+      component: () => h("section", null, [h("h2", null, "Dashboard"), h(RouterView)]),
+      meta: { requiresAuth: true },
+      children: [
+        { path: "", component: () => h("p", null, "dashboard home") },
+        { path: "report", component: lazyRoute(() => import("./Report")) },
+      ],
+    },
     { path: "/:pathMatch(.*)*", component: () => h("p", null, "not found") },
   ],
 });
+
+router.beforeEach((to) =>
+  to.matched.some((record) => record.meta?.requiresAuth) ? "/login" : true,
+);
 
 const App = () => () =>
   h("main", null, [h(RouterLink, { to: "/users/42" }, "User"), h(RouterView)]);
@@ -607,16 +622,16 @@ location 会解析为 `/`。query string 对数组使用重复 key，跳过 obje
 
 ### `RouterLink` / `RouterView`
 
-`RouterLink` 渲染 anchor，并在主键、无 modifier 的点击中执行客户端导航。`RouterView` 渲染匹配到的 route component；没有匹配时渲染空 Fragment。
+`RouterLink` 渲染 anchor，并在主键、无 modifier 的点击中执行异步客户端导航。`RouterView` 渲染当前 nested depth 对应的 route component；没有匹配或 lazy route component 仍在加载时渲染空 Fragment。
 
 当前 beta router 限制：
 
-- 不包含 route names、aliases、redirects、嵌套路由记录、guards、scroll behavior 或 lazy component loading contract。
-- 不包含 memory history、auth、permissions、SSR、SSG 或 hydration 集成。
+- 不包含 route names、aliases、route props、scroll behavior 或 memory history。
+- 不包含 auth、permissions、SSR、SSG 或 hydration router integration。
 - dynamic params 仅限简单 `:name` segments 和文档化的 wildcard `/:pathMatch(.*)*`；optional
   params、repeat params 和 custom regex params 会抛出 `TypeError`。
-- 传入 `name`、`redirect`、`children`、`beforeEnter`、`meta` 等 deferred route fields，或
-  `scrollBehavior` 等 deferred options，会抛出 `TypeError`。
+- 传入 `name`、`alias`、`props` 等 deferred route fields，或 `scrollBehavior` 等 deferred
+  options，会抛出 `TypeError`。
 - 直接 URL 访问的 fallback 仍依赖部署宿主配置。
 - unknown route 行为应通过显式 wildcard route 处理。
 

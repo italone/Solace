@@ -21,13 +21,14 @@ export function createStaticRoutesFromRouter(options: StaticRouterOptions): Stat
     }
 
     const route = resolveStaticRouterPath(matcher, path);
-    if (route.matched === null) {
+    if (route.matched.length === 0) {
       throw new TypeError(`Static router path did not match any route: ${path}`);
     }
+    const source = resolveStaticRouteSource(route);
 
     return {
       path: route.fullPath,
-      source: route.matched.component,
+      source,
       context: {
         route,
         ...(options.context?.(route) ?? {}),
@@ -44,9 +45,7 @@ function assertStaticRouterOptions(options: StaticRouterOptions): void {
 
   for (const key of Object.keys(options)) {
     if (key !== "routes" && key !== "paths" && key !== "context" && key !== "provides") {
-      throw new TypeError(
-        `Deferred static router option is not part of the beta contract: ${key}`,
-      );
+      throw new TypeError(`Deferred static router option is not part of the beta contract: ${key}`);
     }
   }
 
@@ -98,6 +97,17 @@ function resolveStaticRouterPath(matcher: Matcher, rawFullPath: string): RouteLo
     fullPath,
     query,
   };
+}
+
+function resolveStaticRouteSource(route: RouteLocationNormalized): StaticRoute["source"] {
+  const matched = route.matched[route.matched.length - 1];
+  const source = matched?.component;
+
+  if (typeof source !== "function") {
+    throw new TypeError("Static router matched route component must be a function");
+  }
+
+  return source;
 }
 
 function resolveMatcherPath(

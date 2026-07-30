@@ -23,6 +23,7 @@ describe("SSG style integration", () => {
       path: "/",
       body: '<main class="page">page</main>',
       styles: expectedStyles,
+      assets: { modulePreloads: [], stylesheets: [], scripts: [] },
       context: {},
     });
     expect(site.pages[0]).toEqual({

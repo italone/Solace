@@ -3,14 +3,45 @@ import { inject } from "../component/provide";
 import { ref } from "../reactivity/ref";
 import { createMatcher } from "./matcher";
 import { parseQuery, stringifyQuery } from "./query";
-import type { RouteLocationNormalized, RouteLocationRaw, Router, RouterOptions } from "./types";
+import type {
+  NavigationGuard,
+  RouteLocationNormalized,
+  RouteLocationRaw,
+  RouteRecord,
+  Router,
+  RouterOptions,
+} from "./types";
 
 export const routerKey = Symbol("Solace.router");
 export const routeKey = Symbol("Solace.route");
+export const routerViewDepthKey = Symbol("Solace.routerViewDepth");
+
+export class RouterNavigationError extends Error {
+  constructor(
+    message: string,
+    readonly type: "redirect-loop" | "guard-rejected" | "lazy-load-failed",
+    readonly from: RouteLocationNormalized,
+    readonly to: RouteLocationNormalized,
+  ) {
+    super(message);
+    this.name = "RouterNavigationError";
+  }
+}
+
+const allowedRouteRecordFields = new Set([
+  "path",
+  "component",
+  "children",
+  "redirect",
+  "beforeEnter",
+  "meta",
+]);
 
 export function createRouter(options: RouterOptions): Router {
   assertRouterOptionsContract(options);
   const matcher = createMatcher(options.routes);
+  const redirectLimit = 16;
+  const beforeEachGuards: NavigationGuard[] = [];
   let stopListening: (() => void) | null = null;
   const currentRoute = ref(resolveLocation(options.history.location()));
 
@@ -25,22 +56,143 @@ export function createRouter(options: RouterOptions): Router {
         currentRoute.value = resolveLocation(options.history.location());
       });
     },
-    push(to: RouteLocationRaw) {
-      const resolved = resolveLocation(to);
-      options.history.push(resolved.fullPath);
-      currentRoute.value = resolved;
+    async push(to: RouteLocationRaw) {
+      return navigate(to, "push");
     },
-    replace(to: RouteLocationRaw) {
-      const resolved = resolveLocation(to);
-      options.history.replace(resolved.fullPath);
-      currentRoute.value = resolved;
+    async replace(to: RouteLocationRaw) {
+      return navigate(to, "replace");
     },
     back: () => options.history.back(),
     forward: () => options.history.forward(),
     resolve: resolveLocation,
+    beforeEach(guard: NavigationGuard) {
+      beforeEachGuards.push(guard);
+
+      return () => {
+        const index = beforeEachGuards.indexOf(guard);
+        if (index >= 0) {
+          beforeEachGuards.splice(index, 1);
+        }
+      };
+    },
   };
 
   return router;
+
+  async function navigate(
+    to: RouteLocationRaw,
+    mode: "push" | "replace",
+  ): Promise<RouteLocationNormalized> {
+    const from = currentRoute.value;
+    const finalRoute = await resolveNavigation(resolveLocation(to), from);
+
+    if (finalRoute === false) {
+      return from;
+    }
+
+    if (mode === "replace") {
+      options.history.replace(finalRoute.fullPath);
+    } else {
+      options.history.push(finalRoute.fullPath);
+    }
+
+    currentRoute.value = finalRoute;
+    return finalRoute;
+  }
+
+  async function resolveNavigation(
+    initial: RouteLocationNormalized,
+    from: RouteLocationNormalized,
+    state: RedirectState = { count: 0 },
+  ): Promise<RouteLocationNormalized | false> {
+    const redirected = resolveRedirects(initial, from, state);
+    const guarded = await runGuards(redirected, from);
+
+    if (guarded === false) {
+      return false;
+    }
+
+    if (guarded === true) {
+      return redirected;
+    }
+
+    if (state.count >= redirectLimit) {
+      throw new RouterNavigationError(
+        "Router redirect loop detected",
+        "redirect-loop",
+        from,
+        redirected,
+      );
+    }
+
+    if (state.redirectedFrom === undefined) {
+      state.redirectedFrom = redirected;
+    }
+
+    state.count += 1;
+    return resolveNavigation(resolveLocation(guarded), from, state);
+  }
+
+  function resolveRedirects(
+    initial: RouteLocationNormalized,
+    from: RouteLocationNormalized,
+    state: RedirectState,
+  ): RouteLocationNormalized {
+    let target = initial;
+
+    while (true) {
+      const redirect = getLastMatchedRecord(target)?.redirect;
+      if (redirect === undefined) {
+        return state.redirectedFrom === undefined
+          ? target
+          : { ...target, redirectedFrom: state.redirectedFrom };
+      }
+
+      if (state.count >= redirectLimit) {
+        throw new RouterNavigationError(
+          "Router redirect loop detected",
+          "redirect-loop",
+          from,
+          target,
+        );
+      }
+
+      if (state.redirectedFrom === undefined) {
+        state.redirectedFrom = target;
+      }
+
+      target = resolveLocation(typeof redirect === "function" ? redirect(target) : redirect);
+      state.count += 1;
+    }
+  }
+
+  async function runGuards(
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized,
+  ): Promise<true | false | RouteLocationRaw> {
+    const guards = [
+      ...beforeEachGuards,
+      ...to.matched.flatMap((record) => normalizeGuards(record.beforeEnter)),
+    ];
+
+    try {
+      for (const guard of guards) {
+        const result = await guard(to, from);
+
+        if (result === false) {
+          return false;
+        }
+
+        if (result !== undefined && result !== true) {
+          return result;
+        }
+      }
+    } catch {
+      throw new RouterNavigationError("Router guard rejected", "guard-rejected", from, to);
+    }
+
+    return true;
+  }
 
   function resolveLocation(to: RouteLocationRaw): RouteLocationNormalized {
     const fullPath = normalizeRawLocation(to);
@@ -57,6 +209,23 @@ export function createRouter(options: RouterOptions): Router {
       matched: match.matched,
     };
   }
+}
+
+interface RedirectState {
+  count: number;
+  redirectedFrom?: RouteLocationNormalized;
+}
+
+function getLastMatchedRecord(route: RouteLocationNormalized): RouteRecord | undefined {
+  return route.matched[route.matched.length - 1];
+}
+
+function normalizeGuards(guards: RouteRecord["beforeEnter"]): NavigationGuard[] {
+  if (guards === undefined) {
+    return [];
+  }
+
+  return Array.isArray(guards) ? guards : [guards];
 }
 
 export function useRouter(): Router {
@@ -98,16 +267,30 @@ function assertRouterOptionsContract(options: RouterOptions): void {
   }
 
   for (const route of options.routes) {
-    for (const key of Object.keys(route)) {
-      if (key !== "path" && key !== "component") {
-        throw new TypeError(
-          `Deferred router route record field is not part of the beta contract: ${key}`,
-        );
-      }
+    assertRouteRecordContract(route);
+  }
+}
+
+function assertRouteRecordContract(route: RouteRecord): void {
+  for (const key of Object.keys(route)) {
+    if (!allowedRouteRecordFields.has(key)) {
+      throw new TypeError(
+        `Deferred router route record field is not part of the beta contract: ${key}`,
+      );
+    }
+  }
+
+  if (typeof route.path !== "string") {
+    throw new TypeError("Router route record path must be a string");
+  }
+
+  if (route.children !== undefined) {
+    if (!Array.isArray(route.children)) {
+      throw new TypeError("Router route record children must be an array");
     }
 
-    if (typeof route.path !== "string") {
-      throw new TypeError("Router route record path must be a string");
+    for (const child of route.children) {
+      assertRouteRecordContract(child);
     }
   }
 }

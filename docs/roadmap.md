@@ -12,7 +12,7 @@ The alpha runtime is feature-complete for its declared scope:
 Planned work, in rough priority order:
 
 1. **SFC compiler stabilization** — keep the public contract limited to `@italone/solace/vite` and `@italone/solace/sfc`, then harden diagnostics, source-map policy, compatibility tests, and documented syntax before promoting the compiler beyond alpha.
-2. **Router beta stabilization** — keep the beta slice limited to static routes, dynamic params, wildcard fallback routes, query strings, web/hash history, `RouterLink`, `RouterView`, `useRoute`, and `useRouter`; defer nested routes, guards, redirects, lazy route components, scroll behavior, memory history, SSR/hydration integration, auth, and permissions.
+2. **Router beta stabilization** — keep the beta slice limited to static routes, dynamic params, wildcard fallback routes, query strings, web/hash history, nested routes, redirects, global and route-level guards, explicit `lazyRoute()` components, `RouterLink`, `RouterView`, `useRoute`, and `useRouter`; defer route names, aliases, route props, scroll behavior, memory history, SSR/SSG/hydration integration, auth, and permissions.
 3. **Mandatory public API gates** — keep package export tests, packed-consumer smoke, browser e2e, and release readiness required for public API changes.
 4. **SSR / hydration minimum loop** — implemented through `@italone/solace/server` and
    `createApp(App).hydrate(container)` for synchronous VNode/component trees, including

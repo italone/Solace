@@ -13,17 +13,17 @@ component instances, and VNode factory internals are not part of the compatibili
 
 The package root exposes the documented runtime surface:
 
-| Area       | APIs                                                                                                            |
-| ---------- | --------------------------------------------------------------------------------------------------------------- |
-| App        | `createApp`                                                                                                     |
-| Reactivity | `reactive`, `ref`, `computed`, `effect`, `watch`, `watchEffect`                                                 |
-| Rendering  | `h`, `render`, `Fragment`, `useStyle`                                                                           |
-| Components | `defineComponent`, `defineAsyncComponent`                                                                       |
-| Context    | `provide`, `inject`                                                                                             |
-| Lifecycle  | `onMounted`, `onUpdated`, `onUnmounted`                                                                         |
-| Scheduler  | `nextTick`                                                                                                      |
-| Store      | `createStore`                                                                                                   |
-| Router     | `createRouter`, `createWebHistory`, `createWebHashHistory`, `RouterLink`, `RouterView`, `useRouter`, `useRoute` |
+| Area       | APIs                                                                                                                                                  |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App        | `createApp`                                                                                                                                           |
+| Reactivity | `reactive`, `ref`, `computed`, `effect`, `watch`, `watchEffect`                                                                                       |
+| Rendering  | `h`, `render`, `Fragment`, `useStyle`                                                                                                                 |
+| Components | `defineComponent`, `defineAsyncComponent`                                                                                                             |
+| Context    | `provide`, `inject`                                                                                                                                   |
+| Lifecycle  | `onMounted`, `onUpdated`, `onUnmounted`                                                                                                               |
+| Scheduler  | `nextTick`                                                                                                                                            |
+| Store      | `createStore`                                                                                                                                         |
+| Router     | `createRouter`, `createWebHistory`, `createWebHashHistory`, `RouterLink`, `RouterView`, `RouterNavigationError`, `lazyRoute`, `useRouter`, `useRoute` |
 
 Public TypeScript helper types include:
 
@@ -31,7 +31,8 @@ Public TypeScript helper types include:
 - Async components: `AsyncComponentLoader`, `AsyncComponentOptions`, `AsyncComponentSource`
 - Component setup: `ComponentSetupContext`, `EmitFn`, `Slot`, `SlotProps`, `Slots`
 - Store: `Store`, `StoreActionsInput`, `StoreContext`, `StoreGetterContext`, `StoreGetters`, `StoreOptions`
-- Router: `RouteLocationNormalized`, `RouteLocationRaw`, `RouteRecord`, `Router`, `RouterHistory`,
+- Router: `LazyRouteComponent`, `NavigationGuard`, `NavigationGuardResult`, `RouteComponent`,
+  `RouteLocationNormalized`, `RouteLocationRaw`, `RouteRecord`, `Router`, `RouterHistory`,
   `RouterLinkProps`, `RouterOptions`
 - VNodes: `ComponentProps`, `ComponentRender`, `ComponentType`, `ComponentVNodeChildren`,
   `FragmentType`, `VNode`, `VNodeChild`, `VNodeChildren`, `VNodeProps`, `VNodeSlots`, `VNodeType`
@@ -65,10 +66,12 @@ documented block model remains one `<template>`, optional `<script>`, and option
 import compiler or router deep subpaths such as `@italone/solace/compiler`, `@italone/solace/router`,
 or `@italone/solace/dist/**`.
 
-The router exports in the package root are beta APIs for small SPA examples. Route guards, nested
-route records, scroll behavior, named routes, lazy route loading, SSR integration, auth, permissions,
-and a long-term router compatibility policy remain deferred. Passing deferred route record fields or
-router options throws a `TypeError` instead of silently widening the beta contract.
+The router exports in the package root are beta APIs for small SPA examples. Nested route records,
+redirects, global `beforeEach` guards, route-level `beforeEnter` guards, route `meta`, and explicit
+route lazy components through `lazyRoute()` are supported. Route names, aliases, route props, scroll
+behavior, memory history, SSR/SSG/hydration router integration, auth, permissions, and a long-term
+router compatibility policy remain deferred. Passing still-deferred route record fields or router
+options throws a `TypeError` instead of silently widening the beta contract.
 
 Most applications should import from the root package. Use `@italone/solace/server` only from
 server-side code. Use JSX subpaths only through `jsxImportSource` or bundler-generated imports. Use
@@ -597,7 +600,9 @@ Store behavior:
 
 The router is a beta package-root API for small single-page examples. It supports static routes,
 dynamic params, wildcard fallback records, query parsing/stringifying, browser history adapters,
-`RouterLink`, `RouterView`, and app installation through `createApp(App).use(router)`.
+nested route records, redirects, global `beforeEach` guards, route-level `beforeEnter` guards, route
+`meta`, route lazy components through `lazyRoute()`, `RouterLink`, `RouterView`, and app
+installation through `createApp(App).use(router)`.
 
 ```ts
 import {
@@ -607,6 +612,7 @@ import {
   createRouter,
   createWebHistory,
   h,
+  lazyRoute,
   useRoute,
 } from "@italone/solace";
 
@@ -622,9 +628,23 @@ const router = createRouter({
   routes: [
     { path: "/", component: Home },
     { path: "/users/:id", component: User },
+    { path: "/old-dashboard", redirect: "/dashboard" },
+    {
+      path: "/dashboard",
+      component: () => h("section", null, [h("h2", null, "Dashboard"), h(RouterView)]),
+      meta: { requiresAuth: true },
+      children: [
+        { path: "", component: () => h("p", null, "dashboard home") },
+        { path: "report", component: lazyRoute(() => import("./Report")) },
+      ],
+    },
     { path: "/:pathMatch(.*)*", component: () => h("p", null, "not found") },
   ],
 });
+
+router.beforeEach((to) =>
+  to.matched.some((record) => record.meta?.requiresAuth) ? "/login" : true,
+);
 
 const App = () => () =>
   h("main", null, [h(RouterLink, { to: "/users/42" }, "User"), h(RouterView)]);
@@ -655,18 +675,18 @@ Create browser-backed history adapters. Use `createWebHistory()` for normal path
 
 ### `RouterLink` / `RouterView`
 
-`RouterLink` renders an anchor and performs client navigation for primary unmodified clicks.
-`RouterView` renders the matched route component or an empty fragment when no route matches.
+`RouterLink` renders an anchor and performs async client navigation for primary unmodified clicks.
+`RouterView` renders the matched route component for its current nested depth or an empty fragment
+when no route matches or a lazy route component is still loading.
 
 Current beta router limitations:
 
-- No route names, aliases, redirects, nested records, guards, scroll behavior, or lazy component
-  loading contract.
-- No memory history, auth, permissions, SSR, SSG, or hydration integration.
+- No route names, aliases, route props, scroll behavior, or memory history.
+- No auth, permissions, SSR, SSG, or hydration router integration.
 - Dynamic params are limited to simple `:name` segments plus the documented wildcard
   `/:pathMatch(.*)*`; optional params, repeat params, and custom regex params throw a `TypeError`.
-- Passing deferred route fields such as `name`, `redirect`, `children`, `beforeEnter`, or `meta`, or
-  deferred options such as `scrollBehavior`, throws a `TypeError`.
+- Passing deferred route fields such as `name`, `alias`, or `props`, or deferred options such as
+  `scrollBehavior`, throws a `TypeError`.
 - Direct URL fallback still depends on the hosting configuration.
 - Unknown-route behavior should be handled by an explicit wildcard route.
 

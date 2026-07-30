@@ -37,14 +37,14 @@ describe("createStaticRoutesFromRouter", () => {
       fullPath: "/",
       query: {},
       params: {},
-      matched: { path: "/", component: Home },
+      matched: [{ path: "/", component: Home }],
     });
     expect(routes[1].context?.route).toEqual({
       path: "/users/42",
       fullPath: "/users/42?tab=profile",
       query: { tab: "profile" },
       params: { id: "42" },
-      matched: { path: "/users/:id", component: User },
+      matched: [{ path: "/users/:id", component: User }],
     });
   });
 
@@ -83,7 +83,7 @@ describe("createStaticRoutesFromRouter", () => {
       fullPath: "/missing/deep?from=ssg",
       query: { from: "ssg" },
       params: { pathMatch: "missing/deep" },
-      matched: { path: "/:pathMatch(.*)*", component: NotFound },
+      matched: [{ path: "/:pathMatch(.*)*", component: NotFound }],
     });
   });
 

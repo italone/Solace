@@ -2,6 +2,7 @@ import type { RouteLocationNormalized, RouteRecord } from "./types";
 
 interface CompiledRoute {
   record: RouteRecord;
+  chain: RouteRecord[];
   regex: RegExp;
   keys: string[];
   score: number;
@@ -12,7 +13,9 @@ export interface Matcher {
 }
 
 export function createMatcher(routes: RouteRecord[]): Matcher {
-  const compiled = routes.map(compileRoute).sort((a, b) => b.score - a.score);
+  const compiled = flattenRoutes(routes)
+    .map(compileRoute)
+    .sort((a, b) => b.score - a.score || b.chain.length - a.chain.length);
 
   return {
     resolve(path: string) {
@@ -29,21 +32,69 @@ export function createMatcher(routes: RouteRecord[]): Matcher {
           params[route.keys[index]] = decodeURIComponent(match[index + 1] ?? "");
         }
 
-        return { path: normalized, params, matched: route.record };
+        return { path: normalized, params, matched: route.chain };
       }
 
-      return { path: normalized, params: {}, matched: null };
+      return { path: normalized, params: {}, matched: [] };
     },
   };
 }
 
-function compileRoute(record: RouteRecord): CompiledRoute {
-  assertBetaRoutePathSyntax(record.path);
-  const normalized = normalizePath(record.path);
+interface NormalizedRouteRecord {
+  record: RouteRecord;
+  fullPath: string;
+  chain: RouteRecord[];
+}
+
+function flattenRoutes(
+  routes: RouteRecord[],
+  parentPath = "",
+  parentChain: RouteRecord[] = [],
+): NormalizedRouteRecord[] {
+  const records: NormalizedRouteRecord[] = [];
+
+  for (const route of routes) {
+    assertBetaRoutePathSyntax(route.path);
+    const fullPath = joinRoutePaths(parentPath, route.path);
+    const chain = [...parentChain, route];
+    const children = route.children ?? [];
+
+    if (route.component !== undefined || route.redirect !== undefined || children.length === 0) {
+      records.push({ record: route, fullPath, chain });
+    }
+
+    records.push(...flattenRoutes(children, fullPath, chain));
+  }
+
+  return records;
+}
+
+function joinRoutePaths(parentPath: string, childPath: string): string {
+  if (childPath.startsWith("/")) {
+    return normalizePath(childPath);
+  }
+
+  const parent = normalizePath(parentPath || "/");
+
+  if (childPath === "") {
+    return parent;
+  }
+
+  if (parent === "/") {
+    return normalizePath(`/${childPath}`);
+  }
+
+  return normalizePath(`${parent}/${childPath}`);
+}
+
+function compileRoute(route: NormalizedRouteRecord): CompiledRoute {
+  assertBetaRoutePathSyntax(route.fullPath);
+  const normalized = normalizePath(route.fullPath);
 
   if (normalized === "/:pathMatch(.*)*") {
     return {
-      record,
+      record: route.record,
+      chain: route.chain,
       regex: /^\/(.*)$/,
       keys: ["pathMatch"],
       score: 0,
@@ -69,7 +120,8 @@ function compileRoute(record: RouteRecord): CompiledRoute {
     .join("/");
 
   return {
-    record,
+    record: route.record,
+    chain: route.chain,
     regex: new RegExp(`^/${pattern}$`),
     keys,
     score,
