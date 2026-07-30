@@ -40,6 +40,24 @@ describe("router query helpers", () => {
     expect(parseQuery("?flag&plus=a+b")).toEqual({ flag: "", plus: "a+b" });
   });
 
+  it("preserves equals signs after the first query separator", () => {
+    expect(parseQuery("?q=a=b")).toEqual({ q: "a=b" });
+  });
+
+  it("preserves equals signs for repeated query keys", () => {
+    expect(parseQuery("?q=a=b&q=c=d")).toEqual({ q: ["a=b", "c=d"] });
+  });
+
+  it("parses empty query keys explicitly", () => {
+    expect(parseQuery("?=value")).toEqual({ "": "value" });
+  });
+
+  it("decodes encoded equals signs inside values", () => {
+    expect(parseQuery("?redirect=%2Fusers%2F1%3Ftab%3Da")).toEqual({
+      redirect: "/users/1?tab=a",
+    });
+  });
+
   it("throws a stable TypeError for malformed percent encoding", () => {
     expect(() => parseQuery("?broken=%E0%A4%A")).toThrow(TypeError);
     expect(() => parseQuery("?broken=%E0%A4%A")).toThrow(

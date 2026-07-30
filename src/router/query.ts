@@ -16,7 +16,7 @@ export function parseQuery(search: string): Query {
       continue;
     }
 
-    const [rawKey, rawValue = ""] = part.split("=");
+    const [rawKey, rawValue] = splitQueryPart(part);
     const key = decodeQueryComponent(rawKey);
     const value = decodeQueryComponent(rawValue);
     const existing = query[key];
@@ -55,6 +55,16 @@ function pushQueryPart(parts: string[], key: string, value: QueryInputValue): vo
   }
 
   parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`);
+}
+
+function splitQueryPart(part: string): [string, string] {
+  const separatorIndex = part.indexOf("=");
+
+  if (separatorIndex === -1) {
+    return [part, ""];
+  }
+
+  return [part.slice(0, separatorIndex), part.slice(separatorIndex + 1)];
 }
 
 function decodeQueryComponent(value: string): string {
