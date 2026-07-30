@@ -10,18 +10,25 @@ const Home = () => h("div", null, "home");
 const User = Home;
 const NotFound = Home;
 
-function createMemoryLikeHistory(
-  initial = "/",
-): RouterHistory & { emit(): void; listenerCount(): number } {
+function createMemoryLikeHistory(initial = "/"): RouterHistory & {
+  emit(): void;
+  listenerCount(): number;
+  pushedPaths: string[];
+  replacedPaths: string[];
+} {
   let current = initial;
   const listeners = new Set<() => void>();
+  const pushedPaths: string[] = [];
+  const replacedPaths: string[] = [];
 
   return {
     location: () => current,
     push(path) {
+      pushedPaths.push(path);
       current = path;
     },
     replace(path) {
+      replacedPaths.push(path);
       current = path;
     },
     listen(listener) {
@@ -38,6 +45,8 @@ function createMemoryLikeHistory(
     listenerCount() {
       return listeners.size;
     },
+    pushedPaths,
+    replacedPaths,
   };
 }
 
@@ -45,6 +54,7 @@ describe("createRouter", () => {
   it("re-exports the public router module surface", () => {
     expect(Object.keys(routerModule).sort()).toEqual([
       "RouterLink",
+      "RouterNavigationError",
       "RouterView",
       "createRouter",
       "createWebHashHistory",
@@ -55,6 +65,7 @@ describe("createRouter", () => {
     ]);
     expect(routerModule).toMatchObject({
       RouterLink: expect.any(Function),
+      RouterNavigationError: expect.any(Function),
       RouterView: expect.any(Function),
       createRouter: expect.any(Function),
       createWebHashHistory: expect.any(Function),
@@ -167,7 +178,7 @@ describe("createRouter", () => {
     ).toThrow(/Deferred router option/);
   });
 
-  it("rejects deferred route location fields instead of ignoring them", () => {
+  it("rejects deferred route location fields instead of ignoring them", async () => {
     const router = createRouter({
       history: createMemoryLikeHistory(),
       routes: [{ path: "/", component: Home }],
@@ -182,12 +193,12 @@ describe("createRouter", () => {
     expect(() => router.resolve({ path: "/users/1", hash: "#profile" } as never)).toThrow(
       /Deferred router location field/,
     );
-    expect(() => router.push({ path: "/users/1", name: "user" } as never)).toThrow(
+    await expect(router.push({ path: "/users/1", name: "user" } as never)).rejects.toThrow(
       /Deferred router location field/,
     );
-    expect(() => router.replace({ path: "/users/1", params: { id: "1" } } as never)).toThrow(
-      /Deferred router location field/,
-    );
+    await expect(
+      router.replace({ path: "/users/1", params: { id: "1" } } as never),
+    ).rejects.toThrow(/Deferred router location field/);
   });
 
   it("resolves string and object locations", () => {
@@ -237,7 +248,7 @@ describe("createRouter", () => {
     });
   });
 
-  it("updates currentRoute when navigating", () => {
+  it("updates currentRoute when navigating", async () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({
       history,
@@ -247,10 +258,78 @@ describe("createRouter", () => {
       ],
     });
 
-    router.push("/users/42?tab=profile");
+    await router.push("/users/42?tab=profile");
 
     expect(router.currentRoute.value.fullPath).toBe("/users/42?tab=profile");
     expect(router.currentRoute.value.params).toEqual({ id: "42" });
+  });
+
+  it("returns the final route from async push and replace", async () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory("/"),
+      routes: [
+        { path: "/", component: Home },
+        { path: "/users/:id", component: User },
+      ],
+    });
+
+    await expect(router.push("/users/42")).resolves.toMatchObject({ fullPath: "/users/42" });
+    await expect(router.replace("/")).resolves.toMatchObject({ fullPath: "/" });
+  });
+
+  it("applies string and object redirects before committing history", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/legacy", redirect: "/users/1" },
+        { path: "/old", redirect: { path: "/users/2", query: { tab: "profile" } } },
+        { path: "/users/:id", component: User },
+      ],
+    });
+
+    await expect(router.push("/legacy")).resolves.toMatchObject({
+      fullPath: "/users/1",
+      redirectedFrom: expect.objectContaining({ fullPath: "/legacy" }),
+    });
+    expect(history.pushedPaths[history.pushedPaths.length - 1]).toBe("/users/1");
+
+    await router.push("/old");
+    expect(history.pushedPaths[history.pushedPaths.length - 1]).toBe("/users/2?tab=profile");
+  });
+
+  it("applies function redirects with the resolved target route", async () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory("/"),
+      routes: [
+        {
+          path: "/profile/:id",
+          redirect: (to) => ({ path: `/users/${to.params.id}`, query: { tab: "profile" } }),
+        },
+        { path: "/users/:id", component: User },
+      ],
+    });
+
+    const route = await router.push("/profile/42");
+
+    expect(route.fullPath).toBe("/users/42?tab=profile");
+    expect(route.params).toEqual({ id: "42" });
+  });
+
+  it("rejects redirect loops before mutating history", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/a", redirect: "/b" },
+        { path: "/b", redirect: "/a" },
+      ],
+    });
+
+    await expect(router.push("/a")).rejects.toThrow(/Router redirect loop detected/);
+    expect(history.pushedPaths).toEqual([]);
+    expect(router.currentRoute.value.fullPath).toBe("/");
   });
 
   it("updates from history listeners after install", () => {

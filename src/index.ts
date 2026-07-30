@@ -16,6 +16,7 @@ export { createStore } from "./store/store";
 export { useStyle } from "./component/style";
 export {
   RouterLink,
+  RouterNavigationError,
   RouterView,
   createRouter,
   createWebHashHistory,
