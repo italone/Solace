@@ -20,11 +20,21 @@ next phase should remove those rejections only for `children`, `redirect`, `befo
 
 ## Public API
 
-Route components may be eager components or route-level lazy loaders:
+Route components may be eager components or explicit route-level lazy wrappers. The explicit
+`lazyRoute()` wrapper avoids guessing whether a plain function is an eager Solace component or a
+loader returning a promise.
 
 ```ts
-export type RouteComponent =
-  ComponentType | (() => Promise<{ default: ComponentType } | ComponentType>);
+export interface LazyRouteComponent {
+  readonly __solaceLazyRouteComponent: true;
+  load(): Promise<{ default: ComponentType } | ComponentType>;
+}
+
+export type RouteComponent = ComponentType | LazyRouteComponent;
+
+export function lazyRoute(
+  load: () => Promise<{ default: ComponentType } | ComponentType>,
+): LazyRouteComponent;
 ```
 
 Route records should allow nested records, redirects, route guards, and metadata:
@@ -167,7 +177,7 @@ const DashboardLayout = () => () => (
 ```
 
 Records without a component should not consume depth. This keeps layout-less grouping routes useful
-without requiring placeholder components.
+without requiring dummy render components.
 
 When the matched chain has no component at the requested depth, `RouterView` should render an empty
 Fragment.
@@ -301,7 +311,7 @@ Integration component tests:
 E2E tests:
 
 - extend `examples/router-basic` to cover nested navigation, redirect navigation, guarded
-  navigation, and lazy route navigation
+  navigation, and `lazyRoute()` navigation
 - cover direct URL load and client navigation for at least one nested route
 
 Package-boundary tests:
