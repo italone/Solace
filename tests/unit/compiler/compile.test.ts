@@ -83,6 +83,7 @@ describe("compile", () => {
         code: "SFC_PARSE_ERROR",
         filename: "/app/src/Broken.solace",
         loc: { line: 4, column: 11 },
+        cause: expect.any(Error),
       });
       expect(String((error as Error).message)).toContain("Unclosed interpolation expression");
     }

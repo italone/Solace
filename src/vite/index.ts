@@ -1,5 +1,6 @@
 import type { Plugin } from "vite";
 
+import { formatSolaceCompileError } from "../compiler/diagnostics";
 import { compile, SolaceCompileError } from "../compiler/index";
 
 export function solacePlugin(...options: never[]): Plugin {
@@ -32,7 +33,7 @@ export function solacePlugin(...options: never[]): Plugin {
         };
       } catch (error) {
         if (error instanceof SolaceCompileError) {
-          throw new Error(formatViteCompileError(error));
+          throw new Error(formatSolaceCompileError(error));
         }
 
         throw error;
@@ -50,14 +51,6 @@ function parseSolaceRequest(id: string): SolaceRequestKind {
   }
 
   return id.slice(0, queryIndex).endsWith(".solace") ? "query" : "non-solace";
-}
-
-function formatViteCompileError(error: SolaceCompileError): string {
-  const location = error.loc
-    ? `${error.filename ?? "unknown"}:${error.loc.line}:${error.loc.column}`
-    : (error.filename ?? "unknown");
-
-  return `[${error.code}] ${location} ${error.message}`;
 }
 
 export default solacePlugin;
