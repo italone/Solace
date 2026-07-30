@@ -6,17 +6,18 @@ This document summarizes the current completion level of Solace as an open-sourc
 
 ## Summary
 
-Solace is an alpha runtime that has been published to npm as `@italone/solace@0.0.4`. It provides a working public API, package exports, examples, tests, benchmarks, and release checks. It is suitable as a compact educational and experimental frontend framework, but it should not be described as a mature production replacement for React, Vue, Svelte, or similar ecosystems.
+Solace is an alpha runtime whose latest published npm package is `@italone/solace@0.0.4`, with repository release preparation currently at `0.0.5`. It provides a working public API, package exports, examples, tests, benchmarks, and release checks. It is suitable as a compact educational and experimental frontend framework, but it should not be described as a mature production replacement for React, Vue, Svelte, or similar ecosystems.
 
 Current repository state:
 
 - Package name: `@italone/solace`
-- Published version: `0.0.4`
-- npm dist-tag: `latest`
+- Repository package version: `0.0.5`
+- Published npm version: `0.0.4`
+- npm dist-tag: `latest` points to `0.0.4`
 - Public package metadata: `"private": false`
 - Current branch: `main`
 - Remote state: the local `main` release baseline has been synchronized with `origin/main` as of
-  2026-07-29. Recheck with `git fetch origin main`, `git status --short --branch`, and
+  2026-07-30. Recheck with `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
   synchronization claim.
 - Phase: alpha released; beta contract stabilization, SSR/hydration minimum loop, and first
@@ -61,7 +62,7 @@ The repository includes these validation layers:
 - DevTools extension smoke: `pnpm test:e2e:devtools-extension`
 - Full local gate: `pnpm release:check`, which includes `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e`
 
-The 2026-07-29 local release check covered the full gate, including release readiness, quality, coverage, package smoke, jsdom benchmark, Chromium production browser benchmark, and e2e. Run the commands again before any future completion, merge, or release claim.
+The 2026-07-30 local release check covered the full gate for `0.0.5`, including release readiness, quality, coverage, package smoke, jsdom benchmark, Chromium production browser benchmark, and e2e. The DevTools extension e2e smoke also passed separately because it is not part of `release:check`. Run the commands again before any future completion, merge, or release claim.
 
 ## Public API Boundary
 
@@ -108,14 +109,18 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Release Coordination State
 
-`@italone/solace@0.0.4` has been published to npm. Future releases should follow the same checklist:
+`@italone/solace@0.0.4` has been published to npm. Repository `main` is prepared at
+`0.0.5` and synchronized with `origin/main`, but npm publishing was explicitly skipped on
+2026-07-30. npm still reports `@italone/solace@0.0.4` as the latest published version.
+
+Before publishing `0.0.5` or any future version, follow the same checklist:
 
 1. Confirm `origin/main` is in sync with the local release branch.
 2. Confirm the target version is not already published.
 3. Run `pnpm release:readiness -- --publishable`. This stricter mode fails when the local branch is ahead, behind, missing an upstream, or has a dirty worktree.
 4. Run `pnpm release:check`.
 5. Run `npm publish --dry-run --access public --cache /private/tmp/npm-cache` if using the known working temporary npm cache.
-6. Publish only after npm authentication, organization access, public access, and any one-time password requirement are ready.
+6. Publish only after npm authentication, organization access, public access, and any one-time password requirement are ready, and only after a maintainer explicitly confirms npm publishing.
 
 ## Recommended Next Work
 
