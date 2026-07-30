@@ -116,6 +116,13 @@ describe("createStaticRoutesFromRouter", () => {
   it("rejects route records with non-string paths", () => {
     expect(() =>
       createStaticRoutesFromRouter({
+        routes: [null as unknown as RouteRecord],
+        paths: ["/"],
+      }),
+    ).toThrow(/Static router route record must be an object/);
+
+    expect(() =>
+      createStaticRoutesFromRouter({
         routes: [{ path: 42, component: Home } as unknown as RouteRecord],
         paths: ["/"],
       }),

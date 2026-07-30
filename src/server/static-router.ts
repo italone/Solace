@@ -52,6 +52,10 @@ function assertStaticRouterOptions(options: StaticRouterOptions): void {
 }
 
 function assertStaticRouterRouteRecord(route: RouteRecord): void {
+  if (route === null || typeof route !== "object") {
+    throw new TypeError("Static router route record must be an object");
+  }
+
   for (const key of Object.keys(route)) {
     if (key !== "path" && key !== "component") {
       throw new TypeError(
