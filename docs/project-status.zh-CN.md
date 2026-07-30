@@ -15,8 +15,8 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
 - 本地分支状态：截至 2026-07-29，本地 `main` release baseline 已与 `origin/main` 同步。后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
-- 发布阶段：alpha 已发布；beta 契约稳定与 SSR/hydration minimum loop 已实现，包含
-  server-side style collection 和 hydration-safe style dedupe
+- 发布阶段：alpha 已发布；beta 契约稳定、SSR/hydration minimum loop，以及首个浏览器
+  DevTools 扩展 timeline panel 已在仓库中实现
 
 ## 完成度映射
 
@@ -32,8 +32,8 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 | SFC compiler    | alpha 公开契约已收窄 | `.solace` 解析、template codegen、runtime-helper style 注入、`@italone/solace/sfc`、`@italone/solace/vite`、被拒绝的 plugin options 和被拒绝的 `.solace?*` query transforms 已文档化，并有 package-boundary tests 覆盖。                                                                                                  |
 | Router          | beta 首个切片已稳定  | matcher、history adapters、query helpers、components、root exports、deferred API 边界、routes list guards、route record path guards、object location shape guards、package export 覆盖、packed-consumer smoke 和 `router-basic` e2e 覆盖均已存在。                                                                        |
 | SSR/hydration   | minimum loop 已实现  | `renderToString()` 可渲染同步树、拒绝 async/thenable SSR 来源并收集 `useStyle()` 输出，`generateStaticSite()` 会强制显式字符串 route paths，`createApp(App).hydrate(container)` 可附加行为、去重匹配 style tags、报告结构化 hydration mismatch、清理失败的 root hydration effects，并支持显式 `{ recover: true }` deopt。 |
-| DevTools 子路径 | 已作为底层 API 实现  | `@italone/solace/devtools` 暴露 listener 和 recorder API，但不是浏览器扩展或 UI。                                                                                                                                                                                                                                         |
-| 示例            | 已实现               | `examples/**` 下包含 basic counter、todo app、large list 和 performance benchmark 示例。                                                                                                                                                                                                                                  |
+| DevTools 子路径 | 已实现并带扩展示例   | `@italone/solace/devtools` 暴露 listener 和 recorder API，`examples/devtools-extension` 通过浏览器 DevTools timeline panel 消费这个公开子路径，且不改变 runtime payload。                                                                                                                                                 |
+| 示例            | 已实现               | `examples/**` 下包含 basic counter、todo app、large list、performance benchmark、router、SFC 和 DevTools extension 示例。                                                                                                                                                                                                 |
 | 包产物          | 已实现               | Rollup 构建 ESM、CJS 和类型声明；package export tests 和 packed-consumer smoke tests 校验公开入口。                                                                                                                                                                                                                       |
 | 文档            | 基本完整             | 已有英文/中文 README、API、package usage、release、performance、architecture、DevTools、contributing 和 security 文档。                                                                                                                                                                                                   |
 | 发布门禁        | 已实现               | 已配置 `release:readiness`、`quality`、`release:check`、package smoke、benchmark 和 e2e scripts；`release:check` 会先运行 release readiness。                                                                                                                                                                             |
@@ -54,6 +54,7 @@ Solace 当前是一个早期 alpha runtime，已经具备可运行的公共 API�
 - Chromium 生产构建浏览器 benchmark：`pnpm benchmark:browser`
 - benchmark history 质量门禁：`pnpm benchmark:history -- --min-browser-count <count> --min-jsdom-count <count>`
 - 浏览器 e2e：`pnpm test:e2e`
+- DevTools extension 冒烟：`pnpm test:e2e:devtools-extension`
 - 完整本地门禁：`pnpm release:check`，其中包含 `pnpm release:readiness`、`pnpm package:smoke` 和 `pnpm test:e2e`
 
 2026-07-29 的本地 release check 已覆盖完整门禁，包括 release readiness、quality、coverage、package smoke、jsdom benchmark、Chromium 生产构建 browser benchmark 和 e2e。后续在声明完成、合并或发布前，需要重新运行对应命令。
@@ -92,7 +93,9 @@ Solace 当前有意不包含：
   integration、显式 `{ recover: true }` 之外的 hydration mismatch 自动恢复，以及 router
   SSR/SSG/hydration 集成。
 - 一方 UI component library。
-- 浏览器扩展 DevTools panel。
+- 生产级 DevTools 浏览器扩展发布形态、component tree inspector、dependency graph、flame
+  chart、持久化 capture workflow、telemetry workflow，或 SSR/SSG/hydration 专用 DevTools
+  panels。
 - 稳定 plugin 生态。
 - 面向内部模块的长期兼容性策略。
 - 面向大型应用的生产落地指南。
@@ -120,5 +123,5 @@ Solace 当前有意不包含：
 2. 继续稳定 SFC/Vite contract，但不扩语法：公开面保持为 `@italone/solace/sfc`、`@italone/solace/vite`、Vite transform diagnostics 和当前文档化的 alpha `.solace` block model。
 3. 继续收敛 router beta API，但不急着扩功能：nested routes、guards、redirects、lazy route components、scroll behavior、memory history、SSR/hydration 集成、auth 和 permissions 继续保持 deferred。
 4. 对所有公共 API 变更保持公共 API 门禁必跑：`pnpm release:readiness`、`pnpm package:smoke` 和 `pnpm test:e2e`。
-5. 按 `docs/superpowers/specs/2026-07-28-ssr-ssg-hydration-next-phase-design.md` 执行下一阶段：先做 SSR/SSG/hydration 设计和剩余 hardening，再做 browser DevTools extension UI，然后补生产落地指南。
+5. 在不扩大 runtime payload 的前提下继续 harden 首个 DevTools 扩展面板：当前 timeline UI 继续保留在 `examples/devtools-extension`，更丰富的 inspector views 需要先设计对应 event contracts，SSR/SSG/hydration 专用 panels 继续 deferred。
 6. 在作出性能宣称前，继续收集 jsdom 与 browser benchmark history；需要趋势窗口时使用 `--min-browser-count` 和 `--min-jsdom-count`。

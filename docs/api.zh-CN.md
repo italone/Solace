@@ -42,7 +42,7 @@
 | `@italone/solace`                  | 公开   | App、响应式、渲染、组件、调度器、store             |
 | `@italone/solace/jsx-runtime`      | 公开   | TypeScript 和 bundler 使用的 automatic JSX runtime |
 | `@italone/solace/jsx-dev-runtime`  | 公开   | Vite 和 JSX dev tooling 使用的开发环境 JSX runtime |
-| `@italone/solace/devtools`         | 公开   | 面向 tooling 的底层 listener 和 recorder API       |
+| `@italone/solace/devtools`         | 公开   | 被 tooling 消费的底层 listener 和 recorder API     |
 | `@italone/solace/server`           | 公开   | 面向同步 tree 的 server rendering 和内存 SSG       |
 | `@italone/solace/sfc`              | 公开   | `.solace` 单文件组件 import 的类型声明入口         |
 | `@italone/solace/vite`             | 公开   | alpha `.solace` 单文件组件的 Vite plugin           |
@@ -56,7 +56,7 @@ alpha 阶段的兼容性契约有意保持较窄。公开入口应在 patch rele
 
 大多数应用应从包根入口导入。`@italone/solace/server` 只应在 server-side 代码中使用。JSX
 子路径通常只通过 `jsxImportSource` 或 bundler 生成导入使用。只有在构建 instrumentation 或需要
-event snapshots 的示例时，才直接使用 DevTools 子路径。
+event snapshots 的示例，或运行 `examples/devtools-extension` 浏览器 DevTools 扩展示例时，才直接使用 DevTools 子路径。
 
 ## App
 

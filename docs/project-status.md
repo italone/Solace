@@ -19,8 +19,8 @@ Current repository state:
   2026-07-29. Recheck with `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
   synchronization claim.
-- Phase: alpha released; beta contract stabilization plus SSR/hydration minimum loop implemented,
-  including server-side style collection and hydration-safe style dedupe
+- Phase: alpha released; beta contract stabilization, SSR/hydration minimum loop, and first
+  browser DevTools extension timeline panel implemented in the repository
 
 ## Completion Map
 
@@ -36,8 +36,8 @@ Current repository state:
 | SFC compiler     | Alpha public contract narrowed | `.solace` parsing, template code generation, runtime-helper style injection, `@italone/solace/sfc`, `@italone/solace/vite`, rejected plugin options, and rejected `.solace?*` query transforms are documented and covered by package-boundary tests.                                                                                                                                                             |
 | Router           | Beta first slice stabilized    | Matcher, history adapters, query helpers, components, root exports, deferred API boundaries, routes list guards, route record path guards, object location shape guards, package export coverage, packed-consumer smoke, and `router-basic` e2e coverage exist.                                                                                                                                                  |
 | SSR/hydration    | Minimum loop implemented       | `renderToString()` renders synchronous trees, rejects async/thenable SSR sources, and collects `useStyle()` output, while `generateStaticSite()` enforces explicit string route paths and `createApp(App).hydrate(container)` attaches behavior, dedupes matching style tags, reports structured hydration mismatches, cleans up failed root hydration effects, and supports explicit `{ recover: true }` deopt. |
-| DevTools subpath | Implemented as low-level API   | `@italone/solace/devtools` exposes listener and recorder APIs, not a browser extension or UI.                                                                                                                                                                                                                                                                                                                    |
-| Examples         | Implemented                    | Basic counter, todo app, large list, and performance benchmark examples exist under `examples/**`.                                                                                                                                                                                                                                                                                                               |
+| DevTools subpath | Implemented with example panel | `@italone/solace/devtools` exposes listener and recorder APIs, and `examples/devtools-extension` consumes that public subpath through a browser DevTools timeline panel without changing runtime payloads.                                                                                                                                                                                                       |
+| Examples         | Implemented                    | Basic counter, todo app, large list, performance benchmark, router, SFC, and DevTools extension examples exist under `examples/**`.                                                                                                                                                                                                                                                                              |
 | Package output   | Implemented                    | Rollup builds ESM, CJS, and type declarations; package export tests and packed-consumer smoke tests validate public entries.                                                                                                                                                                                                                                                                                     |
 | Documentation    | Mostly complete                | English and Chinese README files, API docs, package usage, release, performance, architecture, DevTools, contributing, and security docs exist.                                                                                                                                                                                                                                                                  |
 | Release gates    | Implemented                    | `release:readiness`, `quality`, `release:check`, package smoke tests, benchmarks, and e2e scripts are configured; `release:check` starts with release readiness.                                                                                                                                                                                                                                                 |
@@ -58,6 +58,7 @@ The repository includes these validation layers:
 - Chromium production browser benchmark: `pnpm benchmark:browser`
 - Benchmark history quality gate: `pnpm benchmark:history -- --min-browser-count <count> --min-jsdom-count <count>`
 - Browser e2e tests: `pnpm test:e2e`
+- DevTools extension smoke: `pnpm test:e2e:devtools-extension`
 - Full local gate: `pnpm release:check`, which includes `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e`
 
 The 2026-07-29 local release check covered the full gate, including release readiness, quality, coverage, package smoke, jsdom benchmark, Chromium production browser benchmark, and e2e. Run the commands again before any future completion, merge, or release claim.
@@ -96,7 +97,9 @@ Solace intentionally does not yet include:
   integration, automatic hydration mismatch recovery beyond explicit `{ recover: true }`, and router
   SSR/SSG/hydration integration.
 - A first-party UI component library.
-- A browser extension DevTools panel.
+- A production-grade DevTools browser extension distribution, component tree inspector, dependency
+  graph, flame chart, persisted capture workflow, telemetry workflow, or SSR/SSG/hydration-specific
+  DevTools panels.
 - A stable plugin ecosystem.
 - A long-term compatibility policy for internal modules.
 - Production adoption guidance for large applications.
@@ -122,8 +125,7 @@ These gaps should stay visible in promotional material so the project is positio
 2. **Continue stabilizing the SFC/Vite contract without syntax expansion**: keep the public surface limited to `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, and the documented alpha `.solace` block model.
 3. **Continue narrowing the router beta API without adding deferred features**: keep nested routes, guards, redirects, lazy route components, scroll behavior, memory history, SSR/hydration integration, auth, and permissions out of the beta slice until separately designed.
 4. **Keep public API gates mandatory**: `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e` must run for public API changes.
-5. **Execute the next phase** from
-   `docs/superpowers/specs/2026-07-28-ssr-ssg-hydration-next-phase-design.md`: SSR/SSG/hydration
-   design and remaining hardening first, then browser DevTools extension UI, then production
-   adoption guidance.
+5. **Harden the first DevTools extension panel without widening runtime payloads**: keep the
+   current timeline UI local to `examples/devtools-extension`, add richer inspector views only after
+   their event contracts are designed, and keep SSR/SSG/hydration-specific panels deferred.
 6. **Collect benchmark history** for jsdom and browser scenarios before making performance claims; use `--min-browser-count` and `--min-jsdom-count` when a trend window is required.

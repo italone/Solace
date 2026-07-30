@@ -1,3 +1,4 @@
+import { sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
@@ -6,6 +7,9 @@ import { solacePlugin } from "./src/vite/index";
 function resolveSolaceAlias(): Record<string, string> {
   try {
     return {
+      "@italone/solace/devtools": fileURLToPath(
+        new URL("./src/devtools/index.ts", import.meta.url),
+      ),
       "@italone/solace": fileURLToPath(new URL("./src/index.ts", import.meta.url)),
     };
   } catch {
@@ -24,7 +28,7 @@ export default defineConfig({
       "tests/e2e/**",
       "tests/integration/package-exports.test.ts",
       "node_modules/**",
-      ".worktrees/**",
+      ...(isRunningInsideProjectWorktree() ? [] : [".worktrees/**"]),
       "**/node_modules/**",
       "dist/**",
     ],
@@ -39,3 +43,7 @@ export default defineConfig({
     },
   },
 });
+
+function isRunningInsideProjectWorktree(): boolean {
+  return process.cwd().split(sep).includes(".worktrees");
+}

@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Solace DevTools",
+  "version": "0.0.1",
+  "description": "Timeline panel for Solace DevTools events.",
+  "devtools_page": "devtools.html",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-script.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "host_permissions": ["<all_urls>"],
+  "web_accessible_resources": [
+    {
+      "resources": ["bridge.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
