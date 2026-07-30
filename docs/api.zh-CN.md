@@ -43,7 +43,7 @@
 | `@italone/solace/jsx-runtime`      | 公开   | TypeScript 和 bundler 使用的 automatic JSX runtime |
 | `@italone/solace/jsx-dev-runtime`  | 公开   | Vite 和 JSX dev tooling 使用的开发环境 JSX runtime |
 | `@italone/solace/devtools`         | 公开   | 被 tooling 消费的底层 listener 和 recorder API     |
-| `@italone/solace/server`           | 公开   | 面向同步 tree 的 server rendering 和内存 SSG       |
+| `@italone/solace/server`           | 公开   | server rendering、内存 SSG 和 static asset helpers |
 | `@italone/solace/sfc`              | 公开   | `.solace` 单文件组件 import 的类型声明入口         |
 | `@italone/solace/vite`             | 公开   | alpha `.solace` 单文件组件的 Vite plugin           |
 | `src/**`、`dist/**`、deep subpaths | 私有   | 内部实现细节，不作为兼容性目标                     |
@@ -134,7 +134,12 @@ SSR 和 SSG API 从 `@italone/solace/server` 导入：
 
 ```ts
 import { h } from "@italone/solace";
-import { generateStaticSite, renderToString } from "@italone/solace/server";
+import {
+  createStaticRoutesFromRouter,
+  generateStaticSite,
+  renderToString,
+  resolveStaticAssets,
+} from "@italone/solace/server";
 
 const result = renderToString(h("p", null, "server"));
 ```
@@ -155,9 +160,9 @@ async 或 thenable render tree 也会抛出 `TypeError`，因为 async SSR 仍�
 Hydration mismatch 错误会带结构化的 `kind`、`path`、`expected` 和 `actual` 字段，便于
 区分 missing node、extra node、元素标签不一致和文本不一致。
 
-Streaming SSR、async component SSR、SSG CLI、production manifest integration、hydration
-mismatch 的自动恢复（显式 `recover` deopt 之外）和 router SSR/SSG/hydration 集成仍保持
-deferred。
+Streaming SSR、async component SSR、SSG CLI、filesystem output、route crawling、hydration
+mismatch 的自动恢复（显式 `recover` deopt 之外）、router-aware SSR 和 router-aware
+hydration 仍保持 deferred。
 
 ### `generateStaticSite(options)`
 
@@ -167,8 +172,11 @@ deferred。
 `context` 会继续传给 shell。
 shell 会收到 `styles` 和 `context` 的只读副本，因此 shell 里的 mutation 不会回写到返回的
 page 元数据。
-route entry 上的 `manifest`、`clientEntry` 或 `router` 字段会被运行时拒绝，避免 SSG 契约
-被静默扩宽。
+当 app-level `manifest` 和 `clientEntry` 成对提供时，`generateStaticSite()` 会先解析一次
+production asset tags，并在每次 shell 调用里通过 `assets` 传入。shell 负责放置
+`assets.modulePreloads`、`assets.stylesheets`、收集到的 `styles` 和 `assets.scripts`。只传
+`manifest` 或只传 `clientEntry` 会抛出 `TypeError`。route-level `manifest`、`clientEntry`
+和 `router` 字段仍会被拒绝。
 
 ```ts
 const site = generateStaticSite({
@@ -181,10 +189,26 @@ site.pages[0].html;
 ```
 
 组合完整 shell 时，把 `styles.join("")` 放入文档 `<head>`。首个 SSG core 仅为内存 API。
-filesystem output、production asset manifests、router-aware adapters 和 CLI integration
-仍不在当前公共契约内。向 `generateStaticSite()` 传入 `manifest`、`clientEntry` 或 `router`
-这类 deferred integration 字段会抛出 `TypeError`，避免使用者误以为 production manifest 或
-router-aware SSG 行为已经受支持。
+filesystem output、route crawling、app-level router 和 CLI integration 仍不在当前公共契约内。
+
+### `resolveStaticAssets(options)`
+
+`resolveStaticAssets({ manifest, entry, base })` 会把 Vite-like production manifest 和 client
+entry id 转换为完整的 HTML tag 字符串。imported chunks 会先于 entry chunk 遍历，CSS 会按首次
+出现顺序去重，imported JavaScript 文件会生成 `modulepreload` links，entry 文件会生成唯一的
+module script。`base` 默认为 `/`，并规范化为一个 trailing slash。
+
+### `createStaticRoutesFromRouter(options)`
+
+`createStaticRoutesFromRouter({ routes, paths })` 会把 beta router records 和显式 concrete
+paths 转换为 `generateStaticSite()` routes。每个生成 route 都会渲染 matched component，并获得默认
+`{ route }` context，其中包含 `{ path, fullPath, query, params, matched }`。可选
+`context(route)` 会在默认 context 后浅合并，可选 `provides(route)` 会传给该 route 的
+`renderToString()`。
+
+该 adapter 不安装 router plugin，不让 `useRoute()` 在 SSR 中生效，不渲染 nested `RouterView`
+trees，也不会 crawl 或推断 dynamic params。需要传入 `/users/42` 这类显式 path，不要把
+`/users/:id` 当作待渲染 path。
 
 ## Runtime Style 注册
 

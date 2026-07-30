@@ -125,7 +125,12 @@ The server entry is `@italone/solace/server`:
 
 ```ts
 import { h, useStyle } from "@italone/solace";
-import { generateStaticSite, renderToString } from "@italone/solace/server";
+import {
+  createStaticRoutesFromRouter,
+  generateStaticSite,
+  renderToString,
+  resolveStaticAssets,
+} from "@italone/solace/server";
 
 const App = () => {
   useStyle("server-demo", ".server-demo { color: blue; }");
@@ -149,18 +154,20 @@ fields so missing nodes, extra nodes, element tag mismatches, and text mismatche
 without guessing from a single message string.
 
 This minimum loop includes synchronous `renderToString()`, in-memory SSG through
-`generateStaticSite()`, server-side style collection, and hydration-safe style dedupe. It does not
-include streaming SSR, async component SSR, production asset manifest integration, filesystem SSG
-output, router-aware SSG adapters, or automatic hydration mismatch recovery beyond the explicit
-`recover` deopt.
+`generateStaticSite()`, server-side style collection, hydration-safe style dedupe, production asset
+tag resolution through `resolveStaticAssets()`, and an explicit-path router-to-SSG adapter through
+`createStaticRoutesFromRouter()`. It does not include streaming SSR, async component SSR, filesystem
+SSG output, route crawling, router-aware SSR, router-aware hydration, or automatic hydration
+mismatch recovery beyond the explicit `recover` deopt.
 Async or thenable SSR render trees are explicitly rejected with a `TypeError` instead of being
 rendered as an empty subtree.
 
-Passing deferred integration fields such as `manifest`, `clientEntry`, or `router` to
-`generateStaticSite()` throws a `TypeError`; route-level `manifest`, `clientEntry`, and `router`
-fields are rejected too. Compose production assets or router-aware SSG behavior in an app-local
-adapter until those contracts are separately designed. Route paths must be strings before rendering
-starts, so malformed SSG route inputs fail with a stable `TypeError`.
+Passing only one of `manifest` or `clientEntry` to `generateStaticSite()` throws a `TypeError`; pass
+both to make the shell receive resolved production asset tags. Route-level `manifest`,
+`clientEntry`, and `router` fields are rejected. App-level `router` remains unsupported; convert
+beta router records with `createStaticRoutesFromRouter()` and pass the returned explicit routes.
+Route paths must be strings before rendering starts, so malformed SSG route inputs fail with a stable
+`TypeError`.
 
 `generateStaticSite()` renders explicit route sources in memory and preserves collected
 `renderToString()` styles for custom shells. Place `styles.join("")` in `<head>` when composing a
@@ -176,6 +183,44 @@ const site = generateStaticSite({
 });
 
 site.pages[0].html;
+```
+
+```ts
+const assets = resolveStaticAssets({
+  manifest: {
+    "src/main.ts": {
+      file: "assets/main.js",
+      css: ["assets/main.css"],
+      imports: ["_vendor.js"],
+    },
+    "_vendor.js": {
+      file: "assets/vendor.js",
+    },
+  },
+  entry: "src/main.ts",
+  base: "/app/",
+});
+
+assets.modulePreloads;
+assets.stylesheets;
+assets.scripts;
+```
+
+```ts
+const UserPage = () => h("p", null, "user");
+const NotFound = () => h("p", null, "not found");
+
+const staticRoutes = createStaticRoutesFromRouter({
+  routes: [
+    { path: "/", component: App },
+    { path: "/users/:id", component: UserPage },
+    { path: "/:pathMatch(.*)*", component: NotFound },
+  ],
+  paths: ["/", "/users/42?tab=profile", "/missing"],
+  context: (route) => ({ route }),
+});
+
+generateStaticSite({ routes: staticRoutes });
 ```
 
 ## Use The Beta Router
@@ -260,7 +305,7 @@ views.
 - `@italone/solace/jsx-dev-runtime`: development JSX runtime used by Vite.
 - `@italone/solace/devtools`: low-level DevTools listener and recorder APIs consumed by the
   extension example.
-- `@italone/solace/server`: server rendering and in-memory SSG for synchronous trees.
+- `@italone/solace/server`: server rendering, in-memory SSG, and static asset helpers.
 - `@italone/solace/sfc`: TypeScript type shim for `.solace` imports.
 - `@italone/solace/vite`: Vite plugin for alpha `.solace` single-file components.
 
