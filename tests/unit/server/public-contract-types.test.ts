@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { h } from "../../../src";
 import type { App, HydrationOptions } from "../../../src";
-import type { GenerateStaticSiteOptions, RenderToStringOptions } from "../../../src/server";
+import { resolveStaticAssets } from "../../../src/server";
+import type {
+  GenerateStaticSiteOptions,
+  RenderToStringOptions,
+  StaticAssetManifest,
+  StaticAssetTags,
+} from "../../../src/server";
 
 function acceptHydrationOptions(options: HydrationOptions): HydrationOptions {
   return options;
@@ -21,12 +27,46 @@ function acceptRenderOptions(options: RenderToStringOptions): RenderToStringOpti
   return options;
 }
 
+function acceptStaticAssetManifest(manifest: StaticAssetManifest): StaticAssetManifest {
+  return manifest;
+}
+
+function acceptStaticAssetTags(tags: StaticAssetTags): StaticAssetTags {
+  return tags;
+}
+
 function acceptShell(shell: NonNullable<GenerateStaticSiteOptions["shell"]>) {
   return shell;
 }
 
+const manifest = acceptStaticAssetManifest({
+  "/src/main.ts": {
+    file: "assets/main.js",
+    css: ["assets/main.css"],
+    imports: ["_vendor.js"],
+  },
+  "_vendor.js": {
+    file: "assets/vendor.js",
+  },
+});
+
+const assetTags = acceptStaticAssetTags(
+  resolveStaticAssets({
+    manifest,
+    entry: "/src/main.ts",
+    base: "/app/",
+  }),
+);
+
 acceptSSGOptions({
   routes: [{ path: "/", source: h("p", null, "home") }],
+});
+
+acceptSSGOptions({
+  routes: [{ path: "/", source: h("p", null, "home") }],
+  manifest,
+  clientEntry: "/src/main.ts",
+  base: "/app/",
 });
 
 acceptRenderOptions({
@@ -42,12 +82,6 @@ acceptHydrationOptions({ recover: "yes" });
 // @ts-expect-error production manifest integration is not part of the hydration public contract
 acceptHydrationOptions({ manifest: {} });
 
-// @ts-expect-error production manifest integration is not part of the SSG public contract
-acceptSSGOptions({ routes: [{ path: "/", source: h("p") }], manifest: {} });
-
-// @ts-expect-error client entry inference is not part of the SSG public contract
-acceptSSGOptions({ routes: [{ path: "/", source: h("p") }], clientEntry: "/src/main.ts" });
-
 // @ts-expect-error router-aware SSG adapters are deferred
 acceptSSGOptions({ routes: [{ path: "/", source: h("p") }], router: {} });
 
@@ -60,8 +94,8 @@ acceptRenderOptions({ clientEntry: "/src/main.ts" });
 // @ts-expect-error router-aware SSR integration is deferred
 acceptRenderOptions({ router: {} });
 
-acceptShell(({ path, body, styles, context }) => {
-  return `${path}:${body}:${styles.join("")}:${String(context.title ?? "")}`;
+acceptShell(({ path, body, styles, context, assets }) => {
+  return `${path}:${body}:${styles.join("")}:${assets.modulePreloads.join("")}:${assets.stylesheets.join("")}:${assets.scripts.join("")}:${String(context.title ?? "")}`;
 });
 
 acceptShell(({ styles }) => {
@@ -77,8 +111,15 @@ acceptShell(({ context }) => {
 });
 
 describe("server public contract types", () => {
-  it("keeps manifest and router integration out of the public SSR/SSG options", () => {
+  it("keeps manifest assets in SSG and deferred integration out of SSR", () => {
     expect(acceptAppHydrate).toEqual(expect.any(Function));
+    expect(assetTags).toEqual(
+      expect.objectContaining({
+        modulePreloads: expect.any(Array),
+        stylesheets: expect.any(Array),
+        scripts: expect.any(Array),
+      }),
+    );
     expect(true).toBe(true);
   });
 });

@@ -1,6 +1,11 @@
 import type { Provides } from "../component/provide";
 import type { RenderToStringSource } from "./render-to-string";
 import { renderToString } from "./render-to-string";
+import {
+  resolveStaticAssets,
+  type StaticAssetManifest,
+  type StaticAssetTags,
+} from "./static-assets";
 
 export interface StaticRoute {
   path: string;
@@ -20,12 +25,16 @@ export interface StaticShellPage {
   path: string;
   body: string;
   styles: readonly string[];
+  assets: StaticAssetTags;
   context: Readonly<Record<string, unknown>>;
 }
 
 export interface GenerateStaticSiteOptions {
   routes: StaticRoute[];
   shell?: (page: StaticShellPage) => string;
+  manifest?: StaticAssetManifest;
+  clientEntry?: string;
+  base?: string;
 }
 
 export interface GenerateStaticSiteResult {
@@ -36,6 +45,7 @@ export function generateStaticSite(options: GenerateStaticSiteOptions): Generate
   assertNoDeferredIntegrationOptions(options);
   assertValidRoutes(options.routes);
 
+  const assets = resolveStaticSiteAssets(options);
   const seenPaths = new Set<string>();
   const pages = options.routes.map((route) => {
     assertNoDeferredRouteIntegrationOptions(route);
@@ -66,6 +76,7 @@ export function generateStaticSite(options: GenerateStaticSiteOptions): Generate
           path: route.path,
           body,
           styles: [...styles],
+          assets: cloneStaticAssetTags(assets),
           context: { ...context },
         })
       : body;
@@ -88,10 +99,8 @@ function assertValidRoutes(routes: StaticRoute[]): void {
 }
 
 function assertNoDeferredIntegrationOptions(options: GenerateStaticSiteOptions): void {
-  if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
-    throw new TypeError(
-      "SSG manifest integration is deferred; compose assets in an app-local shell or adapter.",
-    );
+  if ((options.manifest === undefined) !== (options.clientEntry === undefined)) {
+    throw new TypeError("SSG manifest integration requires both manifest and clientEntry.");
   }
 
   if (hasOwn(options, "router")) {
@@ -99,6 +108,30 @@ function assertNoDeferredIntegrationOptions(options: GenerateStaticSiteOptions):
       "Router-aware SSG integration is deferred; pass explicit route sources instead.",
     );
   }
+}
+
+function resolveStaticSiteAssets(options: GenerateStaticSiteOptions): StaticAssetTags {
+  if (options.manifest === undefined || options.clientEntry === undefined) {
+    return createEmptyStaticAssetTags();
+  }
+
+  return resolveStaticAssets({
+    manifest: options.manifest,
+    entry: options.clientEntry,
+    base: options.base,
+  });
+}
+
+function createEmptyStaticAssetTags(): StaticAssetTags {
+  return { modulePreloads: [], stylesheets: [], scripts: [] };
+}
+
+function cloneStaticAssetTags(assets: StaticAssetTags): StaticAssetTags {
+  return {
+    modulePreloads: [...assets.modulePreloads],
+    stylesheets: [...assets.stylesheets],
+    scripts: [...assets.scripts],
+  };
 }
 
 function hasOwn(value: object, key: string): boolean {
