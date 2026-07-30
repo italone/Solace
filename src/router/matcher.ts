@@ -29,10 +29,10 @@ export function createMatcher(routes: RouteRecord[]): Matcher {
           params[route.keys[index]] = decodeURIComponent(match[index + 1] ?? "");
         }
 
-        return { path: normalized, params, matched: route.record };
+        return { path: normalized, params, matched: [route.record] };
       }
 
-      return { path: normalized, params: {}, matched: null };
+      return { path: normalized, params: {}, matched: [] };
     },
   };
 }

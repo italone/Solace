@@ -73,7 +73,7 @@ describe("router components", () => {
 
     container.querySelector<HTMLAnchorElement>("#user-link")?.click();
     expect(router.currentRoute.value.fullPath).toBe("/users/42?tab=profile");
-    expect(router.currentRoute.value.matched?.component).toBe(User);
+    expect(router.currentRoute.value.matched[0]?.component).toBe(User);
     await nextTick();
 
     expect(container.querySelector("#user")?.textContent).toBe("user:42:profile");
@@ -87,6 +87,21 @@ describe("router components", () => {
       .use(router)
       .mount(container);
 
+    expect(container.innerHTML).toBe("");
+  });
+
+  it("renders an empty fragment for a null matched component", () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory("/null"),
+      routes: [{ path: "/null", component: null }] as never,
+    });
+    const container = document.createElement("div");
+
+    expect(() =>
+      createApp(() => h(RouterView))
+        .use(router)
+        .mount(container),
+    ).not.toThrow();
     expect(container.innerHTML).toBe("");
   });
 

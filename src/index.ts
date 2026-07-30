@@ -20,6 +20,7 @@ export {
   createRouter,
   createWebHashHistory,
   createWebHistory,
+  lazyRoute,
   useRoute,
   useRouter,
 } from "./router";
@@ -40,6 +41,10 @@ export type {
   StoreOptions,
 } from "./store/store";
 export type {
+  LazyRouteComponent,
+  NavigationGuard,
+  NavigationGuardResult,
+  RouteComponent,
   RouteLocationNormalized,
   RouteLocationRaw,
   RouteRecord,

@@ -2,7 +2,7 @@ import type { ComponentRender, VNodeProps } from "../vnode/vnode";
 import { Fragment } from "../vnode/vnode";
 import { h } from "../vnode/h";
 import { useRoute, useRouter } from "./router";
-import type { RouteLocationRaw } from "./types";
+import type { LazyRouteComponent, RouteComponent, RouteLocationRaw } from "./types";
 
 export interface RouterLinkProps extends VNodeProps {
   to: RouteLocationRaw;
@@ -50,9 +50,22 @@ export function RouterView(): ComponentRender {
   const route = useRoute();
 
   return () => {
-    const component = route.value.matched?.component;
-    return component === undefined || component === null ? h(Fragment, null, []) : h(component);
+    const component = route.value.matched[0]?.component;
+    return component == null || isLazyRouteComponent(component)
+      ? h(Fragment, null, [])
+      : h(component);
   };
+}
+
+function isLazyRouteComponent(
+  component: RouteComponent | null | undefined | unknown,
+): component is LazyRouteComponent {
+  return (
+    typeof component === "object" &&
+    component !== null &&
+    "__solaceLazyRouteComponent" in component &&
+    component.__solaceLazyRouteComponent === true
+  );
 }
 
 function shouldIgnoreClick(event: MouseEvent): boolean {

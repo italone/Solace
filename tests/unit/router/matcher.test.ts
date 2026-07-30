@@ -21,7 +21,7 @@ describe("router matcher", () => {
     const matcher = createMatcher(routes);
     const match = matcher.resolve("/users/settings");
 
-    expect(match.matched?.path).toBe("/users/settings");
+    expect(match.matched[0]?.path).toBe("/users/settings");
     expect(match.params).toEqual({});
   });
 
@@ -29,7 +29,7 @@ describe("router matcher", () => {
     const matcher = createMatcher(routes);
     const match = matcher.resolve("/users/42");
 
-    expect(match.matched?.path).toBe("/users/:id");
+    expect(match.matched[0]?.path).toBe("/users/:id");
     expect(match.params).toEqual({ id: "42" });
   });
 
@@ -43,7 +43,7 @@ describe("router matcher", () => {
     const matcher = createMatcher(routes);
     const match = matcher.resolve("/missing/path");
 
-    expect(match.matched?.path).toBe("/:pathMatch(.*)*");
+    expect(match.matched[0]?.path).toBe("/:pathMatch(.*)*");
     expect(match.params).toEqual({ pathMatch: "missing/path" });
   });
 

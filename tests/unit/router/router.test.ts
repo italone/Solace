@@ -49,6 +49,7 @@ describe("createRouter", () => {
       "createRouter",
       "createWebHashHistory",
       "createWebHistory",
+      "lazyRoute",
       "useRoute",
       "useRouter",
     ]);
@@ -58,6 +59,7 @@ describe("createRouter", () => {
       createRouter: expect.any(Function),
       createWebHashHistory: expect.any(Function),
       createWebHistory: expect.any(Function),
+      lazyRoute: expect.any(Function),
       useRoute: expect.any(Function),
       useRouter: expect.any(Function),
     });
@@ -74,13 +76,27 @@ describe("createRouter", () => {
     expect(rootModule).not.toHaveProperty("createSSRRouter");
   });
 
-  it("rejects deferred route record fields instead of silently enabling them", () => {
+  it("accepts widened beta route record fields and rejects still-deferred fields", () => {
+    expect(() =>
+      createRouter({
+        history: createMemoryLikeHistory(),
+        routes: [
+          {
+            path: "/nested",
+            component: Home,
+            children: [{ path: "child", component: User }],
+            beforeEnter: () => true,
+            redirect: "/",
+            meta: { requiresAuth: true },
+          },
+        ],
+      }),
+    ).not.toThrow();
+
     const deferredRecords = [
-      { path: "/nested", component: Home, children: [{ path: "child", component: User }] },
-      { path: "/guarded", component: Home, beforeEnter: () => true },
-      { path: "/redirect", component: Home, redirect: "/" },
-      { path: "/meta", component: Home, meta: { requiresAuth: true } },
       { path: "/named", component: Home, name: "home" },
+      { path: "/alias", component: Home, alias: "/a" },
+      { path: "/props", component: Home, props: true },
     ];
 
     for (const route of deferredRecords) {
@@ -216,7 +232,7 @@ describe("createRouter", () => {
     history.push("/missing");
     history.emit();
 
-    expect(router.currentRoute.value.matched).toBeNull();
+    expect(router.currentRoute.value.matched).toEqual([]);
   });
 
   it("replaces the previous history listener on repeated install", () => {

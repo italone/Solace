@@ -29,15 +29,20 @@ export function createRouter(options: RouterOptions): Router {
       const resolved = resolveLocation(to);
       options.history.push(resolved.fullPath);
       currentRoute.value = resolved;
+      return Promise.resolve(resolved);
     },
     replace(to: RouteLocationRaw) {
       const resolved = resolveLocation(to);
       options.history.replace(resolved.fullPath);
       currentRoute.value = resolved;
+      return Promise.resolve(resolved);
     },
     back: () => options.history.back(),
     forward: () => options.history.forward(),
     resolve: resolveLocation,
+    beforeEach() {
+      return () => undefined;
+    },
   };
 
   return router;
@@ -99,7 +104,14 @@ function assertRouterOptionsContract(options: RouterOptions): void {
 
   for (const route of options.routes) {
     for (const key of Object.keys(route)) {
-      if (key !== "path" && key !== "component") {
+      if (
+        key !== "path" &&
+        key !== "component" &&
+        key !== "children" &&
+        key !== "redirect" &&
+        key !== "beforeEnter" &&
+        key !== "meta"
+      ) {
         throw new TypeError(
           `Deferred router route record field is not part of the beta contract: ${key}`,
         );
