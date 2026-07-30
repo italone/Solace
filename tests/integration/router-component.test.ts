@@ -6,6 +6,7 @@ import {
   createApp,
   createRouter,
   h,
+  lazyRoute,
   nextTick,
   useRoute,
 } from "../../src/index";
@@ -45,6 +46,13 @@ function createMemoryLikeHistory(initial = "/"): RouterHistory & {
 
 async function settleRouterLinkNavigation(): Promise<void> {
   await Promise.resolve();
+  await Promise.resolve();
+  await nextTick();
+}
+
+async function settleLazyRouteComponent(): Promise<void> {
+  await Promise.resolve();
+  await nextTick();
   await Promise.resolve();
   await nextTick();
 }
@@ -178,6 +186,87 @@ describe("router components", () => {
         .mount(container),
     ).not.toThrow();
     expect(container.innerHTML).toBe("");
+  });
+
+  it("renders lazy route components after they resolve", async () => {
+    let resolveLoader!: (component: () => ReturnType<typeof h>) => void;
+    const LazyUser = lazyRoute(
+      () =>
+        new Promise<() => ReturnType<typeof h>>((resolve) => {
+          resolveLoader = resolve;
+        }),
+    );
+    const router = createRouter({
+      history: createMemoryLikeHistory("/lazy"),
+      routes: [{ path: "/lazy", component: LazyUser }],
+    });
+    const container = document.createElement("div");
+
+    createApp(() => h(RouterView))
+      .use(router)
+      .mount(container);
+
+    expect(container.innerHTML).toBe("");
+
+    resolveLoader(() => h("p", { id: "lazy-user" }, "lazy-user"));
+    await settleLazyRouteComponent();
+
+    expect(container.querySelector("#lazy-user")?.textContent).toBe("lazy-user");
+  });
+
+  it("renders lazy default exports after they resolve", async () => {
+    const LazyUser = lazyRoute(() =>
+      Promise.resolve({ default: () => h("p", { id: "lazy-default" }, "lazy-default") }),
+    );
+    const router = createRouter({
+      history: createMemoryLikeHistory("/lazy-default"),
+      routes: [{ path: "/lazy-default", component: LazyUser }],
+    });
+    const container = document.createElement("div");
+
+    createApp(() => h(RouterView))
+      .use(router)
+      .mount(container);
+    await settleLazyRouteComponent();
+
+    expect(container.querySelector("#lazy-default")?.textContent).toBe("lazy-default");
+  });
+
+  it("renders nested lazy route components after navigation", async () => {
+    const DashboardLayout = () => () => h("section", { id: "layout" }, h(RouterView));
+    const Settings = () => h("p", { id: "settings" }, "settings");
+    let loadCalls = 0;
+    const LazyReport = lazyRoute(() => {
+      loadCalls += 1;
+      return Promise.resolve(() => h("p", { id: "lazy-report" }, "lazy-report"));
+    });
+    const router = createRouter({
+      history: createMemoryLikeHistory("/dashboard/settings"),
+      routes: [
+        {
+          path: "/dashboard",
+          component: DashboardLayout,
+          children: [
+            { path: "settings", component: Settings },
+            { path: "report", component: LazyReport },
+          ],
+        },
+      ],
+    });
+    const container = document.createElement("div");
+
+    createApp(() => h(RouterView))
+      .use(router)
+      .mount(container);
+    await nextTick();
+    expect(container.querySelector("#settings")?.textContent).toBe("settings");
+
+    await router.push("/dashboard/report");
+    await nextTick();
+    expect(loadCalls).toBe(1);
+    await settleLazyRouteComponent();
+
+    expect(container.querySelector("#lazy-report")?.textContent).toBe("lazy-report");
   });
 
   it("does not navigate RouterLink clicks that the browser should handle", () => {
