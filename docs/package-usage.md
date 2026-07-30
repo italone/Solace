@@ -109,15 +109,14 @@ The public SFC contract is intentionally narrow: use `@italone/solace/vite` as t
 `@italone/solace/sfc` as the TypeScript type shim for `.solace` imports. The compiler remains an
 alpha surface. It supports a small syntax subset, reports compile diagnostics through Vite transform
 errors, routes scoped styles through the public `useStyle()` runtime helper, and currently returns
-`map: null` to match the package policy of not publishing production source maps. Parser internals,
-generated module shape, and scoped-style implementation details are not public compatibility
-targets. The plugin does not accept public options yet; passing options throws a `TypeError`. SFC
-query transforms such as `.solace?raw` are rejected until sub-request semantics are designed. SFC
-block attributes and custom top-level blocks also throw so the syntax remains the documented
-one-template, optional-script, optional-style model. The `@italone/solace/vite` subpath
-intentionally exports only `default` and `solacePlugin`; do not import compiler helpers or deep
-subpaths such as `@italone/solace/compiler`, `@italone/solace/router`, or
-`@italone/solace/dist/**`.
+`map: null` because source maps are not part of the alpha contract. Parser internals, generated
+module shape, and scoped-style implementation details are not public compatibility targets. The
+plugin does not accept public options yet; passing options throws a `TypeError`. SFC query
+transforms such as `.solace?raw` are rejected until sub-request semantics are designed. SFC block
+attributes and custom top-level blocks also throw so the syntax remains the documented one-template,
+optional-script, optional-style model. The `@italone/solace/vite` subpath intentionally exports only
+`default` and `solacePlugin`; do not import compiler helpers or deep subpaths such as
+`@italone/solace/compiler`, `@italone/solace/router`, or `@italone/solace/dist/**`.
 
 ## Use Server Rendering And SSG
 

@@ -62,9 +62,11 @@ modules remain alpha implementation details. Scoped styles are registered throug
 `useStyle()` runtime helper, but generated module shape and compiler internals are not compatibility
 targets. The Vite plugin does not accept public options yet; passing options throws a `TypeError` so
 syntax expansion is not implied. SFC block attributes and custom top-level blocks are rejected; the
-documented block model remains one `<template>`, optional `<script>`, and optional `<style>`. Do not
-import compiler or router deep subpaths such as `@italone/solace/compiler`, `@italone/solace/router`,
-or `@italone/solace/dist/**`.
+documented block model remains one `<template>`, optional `<script>`, and optional `<style>`. Vite
+transform failures are the public diagnostics surface for invalid `.solace` files, and the current
+transform policy intentionally returns `map: null` instead of publishing source maps. Do not import
+compiler or router deep subpaths such as `@italone/solace/compiler`, `@italone/solace/router`, or
+`@italone/solace/dist/**`.
 
 The router exports in the package root are beta APIs for small SPA examples. Nested route records,
 redirects, global `beforeEach` guards, route-level `beforeEnter` guards, route `meta`, and explicit
