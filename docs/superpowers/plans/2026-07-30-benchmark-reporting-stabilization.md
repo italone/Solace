@@ -98,7 +98,7 @@ new helper covers every shape.
 Run:
 
 ```bash
-pnpm test:e2e -- browser-benchmark
+pnpm exec playwright test --config playwright.benchmark.config.ts
 ```
 
 Expected: FAIL for keyed reorder shapes because `middleRowText` and `lastRowText` are `undefined` in
@@ -196,7 +196,7 @@ Then replace `firstRowText,` in the result object with:
 Run:
 
 ```bash
-pnpm test:e2e -- browser-benchmark
+pnpm exec playwright test --config playwright.benchmark.config.ts
 ```
 
 Expected: PASS for the browser benchmark scenario suite.
@@ -477,7 +477,7 @@ Expected: PASS for all selected unit tests.
 Run:
 
 ```bash
-pnpm test:e2e -- browser-benchmark
+pnpm exec playwright test --config playwright.benchmark.config.ts
 ```
 
 Expected: PASS for the browser benchmark e2e suite.
