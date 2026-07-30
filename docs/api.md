@@ -45,7 +45,7 @@ Use Solace through the documented package entries only:
 | `@italone/solace`                  | Public    | App, reactivity, rendering, components, scheduler, store    |
 | `@italone/solace/jsx-runtime`      | Public    | Automatic JSX runtime used by TypeScript and bundlers       |
 | `@italone/solace/jsx-dev-runtime`  | Public    | Development JSX runtime used by Vite and JSX dev tooling    |
-| `@italone/solace/devtools`         | Public    | Low-level listener and recorder APIs for tooling            |
+| `@italone/solace/devtools`         | Public    | Low-level listener and recorder APIs consumed by tooling    |
 | `@italone/solace/server`           | Public    | Server rendering and in-memory SSG for synchronous trees    |
 | `@italone/solace/sfc`              | Public    | Type shim entry for `.solace` single-file component imports |
 | `@italone/solace/vite`             | Public    | Vite plugin for alpha `.solace` single-file components      |
@@ -72,7 +72,8 @@ router options throws a `TypeError` instead of silently widening the beta contra
 
 Most applications should import from the root package. Use `@italone/solace/server` only from
 server-side code. Use JSX subpaths only through `jsxImportSource` or bundler-generated imports. Use
-the DevTools subpath only when building instrumentation or examples that need event snapshots.
+the DevTools subpath only when building instrumentation, examples that need event snapshots, or the
+browser DevTools extension example under `examples/devtools-extension`.
 
 ## App
 

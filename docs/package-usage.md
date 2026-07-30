@@ -220,12 +220,44 @@ Object route locations only support `{ path, query }`; named locations, hash, an
 rejected. Dynamic params are limited to simple `:name` segments and `/:pathMatch(.*)*` wildcard
 fallback.
 
+## Use The DevTools Extension Example
+
+The public DevTools package entry remains the low-level listener and recorder surface:
+
+```ts
+import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtools";
+import type { DevtoolsEvent } from "@italone/solace/devtools";
+```
+
+The repository also includes `examples/devtools-extension`, a browser DevTools extension example
+that consumes the same public event contract. It opens a Solace panel, activates capture only for
+the inspected tab, relays serialized events, and renders a local timeline with family filters,
+pause/resume, clear, details, and a bounded capture limit.
+
+Run the extension panel during development:
+
+```bash
+pnpm dev:devtools-extension
+```
+
+Build and smoke-test it:
+
+```bash
+pnpm build:devtools-extension
+pnpm test:e2e:devtools-extension
+```
+
+The example panel is not a stable browser-store distribution contract. It does not persist captures,
+send events over the network, inspect private runtime objects, or include SSR/SSG/hydration-specific
+views.
+
 ## Public Entry Points
 
 - `@italone/solace`: core runtime APIs.
 - `@italone/solace/jsx-runtime`: TypeScript automatic JSX runtime.
 - `@italone/solace/jsx-dev-runtime`: development JSX runtime used by Vite.
-- `@italone/solace/devtools`: low-level DevTools listener and recorder APIs.
+- `@italone/solace/devtools`: low-level DevTools listener and recorder APIs consumed by the
+  extension example.
 - `@italone/solace/server`: server rendering and in-memory SSG for synchronous trees.
 - `@italone/solace/sfc`: TypeScript type shim for `.solace` imports.
 - `@italone/solace/vite`: Vite plugin for alpha `.solace` single-file components.

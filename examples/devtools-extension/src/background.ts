@@ -2,11 +2,15 @@ import type { DevtoolsExtensionEventMessage } from "./bridge";
 
 export const DEVTOOLS_PANEL_PORT = "solace-devtools-panel";
 export const DEVTOOLS_CONTENT_PORT = "solace-devtools-content";
+const DEVTOOLS_CONTENT_CONNECT_TYPE = "devtools:content:connect";
+const DEVTOOLS_CONTENT_DISCONNECT_TYPE = "devtools:content:disconnect";
 
 export type DevtoolsBackgroundMessage =
   | DevtoolsExtensionEventMessage
   | { type: "devtools:panel:connect"; tabId: number }
-  | { type: "devtools:control"; paused: boolean };
+  | { type: "devtools:control"; paused: boolean }
+  | { type: typeof DEVTOOLS_CONTENT_CONNECT_TYPE }
+  | { type: typeof DEVTOOLS_CONTENT_DISCONNECT_TYPE };
 
 export interface RuntimePort {
   name: string;
@@ -40,10 +44,14 @@ export function createDevtoolsBackgroundRelay(runtime: BackgroundRuntime): Devto
 
   const handleConnect = (port: RuntimePort) => {
     if (port.name === DEVTOOLS_CONTENT_PORT) {
-      registerPort(contentsByTab, getSenderTabId(port), port);
+      const tabId = getSenderTabId(port);
+      registerPort(contentsByTab, tabId, port);
+      if (panelsByTab.has(tabId)) {
+        port.postMessage({ type: DEVTOOLS_CONTENT_CONNECT_TYPE });
+      }
       port.onMessage.addListener((message) => {
         if (message.type === "devtools:event") {
-          forwardToPorts(panelsByTab.get(getSenderTabId(port)), message);
+          forwardToPorts(panelsByTab.get(tabId), message);
         }
       });
       return;
@@ -55,7 +63,10 @@ export function createDevtoolsBackgroundRelay(runtime: BackgroundRuntime): Devto
 
     port.onMessage.addListener((message) => {
       if (message.type === "devtools:panel:connect") {
-        registerPort(panelsByTab, message.tabId, port);
+        registerPort(panelsByTab, message.tabId, port, (tabId) => {
+          forwardToPorts(contentsByTab.get(tabId), { type: DEVTOOLS_CONTENT_DISCONNECT_TYPE });
+        });
+        forwardToPorts(contentsByTab.get(message.tabId), { type: DEVTOOLS_CONTENT_CONNECT_TYPE });
         return;
       }
 
@@ -83,6 +94,7 @@ function registerPort(
   portsByTab: Map<number, Set<RuntimePort>>,
   tabId: number,
   port: RuntimePort,
+  onEmpty?: (tabId: number) => void,
 ): void {
   const ports = portsByTab.get(tabId) ?? new Set<RuntimePort>();
   ports.add(port);
@@ -91,6 +103,7 @@ function registerPort(
     ports.delete(port);
     if (ports.size === 0) {
       portsByTab.delete(tabId);
+      onEmpty?.(tabId);
     }
   });
 }

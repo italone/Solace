@@ -26,14 +26,16 @@ Planned work, in rough priority order:
    `docs/superpowers/specs/2026-07-28-ssr-ssg-hydration-next-phase-design.md`; harden hydration
    mismatch diagnostics, document SSG shell/style placement, and keep manifest and router-aware
    adapters deferred until separately designed.
-7. **Browser DevTools extension UI** — build a panel on top of the existing
-   `@italone/solace/devtools` API after SSR/SSG/hydration boundaries are stable.
+7. **Browser DevTools extension UI** — first example panel implemented under
+   `examples/devtools-extension`; continue hardening extension packaging, browser-extension manual
+   QA, richer event contracts, and future inspectors without reading private runtime state.
 8. **Production adoption guidance** — large-app patterns, performance tuning, migration notes.
 
 ## Out of Scope (for now)
 
 - First-party UI component library.
 - Stable plugin ecosystem.
+- Production-grade DevTools extension distribution and advanced inspectors.
 - Long-term compatibility policy for internal modules.
 
 ## How to Propose Changes

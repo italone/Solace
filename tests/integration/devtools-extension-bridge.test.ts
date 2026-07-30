@@ -3,6 +3,15 @@ import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { DevtoolsEvent, DevtoolsEventListener } from "@italone/solace/devtools";
+import type {
+  DevtoolsContentMessage,
+  RuntimePort as ContentRuntimePort,
+} from "../../examples/devtools-extension/src/content-script";
+import type {
+  BackgroundRuntime,
+  DevtoolsBackgroundMessage,
+  RuntimePort as BackgroundRuntimePort,
+} from "../../examples/devtools-extension/src/background";
 
 type Unsubscribe = () => void;
 
@@ -140,4 +149,128 @@ describe("devtools extension bridge", () => {
       { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter" } },
     ]);
   });
+
+  it("waits for a tab-scoped panel activation before injecting the page bridge", async () => {
+    const { createContentScriptRelay } =
+      await import("../../examples/devtools-extension/src/content-script");
+    const messages: unknown[] = [];
+    const portListeners = new Set<(message: DevtoolsContentMessage) => void>();
+    const windowListeners = new Set<EventListenerOrEventListenerObject>();
+    const injectBridge = vi.fn();
+    const port = {
+      disconnect: vi.fn(),
+      onMessage: {
+        addListener(listener: (message: DevtoolsContentMessage) => void) {
+          portListeners.add(listener);
+        },
+        removeListener(listener: (message: DevtoolsContentMessage) => void) {
+          portListeners.delete(listener);
+        },
+      },
+      postMessage(message: unknown) {
+        messages.push(message);
+      },
+    } satisfies ContentRuntimePort;
+
+    const stop = createContentScriptRelay({
+      addWindowListener(_type: string, listener: EventListenerOrEventListenerObject) {
+        windowListeners.add(listener);
+      },
+      connectRuntime: () => port,
+      injectBridge,
+      removeWindowListener(_type: string, listener: EventListenerOrEventListenerObject) {
+        windowListeners.delete(listener);
+      },
+    });
+
+    expect(injectBridge).not.toHaveBeenCalled();
+    expect(windowListeners.size).toBe(0);
+
+    for (const listener of portListeners) {
+      listener({ type: "devtools:content:connect" });
+    }
+
+    expect(injectBridge).toHaveBeenCalledTimes(1);
+    expect(windowListeners.size).toBe(1);
+
+    stop();
+  });
+
+  it("activates content scripts only after a panel connects for the same tab", async () => {
+    const { createDevtoolsBackgroundRelay } =
+      await import("../../examples/devtools-extension/src/background");
+    const runtimeListeners = new Set<(port: BackgroundRuntimePort) => void>();
+    const runtime = {
+      onConnect: {
+        addListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.add(listener);
+        },
+        removeListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.delete(listener);
+        },
+      },
+    } satisfies BackgroundRuntime;
+    const contentPort = createRuntimePort("solace-devtools-content", 7);
+    const otherContentPort = createRuntimePort("solace-devtools-content", 8);
+    const panelPort = createRuntimePort("solace-devtools-panel");
+
+    createDevtoolsBackgroundRelay(runtime);
+    for (const listener of runtimeListeners) {
+      listener(contentPort);
+      listener(otherContentPort);
+      listener(panelPort);
+    }
+
+    expect(contentPort.messages).toEqual([]);
+    expect(otherContentPort.messages).toEqual([]);
+
+    panelPort.emit({ type: "devtools:panel:connect", tabId: 7 });
+
+    expect(contentPort.messages).toEqual([{ type: "devtools:content:connect" }]);
+    expect(otherContentPort.messages).toEqual([]);
+  });
 });
+
+function createRuntimePort(name: string, tabId?: number) {
+  const messageListeners = new Set<(message: DevtoolsBackgroundMessage) => void>();
+  const disconnectListeners = new Set<(port: BackgroundRuntimePort) => void>();
+  const port = {
+    name,
+    sender: tabId === undefined ? undefined : { tab: { id: tabId } },
+    messages: [] as DevtoolsBackgroundMessage[],
+    onDisconnect: {
+      addListener(listener: (port: BackgroundRuntimePort) => void) {
+        disconnectListeners.add(listener);
+      },
+      removeListener(listener: (port: BackgroundRuntimePort) => void) {
+        disconnectListeners.delete(listener);
+      },
+    },
+    onMessage: {
+      addListener(listener: (message: DevtoolsBackgroundMessage) => void) {
+        messageListeners.add(listener);
+      },
+      removeListener(listener: (message: DevtoolsBackgroundMessage) => void) {
+        messageListeners.delete(listener);
+      },
+    },
+    disconnect() {
+      for (const listener of disconnectListeners) {
+        listener(port);
+      }
+    },
+    emit(message: DevtoolsBackgroundMessage) {
+      for (const listener of messageListeners) {
+        listener(message);
+      }
+    },
+    postMessage(message: DevtoolsBackgroundMessage) {
+      port.messages.push(message);
+    },
+  } satisfies BackgroundRuntimePort & {
+    emit(message: DevtoolsBackgroundMessage): void;
+    messages: DevtoolsBackgroundMessage[];
+  };
+
+  return port;
+}

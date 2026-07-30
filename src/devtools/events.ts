@@ -35,6 +35,15 @@ export interface DevtoolsRecorder {
 }
 
 const listeners = new Set<DevtoolsEventListener>();
+const GLOBAL_DEVTOOLS_HOOK_KEY = "__SOLACE_DEVTOOLS_GLOBAL_HOOK__";
+
+interface GlobalDevtoolsHook {
+  onDevtoolsEvent(listener: DevtoolsEventListener): () => void;
+}
+
+type GlobalDevtoolsTarget = typeof globalThis & {
+  [GLOBAL_DEVTOOLS_HOOK_KEY]?: GlobalDevtoolsHook;
+};
 
 export function onDevtoolsEvent(listener: DevtoolsEventListener): () => void {
   listeners.add(listener);
@@ -43,6 +52,8 @@ export function onDevtoolsEvent(listener: DevtoolsEventListener): () => void {
     listeners.delete(listener);
   };
 }
+
+installGlobalDevtoolsHook();
 
 export function emitDevtoolsEvent(event: DevtoolsEvent): void {
   for (const listener of listeners) {
@@ -138,4 +149,11 @@ export function serializeDevtoolsEvent(event: DevtoolsEvent): DevtoolsEvent {
         durationMs: event.durationMs,
       };
   }
+}
+
+function installGlobalDevtoolsHook(): void {
+  const target = globalThis as GlobalDevtoolsTarget;
+  target[GLOBAL_DEVTOOLS_HOOK_KEY] ??= {
+    onDevtoolsEvent,
+  };
 }

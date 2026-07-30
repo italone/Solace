@@ -12,7 +12,8 @@ lifecycle, private runtime boundary, and safe constraints for future instrumenta
 
 ## Non-Goals
 
-- No browser extension, custom panel, network transport, storage persistence, or automatic telemetry in the current phase.
+- No network transport, storage persistence, automatic telemetry, hidden runtime inspection, or
+  production distribution workflow in the current phase.
 - No SSR/SSG/hydration visualization until those runtime boundaries and event payloads are designed
   separately.
 
@@ -106,6 +107,43 @@ persist data, send data over the network, write to storage, or install third-par
 Production package builds do not publish JavaScript sourcemaps. This keeps internal DevTools wiring visible in source
 control but out of package artifacts, so consumers do not accidentally couple to private helper names or module layout.
 
+## Browser Extension Panel
+
+The repository now includes a first browser DevTools extension example under
+`examples/devtools-extension`. It opens a Solace panel, captures DevTools events for the inspected
+tab through the public `@italone/solace/devtools` listener, and renders a local timeline view.
+The runtime installs a non-exported page-local DevTools hook for browser extensions so the injected
+bridge can subscribe to the inspected page event bus as a classic script without importing private
+modules or bundling a second event bus.
+
+The initial panel scope is intentionally narrow:
+
+- Timeline rows for component, scheduler, reactivity, renderer, and store event families.
+- Family filters, pause/resume, clear, selected-event details, and a bounded capture limit.
+- A detail pane that displays the serialized `DevtoolsEvent` payload exactly as received.
+- Extension wiring through a DevTools page, content script, page bridge, background relay, and panel
+  transport.
+- Tab-scoped activation: content scripts open a runtime port, but the page bridge is injected only
+  after a Solace panel connects for that browser tab.
+
+The extension does not change runtime payloads. It does not inspect component instances, DOM nodes,
+VNodes, props, store state, reactive targets, user content, stack traces, action arguments, or action
+results. It does not persist captured events, send them over the network, install analytics, or model
+SSR/SSG/hydration state.
+
+Run the example locally with:
+
+```bash
+pnpm dev:devtools-extension
+```
+
+Validate the extension build and browser smoke with:
+
+```bash
+pnpm build:devtools-extension
+pnpm test:e2e:devtools-extension
+```
+
 ## Privacy And Safety
 
 - Do not emit full props, state, DOM nodes, or reactive targets by default.
@@ -138,13 +176,13 @@ control but out of package artifacts, so consumers do not accidentally couple to
 14. **Public package boundary guard**: package exports tests verify DevTools internals are not available from the package root.
 15. **Public DevTools subpath**: `@italone/solace/devtools` exposes listener and recorder APIs without internal emit helpers.
 16. **Production artifact boundary**: package builds do not publish JavaScript sourcemaps that expose internal wiring.
-17. **Inspector UI or browser extension**: build only after event payloads prove stable in examples
-    and SSR/SSG/hydration boundaries are stable enough for the UI to avoid guessing about server
-    render or hydration state.
+17. **Browser extension timeline panel**: `examples/devtools-extension` builds a local DevTools
+    panel that consumes only the public DevTools subpath and renders the existing serialized event
+    summaries.
 
 ## Recommendation
 
-Do not implement a DevTools UI yet. The public `@italone/solace/devtools` subpath is a low-level integration surface for examples,
-tests, and future inspector tooling. Build a browser extension or custom panel only after more payloads prove stable in
-real examples and after the SSR/SSG/hydration boundary work described in
-`docs/superpowers/specs/2026-07-28-ssr-ssg-hydration-next-phase-design.md`.
+Use the browser extension panel as an example-grade inspector for the current public DevTools event
+contract. Keep future UI expansion tied to explicit runtime event designs: component trees,
+dependency graphs, flame charts, persisted captures, telemetry, and SSR/SSG/hydration panels should
+not be added by inferring private runtime state.
