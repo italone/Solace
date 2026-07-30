@@ -5,6 +5,7 @@ export {
   type StaticPage,
   type StaticRoute,
 } from "./generate-static-site";
+export { createStaticRoutesFromRouter, type StaticRouterOptions } from "./static-router";
 export {
   resolveStaticAssets,
   type ResolveStaticAssetOptions,

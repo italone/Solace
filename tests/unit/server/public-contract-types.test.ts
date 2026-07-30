@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { h } from "../../../src";
-import type { App, HydrationOptions } from "../../../src";
-import { resolveStaticAssets } from "../../../src/server";
+import type { App, HydrationOptions, RouteLocationNormalized, RouteRecord } from "../../../src";
+import { createStaticRoutesFromRouter, resolveStaticAssets } from "../../../src/server";
 import type {
   GenerateStaticSiteOptions,
   RenderToStringOptions,
+  StaticRouterOptions,
   StaticAssetManifest,
   StaticAssetTags,
 } from "../../../src/server";
@@ -35,6 +36,14 @@ function acceptStaticAssetTags(tags: StaticAssetTags): StaticAssetTags {
   return tags;
 }
 
+function acceptStaticRouterOptions(options: StaticRouterOptions): StaticRouterOptions {
+  return options;
+}
+
+function acceptRouteCallback(callback: NonNullable<StaticRouterOptions["context"]>) {
+  return callback;
+}
+
 function acceptShell(shell: NonNullable<GenerateStaticSiteOptions["shell"]>) {
   return shell;
 }
@@ -62,6 +71,24 @@ acceptSSGOptions({
   routes: [{ path: "/", source: h("p", null, "home") }],
 });
 
+const typedRoutes: RouteRecord[] = [{ path: "/", component: () => h("p", null, "home") }];
+const staticRouterOptions = acceptStaticRouterOptions({
+  routes: typedRoutes,
+  paths: ["/"],
+  context(route: RouteLocationNormalized) {
+    return { current: route.fullPath };
+  },
+  provides(route) {
+    return new Map([[Symbol.for("route"), route.path]]);
+  },
+});
+
+acceptRouteCallback((route) => ({ path: route.path, matched: route.matched }));
+
+acceptSSGOptions({
+  routes: createStaticRoutesFromRouter(staticRouterOptions),
+});
+
 acceptSSGOptions({
   routes: [{ path: "/", source: h("p", null, "home") }],
   manifest,
@@ -82,7 +109,7 @@ acceptHydrationOptions({ recover: "yes" });
 // @ts-expect-error production manifest integration is not part of the hydration public contract
 acceptHydrationOptions({ manifest: {} });
 
-// @ts-expect-error router-aware SSG adapters are deferred
+// @ts-expect-error direct GenerateStaticSiteOptions.router is unsupported; router-aware SSG adapters are exposed as createStaticRoutesFromRouter()
 acceptSSGOptions({ routes: [{ path: "/", source: h("p") }], router: {} });
 
 // @ts-expect-error renderToString does not read production manifests
