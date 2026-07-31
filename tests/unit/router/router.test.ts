@@ -716,6 +716,34 @@ describe("createRouter", () => {
     expect(router.currentRoute.value.fullPath).toBe("/slow");
   });
 
+  it("restores the previous route when a history guard rejects", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/boom", component: User },
+      ],
+    });
+    router.beforeEach((to) => {
+      if (to.fullPath === "/boom") {
+        throw new Error("guard exploded");
+      }
+
+      return true;
+    });
+    const app = { provide: vi.fn(), use: vi.fn(), mount: vi.fn() };
+
+    router.install(app as never);
+    await settleNavigationPipeline();
+    history.push("/boom");
+    history.emit();
+    await settleNavigationPipeline();
+
+    expect(history.replacedPaths).toEqual(["/"]);
+    expect(router.currentRoute.value.fullPath).toBe("/");
+  });
+
   it("replaces the previous history listener on repeated install", () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({ history, routes: [{ path: "/", component: Home }] });
