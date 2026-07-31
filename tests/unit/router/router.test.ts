@@ -507,6 +507,44 @@ describe("createRouter", () => {
     expect(history.pushedPaths).toEqual(["/login"]);
   });
 
+  it("rejects invalid guard redirect results without mutating history or current route", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/blocked", component: User },
+      ],
+    });
+    router.beforeEach(() => null as never);
+
+    await expect(router.push("/blocked")).rejects.toMatchObject({
+      name: "RouterNavigationError",
+      type: "guard-rejected",
+    });
+    expect(history.pushedPaths).toEqual([]);
+    expect(router.currentRoute.value.fullPath).toBe("/");
+  });
+
+  it("rejects invalid guard location objects without mutating history or current route", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/blocked", component: User },
+      ],
+    });
+    router.beforeEach(() => ({ name: "login" }) as never);
+
+    await expect(router.push("/blocked")).rejects.toMatchObject({
+      name: "RouterNavigationError",
+      type: "guard-rejected",
+    });
+    expect(history.pushedPaths).toEqual([]);
+    expect(router.currentRoute.value.fullPath).toBe("/");
+  });
+
   it("rejects guard errors without mutating history or current route", async () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({

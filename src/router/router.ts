@@ -129,8 +129,15 @@ export function createRouter(options: RouterOptions): Router {
       state.redirectedFrom = redirected;
     }
 
+    let guardRedirect: RouteLocationNormalized;
+    try {
+      guardRedirect = resolveLocation(guarded);
+    } catch {
+      throw new RouterNavigationError("Router guard rejected", "guard-rejected", from, redirected);
+    }
+
     state.count += 1;
-    return resolveNavigation(resolveLocation(guarded), from, state);
+    return resolveNavigation(guardRedirect, from, state);
   }
 
   function resolveRedirects(
