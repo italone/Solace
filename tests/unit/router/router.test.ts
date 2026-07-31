@@ -684,6 +684,38 @@ describe("createRouter", () => {
     expect(router.currentRoute.value.fullPath).toBe("/fast");
   });
 
+  it("does not cancel a pending navigation when a newer raw location is invalid", async () => {
+    const history = createMemoryLikeHistory("/");
+    let allowSlowRoute!: () => void;
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/slow", component: User },
+      ],
+    });
+    router.beforeEach((to) => {
+      if (to.fullPath !== "/slow") {
+        return true;
+      }
+
+      return new Promise<void>((resolve) => {
+        allowSlowRoute = resolve;
+      });
+    });
+
+    const slowNavigation = router.push("/slow");
+    await expect(router.push({ name: "missing" } as never)).rejects.toThrow(
+      /Deferred router location field/,
+    );
+
+    allowSlowRoute();
+    await expect(slowNavigation).resolves.toMatchObject({ fullPath: "/slow" });
+
+    expect(history.pushedPaths).toEqual(["/slow"]);
+    expect(router.currentRoute.value.fullPath).toBe("/slow");
+  });
+
   it("replaces the previous history listener on repeated install", () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({ history, routes: [{ path: "/", component: Home }] });

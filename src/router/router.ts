@@ -84,9 +84,10 @@ export function createRouter(options: RouterOptions): Router {
     to: RouteLocationRaw,
     mode: "push" | "replace",
   ): Promise<RouteLocationNormalized> {
+    const initial = resolveLocation(to);
     const activeNavigationId = ++navigationId;
     const from = currentRoute.value;
-    const finalRoute = await resolveNavigation(resolveLocation(to), from);
+    const finalRoute = await resolveNavigation(initial, from);
 
     if (finalRoute === false) {
       return from;
