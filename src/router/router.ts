@@ -87,6 +87,11 @@ export function createRouter(options: RouterOptions): Router {
     const initial = resolveLocation(to);
     const activeNavigationId = ++navigationId;
     const from = currentRoute.value;
+
+    if (initial.fullPath === from.fullPath) {
+      return from;
+    }
+
     const finalRoute = await resolveNavigation(initial, from);
 
     if (finalRoute === false) {

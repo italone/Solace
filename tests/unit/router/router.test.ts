@@ -352,6 +352,29 @@ describe("createRouter", () => {
     expect(history.replacedPaths).toEqual([]);
   });
 
+  it("does not run guards when navigating to the current route", async () => {
+    const globalGuard = vi.fn();
+    const routeGuard = vi.fn();
+    const history = createMemoryLikeHistory("/users/42?tab=profile");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/users/:id", component: User, beforeEnter: routeGuard },
+      ],
+    });
+    router.beforeEach(globalGuard);
+
+    const current = router.currentRoute.value;
+    const result = await router.push("/users/42?tab=profile");
+
+    expect(result).toBe(current);
+    expect(globalGuard).not.toHaveBeenCalled();
+    expect(routeGuard).not.toHaveBeenCalled();
+    expect(history.pushedPaths).toEqual([]);
+    expect(history.replacedPaths).toEqual([]);
+  });
+
   it("applies string and object redirects before committing history", async () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({

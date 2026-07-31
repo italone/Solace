@@ -669,8 +669,8 @@ Supported path locations normalize to a leading slash and trim trailing slashes 
 Empty string locations resolve to `/`. Query strings use repeated keys for arrays, skip nullish
 object values, keep `+` as a literal plus sign, and throw a `TypeError` for malformed percent
 encoding. Navigating to the current `fullPath` resolves with the current route without writing a
-duplicate history entry. Browser history listener updates for the current `fullPath` leave
-`currentRoute` unchanged.
+duplicate history entry or running navigation guards. Browser history listener updates for the
+current `fullPath` leave `currentRoute` unchanged.
 
 ### `createWebHistory()` / `createWebHashHistory()`
 
