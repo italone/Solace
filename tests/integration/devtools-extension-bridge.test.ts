@@ -229,6 +229,70 @@ describe("devtools extension bridge", () => {
     expect(contentPort.messages).toEqual([{ type: "devtools:content:connect" }]);
     expect(otherContentPort.messages).toEqual([]);
   });
+
+  it("ignores content ports without a sender tab id", async () => {
+    const { createDevtoolsBackgroundRelay } =
+      await import("../../examples/devtools-extension/src/background");
+    const runtimeListeners = new Set<(port: BackgroundRuntimePort) => void>();
+    const runtime = {
+      onConnect: {
+        addListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.add(listener);
+        },
+        removeListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.delete(listener);
+        },
+      },
+    } satisfies BackgroundRuntime;
+    const contentPort = createRuntimePort("solace-devtools-content");
+
+    createDevtoolsBackgroundRelay(runtime);
+
+    for (const listener of runtimeListeners) {
+      expect(() => listener(contentPort)).not.toThrow();
+    }
+
+    expect(contentPort.messages).toEqual([]);
+  });
+
+  it("ignores malformed content runtime messages", async () => {
+    const { createContentScriptRelay } =
+      await import("../../examples/devtools-extension/src/content-script");
+    const portListeners = new Set<(message: DevtoolsContentMessage) => void>();
+    const windowListeners = new Set<EventListenerOrEventListenerObject>();
+    const injectBridge = vi.fn();
+    const port = {
+      disconnect: vi.fn(),
+      onMessage: {
+        addListener(listener: (message: DevtoolsContentMessage) => void) {
+          portListeners.add(listener);
+        },
+        removeListener(listener: (message: DevtoolsContentMessage) => void) {
+          portListeners.delete(listener);
+        },
+      },
+      postMessage: vi.fn(),
+    } satisfies ContentRuntimePort;
+
+    createContentScriptRelay({
+      addWindowListener(_type: string, listener: EventListenerOrEventListenerObject) {
+        windowListeners.add(listener);
+      },
+      connectRuntime: () => port,
+      injectBridge,
+      removeWindowListener(_type: string, listener: EventListenerOrEventListenerObject) {
+        windowListeners.delete(listener);
+      },
+    });
+
+    for (const listener of portListeners) {
+      expect(() => listener(null as never)).not.toThrow();
+      expect(() => listener({ type: "unknown" } as never)).not.toThrow();
+    }
+
+    expect(injectBridge).not.toHaveBeenCalled();
+    expect(windowListeners.size).toBe(0);
+  });
 });
 
 function createRuntimePort(name: string, tabId?: number) {

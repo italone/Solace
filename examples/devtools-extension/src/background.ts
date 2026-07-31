@@ -45,6 +45,9 @@ export function createDevtoolsBackgroundRelay(runtime: BackgroundRuntime): Devto
   const handleConnect = (port: RuntimePort) => {
     if (port.name === DEVTOOLS_CONTENT_PORT) {
       const tabId = getSenderTabId(port);
+      if (tabId === undefined) {
+        return;
+      }
       registerPort(contentsByTab, tabId, port);
       if (panelsByTab.has(tabId)) {
         port.postMessage({ type: DEVTOOLS_CONTENT_CONNECT_TYPE });
@@ -63,6 +66,9 @@ export function createDevtoolsBackgroundRelay(runtime: BackgroundRuntime): Devto
 
     port.onMessage.addListener((message) => {
       if (message.type === "devtools:panel:connect") {
+        if (!isValidTabId(message.tabId)) {
+          return;
+        }
         registerPort(panelsByTab, message.tabId, port, (tabId) => {
           forwardToPorts(contentsByTab.get(tabId), { type: DEVTOOLS_CONTENT_DISCONNECT_TYPE });
         });
@@ -134,13 +140,13 @@ function findPortTab(
   return undefined;
 }
 
-function getSenderTabId(port: RuntimePort): number {
+function getSenderTabId(port: RuntimePort): number | undefined {
   const tabId = port.sender?.tab?.id;
-  if (tabId === undefined) {
-    throw new Error("Solace DevTools relay requires a browser tab id");
-  }
+  return isValidTabId(tabId) ? tabId : undefined;
+}
 
-  return tabId;
+function isValidTabId(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0;
 }
 
 declare const chrome:

@@ -58,6 +58,10 @@ export function createContentScriptRelay(
   let active = false;
   let bridgeInjected = false;
   const relayContentMessage = (message: DevtoolsContentMessage) => {
+    if (!isDevtoolsContentMessage(message)) {
+      return;
+    }
+
     if (message.type === DEVTOOLS_CONTENT_CONNECT_TYPE) {
       if (!bridgeInjected) {
         injectBridge();
@@ -144,6 +148,25 @@ function isDevtoolsExtensionEventMessage(value: unknown): value is DevtoolsExten
     "type" in value &&
     value.type === DEVTOOLS_EXTENSION_EVENT_TYPE &&
     "event" in value
+  );
+}
+
+function isDevtoolsContentMessage(value: unknown): value is DevtoolsContentMessage {
+  if (!isRecord(value) || typeof value.type !== "string") {
+    return false;
+  }
+
+  if (
+    value.type === DEVTOOLS_CONTENT_CONNECT_TYPE ||
+    value.type === DEVTOOLS_CONTENT_DISCONNECT_TYPE
+  ) {
+    return true;
+  }
+
+  return (
+    value.type === DEVTOOLS_CONTROL_EVENT_TYPE &&
+    "paused" in value &&
+    typeof value.paused === "boolean"
   );
 }
 
