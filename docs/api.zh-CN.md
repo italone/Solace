@@ -623,6 +623,7 @@ location 会解析为 `/`。query string 对数组使用重复 key，跳过 obje
 ### `RouterLink` / `RouterView`
 
 `RouterLink` 渲染 anchor，并在主键、无 modifier 的点击中执行异步客户端导航。`RouterView` 渲染当前 nested depth 对应的 route component；没有匹配或 lazy route component 仍在加载时渲染空 Fragment。
+如果 lazy route component 加载失败，wrapper 会抛出 `RouterNavigationError`，其 type 为 `"lazy-load-failed"`。
 
 当前 beta router 限制：
 

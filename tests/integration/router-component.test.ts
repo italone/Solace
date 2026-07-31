@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   RouterLink,
+  RouterNavigationError,
   RouterView,
   createApp,
   createRouter,
@@ -267,6 +268,45 @@ describe("router components", () => {
     await settleLazyRouteComponent();
 
     expect(container.querySelector("#lazy-report")?.textContent).toBe("lazy-report");
+  });
+
+  it("surfaces a router error when a lazy route component fails to load", async () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory("/lazy-error"),
+      routes: [
+        {
+          path: "/lazy-error",
+          component: lazyRoute(() => Promise.reject(new Error("load failed"))),
+        },
+      ],
+    });
+    const container = document.createElement("div");
+    let capturedError: unknown = null;
+    const onUnhandledRejection = (reason: unknown) => {
+      if (reason instanceof RouterNavigationError) {
+        capturedError = reason;
+      }
+    };
+
+    process.on("unhandledRejection", onUnhandledRejection);
+    try {
+      createApp(() => h(RouterView))
+        .use(router)
+        .mount(container);
+
+      await Promise.resolve();
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(capturedError).toMatchObject({
+        name: "RouterNavigationError",
+        type: "lazy-load-failed",
+        from: { fullPath: "/lazy-error" },
+        to: { fullPath: "/lazy-error" },
+      });
+    } finally {
+      process.off("unhandledRejection", onUnhandledRejection);
+    }
   });
 
   it("does not navigate RouterLink clicks that the browser should handle", () => {

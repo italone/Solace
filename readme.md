@@ -321,14 +321,14 @@ See [docs/api.md](./docs/api.md) for public API details and examples.
 
 Solace includes Vite examples that exercise different runtime paths:
 
-| Example        | Command                       | Coverage                                                 |
-| -------------- | ----------------------------- | -------------------------------------------------------- |
-| Basic counter  | `pnpm dev`                    | JSX runtime, reactive state, DOM events                  |
-| Todo app       | `pnpm dev:todo`               | form input, keyed list updates, checkbox state, deletion |
-| Large list     | `pnpm dev:large`              | 10,000 keyed rows, targeted class/text updates           |
-| Router basic   | `pnpm dev:router`             | beta router, nested routes, redirects, guards, lazyRoute |
-| SFC counter    | `pnpm dev:sfc`                | alpha `.solace` compiler and Vite plugin                 |
-| DevTools panel | `pnpm dev:devtools-extension` | browser DevTools extension timeline example              |
+| Example        | Command                       | Coverage                                                                              |
+| -------------- | ----------------------------- | ------------------------------------------------------------------------------------- |
+| Basic counter  | `pnpm dev`                    | JSX runtime, reactive state, DOM events                                               |
+| Todo app       | `pnpm dev:todo`               | form input, keyed list updates, checkbox state, deletion                              |
+| Large list     | `pnpm dev:large`              | 10,000 keyed rows, targeted class/text updates                                        |
+| Router basic   | `pnpm dev:router`             | beta router, nested routes, redirects, guards, lazyRoute, surfaced lazy-load failures |
+| SFC counter    | `pnpm dev:sfc`                | alpha `.solace` compiler and Vite plugin                                              |
+| DevTools panel | `pnpm dev:devtools-extension` | browser DevTools extension timeline example                                           |
 
 The `examples/sfc-counter` app demonstrates the alpha `.solace` compiler and Vite plugin.
 
