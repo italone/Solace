@@ -5,28 +5,28 @@ export default defineConfig({
   testIgnore: ["browser-benchmark.spec.ts", "devtools-extension.spec.ts"],
   webServer: [
     {
-      command: "pnpm exec vite examples/basic-counter --host 127.0.0.1 --port 5174",
-      url: "http://127.0.0.1:5174",
+      command: "pnpm exec vite examples/basic-counter --host 127.0.0.1 --port 6174",
+      url: "http://127.0.0.1:6174",
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: "pnpm exec vite examples/todo-app --host 127.0.0.1 --port 5175",
-      url: "http://127.0.0.1:5175",
+      command: "pnpm exec vite examples/todo-app --host 127.0.0.1 --port 6175",
+      url: "http://127.0.0.1:6175",
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: "pnpm exec vite examples/large-list --host 127.0.0.1 --port 5176",
-      url: "http://127.0.0.1:5176",
+      command: "pnpm exec vite examples/large-list --host 127.0.0.1 --port 6176",
+      url: "http://127.0.0.1:6176",
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: "pnpm exec vite examples/router-basic --host 127.0.0.1 --port 5178",
-      url: "http://127.0.0.1:5178",
+      command: "pnpm exec vite examples/router-basic --host 127.0.0.1 --port 6178",
+      url: "http://127.0.0.1:6178",
       reuseExistingServer: !process.env.CI,
     },
   ],
   use: {
-    baseURL: "http://127.0.0.1:5174",
+    baseURL: "http://127.0.0.1:6174",
     trace: "on-first-retry",
   },
   projects: [

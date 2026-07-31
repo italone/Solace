@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("navigates the router example", async ({ page }) => {
-  await page.goto("http://127.0.0.1:5178");
+  await page.goto("http://127.0.0.1:6178");
 
   await expect(page.locator("#home-view")).toHaveText("home");
 

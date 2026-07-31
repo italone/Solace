@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("adds, toggles, and deletes todos", async ({ page }) => {
-  await page.goto("http://127.0.0.1:5175");
+  await page.goto("http://127.0.0.1:6175");
 
   await expect(page.locator("#todo-list li")).toHaveCount(2);
 
