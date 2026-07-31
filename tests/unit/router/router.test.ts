@@ -50,6 +50,13 @@ function createMemoryLikeHistory(initial = "/"): RouterHistory & {
   };
 }
 
+async function settleNavigationPipeline(): Promise<void> {
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
 describe("createRouter", () => {
   it("re-exports the public router module surface", () => {
     expect(Object.keys(routerModule).sort()).toEqual([
@@ -507,6 +514,42 @@ describe("createRouter", () => {
     expect(history.pushedPaths).toEqual(["/login"]);
   });
 
+  it("applies redirects from the initial history location after install", async () => {
+    const history = createMemoryLikeHistory("/legacy");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/legacy", redirect: "/" },
+      ],
+    });
+    const app = { provide: vi.fn(), use: vi.fn(), mount: vi.fn() };
+
+    router.install(app as never);
+    await settleNavigationPipeline();
+
+    expect(history.replacedPaths).toEqual(["/"]);
+    expect(router.currentRoute.value.fullPath).toBe("/");
+  });
+
+  it("applies guard redirects from the initial history location after install", async () => {
+    const history = createMemoryLikeHistory("/dashboard");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/login", component: Home },
+        { path: "/dashboard", component: User, beforeEnter: () => "/login" },
+      ],
+    });
+    const app = { provide: vi.fn(), use: vi.fn(), mount: vi.fn() };
+
+    router.install(app as never);
+    await settleNavigationPipeline();
+
+    expect(history.replacedPaths).toEqual(["/login"]);
+    expect(router.currentRoute.value.fullPath).toBe("/login");
+  });
+
   it("rejects invalid guard redirect results without mutating history or current route", async () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({
@@ -563,7 +606,7 @@ describe("createRouter", () => {
     expect(router.currentRoute.value.fullPath).toBe("/");
   });
 
-  it("updates from history listeners after install", () => {
+  it("updates from history listeners after install", async () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({ history, routes: [{ path: "/", component: Home }] });
     const app = { provide: vi.fn(), use: vi.fn(), mount: vi.fn() };
@@ -571,6 +614,7 @@ describe("createRouter", () => {
     router.install(app as never);
     history.push("/missing");
     history.emit();
+    await settleNavigationPipeline();
 
     expect(router.currentRoute.value.matched).toEqual([]);
   });

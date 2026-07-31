@@ -50,11 +50,11 @@ export function createRouter(options: RouterOptions): Router {
     install(app: App) {
       app.provide(routerKey, router);
       app.provide(routeKey, currentRoute);
-      currentRoute.value = resolveLocation(options.history.location());
       stopListening?.();
       stopListening = options.history.listen(() => {
-        currentRoute.value = resolveLocation(options.history.location());
+        void settleHistoryLocation();
       });
+      void settleHistoryLocation();
     },
     async push(to: RouteLocationRaw) {
       return navigate(to, "push");
@@ -138,6 +138,25 @@ export function createRouter(options: RouterOptions): Router {
 
     state.count += 1;
     return resolveNavigation(guardRedirect, from, state);
+  }
+
+  async function settleHistoryLocation(): Promise<void> {
+    const from = currentRoute.value;
+    const initial = resolveLocation(options.history.location());
+    const finalRoute = await resolveNavigation(initial, from);
+
+    if (finalRoute === false) {
+      if (options.history.location() !== from.fullPath) {
+        options.history.replace(from.fullPath);
+      }
+      return;
+    }
+
+    if (finalRoute.fullPath !== initial.fullPath) {
+      options.history.replace(finalRoute.fullPath);
+    }
+
+    currentRoute.value = finalRoute;
   }
 
   function resolveRedirects(
