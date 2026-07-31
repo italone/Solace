@@ -43,6 +43,7 @@ export function createRouter(options: RouterOptions): Router {
   const redirectLimit = 16;
   const beforeEachGuards: NavigationGuard[] = [];
   let stopListening: (() => void) | null = null;
+  let navigationId = 0;
   const currentRoute = ref(resolveLocation(options.history.location()));
 
   const router: Router = {
@@ -83,11 +84,16 @@ export function createRouter(options: RouterOptions): Router {
     to: RouteLocationRaw,
     mode: "push" | "replace",
   ): Promise<RouteLocationNormalized> {
+    const activeNavigationId = ++navigationId;
     const from = currentRoute.value;
     const finalRoute = await resolveNavigation(resolveLocation(to), from);
 
     if (finalRoute === false) {
       return from;
+    }
+
+    if (activeNavigationId !== navigationId) {
+      return currentRoute.value;
     }
 
     if (mode === "replace") {
@@ -141,9 +147,14 @@ export function createRouter(options: RouterOptions): Router {
   }
 
   async function settleHistoryLocation(): Promise<void> {
+    const activeNavigationId = ++navigationId;
     const from = currentRoute.value;
     const initial = resolveLocation(options.history.location());
     const finalRoute = await resolveNavigation(initial, from);
+
+    if (activeNavigationId !== navigationId) {
+      return;
+    }
 
     if (finalRoute === false) {
       if (options.history.location() !== from.fullPath) {

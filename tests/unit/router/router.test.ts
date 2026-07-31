@@ -619,6 +619,71 @@ describe("createRouter", () => {
     expect(router.currentRoute.value.matched).toEqual([]);
   });
 
+  it("keeps the latest history route when an older guard settles later", async () => {
+    const history = createMemoryLikeHistory("/");
+    let allowInitialRoute!: () => void;
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/users/:id", component: User },
+      ],
+    });
+    router.beforeEach((to) => {
+      if (to.fullPath !== "/") {
+        return true;
+      }
+
+      return new Promise<void>((resolve) => {
+        allowInitialRoute = resolve;
+      });
+    });
+    const app = { provide: vi.fn(), use: vi.fn(), mount: vi.fn() };
+
+    router.install(app as never);
+    history.push("/users/42");
+    history.emit();
+    await settleNavigationPipeline();
+    expect(router.currentRoute.value.fullPath).toBe("/users/42");
+
+    allowInitialRoute();
+    await settleNavigationPipeline();
+
+    expect(router.currentRoute.value.fullPath).toBe("/users/42");
+  });
+
+  it("keeps the latest programmatic route when an older guard settles later", async () => {
+    const history = createMemoryLikeHistory("/");
+    let allowSlowRoute!: () => void;
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/slow", component: User },
+        { path: "/fast", component: NotFound },
+      ],
+    });
+    router.beforeEach((to) => {
+      if (to.fullPath !== "/slow") {
+        return true;
+      }
+
+      return new Promise<void>((resolve) => {
+        allowSlowRoute = resolve;
+      });
+    });
+
+    const slowNavigation = router.push("/slow");
+    await router.push("/fast");
+    expect(router.currentRoute.value.fullPath).toBe("/fast");
+
+    allowSlowRoute();
+    await slowNavigation;
+
+    expect(history.pushedPaths).toEqual(["/fast"]);
+    expect(router.currentRoute.value.fullPath).toBe("/fast");
+  });
+
   it("replaces the previous history listener on repeated install", () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({ history, routes: [{ path: "/", component: Home }] });
