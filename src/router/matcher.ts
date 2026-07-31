@@ -29,7 +29,7 @@ export function createMatcher(routes: RouteRecord[]): Matcher {
 
         const params: Record<string, string> = {};
         for (let index = 0; index < route.keys.length; index += 1) {
-          params[route.keys[index]] = decodeURIComponent(match[index + 1] ?? "");
+          params[route.keys[index]] = decodePathParam(match[index + 1] ?? "");
         }
 
         return { path: normalized, params, matched: route.chain };
@@ -160,4 +160,16 @@ function assertBetaParamSyntax(key: string): void {
   }
 
   throw new TypeError(`Deferred router path syntax is not part of the beta contract: :${key}`);
+}
+
+function decodePathParam(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch (error) {
+    if (error instanceof URIError) {
+      throw new TypeError("Router path contains malformed percent encoding");
+    }
+
+    throw error;
+  }
 }

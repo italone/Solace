@@ -117,7 +117,11 @@ function resolveMatcherPath(
   try {
     return matcher.resolve(path);
   } catch (error) {
-    if (error instanceof URIError) {
+    if (
+      error instanceof URIError ||
+      (error instanceof TypeError &&
+        error.message === "Router path contains malformed percent encoding")
+    ) {
       throw new TypeError("Static router path contains malformed percent encoding");
     }
 

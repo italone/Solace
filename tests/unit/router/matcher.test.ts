@@ -37,6 +37,22 @@ describe("router matcher", () => {
     expect(match.params).toEqual({ id: "42" });
   });
 
+  it("decodes encoded dynamic params", () => {
+    const matcher = createMatcher(routes);
+    const match = matcher.resolve("/users/%E2%9C%93");
+
+    expect(match.params).toEqual({ id: "✓" });
+  });
+
+  it("throws a stable TypeError for malformed encoded dynamic params", () => {
+    const matcher = createMatcher(routes);
+
+    expect(() => matcher.resolve("/users/%E0%A4%A")).toThrow(TypeError);
+    expect(() => matcher.resolve("/users/%E0%A4%A")).toThrow(
+      /Router path contains malformed percent encoding/,
+    );
+  });
+
   it("normalizes trailing slashes", () => {
     const matcher = createMatcher(routes);
 
