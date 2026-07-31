@@ -117,6 +117,7 @@ describe("createRouter", () => {
     const invalidRoutes = [
       { path: "/bad-redirect", redirect: 42 },
       { path: "/bad-redirect-location", redirect: { name: "home" } },
+      { path: "/bad-redirect-query", redirect: { path: "/", query: [] } },
       { path: "/bad-before-enter", beforeEnter: true },
       { path: "/bad-before-enter-array", beforeEnter: [() => true, null] },
       { path: "/bad-meta-null", meta: null },
@@ -223,6 +224,26 @@ describe("createRouter", () => {
     await expect(
       router.replace({ path: "/users/1", params: { id: "1" } } as never),
     ).rejects.toThrow(/Deferred router location field/);
+  });
+
+  it("rejects invalid object location query values with a stable router error", async () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory(),
+      routes: [{ path: "/", component: Home }],
+    });
+
+    expect(() => router.resolve({ path: "/", query: null } as never)).toThrow(
+      /Router location query must be an object/,
+    );
+    expect(() => router.resolve({ path: "/", query: [] } as never)).toThrow(
+      /Router location query must be an object/,
+    );
+    await expect(router.push({ path: "/", query: "tab=profile" } as never)).rejects.toThrow(
+      /Router location query must be an object/,
+    );
+    await expect(router.replace({ path: "/", query: 42 } as never)).rejects.toThrow(
+      /Router location query must be an object/,
+    );
   });
 
   it("resolves string and object locations", () => {

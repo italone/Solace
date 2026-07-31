@@ -352,4 +352,11 @@ function assertRouterLocationContract(location: {
   if (typeof location.path !== "string") {
     throw new TypeError("Router location path must be a string");
   }
+
+  if (
+    location.query !== undefined &&
+    (typeof location.query !== "object" || location.query === null || Array.isArray(location.query))
+  ) {
+    throw new TypeError("Router location query must be an object");
+  }
 }
