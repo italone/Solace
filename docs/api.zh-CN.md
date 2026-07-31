@@ -615,9 +615,9 @@ object route location 目前只支持 `{ path, query }`；named location、hash 
 受支持的 path location 会规范化为前导 `/`，并移除除 `/` 之外的尾随斜杠。空字符串
 location 会解析为 `/`。query string 对数组使用重复 key，跳过 object location 中的 nullish
 值，将 `+` 保持为字面加号；percent encoding 非法时会抛出 `TypeError`。导航到当前
-`fullPath` 会解析为当前 route，且不会写入重复 history entry 或运行 navigation guards。浏览器
-history listener 在首次 router install settle 之后收到当前 `fullPath` 时，会保持 `currentRoute`
-不变，并跳过 navigation guards。
+`fullPath`，或导航到最终 redirect 回当前 `fullPath` 的 route 时，会解析为当前 route，且不会写入
+重复 history entry 或运行 navigation guards。浏览器 history listener 在首次 router install settle
+之后收到当前 `fullPath` 时，会保持 `currentRoute` 不变，并跳过 navigation guards。
 
 ### `createWebHistory()` / `createWebHashHistory()`
 

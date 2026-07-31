@@ -415,6 +415,29 @@ describe("createRouter", () => {
     expect(route.params).toEqual({ id: "42" });
   });
 
+  it("does not run guards when a route redirect resolves to the current route", async () => {
+    const globalGuard = vi.fn();
+    const currentRouteGuard = vi.fn();
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home, beforeEnter: currentRouteGuard },
+        { path: "/legacy", redirect: "/" },
+      ],
+    });
+    router.beforeEach(globalGuard);
+
+    const current = router.currentRoute.value;
+    const result = await router.push("/legacy");
+
+    expect(result).toBe(current);
+    expect(globalGuard).not.toHaveBeenCalled();
+    expect(currentRouteGuard).not.toHaveBeenCalled();
+    expect(history.pushedPaths).toEqual([]);
+    expect(history.replacedPaths).toEqual([]);
+  });
+
   it("rejects redirect loops before mutating history", async () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({

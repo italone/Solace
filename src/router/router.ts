@@ -123,6 +123,11 @@ export function createRouter(options: RouterOptions): Router {
     state: RedirectState = { count: 0 },
   ): Promise<RouteLocationNormalized | false> {
     const redirected = resolveRedirects(initial, from, state);
+
+    if (state.redirectedFrom !== undefined && redirected.fullPath === from.fullPath) {
+      return redirected;
+    }
+
     const guarded = await runGuards(redirected, from);
 
     if (guarded === false) {
