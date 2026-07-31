@@ -687,6 +687,35 @@ describe("createRouter", () => {
     expect(history.replacedPaths).toEqual([]);
   });
 
+  it("does not run guards when history emits the current location", async () => {
+    const globalGuard = vi.fn();
+    const routeGuard = vi.fn();
+    const history = createMemoryLikeHistory("/users/42?tab=profile");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/users/:id", component: User, beforeEnter: routeGuard },
+      ],
+    });
+    const app = { provide: vi.fn(), use: vi.fn(), mount: vi.fn() };
+    router.beforeEach(globalGuard);
+
+    router.install(app as never);
+    await settleNavigationPipeline();
+    globalGuard.mockClear();
+    routeGuard.mockClear();
+    const current = router.currentRoute.value;
+
+    history.emit();
+    await settleNavigationPipeline();
+
+    expect(router.currentRoute.value).toBe(current);
+    expect(globalGuard).not.toHaveBeenCalled();
+    expect(routeGuard).not.toHaveBeenCalled();
+    expect(history.replacedPaths).toEqual([]);
+  });
+
   it("restores history without replacing currentRoute when a history redirect resolves current", async () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({
