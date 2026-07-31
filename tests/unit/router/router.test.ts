@@ -642,6 +642,51 @@ describe("createRouter", () => {
     expect(router.currentRoute.value.matched).toEqual([]);
   });
 
+  it("does not replace currentRoute when history emits the current location", async () => {
+    const history = createMemoryLikeHistory("/users/42?tab=profile");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/users/:id", component: User },
+      ],
+    });
+    const app = { provide: vi.fn(), use: vi.fn(), mount: vi.fn() };
+
+    router.install(app as never);
+    await settleNavigationPipeline();
+    const current = router.currentRoute.value;
+
+    history.emit();
+    await settleNavigationPipeline();
+
+    expect(router.currentRoute.value).toBe(current);
+    expect(history.replacedPaths).toEqual([]);
+  });
+
+  it("restores history without replacing currentRoute when a history redirect resolves current", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/legacy", redirect: "/" },
+      ],
+    });
+    const app = { provide: vi.fn(), use: vi.fn(), mount: vi.fn() };
+
+    router.install(app as never);
+    await settleNavigationPipeline();
+    const current = router.currentRoute.value;
+
+    history.push("/legacy");
+    history.emit();
+    await settleNavigationPipeline();
+
+    expect(history.replacedPaths).toEqual(["/"]);
+    expect(router.currentRoute.value).toBe(current);
+  });
+
   it("keeps the latest history route when an older guard settles later", async () => {
     const history = createMemoryLikeHistory("/");
     let allowInitialRoute!: () => void;

@@ -178,6 +178,13 @@ export function createRouter(options: RouterOptions): Router {
       return;
     }
 
+    if (finalRoute.fullPath === from.fullPath) {
+      if (options.history.location() !== from.fullPath) {
+        options.history.replace(from.fullPath);
+      }
+      return;
+    }
+
     if (finalRoute.fullPath !== initial.fullPath) {
       options.history.replace(finalRoute.fullPath);
     }
