@@ -113,6 +113,30 @@ describe("createRouter", () => {
     ).not.toThrow();
   });
 
+  it("rejects invalid beta route field values at creation time", () => {
+    const invalidRoutes = [
+      { path: "/bad-redirect", redirect: 42 },
+      { path: "/bad-redirect-location", redirect: { name: "home" } },
+      { path: "/bad-before-enter", beforeEnter: true },
+      { path: "/bad-before-enter-array", beforeEnter: [() => true, null] },
+      { path: "/bad-meta-null", meta: null },
+      { path: "/bad-meta-array", meta: [] },
+      {
+        path: "/parent",
+        children: [{ path: "bad-child-guard", beforeEnter: "guard" }],
+      },
+    ];
+
+    for (const route of invalidRoutes) {
+      expect(() =>
+        createRouter({
+          history: createMemoryLikeHistory(),
+          routes: [route] as never,
+        }),
+      ).toThrow(TypeError);
+    }
+  });
+
   it("keeps still-deferred route record fields rejected", () => {
     const deferredRecords = [
       { path: "/named", component: Home, name: "home" },

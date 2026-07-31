@@ -284,6 +284,10 @@ function assertRouteRecordContract(route: RouteRecord): void {
     throw new TypeError("Router route record path must be a string");
   }
 
+  assertRouteRecordRedirectContract(route.redirect);
+  assertRouteRecordBeforeEnterContract(route.beforeEnter);
+  assertRouteRecordMetaContract(route.meta);
+
   if (route.children !== undefined) {
     if (!Array.isArray(route.children)) {
       throw new TypeError("Router route record children must be an array");
@@ -293,6 +297,41 @@ function assertRouteRecordContract(route: RouteRecord): void {
       assertRouteRecordContract(child);
     }
   }
+}
+
+function assertRouteRecordRedirectContract(redirect: RouteRecord["redirect"]): void {
+  if (redirect === undefined || typeof redirect === "string" || typeof redirect === "function") {
+    return;
+  }
+
+  if (typeof redirect === "object" && redirect !== null && !Array.isArray(redirect)) {
+    assertRouterLocationContract(redirect);
+    return;
+  }
+
+  throw new TypeError(
+    "Router route record redirect must be a string, object location, or function",
+  );
+}
+
+function assertRouteRecordBeforeEnterContract(beforeEnter: RouteRecord["beforeEnter"]): void {
+  if (beforeEnter === undefined || typeof beforeEnter === "function") {
+    return;
+  }
+
+  if (Array.isArray(beforeEnter) && beforeEnter.every((guard) => typeof guard === "function")) {
+    return;
+  }
+
+  throw new TypeError("Router route record beforeEnter must be a function or function array");
+}
+
+function assertRouteRecordMetaContract(meta: RouteRecord["meta"]): void {
+  if (meta === undefined || (typeof meta === "object" && meta !== null && !Array.isArray(meta))) {
+    return;
+  }
+
+  throw new TypeError("Router route record meta must be an object");
 }
 
 function assertRouterLocationContract(location: {
