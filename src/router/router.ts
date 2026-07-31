@@ -44,7 +44,7 @@ export function createRouter(options: RouterOptions): Router {
   const beforeEachGuards: NavigationGuard[] = [];
   let stopListening: (() => void) | null = null;
   let navigationId = 0;
-  const currentRoute = ref(resolveLocation(options.history.location()));
+  const currentRoute = ref(resolveInitialHistoryLocation());
 
   const router: Router = {
     currentRoute,
@@ -256,6 +256,14 @@ export function createRouter(options: RouterOptions): Router {
       params: match.params,
       matched: match.matched,
     };
+  }
+
+  function resolveInitialHistoryLocation(): RouteLocationNormalized {
+    try {
+      return resolveLocation(options.history.location());
+    } catch {
+      return resolveLocation("/");
+    }
   }
 }
 
