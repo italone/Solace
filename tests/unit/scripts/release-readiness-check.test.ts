@@ -91,4 +91,17 @@ describe("release readiness check CLI", () => {
       "pnpm test:e2e",
     ]);
   });
+
+  test("builds declarations before typechecking in the quality gate", async () => {
+    const packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
+      scripts?: Record<string, string>;
+    };
+    const quality = packageJson.scripts?.quality;
+
+    expect(quality?.split(" && ").slice(0, 3)).toEqual([
+      "pnpm format:check",
+      "pnpm build",
+      "pnpm typecheck",
+    ]);
+  });
 });
