@@ -329,6 +329,29 @@ describe("createRouter", () => {
     await expect(router.replace("/")).resolves.toMatchObject({ fullPath: "/" });
   });
 
+  it("does not write history when navigating to the current route", async () => {
+    const history = createMemoryLikeHistory("/users/42?tab=profile");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/users/:id", component: User },
+      ],
+    });
+
+    await expect(router.push("/users/42?tab=profile")).resolves.toMatchObject({
+      fullPath: "/users/42?tab=profile",
+    });
+    await expect(
+      router.replace({ path: "/users/42", query: { tab: "profile" } }),
+    ).resolves.toMatchObject({
+      fullPath: "/users/42?tab=profile",
+    });
+
+    expect(history.pushedPaths).toEqual([]);
+    expect(history.replacedPaths).toEqual([]);
+  });
+
   it("applies string and object redirects before committing history", async () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({

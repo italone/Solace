@@ -97,6 +97,10 @@ export function createRouter(options: RouterOptions): Router {
       return currentRoute.value;
     }
 
+    if (finalRoute.fullPath === from.fullPath) {
+      return from;
+    }
+
     if (mode === "replace") {
       options.history.replace(finalRoute.fullPath);
     } else {
