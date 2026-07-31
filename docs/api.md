@@ -672,6 +672,8 @@ encoding. Navigating to the current `fullPath`, or to a route redirect that reso
 current `fullPath`, resolves with the current route without writing a duplicate history entry or
 running navigation guards. Browser history listener updates for the current `fullPath` leave
 `currentRoute` unchanged and skip navigation guards after the initial router install settlement.
+For nested route matches, redirects are resolved from parent to child before any matched
+`beforeEnter` guards run.
 
 ### `createWebHistory()` / `createWebHashHistory()`
 

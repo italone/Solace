@@ -618,6 +618,8 @@ location 会解析为 `/`。query string 对数组使用重复 key，跳过 obje
 `fullPath`，或导航到最终 redirect 回当前 `fullPath` 的 route 时，会解析为当前 route，且不会写入
 重复 history entry 或运行 navigation guards。浏览器 history listener 在首次 router install settle
 之后收到当前 `fullPath` 时，会保持 `currentRoute` 不变，并跳过 navigation guards。
+nested route match 中的 redirects 会按父到子的顺序解析，并且先于任何 matched `beforeEnter`
+guards 运行。
 
 ### `createWebHistory()` / `createWebHashHistory()`
 

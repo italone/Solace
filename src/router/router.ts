@@ -217,7 +217,7 @@ export function createRouter(options: RouterOptions): Router {
     let target = initial;
 
     while (true) {
-      const redirect = getLastMatchedRecord(target)?.redirect;
+      const redirect = getFirstMatchedRedirect(target);
       if (redirect === undefined) {
         return state.redirectedFrom === undefined
           ? target
@@ -300,8 +300,8 @@ interface RedirectState {
   redirectedFrom?: RouteLocationNormalized;
 }
 
-function getLastMatchedRecord(route: RouteLocationNormalized): RouteRecord | undefined {
-  return route.matched[route.matched.length - 1];
+function getFirstMatchedRedirect(route: RouteLocationNormalized): RouteRecord["redirect"] {
+  return route.matched.find((record) => record.redirect !== undefined)?.redirect;
 }
 
 function normalizeGuards(guards: RouteRecord["beforeEnter"]): NavigationGuard[] {

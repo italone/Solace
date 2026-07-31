@@ -415,6 +415,32 @@ describe("createRouter", () => {
     expect(route.params).toEqual({ id: "42" });
   });
 
+  it("applies parent route redirects before child guards", async () => {
+    const childGuard = vi.fn();
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/login", component: Home },
+        {
+          path: "/admin",
+          redirect: "/login",
+          children: [{ path: "settings", component: User, beforeEnter: childGuard }],
+        },
+      ],
+    });
+
+    const result = await router.push("/admin/settings");
+
+    expect(result).toMatchObject({
+      fullPath: "/login",
+      redirectedFrom: expect.objectContaining({ fullPath: "/admin/settings" }),
+    });
+    expect(childGuard).not.toHaveBeenCalled();
+    expect(history.pushedPaths).toEqual(["/login"]);
+  });
+
   it("does not run guards when a route redirect resolves to the current route", async () => {
     const globalGuard = vi.fn();
     const currentRouteGuard = vi.fn();
