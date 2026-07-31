@@ -744,6 +744,27 @@ describe("createRouter", () => {
     expect(router.currentRoute.value.fullPath).toBe("/");
   });
 
+  it("restores the previous route when a history location is invalid", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/users/:id", component: User },
+      ],
+    });
+    const app = { provide: vi.fn(), use: vi.fn(), mount: vi.fn() };
+
+    router.install(app as never);
+    await settleNavigationPipeline();
+    history.push("/users/%E0%A4%A");
+    history.emit();
+    await settleNavigationPipeline();
+
+    expect(history.replacedPaths).toEqual(["/"]);
+    expect(router.currentRoute.value.fullPath).toBe("/");
+  });
+
   it("replaces the previous history listener on repeated install", () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({ history, routes: [{ path: "/", component: Home }] });

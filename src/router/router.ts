@@ -150,10 +150,11 @@ export function createRouter(options: RouterOptions): Router {
   async function settleHistoryLocation(): Promise<void> {
     const activeNavigationId = ++navigationId;
     const from = currentRoute.value;
-    const initial = resolveLocation(options.history.location());
+    let initial: RouteLocationNormalized;
     let finalRoute: RouteLocationNormalized | false;
 
     try {
+      initial = resolveLocation(options.history.location());
       finalRoute = await resolveNavigation(initial, from);
     } catch {
       if (activeNavigationId === navigationId && options.history.location() !== from.fullPath) {
