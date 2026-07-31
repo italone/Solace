@@ -17,7 +17,7 @@ Current repository state:
 - Public package metadata: `"private": false`
 - Current branch: `main`
 - Remote state: the local `main` release baseline has been synchronized with `origin/main` as of
-  2026-07-30. Recheck with `git fetch origin main`, `git status --short --branch`, and
+  2026-07-31. Recheck with `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
   synchronization claim.
 - Phase: alpha released; beta contract stabilization, SSR/hydration minimum loop, and first
@@ -35,7 +35,7 @@ Current repository state:
 | Store            | Implemented                    | `createStore` combines reactive state, computed getters, and named actions, with DevTools action summaries.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | JSX              | Implemented                    | Package exports include `jsx-runtime` and `jsx-dev-runtime`, with JSX examples and typecheck coverage.                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | SFC compiler     | Alpha public contract narrowed | `.solace` parsing, template code generation, runtime-helper style injection, `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, explicit `map: null` source-map policy, rejected plugin options, and rejected `.solace?*` query transforms are documented and covered by package-boundary tests.                                                                                                                                                                                                                                 |
-| Router           | Beta next slice stabilized     | Matcher, history adapters, query helpers, nested route chains, redirects, global and route-level guards, `lazyRoute()` components, `RouterLink`, nested `RouterView`, root exports, deferred API boundaries, package export coverage, packed-consumer smoke, and expanded `router-basic` e2e coverage exist.                                                                                                                                                                                                                                             |
+| Router           | Beta next slice stabilized     | Matcher, history adapters, query helpers, nested route chains, redirects, global and route-level guards, initial history navigation pipeline, stale async navigation result protection, `lazyRoute()` components, `RouterLink`, nested `RouterView`, root exports, deferred API boundaries, package export coverage, packed-consumer smoke, and expanded `router-basic` e2e coverage exist.                                                                                                                                                              |
 | SSR/hydration    | Minimum loop implemented       | `renderToString()` renders synchronous trees, rejects async/thenable SSR sources, and collects `useStyle()` output, while `generateStaticSite()` enforces explicit string route paths, accepts manifest asset tags, and `createApp(App).hydrate(container)` attaches behavior, dedupes matching style tags, reports structured hydration mismatches, cleans up failed root hydration effects, and supports explicit `{ recover: true }` deopt. `resolveStaticAssets()` and `createStaticRoutesFromRouter()` are available from `@italone/solace/server`. |
 | DevTools subpath | Implemented with example panel | `@italone/solace/devtools` exposes listener and recorder APIs, and `examples/devtools-extension` consumes that public subpath through a browser DevTools timeline panel without changing runtime payloads.                                                                                                                                                                                                                                                                                                                                               |
 | Examples         | Implemented                    | Basic counter, todo app, large list, performance benchmark, router, SFC, and DevTools extension examples exist under `examples/**`.                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -62,7 +62,9 @@ The repository includes these validation layers:
 - DevTools extension smoke: `pnpm test:e2e:devtools-extension`
 - Full local gate: `pnpm release:check`, which includes `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e`
 
-The 2026-07-30 local release check covered the full gate for `0.0.5`, including release readiness, quality, coverage, package smoke, jsdom benchmark, Chromium production browser benchmark, and e2e. The DevTools extension e2e smoke also passed separately because it is not part of `release:check`. Run the commands again before any future completion, merge, or release claim.
+The 2026-07-30 local release check covered the full gate for `0.0.5`, including release readiness, quality, coverage, package smoke, jsdom benchmark, Chromium production browser benchmark, and e2e. The DevTools extension e2e smoke also passed separately because it is not part of `release:check`.
+
+The 2026-07-31 router stabilization work refreshed the router-focused checks and `pnpm quality` after adding the initial history navigation pipeline and stale async navigation result protection. It did not rerun coverage, package smoke, benchmarks, browser e2e, DevTools extension e2e, or the full `release:check`. Run the commands again before any future completion, merge, or release claim.
 
 ## Public API Boundary
 
@@ -93,7 +95,7 @@ The alpha compatibility promise applies to documented public entries only. Inter
 Solace intentionally does not yet include:
 
 - A stable template/SFC compiler contract beyond the current narrow alpha surface. The current `.solace` compiler and Vite plugin are documented for one `<template>`, optional `<script>`, optional `<style>`, Vite transform diagnostics, and explicit `map: null` source-map policy; syntax expansion remains deferred.
-- A full first-party router contract. The current beta router covers static routes, dynamic params, wildcard fallback routes, query strings, web/hash history, nested routes, redirects, global and route-level guards, `lazyRoute()` components, `RouterLink`, `RouterView`, and composition helpers, but route names, aliases, route props, scroll behavior, memory history, SSR/hydration integration, auth, and permission routing remain deferred.
+- A full first-party router contract. The current beta router covers static routes, dynamic params, wildcard fallback routes, query strings, web/hash history, nested routes, redirects, global and route-level guards, initial history navigation through the guard/redirect pipeline, stale async navigation result protection, `lazyRoute()` components, `RouterLink`, `RouterView`, and composition helpers, but route names, aliases, route props, scroll behavior, memory history, SSR/hydration integration, auth, and permission routing remain deferred.
 - Streaming SSR, async component SSR beyond explicit runtime rejection, automatic hydration
   mismatch recovery beyond explicit `{ recover: true }`, router-aware SSR/SSG/hydration, and fully
   automated production SSR pipelines.
@@ -111,7 +113,8 @@ These gaps should stay visible in promotional material so the project is positio
 
 `@italone/solace@0.0.4` has been published to npm. Repository `main` is prepared at
 `0.0.5` and synchronized with `origin/main`, but npm publishing was explicitly skipped on
-2026-07-30. npm still reports `@italone/solace@0.0.4` as the latest published version.
+2026-07-30 and remains intentionally deferred for the week of 2026-07-31. npm still reports
+`@italone/solace@0.0.4` as the latest published version.
 
 Before publishing `0.0.5` or any future version, follow the same checklist:
 

@@ -16,7 +16,7 @@ Solace 当前是一个早期 alpha runtime，npm 最新公开版本仍是 `@ital
 - npm dist-tag：`latest` 指向 `0.0.4`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
-- 本地分支状态：截至 2026-07-30，本地 `main` release baseline 已与 `origin/main` 同步。后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
+- 本地分支状态：截至 2026-07-31，本地 `main` release baseline 已与 `origin/main` 同步。后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
 - 发布阶段：alpha 已发布；beta 契约稳定、SSR/hydration minimum loop，以及首个浏览器
   DevTools 扩展 timeline panel 已在仓库中实现
 
@@ -32,7 +32,7 @@ Solace 当前是一个早期 alpha runtime，npm 最新公开版本仍是 `@ital
 | Store           | 已实现               | `createStore` 组合 reactive state、computed getters 和 named actions，并包含 DevTools action summaries。                                                                                                                                                                                                                                                                                                                                             |
 | JSX             | 已实现               | package exports 包含 `jsx-runtime` 和 `jsx-dev-runtime`，并有 JSX 示例和 typecheck 覆盖。                                                                                                                                                                                                                                                                                                                                                            |
 | SFC compiler    | alpha 公开契约已收窄 | `.solace` 解析、template codegen、runtime-helper style 注入、`@italone/solace/sfc`、`@italone/solace/vite`、Vite transform diagnostics、显式 `map: null` source-map policy、被拒绝的 plugin options 和被拒绝的 `.solace?*` query transforms 已文档化，并有 package-boundary tests 覆盖。                                                                                                                                                             |
-| Router          | beta 下一切片已稳定  | matcher、history adapters、query helpers、nested route chains、redirects、global 和 route-level guards、`lazyRoute()` components、`RouterLink`、nested `RouterView`、root exports、deferred API 边界、package export 覆盖、packed-consumer smoke 和扩展后的 `router-basic` e2e 覆盖均已存在。                                                                                                                                                        |
+| Router          | beta 下一切片已稳定  | matcher、history adapters、query helpers、nested route chains、redirects、global 和 route-level guards、initial history navigation pipeline、stale async navigation result protection、`lazyRoute()` components、`RouterLink`、nested `RouterView`、root exports、deferred API 边界、package export 覆盖、packed-consumer smoke 和扩展后的 `router-basic` e2e 覆盖均已存在。                                                                         |
 | SSR/hydration   | minimum loop 已实现  | `renderToString()` 可渲染同步树、拒绝 async/thenable SSR 来源并收集 `useStyle()` 输出，`generateStaticSite()` 会强制显式字符串 route paths 并支持 manifest asset tags，`createApp(App).hydrate(container)` 可附加行为、去重匹配 style tags、报告结构化 hydration mismatch、清理失败的 root hydration effects，并支持显式 `{ recover: true }` deopt。`resolveStaticAssets()` 和 `createStaticRoutesFromRouter()` 已从 `@italone/solace/server` 暴露。 |
 | DevTools 子路径 | 已实现并带扩展示例   | `@italone/solace/devtools` 暴露 listener 和 recorder API，`examples/devtools-extension` 通过浏览器 DevTools timeline panel 消费这个公开子路径，且不改变 runtime payload。                                                                                                                                                                                                                                                                            |
 | 示例            | 已实现               | `examples/**` 下包含 basic counter、todo app、large list、performance benchmark、router、SFC 和 DevTools extension 示例。                                                                                                                                                                                                                                                                                                                            |
@@ -59,7 +59,9 @@ Solace 当前是一个早期 alpha runtime，npm 最新公开版本仍是 `@ital
 - DevTools extension 冒烟：`pnpm test:e2e:devtools-extension`
 - 完整本地门禁：`pnpm release:check`，其中包含 `pnpm release:readiness`、`pnpm package:smoke` 和 `pnpm test:e2e`
 
-2026-07-30 的本地 release check 已覆盖 `0.0.5` 的完整门禁，包括 release readiness、quality、coverage、package smoke、jsdom benchmark、Chromium 生产构建 browser benchmark 和 e2e。DevTools extension e2e 冒烟也已单独通过，因为它不包含在 `release:check` 中。后续在声明完成、合并或发布前，需要重新运行对应命令。
+2026-07-30 的本地 release check 已覆盖 `0.0.5` 的完整门禁，包括 release readiness、quality、coverage、package smoke、jsdom benchmark、Chromium 生产构建 browser benchmark 和 e2e。DevTools extension e2e 冒烟也已单独通过，因为它不包含在 `release:check` 中。
+
+2026-07-31 的 router 稳定化工作在加入 initial history navigation pipeline 和 stale async navigation result protection 后，重新运行了 router-focused checks 和 `pnpm quality`。本轮没有重新运行 coverage、package smoke、benchmarks、browser e2e、DevTools extension e2e 或完整 `release:check`。后续在声明完成、合并或发布前，需要重新运行对应命令。
 
 ## 公共 API 边界
 
@@ -90,7 +92,7 @@ alpha 阶段的兼容性承诺只适用于文档化公开入口。框架稳定�
 Solace 当前有意不包含：
 
 - 超出当前窄 alpha surface 的稳定 template/SFC compiler 契约。当前 `.solace` compiler 和 Vite plugin 已文档化为支持一个 `<template>`、可选 `<script>`、可选 `<style>`、Vite transform diagnostics 和显式 `map: null` source-map policy；语法扩展继续推迟。
-- 完整的一方 router 契约。当前 beta router 覆盖 static routes、dynamic params、wildcard fallback routes、query strings、web/hash history、nested routes、redirects、global 和 route-level guards、`lazyRoute()` components、`RouterLink`、`RouterView` 和 composition helpers，但 route names、aliases、route props、scroll behavior、memory history、SSR/hydration 集成、auth 和 permission routing 仍被推迟。
+- 完整的一方 router 契约。当前 beta router 覆盖 static routes、dynamic params、wildcard fallback routes、query strings、web/hash history、nested routes、redirects、global 和 route-level guards、initial history navigation pipeline、stale async navigation result protection、`lazyRoute()` components、`RouterLink`、`RouterView` 和 composition helpers，但 route names、aliases、route props、scroll behavior、memory history、SSR/hydration 集成、auth 和 permission routing 仍被推迟。
 - streaming SSR、明确运行时拒绝之外的 async component SSR、显式 `{ recover: true }` 之外的
   hydration mismatch 自动恢复、router-aware SSR/SSG/hydration，以及完整 production SSR pipeline
   automation。
@@ -107,8 +109,9 @@ Solace 当前有意不包含：
 ## 发布协调状态
 
 发布独立于仓库就绪度。`@italone/solace@0.0.4` 已发布到 npm。当前仓库 `main`
-已准备到 `0.0.5` 并与 `origin/main` 同步，但 2026-07-30 已明确跳过 npm 发布；
-npm 当前最新公开版本仍是 `@italone/solace@0.0.4`。
+已准备到 `0.0.5` 并与 `origin/main` 同步，但 2026-07-30 已明确跳过 npm 发布，
+且 2026-07-31 当周仍有意暂缓发布；npm 当前最新公开版本仍是
+`@italone/solace@0.0.4`。
 
 未来发布 `0.0.5` 或任何后续版本前：
 
