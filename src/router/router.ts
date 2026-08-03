@@ -535,6 +535,7 @@ function assertRouterLocationContract(location: {
   }
 
   assertRouterLocationPathHasNoHash(location.path);
+  assertRouterObjectLocationPathHasNoQuery(location.path);
 
   if (
     location.query !== undefined &&
@@ -577,5 +578,11 @@ function assertRouterLocationQueryValueContract(value: unknown): void {
 function assertRouterLocationPathHasNoHash(path: string): void {
   if (path.includes("#")) {
     throw new TypeError("Router location hash fragments are not part of the beta contract");
+  }
+}
+
+function assertRouterObjectLocationPathHasNoQuery(path: string): void {
+  if (path.includes("?")) {
+    throw new TypeError("Router object location paths must not include query strings");
   }
 }

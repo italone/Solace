@@ -271,7 +271,8 @@ yet include route names, aliases, route props, scroll behavior, memory history, 
 SSR, SSG, or hydration router integration. Passing still-deferred route fields such as `name`,
 `alias`, or `props`, or deferred options such as `scrollBehavior`, throws a `TypeError`.
 Object route locations only support `{ path, query }`; named locations, hash fragments in string or
-object-path locations, and params objects are rejected. Dynamic params are limited to simple
+object-path locations, and params objects are rejected. Object location `path` values must not
+include query strings; use the separate `query` field instead. Dynamic params are limited to simple
 `:name` segments and `/:pathMatch(.*)*` wildcard fallback. Lazy route component load failures
 surface `RouterNavigationError` with type
 `"lazy-load-failed"`.

@@ -669,7 +669,8 @@ hash fragments. Route records must be non-array objects, and route components mu
 valid `lazyRoute()` values, or omitted/`null` for layout-less records.
 Route locations must be strings or non-array objects. Object route locations are limited to
 `{ path, query }`; named locations, hash fragments in string or object-path locations, and params
-objects are rejected until those router contracts are separately designed.
+objects are rejected until those router contracts are separately designed. Object location `path`
+values must not include query strings; use the separate `query` field instead.
 Supported path locations normalize to a leading slash and trim trailing slashes except for `/`.
 Empty string locations resolve to `/`. Query strings use repeated keys for arrays, skip nullish
 object values, keep `+` as a literal plus sign, and throw a `TypeError` for malformed percent

@@ -134,6 +134,7 @@ describe("createRouter", () => {
       { path: "/bad-redirect", redirect: 42 },
       { path: "/bad-redirect-location", redirect: { name: "home" } },
       { path: "/bad-redirect-query", redirect: { path: "/", query: [] } },
+      { path: "/bad-redirect-path-query", redirect: { path: "/?tab=profile" } },
       { path: "/bad-before-enter", beforeEnter: true },
       { path: "/bad-before-enter-array", beforeEnter: [() => true, null] },
       { path: "/bad-before-enter-sparse-array", beforeEnter: sparseBeforeEnter },
@@ -363,6 +364,9 @@ describe("createRouter", () => {
     expect(() => router.resolve({ path: "/users/1#profile" })).toThrow(
       TypeError("Router location hash fragments are not part of the beta contract"),
     );
+    expect(() => router.resolve({ path: "/users/1?tab=profile" })).toThrow(
+      TypeError("Router object location paths must not include query strings"),
+    );
     await expect(router.push({ path: "/users/1", name: "user" } as never)).rejects.toThrow(
       /Deferred router location field/,
     );
@@ -374,6 +378,9 @@ describe("createRouter", () => {
     ).rejects.toThrow(/Deferred router location field/);
     await expect(router.replace({ path: "/users/1#profile" })).rejects.toThrow(
       TypeError("Router location hash fragments are not part of the beta contract"),
+    );
+    await expect(router.replace({ path: "/users/1?tab=profile" })).rejects.toThrow(
+      TypeError("Router object location paths must not include query strings"),
     );
   });
 
