@@ -688,7 +688,9 @@ when no route matches or a lazy route component is still loading. If a lazy rout
 to load, the wrapper surfaces `RouterNavigationError` with type `"lazy-load-failed"`. When one
 `lazyRoute()` component is reused by multiple route records, that error's `from` and `to` locations
 describe the active route at the time of failure, rather than the route where the component first
-rendered.
+rendered. If a route redirect function throws or returns a deferred or otherwise invalid location,
+navigation rejects with `RouterNavigationError` of type `"redirect-rejected"`; the error's `to`
+location is the route whose redirect failed.
 
 Current beta router limitations:
 

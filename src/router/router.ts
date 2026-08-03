@@ -19,7 +19,7 @@ export const routerViewDepthKey = Symbol("Solace.routerViewDepth");
 export class RouterNavigationError extends Error {
   constructor(
     message: string,
-    readonly type: "redirect-loop" | "guard-rejected" | "lazy-load-failed",
+    readonly type: "redirect-loop" | "redirect-rejected" | "guard-rejected" | "lazy-load-failed",
     readonly from: RouteLocationNormalized,
     readonly to: RouteLocationNormalized,
   ) {
@@ -237,7 +237,16 @@ export function createRouter(options: RouterOptions): Router {
         state.redirectedFrom = target;
       }
 
-      target = resolveLocation(typeof redirect === "function" ? redirect(target) : redirect);
+      try {
+        target = resolveLocation(typeof redirect === "function" ? redirect(target) : redirect);
+      } catch {
+        throw new RouterNavigationError(
+          "Router redirect rejected",
+          "redirect-rejected",
+          from,
+          target,
+        );
+      }
       state.count += 1;
     }
   }

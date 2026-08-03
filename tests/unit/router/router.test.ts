@@ -415,6 +415,51 @@ describe("createRouter", () => {
     expect(route.params).toEqual({ id: "42" });
   });
 
+  it("rejects route redirect errors without mutating history or current route", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        {
+          path: "/broken-redirect",
+          redirect: () => {
+            throw new Error("redirect exploded");
+          },
+        },
+      ],
+    });
+
+    await expect(router.push("/broken-redirect")).rejects.toMatchObject({
+      name: "RouterNavigationError",
+      type: "redirect-rejected",
+      from: { fullPath: "/" },
+      to: { fullPath: "/broken-redirect" },
+    });
+    expect(history.pushedPaths).toEqual([]);
+    expect(router.currentRoute.value.fullPath).toBe("/");
+  });
+
+  it("rejects invalid route redirect locations without mutating history or current route", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/invalid-redirect", redirect: () => ({ name: "login" }) as never },
+      ],
+    });
+
+    await expect(router.push("/invalid-redirect")).rejects.toMatchObject({
+      name: "RouterNavigationError",
+      type: "redirect-rejected",
+      from: { fullPath: "/" },
+      to: { fullPath: "/invalid-redirect" },
+    });
+    expect(history.pushedPaths).toEqual([]);
+    expect(router.currentRoute.value.fullPath).toBe("/");
+  });
+
   it("applies parent route redirects before child guards", async () => {
     const childGuard = vi.fn();
     const history = createMemoryLikeHistory("/");
