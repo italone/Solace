@@ -1,12 +1,13 @@
 import type { RouterHistory } from "./types";
 
 export function createWebHistory(): RouterHistory {
-  const location = () => `${window.location.pathname}${window.location.search}` || "/";
+  const location = () =>
+    normalizeHistoryTarget(`${window.location.pathname}${window.location.search}`);
 
   return {
     location,
-    push: (path) => window.history.pushState(null, "", path),
-    replace: (path) => window.history.replaceState(null, "", path),
+    push: (path) => window.history.pushState(null, "", normalizeHistoryTarget(path)),
+    replace: (path) => window.history.replaceState(null, "", normalizeHistoryTarget(path)),
     listen(listener) {
       const onPopState = createLocationChangeListener(location, listener);
       window.addEventListener("popstate", onPopState);
@@ -58,9 +59,16 @@ function normalizeHashLocation(hash: string): string {
 }
 
 function normalizeHashTarget(path: string): string {
-  if (path === "" || path === "/") {
-    return "/";
-  }
+  return normalizeHistoryTarget(path);
+}
 
-  return path.startsWith("/") ? path : `/${path}`;
+function normalizeHistoryTarget(path: string): string {
+  const queryStart = path.indexOf("?");
+  const rawPath = queryStart >= 0 ? path.slice(0, queryStart) : path;
+  const query = queryStart >= 0 ? path.slice(queryStart) : "";
+  const withLeadingSlash = rawPath.startsWith("/") ? rawPath : `/${rawPath}`;
+  const trimmed =
+    withLeadingSlash.length > 1 ? withLeadingSlash.replace(/\/+$/, "") : withLeadingSlash;
+
+  return `${trimmed === "" ? "/" : trimmed}${query}`;
 }

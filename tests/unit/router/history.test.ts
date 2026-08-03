@@ -17,6 +17,21 @@ describe("router history", () => {
     expect(history.location()).toBe("/final");
   });
 
+  it("normalizes web history locations and write targets", () => {
+    window.history.replaceState(null, "", "/users/1/?tab=profile");
+    const history = createWebHistory();
+
+    expect(history.location()).toBe("/users/1?tab=profile");
+
+    history.push("/settings/");
+    expect(window.location.pathname).toBe("/settings");
+    expect(history.location()).toBe("/settings");
+
+    history.replace("relative/");
+    expect(window.location.pathname).toBe("/relative");
+    expect(history.location()).toBe("/relative");
+  });
+
   it("notifies listeners on popstate", () => {
     const history = createWebHistory();
     const listener = vi.fn();
@@ -43,6 +58,54 @@ describe("router history", () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
+  it("keeps web history listener cleanup idempotent after location changes", () => {
+    window.history.replaceState(null, "", "/start");
+    const history = createWebHistory();
+    const listener = vi.fn();
+    const stop = history.listen(listener);
+
+    window.history.pushState(null, "", "/next");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    stop();
+    stop();
+
+    window.history.pushState(null, "", "/final");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps web history listener state and cleanup independent", () => {
+    window.history.replaceState(null, "", "/start");
+    const history = createWebHistory();
+    const first = vi.fn();
+    const second = vi.fn();
+    const stopFirst = history.listen(first);
+    history.listen(second);
+
+    window.history.pushState(null, "", "/next");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    stopFirst();
+
+    window.history.pushState(null, "", "/final");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not notify web history listeners from push or replace", () => {
+    const history = createWebHistory();
+    const listener = vi.fn();
+    history.listen(listener);
+
+    history.push("/pushed");
+    history.replace("/replaced");
+
+    expect(listener).not.toHaveBeenCalled();
+  });
+
   it("normalizes hash history paths", () => {
     window.history.replaceState(null, "", "/#/users/1?tab=profile");
     const history = createWebHashHistory();
@@ -61,6 +124,21 @@ describe("router history", () => {
     window.history.replaceState(null, "", "/#settings?tab=profile");
     const relativeHistory = createWebHashHistory();
     expect(relativeHistory.location()).toBe("/settings?tab=profile");
+  });
+
+  it("normalizes hash history trailing slashes and write targets", () => {
+    window.history.replaceState(null, "", "/#/users/1/?tab=profile");
+    const history = createWebHashHistory();
+
+    expect(history.location()).toBe("/users/1?tab=profile");
+
+    history.push("/settings/");
+    expect(window.location.hash).toBe("#/settings");
+    expect(history.location()).toBe("/settings");
+
+    history.replace("relative/");
+    expect(window.location.hash).toBe("#/relative");
+    expect(history.location()).toBe("/relative");
   });
 
   it("deduplicates hash history events and cleans up listeners", () => {
@@ -83,5 +161,53 @@ describe("router history", () => {
     window.dispatchEvent(new PopStateEvent("popstate"));
 
     expect(listener).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps hash history cleanup idempotent after location changes", () => {
+    window.history.replaceState(null, "", "/#/start");
+    const history = createWebHashHistory();
+    const listener = vi.fn();
+    const stop = history.listen(listener);
+
+    window.history.pushState(null, "", "/#/next");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    stop();
+    stop();
+
+    window.history.pushState(null, "", "/#/final");
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps hash history listener state and cleanup independent", () => {
+    window.history.replaceState(null, "", "/#/start");
+    const history = createWebHashHistory();
+    const first = vi.fn();
+    const second = vi.fn();
+    const stopFirst = history.listen(first);
+    history.listen(second);
+
+    window.history.pushState(null, "", "/#/next");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    stopFirst();
+
+    window.history.pushState(null, "", "/#/final");
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not notify hash history listeners from push or replace", () => {
+    const history = createWebHashHistory();
+    const listener = vi.fn();
+    history.listen(listener);
+
+    history.push("/pushed");
+    history.replace("/replaced");
+
+    expect(listener).not.toHaveBeenCalled();
   });
 });
