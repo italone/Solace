@@ -68,9 +68,14 @@ export function createRouter(options: RouterOptions): Router {
       app.provide(routerKey, router);
       app.provide(routeKey, currentRoute);
       stopListening?.();
-      stopListening = options.history.listen(() => {
+      const stop = options.history.listen(() => {
         void settleHistoryLocation();
       });
+      if (typeof stop !== "function") {
+        throw new TypeError("Router history listen() must return an unsubscribe function");
+      }
+
+      stopListening = stop;
       void settleHistoryLocation();
     },
     async push(to: RouteLocationRaw) {

@@ -303,6 +303,22 @@ describe("createRouter", () => {
     }
   });
 
+  it("rejects history listeners that do not return cleanup functions at install time", () => {
+    const history = {
+      ...createMemoryLikeHistory(),
+      listen: () => undefined,
+    };
+    const router = createRouter({
+      history: history as never,
+      routes: [{ path: "/", component: Home }],
+    });
+    const app = { provide: vi.fn(), use: vi.fn(), mount: vi.fn() };
+
+    expect(() => router.install(app as never)).toThrow(
+      TypeError("Router history listen() must return an unsubscribe function"),
+    );
+  });
+
   it("rejects deferred router options instead of widening the beta contract", () => {
     expect(() =>
       createRouter({
