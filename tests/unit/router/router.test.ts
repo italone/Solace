@@ -127,12 +127,16 @@ describe("createRouter", () => {
   });
 
   it("rejects invalid beta route field values at creation time", () => {
+    const sparseBeforeEnter = [() => true] as unknown[];
+    sparseBeforeEnter.length = 2;
+
     const invalidRoutes = [
       { path: "/bad-redirect", redirect: 42 },
       { path: "/bad-redirect-location", redirect: { name: "home" } },
       { path: "/bad-redirect-query", redirect: { path: "/", query: [] } },
       { path: "/bad-before-enter", beforeEnter: true },
       { path: "/bad-before-enter-array", beforeEnter: [() => true, null] },
+      { path: "/bad-before-enter-sparse-array", beforeEnter: sparseBeforeEnter },
       { path: "/bad-meta-null", meta: null },
       { path: "/bad-meta-array", meta: [] },
       {

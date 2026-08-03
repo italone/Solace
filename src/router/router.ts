@@ -484,7 +484,13 @@ function assertRouteRecordBeforeEnterContract(beforeEnter: RouteRecord["beforeEn
     return;
   }
 
-  if (Array.isArray(beforeEnter) && beforeEnter.every((guard) => typeof guard === "function")) {
+  if (Array.isArray(beforeEnter)) {
+    for (let index = 0; index < beforeEnter.length; index += 1) {
+      if (typeof beforeEnter[index] !== "function") {
+        throw new TypeError("Router route record beforeEnter must be a function or function array");
+      }
+    }
+
     return;
   }
 
