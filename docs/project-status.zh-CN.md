@@ -61,12 +61,12 @@ Solace 当前是一个早期 alpha runtime，npm 最新公开版本仍是 `@ital
 
 2026-07-30 的本地 release check 已覆盖 `0.0.5` 的完整门禁，包括 release readiness、quality、coverage、package smoke、jsdom benchmark、Chromium 生产构建 browser benchmark 和 e2e。DevTools extension e2e 冒烟也已单独通过，因为它不包含在 `release:check` 中。
 
-2026-07-31 的 router 稳定化工作在加入 initial history navigation pipeline、stale async
+2026-08-03 的 router 稳定化工作在加入 initial history navigation pipeline、stale async
 navigation result protection、rejected-guard history recovery、invalid history location recovery、
-invalid initial history fallback、lazy route `"lazy-load-failed"` 回归契约、parent-to-child redirect
-先于 child guards 的优先级、重复 current-route navigation guard-skip/no-op 处理、redirect-to-current
-guard-skip/no-op 处理，以及当前 history-listener guard-skip/no-op 处理后，重新运行了 router-focused
-checks 和 `pnpm quality`。本轮没有重新运行 coverage、`pnpm quality` 之外的 package smoke、
+invalid initial history fallback、lazy route `"lazy-load-failed"` 回归契约（包括共享 lazy component
+在导航后失败时使用 active route 的错误位置）、parent-to-child redirect 先于 child guards 的优先级、
+重复 current-route navigation guard-skip/no-op 处理、redirect-to-current guard-skip/no-op 处理，以及当前
+history-listener guard-skip/no-op 处理后，重新运行了 router-focused checks 和 `pnpm quality`。本轮没有重新运行 coverage、`pnpm quality` 之外的 package smoke、
 benchmarks、browser e2e、DevTools extension e2e 或完整 `release:check`。后续在声明完成、合并或发布前，需要重新运行对应命令。
 
 ## 公共 API 边界

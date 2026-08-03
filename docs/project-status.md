@@ -64,11 +64,12 @@ The repository includes these validation layers:
 
 The 2026-07-30 local release check covered the full gate for `0.0.5`, including release readiness, quality, coverage, package smoke, jsdom benchmark, Chromium production browser benchmark, and e2e. The DevTools extension e2e smoke also passed separately because it is not part of `release:check`.
 
-The 2026-07-31 router stabilization work refreshed the router-focused checks and `pnpm quality`
+The 2026-08-03 router stabilization work refreshed the router-focused checks and `pnpm quality`
 after adding the initial history navigation pipeline, stale async navigation result protection,
 rejected-guard history recovery, invalid history location recovery, invalid initial history
-fallback, the lazy route `"lazy-load-failed"` regression contract, parent-to-child redirect
-precedence before child guards, duplicate current-route navigation guard-skip/no-op handling,
+fallback, the lazy route `"lazy-load-failed"` regression contract, including active-route error
+locations when a shared lazy component fails after navigation, parent-to-child redirect precedence
+before child guards, duplicate current-route navigation guard-skip/no-op handling,
 redirect-to-current guard-skip/no-op handling, and current history-listener guard-skip/no-op
 handling. It did not rerun coverage, package smoke outside `pnpm quality`,
 benchmarks, browser e2e, DevTools extension e2e, or the full `release:check`. Run the commands again

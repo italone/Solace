@@ -685,7 +685,10 @@ Create browser-backed history adapters. Use `createWebHistory()` for normal path
 `RouterLink` renders an anchor and performs async client navigation for primary unmodified clicks.
 `RouterView` renders the matched route component for its current nested depth or an empty fragment
 when no route matches or a lazy route component is still loading. If a lazy route component fails
-to load, the wrapper surfaces `RouterNavigationError` with type `"lazy-load-failed"`.
+to load, the wrapper surfaces `RouterNavigationError` with type `"lazy-load-failed"`. When one
+`lazyRoute()` component is reused by multiple route records, that error's `from` and `to` locations
+describe the active route at the time of failure, rather than the route where the component first
+rendered.
 
 Current beta router limitations:
 

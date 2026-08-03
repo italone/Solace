@@ -3,6 +3,7 @@ import { Fragment } from "../vnode/vnode";
 import { h } from "../vnode/h";
 import { defineAsyncComponent } from "../component/async-component";
 import { inject, provide } from "../component/provide";
+import type { Ref } from "../reactivity/ref";
 import { RouterNavigationError, routerViewDepthKey, useRoute, useRouter } from "./router";
 import type {
   LazyRouteComponent,
@@ -62,17 +63,17 @@ export function RouterView(): ComponentRender {
   return () => {
     const record = getRenderableRecord(route.value.matched, depth);
     const component = record?.component;
-    const resolvedComponent = resolveRouteComponent(component, route.value);
+    const resolvedComponent = resolveRouteComponent(component, route);
     return resolvedComponent === null ? h(Fragment, null, []) : h(resolvedComponent);
   };
 }
 
 const lazyRouteComponentCache = new WeakMap<object, ComponentType>();
-const lazyRouteComponentWrappers = new WeakMap<object, ComponentType>();
+const lazyRouteComponentWrappers = new WeakMap<object, WeakMap<object, ComponentType>>();
 
 function resolveRouteComponent(
   component: RouteComponent | null | undefined,
-  route: RouteLocationNormalized,
+  route: Ref<RouteLocationNormalized>,
 ): ComponentType | null {
   if (component == null) {
     return null;
@@ -87,12 +88,12 @@ function resolveRouteComponent(
     return cached;
   }
 
-  const wrapper = lazyRouteComponentWrappers.get(component);
+  const wrappers = lazyRouteComponentWrappers.get(component);
+  const wrapper = wrappers?.get(route);
   if (wrapper !== undefined) {
     return wrapper;
   }
 
-  let loadError: RouterNavigationError | null = null;
   const asyncWrapper = defineAsyncComponent({
     loader: () =>
       component
@@ -103,28 +104,28 @@ function resolveRouteComponent(
           return resolvedComponent;
         })
         .catch(() => {
-          loadError = new RouterNavigationError(
+          const errorRoute = route.value;
+          throw new RouterNavigationError(
             "Lazy route component failed to load",
             "lazy-load-failed",
-            route,
-            route,
+            errorRoute,
+            errorRoute,
           );
-          throw loadError;
         }),
     errorComponent: () => {
-      throw (
-        loadError ??
-        new RouterNavigationError(
-          "Lazy route component failed to load",
-          "lazy-load-failed",
-          route,
-          route,
-        )
+      const errorRoute = route.value;
+      throw new RouterNavigationError(
+        "Lazy route component failed to load",
+        "lazy-load-failed",
+        errorRoute,
+        errorRoute,
       );
     },
   });
 
-  lazyRouteComponentWrappers.set(component, asyncWrapper);
+  const routeWrappers = wrappers ?? new WeakMap<object, ComponentType>();
+  routeWrappers.set(route, asyncWrapper);
+  lazyRouteComponentWrappers.set(component, routeWrappers);
   return asyncWrapper;
 }
 

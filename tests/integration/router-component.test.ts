@@ -309,6 +309,46 @@ describe("router components", () => {
     }
   });
 
+  it("reports the active route when a shared lazy component fails after navigation", async () => {
+    const SharedLazyRoute = lazyRoute(() => Promise.reject(new Error("load failed")));
+    const router = createRouter({
+      history: createMemoryLikeHistory("/first-lazy"),
+      routes: [
+        { path: "/first-lazy", component: SharedLazyRoute },
+        { path: "/second-lazy", component: SharedLazyRoute },
+      ],
+    });
+    const container = document.createElement("div");
+    const capturedErrors: RouterNavigationError[] = [];
+    const onUnhandledRejection = (reason: unknown) => {
+      if (reason instanceof RouterNavigationError) {
+        capturedErrors.push(reason);
+      }
+    };
+
+    process.on("unhandledRejection", onUnhandledRejection);
+    try {
+      createApp(() => h(RouterView))
+        .use(router)
+        .mount(container);
+
+      await settleLazyRouteComponent();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await router.push("/second-lazy");
+      await settleLazyRouteComponent();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(capturedErrors[capturedErrors.length - 1]).toMatchObject({
+        name: "RouterNavigationError",
+        type: "lazy-load-failed",
+        from: { fullPath: "/second-lazy" },
+        to: { fullPath: "/second-lazy" },
+      });
+    } finally {
+      process.off("unhandledRejection", onUnhandledRejection);
+    }
+  });
+
   it("does not navigate RouterLink clicks that the browser should handle", () => {
     const history = createMemoryLikeHistory("/");
     const router = createRouter({
