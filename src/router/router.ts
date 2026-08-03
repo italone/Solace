@@ -530,4 +530,34 @@ function assertRouterLocationContract(location: {
   ) {
     throw new TypeError("Router location query must be an object");
   }
+
+  if (location.query !== undefined) {
+    assertRouterLocationQueryContract(location.query);
+  }
+}
+
+function assertRouterLocationQueryContract(query: object): void {
+  for (const value of Object.values(query)) {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        assertRouterLocationQueryValueContract(item);
+      }
+    } else {
+      assertRouterLocationQueryValueContract(value);
+    }
+  }
+}
+
+function assertRouterLocationQueryValueContract(value: unknown): void {
+  if (
+    value === null ||
+    value === undefined ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return;
+  }
+
+  throw new TypeError("Router location query value must be a primitive or primitive array");
 }

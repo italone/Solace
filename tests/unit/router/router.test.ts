@@ -367,6 +367,14 @@ describe("createRouter", () => {
     await expect(router.replace({ path: "/", query: 42 } as never)).rejects.toThrow(
       /Router location query must be an object/,
     );
+    expect(() =>
+      router.resolve({ path: "/", query: { filter: { active: true } } } as never),
+    ).toThrow(TypeError("Router location query value must be a primitive or primitive array"));
+    await expect(
+      router.push({ path: "/", query: { filter: [true, { active: true }] } } as never),
+    ).rejects.toThrow(
+      TypeError("Router location query value must be a primitive or primitive array"),
+    );
   });
 
   it("resolves string and object locations", () => {
