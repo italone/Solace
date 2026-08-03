@@ -71,6 +71,10 @@ function normalizeHashTarget(path: string): string {
 }
 
 function normalizeHistoryTarget(path: string): string {
+  if (path.startsWith("//") || /^[A-Za-z][A-Za-z0-9+.-]*:/.test(path)) {
+    throw new TypeError("Router history target must be a relative path");
+  }
+
   if (path.includes("#")) {
     throw new TypeError("Router history target must not include hash fragments");
   }

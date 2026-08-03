@@ -117,6 +117,17 @@ describe("router history", () => {
     );
   });
 
+  it("rejects web history write targets that look like absolute URLs", () => {
+    const history = createWebHistory();
+
+    expect(() => history.push("https://example.com")).toThrow(
+      TypeError("Router history target must be a relative path"),
+    );
+    expect(() => history.replace("//example.com")).toThrow(
+      TypeError("Router history target must be a relative path"),
+    );
+  });
+
   it("normalizes hash history paths", () => {
     window.history.replaceState(null, "", "/#/users/1?tab=profile");
     const history = createWebHashHistory();
@@ -230,6 +241,17 @@ describe("router history", () => {
     );
     expect(() => history.replace("/settings#profile")).toThrow(
       TypeError("Router history target must not include hash fragments"),
+    );
+  });
+
+  it("rejects hash history write targets that look like absolute URLs", () => {
+    const history = createWebHashHistory();
+
+    expect(() => history.push("https://example.com")).toThrow(
+      TypeError("Router history target must be a relative path"),
+    );
+    expect(() => history.replace("//example.com")).toThrow(
+      TypeError("Router history target must be a relative path"),
     );
   });
 });

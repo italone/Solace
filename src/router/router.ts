@@ -371,6 +371,7 @@ export function useRoute(): Router["currentRoute"] {
 
 function normalizeRawLocation(to: RouteLocationRaw): string {
   if (typeof to === "string") {
+    assertRouterLocationIsRelative(to);
     assertRouterLocationPathHasNoHash(to);
     return to === "" ? "/" : to;
   }
@@ -587,6 +588,12 @@ function assertRouterLocationQueryValueContract(value: unknown): void {
 function assertRouterLocationPathHasNoHash(path: string): void {
   if (path.includes("#")) {
     throw new TypeError("Router location hash fragments are not part of the beta contract");
+  }
+}
+
+function assertRouterLocationIsRelative(path: string): void {
+  if (path.startsWith("//") || /^[A-Za-z][A-Za-z0-9+.-]*:/.test(path)) {
+    throw new TypeError("Router location must be a relative path");
   }
 }
 

@@ -468,6 +468,9 @@ describe("createRouter", () => {
       params: { id: "42" },
       query: { redirect: "/users/1?tab=profile", mode: "edit" },
     });
+    expect(() => router.resolve("https://example.com")).toThrow(
+      TypeError("Router location must be a relative path"),
+    );
   });
 
   it("normalizes supported object locations to canonical full paths", () => {

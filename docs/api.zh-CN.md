@@ -618,14 +618,14 @@ route location 必须是 string 或非数组 object。object route location 目�
 string 或 object path 中的 hash fragment、named location 和 params object 会被拒绝，直到这些
 router 契约被单独设计。object location 的 `path` 不能包含 query string；需要 query 时应使用单独的
 `query` 字段。
-受支持的 path location 会规范化为前导 `/`，并移除除 `/` 之外的尾随斜杠。空字符串
-location 会解析为 `/`。query string 对数组使用重复 key，跳过 object location 中的 nullish
-值，将 `+` 保持为字面加号；percent encoding 非法时会抛出 `TypeError`。string route
-location 只用第一个 `?` 分隔 path 和 query，后续 `?` 会保留在 query value 中，并在 canonical
-`fullPath` 中被编码。object route location 的 query value 必须是 string、number、boolean、null、
-undefined，或这些值的数组。导航到当前 `fullPath`，或导航到最终 redirect 回当前 `fullPath` 的
-route 时，会解析为当前 route，且不会写入重复 history entry 或运行 navigation guards。浏览器
-history listener 在首次 router install settle
+string route location 必须是相对路径。受支持的 path location 会规范化为前导 `/`，并移除除 `/`
+之外的尾随斜杠。空字符串 location 会解析为 `/`。query string 对数组使用重复 key，跳过 object
+location 中的 nullish 值，将 `+` 保持为字面加号；percent encoding 非法时会抛出 `TypeError`。
+string route location 只用第一个 `?` 分隔 path 和 query，后续 `?` 会保留在 query value 中，并
+在 canonical `fullPath` 中被编码。object route location 的 query value 必须是 string、number、
+boolean、null、undefined，或这些值的数组。导航到当前 `fullPath`，或导航到最终 redirect 回当前
+`fullPath` 的 route 时，会解析为当前 route，且不会写入重复 history entry 或运行 navigation
+guards。浏览器 history listener 在首次 router install settle
 之后收到当前 `fullPath` 时，会保持 `currentRoute` 不变，并跳过 navigation guards。
 nested route match 中的 redirects 会按父到子的顺序解析，并且先于任何 matched `beforeEnter`
 guards 运行。
@@ -635,8 +635,9 @@ guards 运行。
 创建浏览器 history adapters。普通 path routing 使用 `createWebHistory()`，hash routing 使用
 `createWebHashHistory()`。`listen()` 会在 normalized location 发生变化时通知各 listener，并
 返回 unsubscribe 函数，同时抑制 location 未变化时重复触发的原生事件。adapter normalization
-会补前导 `/`、移除除 `/` 外的 path 尾随斜杠，保留 query string，并拒绝 write target 中的
-hash fragment。`push()` 和 `replace()` 更新浏览器状态，但不会直接调用 listener。
+会补前导 `/`、移除除 `/` 外的 path 尾随斜杠，保留 query string，并拒绝相对/绝对 URL
+风格 target 或 write target 中的 hash fragment。`push()` 和 `replace()` 更新浏览器状态，
+但不会直接调用 listener。
 
 ### `RouterLink` / `RouterView`
 
