@@ -106,6 +106,17 @@ describe("router history", () => {
     expect(listener).not.toHaveBeenCalled();
   });
 
+  it("rejects web history write targets with hash fragments", () => {
+    const history = createWebHistory();
+
+    expect(() => history.push("/settings#profile")).toThrow(
+      TypeError("Router history target must not include hash fragments"),
+    );
+    expect(() => history.replace("/settings#profile")).toThrow(
+      TypeError("Router history target must not include hash fragments"),
+    );
+  });
+
   it("normalizes hash history paths", () => {
     window.history.replaceState(null, "", "/#/users/1?tab=profile");
     const history = createWebHashHistory();
@@ -209,5 +220,16 @@ describe("router history", () => {
     history.replace("/replaced");
 
     expect(listener).not.toHaveBeenCalled();
+  });
+
+  it("rejects hash history write targets with hash fragments", () => {
+    const history = createWebHashHistory();
+
+    expect(() => history.push("/settings#profile")).toThrow(
+      TypeError("Router history target must not include hash fragments"),
+    );
+    expect(() => history.replace("/settings#profile")).toThrow(
+      TypeError("Router history target must not include hash fragments"),
+    );
   });
 });

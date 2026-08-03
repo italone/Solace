@@ -635,8 +635,8 @@ guards 运行。
 创建浏览器 history adapters。普通 path routing 使用 `createWebHistory()`，hash routing 使用
 `createWebHashHistory()`。`listen()` 会在 normalized location 发生变化时通知各 listener，并
 返回 unsubscribe 函数，同时抑制 location 未变化时重复触发的原生事件。adapter normalization
-会补前导 `/`、移除除 `/` 外的 path 尾随斜杠，并保留 query string。`push()` 和 `replace()`
-更新浏览器状态，但不会直接调用 listener。
+会补前导 `/`、移除除 `/` 外的 path 尾随斜杠，保留 query string，并拒绝 write target 中的
+hash fragment。`push()` 和 `replace()` 更新浏览器状态，但不会直接调用 listener。
 
 ### `RouterLink` / `RouterView`
 

@@ -71,6 +71,10 @@ function normalizeHashTarget(path: string): string {
 }
 
 function normalizeHistoryTarget(path: string): string {
+  if (path.includes("#")) {
+    throw new TypeError("Router history target must not include hash fragments");
+  }
+
   const queryStart = path.indexOf("?");
   const rawPath = queryStart >= 0 ? path.slice(0, queryStart) : path;
   const query = queryStart >= 0 ? path.slice(queryStart) : "";

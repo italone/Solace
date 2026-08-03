@@ -690,8 +690,8 @@ Create browser-backed history adapters. Use `createWebHistory()` for normal path
 `createWebHashHistory()` for hash routing. `listen()` notifies each listener when the normalized
 location changes, returns an unsubscribe function, and suppresses repeated native events for an
 unchanged location. Adapter normalization adds a leading slash, trims trailing slashes from the path
-except for `/`, and keeps the query string. `push()` and `replace()` update browser state without
-invoking listeners directly.
+except for `/`, keeps the query string, and rejects hash fragments in write targets. `push()` and
+`replace()` update browser state without invoking listeners directly.
 
 ### `RouterLink` / `RouterView`
 
