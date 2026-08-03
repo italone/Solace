@@ -139,6 +139,10 @@ function assertBetaRoutePathSyntax(path: string): void {
       assertBetaParamSyntax(segment.slice(1));
     }
   }
+
+  if (path.includes("?") || path.includes("#")) {
+    throw new TypeError("Router route record path must not include query or hash");
+  }
 }
 
 export function normalizePath(path: string): string {

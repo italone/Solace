@@ -611,8 +611,9 @@ createApp(App)
 `options` 必须是非数组 object，`history` 必须是实现 `location()`、`push()`、`replace()`、
 `listen()`、`back()` 和 `forward()` 的非数组 object。`routes` 必须是数组，route record path
 必须是字符串；无效的 options、history adapter、route list 或 path 形状会在 matcher 编译前被
-拒绝。route record 必须是非数组 object，route component 必须是函数、有效的 `lazyRoute()`
-value，或为 layout-less record 省略 / 设为 `null`。
+拒绝。route record path 不能包含 query string 或 hash fragment。route record 必须是非数组
+object，route component 必须是函数、有效的 `lazyRoute()` value，或为 layout-less record 省略 /
+设为 `null`。
 route location 必须是 string 或非数组 object。object route location 目前只支持 `{ path, query }`；
 named location、hash 和 params object 会被拒绝，直到这些 router 契约被单独设计。
 受支持的 path location 会规范化为前导 `/`，并移除除 `/` 之外的尾随斜杠。空字符串

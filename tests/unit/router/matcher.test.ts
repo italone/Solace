@@ -146,4 +146,13 @@ describe("router matcher", () => {
       /Deferred router path syntax/,
     );
   });
+
+  it("rejects route record paths with query or hash fragments", () => {
+    expect(() => createMatcher([{ path: "/users?tab=profile", component: User }])).toThrow(
+      TypeError("Router route record path must not include query or hash"),
+    );
+    expect(() => createMatcher([{ path: "/users#profile", component: User }])).toThrow(
+      TypeError("Router route record path must not include query or hash"),
+    );
+  });
 });
