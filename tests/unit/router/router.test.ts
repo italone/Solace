@@ -263,14 +263,30 @@ describe("createRouter", () => {
         routes: [],
       } as never),
     ).toThrow(TypeError("Router history must be an object"));
+    expect(() =>
+      createRouter({
+        history: [],
+        routes: [],
+      } as never),
+    ).toThrow(TypeError("Router history must be an object"));
 
     for (const method of ["location", "push", "replace", "listen", "back", "forward"]) {
       const history = createMemoryLikeHistory();
       const invalidHistory = { ...history, [method]: undefined };
+      const missingMethodHistory = Object.fromEntries(
+        Object.entries(history).filter(([key]) => key !== method),
+      );
 
       expect(() =>
         createRouter({
           history: invalidHistory,
+          routes: [],
+        } as never),
+      ).toThrow(TypeError(`Router history must implement ${method}()`));
+
+      expect(() =>
+        createRouter({
+          history: missingMethodHistory,
           routes: [],
         } as never),
       ).toThrow(TypeError(`Router history must implement ${method}()`));
