@@ -309,6 +309,19 @@ describe("createRouter", () => {
     ).toThrow(/Deferred router option/);
   });
 
+  it("rejects invalid global beforeEach guards at registration time", () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory(),
+      routes: [{ path: "/", component: Home }],
+    });
+
+    for (const guard of [null, true, {}, []]) {
+      expect(() => router.beforeEach(guard as never)).toThrow(
+        TypeError("Router beforeEach guard must be a function"),
+      );
+    }
+  });
+
   it("rejects deferred route location fields instead of ignoring them", async () => {
     const router = createRouter({
       history: createMemoryLikeHistory(),

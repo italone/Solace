@@ -83,6 +83,10 @@ export function createRouter(options: RouterOptions): Router {
     forward: () => options.history.forward(),
     resolve: resolveLocation,
     beforeEach(guard: NavigationGuard) {
+      if (typeof guard !== "function") {
+        throw new TypeError("Router beforeEach guard must be a function");
+      }
+
       beforeEachGuards.push(guard);
 
       return () => {
