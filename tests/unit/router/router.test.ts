@@ -349,6 +349,25 @@ describe("createRouter", () => {
     ).rejects.toThrow(/Deferred router location field/);
   });
 
+  it("rejects non-object route locations with a stable router error", async () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory(),
+      routes: [{ path: "/", component: Home }],
+    });
+
+    for (const location of [null, [], 42]) {
+      expect(() => router.resolve(location as never)).toThrow(
+        TypeError("Router location must be a string or object"),
+      );
+      await expect(router.push(location as never)).rejects.toThrow(
+        TypeError("Router location must be a string or object"),
+      );
+      await expect(router.replace(location as never)).rejects.toThrow(
+        TypeError("Router location must be a string or object"),
+      );
+    }
+  });
+
   it("rejects invalid object location query values with a stable router error", async () => {
     const router = createRouter({
       history: createMemoryLikeHistory(),

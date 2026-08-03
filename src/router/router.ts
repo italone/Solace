@@ -369,6 +369,10 @@ function normalizeRawLocation(to: RouteLocationRaw): string {
     return to === "" ? "/" : to;
   }
 
+  if (to === null || typeof to !== "object" || Array.isArray(to)) {
+    throw new TypeError("Router location must be a string or object");
+  }
+
   assertRouterLocationContract(to);
   return `${to.path}${stringifyQuery(to.query)}`;
 }

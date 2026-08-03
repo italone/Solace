@@ -666,8 +666,9 @@ containing `{ path, fullPath, query, params, matched }`.
 array, and route record paths must be strings; invalid options, history adapters, route list, or path
 shapes are rejected before matcher compilation. Route records must be non-array objects, and route
 components must be functions, valid `lazyRoute()` values, or omitted/`null` for layout-less records.
-Object route locations are limited to `{ path, query }`; named locations, hash, and params objects
-are rejected until those router contracts are separately designed.
+Route locations must be strings or non-array objects. Object route locations are limited to
+`{ path, query }`; named locations, hash, and params objects are rejected until those router
+contracts are separately designed.
 Supported path locations normalize to a leading slash and trim trailing slashes except for `/`.
 Empty string locations resolve to `/`. Query strings use repeated keys for arrays, skip nullish
 object values, keep `+` as a literal plus sign, and throw a `TypeError` for malformed percent
