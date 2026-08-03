@@ -145,7 +145,11 @@ describe("router components", () => {
       h("main", null, [
         h(
           RouterLink,
-          { to: { path: "/users/42", query: { tab: "profile" } }, id: "user-link" },
+          {
+            to: { path: "/users/42", query: { tab: "profile" } },
+            id: "user-link",
+            target: "_self",
+          },
           "User",
         ),
         h(RouterView),
@@ -380,6 +384,82 @@ describe("router components", () => {
       ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, metaKey: true }));
     container.querySelector<HTMLAnchorElement>("#prevented-link")?.click();
 
+    expect(history.pushedPaths).toEqual([]);
+    expect(router.currentRoute.value.fullPath).toBe("/");
+  });
+
+  it("leaves RouterLink clicks with non-self targets to the browser", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: () => h("p", null, "home") },
+        { path: "/users/:id", component: () => h("p", null, "user") },
+      ],
+    });
+    const App = () => () =>
+      h("main", null, [
+        h(RouterLink, { to: "/users/42", id: "blank-link", target: "_blank" }, "Blank"),
+        h(RouterLink, { to: "/users/43", id: "named-link", target: "preview" }, "Preview"),
+        h(RouterView),
+      ]);
+    const container = document.createElement("div");
+
+    createApp(App).use(router).mount(container);
+    const blankLink = container.querySelector<HTMLAnchorElement>("#blank-link");
+    const namedLink = container.querySelector<HTMLAnchorElement>("#named-link");
+    let blankWasPreventedBeforeBrowserDefault = true;
+    let namedWasPreventedBeforeBrowserDefault = true;
+    blankLink?.addEventListener("click", (event) => {
+      blankWasPreventedBeforeBrowserDefault = event.defaultPrevented;
+      event.preventDefault();
+    });
+    namedLink?.addEventListener("click", (event) => {
+      namedWasPreventedBeforeBrowserDefault = event.defaultPrevented;
+      event.preventDefault();
+    });
+    const blankEvent = new MouseEvent("click", { bubbles: true, cancelable: true });
+    const namedEvent = new MouseEvent("click", { bubbles: true, cancelable: true });
+
+    blankLink?.dispatchEvent(blankEvent);
+    namedLink?.dispatchEvent(namedEvent);
+    await settleRouterLinkNavigation();
+
+    expect(blankWasPreventedBeforeBrowserDefault).toBe(false);
+    expect(namedWasPreventedBeforeBrowserDefault).toBe(false);
+    expect(history.pushedPaths).toEqual([]);
+    expect(router.currentRoute.value.fullPath).toBe("/");
+  });
+
+  it("leaves RouterLink clicks with download to the browser", async () => {
+    const history = createMemoryLikeHistory("/");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: () => h("p", null, "home") },
+        { path: "/download", component: () => h("p", null, "download") },
+      ],
+    });
+    const App = () => () =>
+      h("main", null, [
+        h(RouterLink, { to: "/download", download: "report.txt", id: "download-link" }, "Download"),
+        h(RouterView),
+      ]);
+    const container = document.createElement("div");
+
+    createApp(App).use(router).mount(container);
+    const downloadLink = container.querySelector<HTMLAnchorElement>("#download-link");
+    let wasPreventedBeforeBrowserDefault = true;
+    downloadLink?.addEventListener("click", (event) => {
+      wasPreventedBeforeBrowserDefault = event.defaultPrevented;
+      event.preventDefault();
+    });
+    const event = new MouseEvent("click", { bubbles: true, cancelable: true });
+
+    downloadLink?.dispatchEvent(event);
+    await settleRouterLinkNavigation();
+
+    expect(wasPreventedBeforeBrowserDefault).toBe(false);
     expect(history.pushedPaths).toEqual([]);
     expect(router.currentRoute.value.fullPath).toBe("/");
   });

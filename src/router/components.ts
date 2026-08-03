@@ -38,7 +38,7 @@ export function RouterLink(
             onClick(event);
           }
 
-          if (shouldIgnoreClick(event)) {
+          if (shouldIgnoreClick(event, anchorProps)) {
             return;
           }
 
@@ -158,13 +158,23 @@ function isLazyRouteComponent(
   );
 }
 
-function shouldIgnoreClick(event: MouseEvent): boolean {
+function shouldIgnoreClick(event: MouseEvent, anchorProps: VNodeProps): boolean {
   return (
     event.defaultPrevented ||
     (event.button !== undefined && event.button !== 0) ||
     event.metaKey ||
     event.altKey ||
     event.ctrlKey ||
-    event.shiftKey
+    event.shiftKey ||
+    hasNonSelfTarget(anchorProps.target) ||
+    hasDownloadAttribute(anchorProps.download)
   );
+}
+
+function hasNonSelfTarget(target: unknown): boolean {
+  return typeof target === "string" && target !== "" && target.toLowerCase() !== "_self";
+}
+
+function hasDownloadAttribute(download: unknown): boolean {
+  return download !== undefined && download !== null && download !== false;
 }
