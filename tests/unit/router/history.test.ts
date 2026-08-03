@@ -22,8 +22,22 @@ describe("router history", () => {
     const listener = vi.fn();
     const stop = history.listen(listener);
 
+    window.history.pushState(null, "", "/changed");
     window.dispatchEvent(new PopStateEvent("popstate"));
     stop();
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignores repeated popstate events for the same location", () => {
+    window.history.replaceState(null, "", "/start");
+    const history = createWebHistory();
+    const listener = vi.fn();
+    history.listen(listener);
+
+    window.history.pushState(null, "", "/next");
+    window.dispatchEvent(new PopStateEvent("popstate"));
     window.dispatchEvent(new PopStateEvent("popstate"));
 
     expect(listener).toHaveBeenCalledTimes(1);
@@ -49,13 +63,21 @@ describe("router history", () => {
     expect(relativeHistory.location()).toBe("/settings?tab=profile");
   });
 
-  it("cleans up hash history listeners", () => {
+  it("deduplicates hash history events and cleans up listeners", () => {
+    window.history.replaceState(null, "", "/#/start");
     const history = createWebHashHistory();
     const listener = vi.fn();
     const stop = history.listen(listener);
 
-    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    window.history.pushState(null, "", "/#/next");
     window.dispatchEvent(new PopStateEvent("popstate"));
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+
+    window.history.pushState(null, "", "/#/final");
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+
+    expect(listener).toHaveBeenCalledTimes(2);
+
     stop();
     window.dispatchEvent(new HashChangeEvent("hashchange"));
     window.dispatchEvent(new PopStateEvent("popstate"));

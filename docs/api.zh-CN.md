@@ -626,7 +626,10 @@ guards 运行。
 
 ### `createWebHistory()` / `createWebHashHistory()`
 
-创建浏览器 history adapters。普通 path routing 使用 `createWebHistory()`，hash routing 使用 `createWebHashHistory()`。
+创建浏览器 history adapters。普通 path routing 使用 `createWebHistory()`，hash routing 使用
+`createWebHashHistory()`。`listen()` 会在 normalized location 发生变化时通知各 listener，并
+抑制 location 未变化时重复触发的原生事件。`push()` 和 `replace()` 更新浏览器状态，但不会
+直接调用 listener。
 
 ### `RouterLink` / `RouterView`
 

@@ -681,7 +681,9 @@ For nested route matches, redirects are resolved from parent to child before any
 ### `createWebHistory()` / `createWebHashHistory()`
 
 Create browser-backed history adapters. Use `createWebHistory()` for normal path routing and
-`createWebHashHistory()` for hash routing.
+`createWebHashHistory()` for hash routing. `listen()` notifies each listener when the normalized
+location changes and suppresses repeated native events for an unchanged location. `push()` and
+`replace()` update browser state without invoking listeners directly.
 
 ### `RouterLink` / `RouterView`
 
