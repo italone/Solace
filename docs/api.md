@@ -689,8 +689,10 @@ the query string. `push()` and `replace()` update browser state without invoking
 ### `RouterLink` / `RouterView`
 
 `RouterLink` renders an anchor and performs async client navigation for primary unmodified clicks
-targeting the current browsing context. Clicks with a modifier, an already prevented event, a
-non-`_self` target, or a `download` attribute remain browser-owned.
+targeting the current browsing context. Its `href` attribute is rendered from
+`router.resolve(to).fullPath`, so supported string and object locations use the same canonical path
+and query serialization as programmatic navigation. Clicks with a modifier, an already prevented
+event, a non-`_self` target, or a `download` attribute remain browser-owned.
 `RouterView` renders the matched route component for its current nested depth or an empty fragment
 when no route matches or a lazy route component is still loading. If a lazy route component fails
 to load, the wrapper surfaces `RouterNavigationError` with type `"lazy-load-failed"`. When one

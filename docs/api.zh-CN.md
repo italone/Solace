@@ -634,7 +634,11 @@ guards 运行。
 
 ### `RouterLink` / `RouterView`
 
-`RouterLink` 渲染 anchor，并在指向当前 browsing context 的主键、无 modifier 点击中执行异步客户端导航。带 modifier、已被阻止、非 `_self` target 或 `download` attribute 的点击保持由浏览器处理。`RouterView` 渲染当前 nested depth 对应的 route component；没有匹配或 lazy route component 仍在加载时渲染空 Fragment。
+`RouterLink` 渲染 anchor，并在指向当前 browsing context 的主键、无 modifier 点击中执行异步客户端导航。它的
+`href` attribute 来自 `router.resolve(to).fullPath`，因此受支持的 string 和 object locations 会
+使用与编程式导航一致的 canonical path 与 query serialization。带 modifier、已被阻止、非 `_self`
+target 或 `download` attribute 的点击保持由浏览器处理。`RouterView` 渲染当前 nested depth 对应的
+route component；没有匹配或 lazy route component 仍在加载时渲染空 Fragment。
 如果 lazy route component 加载失败，wrapper 会抛出 `RouterNavigationError`，其 type 为 `"lazy-load-failed"`。同一个 `lazyRoute()` component 被多个 route record 复用时，该错误的 `from` 和 `to` 会描述失败时的 active route，而不是该 component 首次渲染所在的 route。如果 route redirect function 抛出异常，或返回 deferred / 其他无效 location，navigation 会以 type 为 `"redirect-rejected"` 的 `RouterNavigationError` reject；该错误的 `to` location 是 redirect 失败的 route。
 
 当前 beta router 限制：

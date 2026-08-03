@@ -167,6 +167,40 @@ describe("router components", () => {
     expect(container.querySelector("#user")?.textContent).toBe("user:42:profile");
   });
 
+  it("renders RouterLink hrefs from resolved full paths", () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory("/"),
+      routes: [{ path: "/users/:id", component: () => h("p", null, "user") }],
+    });
+    const App = () => () =>
+      h("nav", null, [
+        h(RouterLink, { to: "/users/42///?tab=profile", id: "string-link" }, "String"),
+        h(
+          RouterLink,
+          { to: { path: "users/7///", query: { tab: "profile" } }, id: "object-link" },
+          "Object",
+        ),
+        h(
+          RouterLink,
+          { to: { path: "/users/8", query: { tag: ["a", "b"] } }, id: "array-link" },
+          "Array",
+        ),
+      ]);
+    const container = document.createElement("div");
+
+    createApp(App).use(router).mount(container);
+
+    expect(container.querySelector<HTMLAnchorElement>("#string-link")?.getAttribute("href")).toBe(
+      "/users/42?tab=profile",
+    );
+    expect(container.querySelector<HTMLAnchorElement>("#object-link")?.getAttribute("href")).toBe(
+      "/users/7?tab=profile",
+    );
+    expect(container.querySelector<HTMLAnchorElement>("#array-link")?.getAttribute("href")).toBe(
+      "/users/8?tag=a&tag=b",
+    );
+  });
+
   it("renders an empty fragment when no route matches", () => {
     const router = createRouter({ history: createMemoryLikeHistory("/missing"), routes: [] });
     const container = document.createElement("div");
