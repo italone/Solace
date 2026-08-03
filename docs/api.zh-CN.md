@@ -615,7 +615,8 @@ createApp(App)
 object，route component 必须是函数、有效的 `lazyRoute()` value，或为 layout-less record 省略 /
 设为 `null`。
 route location 必须是 string 或非数组 object。object route location 目前只支持 `{ path, query }`；
-named location、hash 和 params object 会被拒绝，直到这些 router 契约被单独设计。
+string 或 object path 中的 hash fragment、named location 和 params object 会被拒绝，直到这些
+router 契约被单独设计。
 受支持的 path location 会规范化为前导 `/`，并移除除 `/` 之外的尾随斜杠。空字符串
 location 会解析为 `/`。query string 对数组使用重复 key，跳过 object location 中的 nullish
 值，将 `+` 保持为字面加号；percent encoding 非法时会抛出 `TypeError`。object route

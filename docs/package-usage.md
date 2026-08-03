@@ -270,9 +270,10 @@ guards, route `meta`, `lazyRoute()` route components, `RouterLink`, and `RouterV
 yet include route names, aliases, route props, scroll behavior, memory history, auth, permissions,
 SSR, SSG, or hydration router integration. Passing still-deferred route fields such as `name`,
 `alias`, or `props`, or deferred options such as `scrollBehavior`, throws a `TypeError`.
-Object route locations only support `{ path, query }`; named locations, hash, and params objects are
-rejected. Dynamic params are limited to simple `:name` segments and `/:pathMatch(.*)*` wildcard
-fallback. Lazy route component load failures surface `RouterNavigationError` with type
+Object route locations only support `{ path, query }`; named locations, hash fragments in string or
+object-path locations, and params objects are rejected. Dynamic params are limited to simple
+`:name` segments and `/:pathMatch(.*)*` wildcard fallback. Lazy route component load failures
+surface `RouterNavigationError` with type
 `"lazy-load-failed"`.
 Supported path locations normalize to a leading slash and trim trailing slashes except for `/`;
 malformed query percent encoding throws a `TypeError`.

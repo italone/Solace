@@ -371,6 +371,7 @@ export function useRoute(): Router["currentRoute"] {
 
 function normalizeRawLocation(to: RouteLocationRaw): string {
   if (typeof to === "string") {
+    assertRouterLocationPathHasNoHash(to);
     return to === "" ? "/" : to;
   }
 
@@ -533,6 +534,8 @@ function assertRouterLocationContract(location: {
     throw new TypeError("Router location path must be a string");
   }
 
+  assertRouterLocationPathHasNoHash(location.path);
+
   if (
     location.query !== undefined &&
     (typeof location.query !== "object" || location.query === null || Array.isArray(location.query))
@@ -569,4 +572,10 @@ function assertRouterLocationQueryValueContract(value: unknown): void {
   }
 
   throw new TypeError("Router location query value must be a primitive or primitive array");
+}
+
+function assertRouterLocationPathHasNoHash(path: string): void {
+  if (path.includes("#")) {
+    throw new TypeError("Router location hash fragments are not part of the beta contract");
+  }
 }

@@ -357,12 +357,24 @@ describe("createRouter", () => {
     expect(() => router.resolve({ path: "/users/1", hash: "#profile" } as never)).toThrow(
       /Deferred router location field/,
     );
+    expect(() => router.resolve("/users/1#profile")).toThrow(
+      TypeError("Router location hash fragments are not part of the beta contract"),
+    );
+    expect(() => router.resolve({ path: "/users/1#profile" })).toThrow(
+      TypeError("Router location hash fragments are not part of the beta contract"),
+    );
     await expect(router.push({ path: "/users/1", name: "user" } as never)).rejects.toThrow(
       /Deferred router location field/,
+    );
+    await expect(router.push("/users/1#profile")).rejects.toThrow(
+      TypeError("Router location hash fragments are not part of the beta contract"),
     );
     await expect(
       router.replace({ path: "/users/1", params: { id: "1" } } as never),
     ).rejects.toThrow(/Deferred router location field/);
+    await expect(router.replace({ path: "/users/1#profile" })).rejects.toThrow(
+      TypeError("Router location hash fragments are not part of the beta contract"),
+    );
   });
 
   it("rejects non-object route locations with a stable router error", async () => {
