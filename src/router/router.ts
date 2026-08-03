@@ -37,6 +37,14 @@ const allowedRouteRecordFields = new Set([
   "beforeEnter",
   "meta",
 ]);
+const requiredHistoryMethods = [
+  "location",
+  "push",
+  "replace",
+  "listen",
+  "back",
+  "forward",
+] as const;
 
 export function createRouter(options: RouterOptions): Router {
   assertRouterOptionsContract(options);
@@ -350,11 +358,17 @@ function normalizeRawLocation(to: RouteLocationRaw): string {
 }
 
 function assertRouterOptionsContract(options: RouterOptions): void {
+  if (options === null || typeof options !== "object" || Array.isArray(options)) {
+    throw new TypeError("Router options must be an object");
+  }
+
   for (const key of Object.keys(options)) {
     if (key !== "history" && key !== "routes") {
       throw new TypeError(`Deferred router option is not part of the beta contract: ${key}`);
     }
   }
+
+  assertRouterHistoryContract(options.history);
 
   if (!Array.isArray(options.routes)) {
     throw new TypeError("Router routes must be an array");
@@ -362,6 +376,18 @@ function assertRouterOptionsContract(options: RouterOptions): void {
 
   for (const route of options.routes) {
     assertRouteRecordContract(route);
+  }
+}
+
+function assertRouterHistoryContract(history: unknown): void {
+  if (history === null || typeof history !== "object" || Array.isArray(history)) {
+    throw new TypeError("Router history must be an object");
+  }
+
+  for (const method of requiredHistoryMethods) {
+    if (typeof (history as Record<string, unknown>)[method] !== "function") {
+      throw new TypeError(`Router history must implement ${method}()`);
+    }
   }
 }
 

@@ -661,8 +661,10 @@ createApp(App)
 Creates a router plugin. `routes` are matched by path. Static routes are prioritized before dynamic
 routes, and `/:pathMatch(.*)*` can be used as a wildcard fallback. `router.currentRoute` is a ref
 containing `{ path, fullPath, query, params, matched }`.
-`routes` must be an array, and route record paths must be strings; invalid route list or path shapes
-are rejected before matcher compilation. Route records must be non-array objects, and route
+`options` must be a non-array object, and `history` must be a non-array object implementing
+`location()`, `push()`, `replace()`, `listen()`, `back()`, and `forward()`. `routes` must be an
+array, and route record paths must be strings; invalid options, history adapters, route list, or path
+shapes are rejected before matcher compilation. Route records must be non-array objects, and route
 components must be functions, valid `lazyRoute()` values, or omitted/`null` for layout-less records.
 Object route locations are limited to `{ path, query }`; named locations, hash, and params objects
 are rejected until those router contracts are separately designed.

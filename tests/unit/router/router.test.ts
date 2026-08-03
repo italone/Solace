@@ -248,6 +248,35 @@ describe("createRouter", () => {
     ).toThrow(/Router routes must be an array/);
   });
 
+  it("rejects non-object router options before compiling matchers", () => {
+    for (const options of [null, [], 42]) {
+      expect(() => createRouter(options as never)).toThrow(
+        TypeError("Router options must be an object"),
+      );
+    }
+  });
+
+  it("rejects invalid history adapters before compiling matchers", () => {
+    expect(() =>
+      createRouter({
+        history: null,
+        routes: [],
+      } as never),
+    ).toThrow(TypeError("Router history must be an object"));
+
+    for (const method of ["location", "push", "replace", "listen", "back", "forward"]) {
+      const history = createMemoryLikeHistory();
+      const invalidHistory = { ...history, [method]: undefined };
+
+      expect(() =>
+        createRouter({
+          history: invalidHistory,
+          routes: [],
+        } as never),
+      ).toThrow(TypeError(`Router history must implement ${method}()`));
+    }
+  });
+
   it("rejects deferred router options instead of widening the beta contract", () => {
     expect(() =>
       createRouter({
