@@ -4,6 +4,7 @@ import { ref } from "../reactivity/ref";
 import { createMatcher } from "./matcher";
 import { parseQuery, stringifyQuery } from "./query";
 import type {
+  LazyRouteComponent,
   NavigationGuard,
   RouteLocationNormalized,
   RouteLocationRaw,
@@ -365,6 +366,10 @@ function assertRouterOptionsContract(options: RouterOptions): void {
 }
 
 function assertRouteRecordContract(route: RouteRecord): void {
+  if (route === null || typeof route !== "object" || Array.isArray(route)) {
+    throw new TypeError("Router route record must be an object");
+  }
+
   for (const key of Object.keys(route)) {
     if (!allowedRouteRecordFields.has(key)) {
       throw new TypeError(
@@ -377,6 +382,7 @@ function assertRouteRecordContract(route: RouteRecord): void {
     throw new TypeError("Router route record path must be a string");
   }
 
+  assertRouteRecordComponentContract(route.component);
   assertRouteRecordRedirectContract(route.redirect);
   assertRouteRecordBeforeEnterContract(route.beforeEnter);
   assertRouteRecordMetaContract(route.meta);
@@ -390,6 +396,30 @@ function assertRouteRecordContract(route: RouteRecord): void {
       assertRouteRecordContract(child);
     }
   }
+}
+
+function assertRouteRecordComponentContract(component: RouteRecord["component"]): void {
+  if (
+    component === undefined ||
+    component === null ||
+    typeof component === "function" ||
+    isLazyRouteComponent(component)
+  ) {
+    return;
+  }
+
+  throw new TypeError("Router route record component must be a function or lazyRoute component");
+}
+
+function isLazyRouteComponent(component: unknown): component is LazyRouteComponent {
+  return (
+    typeof component === "object" &&
+    component !== null &&
+    "__solaceLazyRouteComponent" in component &&
+    component.__solaceLazyRouteComponent === true &&
+    "load" in component &&
+    typeof component.load === "function"
+  );
 }
 
 function assertRouteRecordRedirectContract(redirect: RouteRecord["redirect"]): void {

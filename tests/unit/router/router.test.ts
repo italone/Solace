@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { h } from "../../../src/index";
+import { h, lazyRoute } from "../../../src/index";
 import * as rootModule from "../../../src/index";
 import * as routerModule from "../../../src/router";
 import { createRouter } from "../../../src/router/router";
@@ -143,6 +143,54 @@ describe("createRouter", () => {
         }),
       ).toThrow(TypeError);
     }
+  });
+
+  it("rejects non-object route records before compiling matchers", () => {
+    const invalidRoutes = [
+      null,
+      [],
+      42,
+      {
+        path: "/parent",
+        children: [null],
+      },
+    ];
+
+    for (const route of invalidRoutes) {
+      expect(() =>
+        createRouter({
+          history: createMemoryLikeHistory(),
+          routes: [route] as never,
+        }),
+      ).toThrow(TypeError("Router route record must be an object"));
+    }
+  });
+
+  it("rejects invalid route components before compiling matchers", () => {
+    const invalidComponents = [
+      true,
+      {},
+      { __solaceLazyRouteComponent: true },
+      { __solaceLazyRouteComponent: true, load: true },
+    ];
+
+    for (const component of invalidComponents) {
+      expect(() =>
+        createRouter({
+          history: createMemoryLikeHistory(),
+          routes: [{ path: "/", component }] as never,
+        }),
+      ).toThrow(
+        TypeError("Router route record component must be a function or lazyRoute component"),
+      );
+    }
+
+    expect(() =>
+      createRouter({
+        history: createMemoryLikeHistory(),
+        routes: [{ path: "/", component: lazyRoute(() => Promise.resolve(Home)) }],
+      }),
+    ).not.toThrow();
   });
 
   it("keeps still-deferred route record fields rejected", () => {

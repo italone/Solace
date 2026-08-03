@@ -662,7 +662,8 @@ Creates a router plugin. `routes` are matched by path. Static routes are priorit
 routes, and `/:pathMatch(.*)*` can be used as a wildcard fallback. `router.currentRoute` is a ref
 containing `{ path, fullPath, query, params, matched }`.
 `routes` must be an array, and route record paths must be strings; invalid route list or path shapes
-are rejected before matcher compilation.
+are rejected before matcher compilation. Route records must be non-array objects, and route
+components must be functions, valid `lazyRoute()` values, or omitted/`null` for layout-less records.
 Object route locations are limited to `{ path, query }`; named locations, hash, and params objects
 are rejected until those router contracts are separately designed.
 Supported path locations normalize to a leading slash and trim trailing slashes except for `/`.
