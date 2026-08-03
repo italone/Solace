@@ -6,17 +6,17 @@
 
 ## 总览
 
-Solace 当前是一个早期 alpha runtime，npm 最新公开版本仍是 `@italone/solace@0.0.4`，仓库 release preparation 已推进到 `0.0.5`。它已经具备可运行的公共 API、包导出、示例、测试、benchmark 和发布检查，适合作为一个小型、可阅读、可实验的前端框架进行推广，但不应被描述为 React、Vue、Svelte 或同类生态的成熟生产替代品。
+Solace 当前是一个早期 alpha runtime，npm 最新公开版本是 `@italone/solace@0.0.5`。它已经具备可运行的公共 API、包导出、示例、测试、benchmark 和发布检查，适合作为一个小型、可阅读、可实验的前端框架进行推广，但不应被描述为 React、Vue、Svelte 或同类生态的成熟生产替代品。
 
 当前本地仓库状态：
 
 - 包名：`@italone/solace`
 - 仓库 package 版本：`0.0.5`
-- npm 已发布版本：`0.0.4`
-- npm dist-tag：`latest` 指向 `0.0.4`
+- npm 已发布版本：`0.0.5`
+- npm dist-tag：`latest` 指向 `0.0.5`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
-- 本地分支状态：截至 2026-07-31，本地 `main` release baseline 已与 `origin/main` 同步。后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
+- 本地分支状态：截至 2026-08-03，本地 `main` release baseline 已与 `origin/main` 同步。后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
 - 发布阶段：alpha 已发布；beta 契约稳定、SSR/hydration minimum loop，以及首个浏览器
   DevTools 扩展 timeline panel 已在仓库中实现
 
@@ -69,6 +69,12 @@ invalid initial history fallback、location-based browser/hash history listener 
 history-listener guard-skip/no-op 处理后，重新运行了 router-focused checks 和 `pnpm quality`。本轮没有重新运行 coverage、`pnpm quality` 之外的 package smoke、
 benchmarks、browser e2e、DevTools extension e2e 或完整 `release:check`。后续在声明完成、合并或发布前，需要重新运行对应命令。
 
+2026-08-03 发布 `@italone/solace@0.0.5` 到 npm 前，已重新运行完整发布门禁：
+`pnpm release:check` 通过，覆盖 release readiness、quality、coverage、packed package smoke、
+jsdom benchmark、Chromium browser benchmark 和 browser e2e。`pnpm release:readiness -- --publishable`
+也已通过，`npm pack --dry-run --json` 已确认发布 tarball；发布后 registry smoke 从 npm 安装
+`@italone/solace@0.0.5`，并验证了 package root、公开子路径和私有子路径阻断。
+
 ## 公共 API 边界
 
 支持的公开入口：
@@ -114,18 +120,17 @@ Solace 当前有意不包含：
 
 ## 发布协调状态
 
-发布独立于仓库就绪度。`@italone/solace@0.0.4` 已发布到 npm。当前仓库 `main`
-已准备到 `0.0.5` 并与 `origin/main` 同步，但 2026-07-30 已明确跳过 npm 发布，
-且 2026-07-31 当周仍有意暂缓发布；npm 当前最新公开版本仍是
-`@italone/solace@0.0.4`。
+发布独立于仓库就绪度。`@italone/solace@0.0.5` 已发布到 npm，并且 `latest`
+dist-tag 指向 `0.0.5`。当前仓库 `main` 已与 `origin/main` 同步；发布后 registry 检查确认 npm
+当前最新公开版本是 `@italone/solace@0.0.5`。
 
-未来发布 `0.0.5` 或任何后续版本前：
+未来发布任何后续版本前：
 
 1. 确认本地分支已经 push，或明确接受从本地状态发布。
 2. 确认 package version 尚未发布。
 3. 运行 `pnpm release:readiness -- --publishable`。该严格模式会在本地分支 ahead、behind、没有 upstream 或工作树不干净时失败。
 4. 运行 `pnpm release:check`。
-5. 如果继续使用当前已验证可用的临时 npm cache，运行 `npm publish --dry-run --access public --cache /private/tmp/npm-cache`。
+5. 运行 `npm pack --dry-run --json` 或 `npm publish --dry-run --access public` 检查 tarball。
 6. 只有在 npm authentication、organization access、public access 和 one-time password 都准备好，并且维护者明确确认 npm 发布后，才执行发布。
 
 ## 建议后续工作

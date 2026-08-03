@@ -6,18 +6,18 @@ This document summarizes the current completion level of Solace as an open-sourc
 
 ## Summary
 
-Solace is an alpha runtime whose latest published npm package is `@italone/solace@0.0.4`, with repository release preparation currently at `0.0.5`. It provides a working public API, package exports, examples, tests, benchmarks, and release checks. It is suitable as a compact educational and experimental frontend framework, but it should not be described as a mature production replacement for React, Vue, Svelte, or similar ecosystems.
+Solace is an alpha runtime whose latest published npm package is `@italone/solace@0.0.5`. It provides a working public API, package exports, examples, tests, benchmarks, and release checks. It is suitable as a compact educational and experimental frontend framework, but it should not be described as a mature production replacement for React, Vue, Svelte, or similar ecosystems.
 
 Current repository state:
 
 - Package name: `@italone/solace`
 - Repository package version: `0.0.5`
-- Published npm version: `0.0.4`
-- npm dist-tag: `latest` points to `0.0.4`
+- Published npm version: `0.0.5`
+- npm dist-tag: `latest` points to `0.0.5`
 - Public package metadata: `"private": false`
 - Current branch: `main`
 - Remote state: the local `main` release baseline has been synchronized with `origin/main` as of
-  2026-07-31. Recheck with `git fetch origin main`, `git status --short --branch`, and
+  2026-08-03. Recheck with `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
   synchronization claim.
 - Phase: alpha released; beta contract stabilization, SSR/hydration minimum loop, and first
@@ -75,6 +75,13 @@ handling. It did not rerun coverage, package smoke outside `pnpm quality`,
 benchmarks, browser e2e, DevTools extension e2e, or the full `release:check`. Run the commands again
 before any future completion, merge, or release claim.
 
+The 2026-08-03 npm publish for `@italone/solace@0.0.5` reran the full release gate before publishing:
+`pnpm release:check` passed, including release readiness, quality, coverage, packed package smoke,
+jsdom benchmark, Chromium browser benchmark, and browser e2e. `pnpm release:readiness -- --publishable`
+also passed, `npm pack --dry-run --json` confirmed the publish tarball, and a post-publish registry
+smoke installed `@italone/solace@0.0.5` from npm and verified the package root, public subpaths, and
+private subpath blocking.
+
 ## Public API Boundary
 
 Supported public entries:
@@ -120,18 +127,17 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Release Coordination State
 
-`@italone/solace@0.0.4` has been published to npm. Repository `main` is prepared at
-`0.0.5` and synchronized with `origin/main`, but npm publishing was explicitly skipped on
-2026-07-30 and remains intentionally deferred for the week of 2026-07-31. npm still reports
-`@italone/solace@0.0.4` as the latest published version.
+`@italone/solace@0.0.5` has been published to npm with the `latest` dist-tag. Repository `main` is
+synchronized with `origin/main`, and post-publish registry checks confirmed npm reports
+`@italone/solace@0.0.5` as the latest published version.
 
-Before publishing `0.0.5` or any future version, follow the same checklist:
+Before publishing any future version, follow the same checklist:
 
 1. Confirm `origin/main` is in sync with the local release branch.
 2. Confirm the target version is not already published.
 3. Run `pnpm release:readiness -- --publishable`. This stricter mode fails when the local branch is ahead, behind, missing an upstream, or has a dirty worktree.
 4. Run `pnpm release:check`.
-5. Run `npm publish --dry-run --access public --cache /private/tmp/npm-cache` if using the known working temporary npm cache.
+5. Run `npm pack --dry-run --json` or `npm publish --dry-run --access public` to inspect the tarball.
 6. Publish only after npm authentication, organization access, public access, and any one-time password requirement are ready, and only after a maintainer explicitly confirms npm publishing.
 
 ## Recommended Next Work
