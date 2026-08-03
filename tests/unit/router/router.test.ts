@@ -462,6 +462,12 @@ describe("createRouter", () => {
       params: { id: "42" },
       query: { tag: ["a", "b"] },
     });
+    expect(router.resolve("/users/42?redirect=/users/1?tab=profile&mode=edit")).toMatchObject({
+      path: "/users/42",
+      fullPath: "/users/42?redirect=%2Fusers%2F1%3Ftab%3Dprofile&mode=edit",
+      params: { id: "42" },
+      query: { redirect: "/users/1?tab=profile", mode: "edit" },
+    });
   });
 
   it("normalizes supported object locations to canonical full paths", () => {

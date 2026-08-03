@@ -311,7 +311,7 @@ export function createRouter(options: RouterOptions): Router {
 
   function resolveLocation(to: RouteLocationRaw): RouteLocationNormalized {
     const fullPath = normalizeRawLocation(to);
-    const [rawPath, rawSearch = ""] = fullPath.split("?");
+    const [rawPath, rawSearch] = splitLocationPathAndSearch(fullPath);
     const match = matcher.resolve(rawPath || "/");
     const query = parseQuery(rawSearch);
     const search = stringifyQuery(query);
@@ -381,6 +381,15 @@ function normalizeRawLocation(to: RouteLocationRaw): string {
 
   assertRouterLocationContract(to);
   return `${to.path}${stringifyQuery(to.query)}`;
+}
+
+function splitLocationPathAndSearch(fullPath: string): [string, string] {
+  const queryStart = fullPath.indexOf("?");
+  if (queryStart === -1) {
+    return [fullPath, ""];
+  }
+
+  return [fullPath.slice(0, queryStart), fullPath.slice(queryStart + 1)];
 }
 
 function assertRouterOptionsContract(options: RouterOptions): void {

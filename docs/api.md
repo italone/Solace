@@ -674,10 +674,12 @@ values must not include query strings; use the separate `query` field instead.
 Supported path locations normalize to a leading slash and trim trailing slashes except for `/`.
 Empty string locations resolve to `/`. Query strings use repeated keys for arrays, skip nullish
 object values, keep `+` as a literal plus sign, and throw a `TypeError` for malformed percent
-encoding. Object route location query values must be strings, numbers, booleans, null, undefined, or
-arrays of those values. Navigating to the current `fullPath`, or to a route redirect that resolves back to the
-current `fullPath`, resolves with the current route without writing a duplicate history entry or
-running navigation guards. Browser history listener updates for the current `fullPath` leave
+encoding. String route locations split path and query at the first `?`, so later `?` characters stay
+inside query values and are encoded in the canonical `fullPath`. Object route location query values
+must be strings, numbers, booleans, null, undefined, or arrays of those values. Navigating to the
+current `fullPath`, or to a route redirect that resolves back to the current `fullPath`, resolves
+with the current route without writing a duplicate history entry or running navigation guards.
+Browser history listener updates for the current `fullPath` leave
 `currentRoute` unchanged and skip navigation guards after the initial router install settlement.
 For nested route matches, redirects are resolved from parent to child before any matched
 `beforeEnter` guards run.

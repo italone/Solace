@@ -277,7 +277,8 @@ include query strings; use the separate `query` field instead. Dynamic params ar
 surface `RouterNavigationError` with type
 `"lazy-load-failed"`.
 Supported path locations normalize to a leading slash and trim trailing slashes except for `/`;
-malformed query percent encoding throws a `TypeError`.
+string locations split path and query at the first `?`, preserving later `?` characters inside
+query values, and malformed query percent encoding throws a `TypeError`.
 
 ## Use The DevTools Extension Example
 
