@@ -6,6 +6,7 @@ import {
   RouterView,
   createApp,
   createRouter,
+  createWebHashHistory,
   h,
   lazyRoute,
   nextTick,
@@ -199,6 +200,33 @@ describe("router components", () => {
     expect(container.querySelector<HTMLAnchorElement>("#array-link")?.getAttribute("href")).toBe(
       "/users/8?tag=a&tag=b",
     );
+  });
+
+  it("renders hash history RouterLink hrefs for browser-owned navigation", () => {
+    window.history.replaceState(null, "", "/#/");
+    const router = createRouter({
+      history: createWebHashHistory(),
+      routes: [{ path: "/users/:id", component: () => h("p", null, "user") }],
+    });
+    const App = () => () =>
+      h("nav", null, [
+        h(RouterLink, { to: "/users/42///?tab=profile", id: "hash-string-link" }, "String"),
+        h(
+          RouterLink,
+          { to: { path: "users/7///", query: { tag: ["a", "b"] } }, id: "hash-object-link" },
+          "Object",
+        ),
+      ]);
+    const container = document.createElement("div");
+
+    createApp(App).use(router).mount(container);
+
+    expect(
+      container.querySelector<HTMLAnchorElement>("#hash-string-link")?.getAttribute("href"),
+    ).toBe("#/users/42?tab=profile");
+    expect(
+      container.querySelector<HTMLAnchorElement>("#hash-object-link")?.getAttribute("href"),
+    ).toBe("#/users/7?tag=a&tag=b");
   });
 
   it("renders an empty fragment when no route matches", () => {

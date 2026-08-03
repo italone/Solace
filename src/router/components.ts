@@ -4,6 +4,7 @@ import { h } from "../vnode/h";
 import { defineAsyncComponent } from "../component/async-component";
 import { inject, provide } from "../component/provide";
 import type { Ref } from "../reactivity/ref";
+import { routerHrefFormatterKey, type RouterHrefFormatter } from "./internal";
 import { RouterNavigationError, routerViewDepthKey, useRoute, useRouter } from "./router";
 import type {
   LazyRouteComponent,
@@ -26,7 +27,8 @@ export function RouterLink(
 
   return () => {
     const { to, replace, onClick, ...anchorProps } = props;
-    const href = router.resolve(to).fullPath;
+    const hrefFormatter = router as typeof router & Partial<RouterHrefFormatter>;
+    const href = hrefFormatter[routerHrefFormatterKey]?.(to) ?? router.resolve(to).fullPath;
 
     return h(
       "a",

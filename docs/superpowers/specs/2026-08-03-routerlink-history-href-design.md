@@ -34,10 +34,10 @@ downloads, and already-prevented clicks to the browser.
 
 Do not add `href()` to the exported `RouterHistory` or `Router` types. Instead:
 
-- Add an internal history formatter interface used only inside `src/router`.
-- `createWebHistory()` returns an adapter with an internal `href(path)` formatter that normalizes to
+- Add an internal symbol-keyed history formatter interface used only inside `src/router`.
+- `createWebHistory()` returns an adapter with an internal symbol-keyed formatter that normalizes to
   a path href.
-- `createWebHashHistory()` returns an adapter with an internal `href(path)` formatter that prefixes
+- `createWebHashHistory()` returns an adapter with an internal symbol-keyed formatter that prefixes
   the normalized target with `#`.
 - `createRouter()` exposes an internal symbol-keyed `href(to)` formatter that resolves `to` once and
   applies the history formatter if present.

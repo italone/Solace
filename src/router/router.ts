@@ -1,6 +1,12 @@
 import type { App } from "../app";
 import { inject } from "../component/provide";
 import { ref } from "../reactivity/ref";
+import {
+  historyHrefFormatterKey,
+  hasHistoryHrefFormatter,
+  routerHrefFormatterKey,
+  type RouterHrefFormatter,
+} from "./internal";
 import { createMatcher } from "./matcher";
 import { parseQuery, stringifyQuery } from "./query";
 import type {
@@ -56,7 +62,7 @@ export function createRouter(options: RouterOptions): Router {
   let navigationId = 0;
   const currentRoute = ref(resolveInitialHistoryLocation());
 
-  const router: Router = {
+  const router: Router & RouterHrefFormatter = {
     currentRoute,
     install(app: App) {
       app.provide(routerKey, router);
@@ -85,6 +91,12 @@ export function createRouter(options: RouterOptions): Router {
           beforeEachGuards.splice(index, 1);
         }
       };
+    },
+    [routerHrefFormatterKey](to: RouteLocationRaw) {
+      const fullPath = resolveLocation(to).fullPath;
+      return hasHistoryHrefFormatter(options.history)
+        ? options.history[historyHrefFormatterKey](fullPath)
+        : fullPath;
     },
   };
 

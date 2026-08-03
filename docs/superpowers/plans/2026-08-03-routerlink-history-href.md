@@ -4,7 +4,7 @@
 
 **Goal:** Make `RouterLink` href attributes respect the installed first-party history adapter while preserving current public Router types.
 
-**Architecture:** Add an internal symbol-keyed href formatter used only inside `src/router`. First-party history adapters provide internal href formatting; `createRouter()` resolves route locations once and applies the formatter; `RouterLink` reads the internal router formatter with a fallback to `router.resolve(to).fullPath`.
+**Architecture:** Add internal symbol-keyed href formatters used only inside `src/router`. First-party history adapters provide internal history href formatting; `createRouter()` resolves route locations once and applies the formatter; `RouterLink` reads the internal router formatter with a fallback to `router.resolve(to).fullPath`.
 
 **Tech Stack:** TypeScript, Solace router internals, Vitest integration tests, jsdom, Prettier, pnpm quality scripts.
 
@@ -83,9 +83,10 @@ instead of `#/users/...`.
 import type { RouteLocationRaw } from "./types";
 
 export const routerHrefFormatterKey = Symbol("Solace.router.hrefFormatter");
+export const historyHrefFormatterKey = Symbol("Solace.router.historyHrefFormatter");
 
 export interface HistoryHrefFormatter {
-  href(path: string): string;
+  [historyHrefFormatterKey](path: string): string;
 }
 
 export interface RouterHrefFormatter {
@@ -96,7 +97,7 @@ export function hasHistoryHrefFormatter(history: unknown): history is HistoryHre
   return (
     typeof history === "object" &&
     history !== null &&
-    typeof (history as Record<string, unknown>).href === "function"
+    typeof (history as Partial<HistoryHrefFormatter>)[historyHrefFormatterKey] === "function"
   );
 }
 ```
@@ -106,13 +107,13 @@ export function hasHistoryHrefFormatter(history: unknown): history is HistoryHre
 In `createWebHistory()`, return an adapter object that includes:
 
 ```ts
-href: (path: string) => normalizeHistoryTarget(path),
+[historyHrefFormatterKey]: (path: string) => normalizeHistoryTarget(path),
 ```
 
 In `createWebHashHistory()`, return an adapter object that includes:
 
 ```ts
-href: (path: string) => `#${normalizeHashTarget(path)}`,
+[historyHrefFormatterKey]: (path: string) => `#${normalizeHashTarget(path)}`,
 ```
 
 Keep exported function return types as `RouterHistory` so this does not become a public type
@@ -126,7 +127,9 @@ symbol-keyed method to the router object:
 ```ts
 [routerHrefFormatterKey](to: RouteLocationRaw) {
   const fullPath = resolveLocation(to).fullPath;
-  return hasHistoryHrefFormatter(options.history) ? options.history.href(fullPath) : fullPath;
+  return hasHistoryHrefFormatter(options.history)
+    ? options.history[historyHrefFormatterKey](fullPath)
+    : fullPath;
 },
 ```
 

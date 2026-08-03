@@ -1,14 +1,16 @@
+import { historyHrefFormatterKey } from "./internal";
 import type { RouterHistory } from "./types";
 
 export function createWebHistory(): RouterHistory {
   const location = () =>
     normalizeHistoryTarget(`${window.location.pathname}${window.location.search}`);
 
-  return {
+  const history = {
     location,
-    push: (path) => window.history.pushState(null, "", normalizeHistoryTarget(path)),
-    replace: (path) => window.history.replaceState(null, "", normalizeHistoryTarget(path)),
-    listen(listener) {
+    [historyHrefFormatterKey]: (path: string) => normalizeHistoryTarget(path),
+    push: (path: string) => window.history.pushState(null, "", normalizeHistoryTarget(path)),
+    replace: (path: string) => window.history.replaceState(null, "", normalizeHistoryTarget(path)),
+    listen(listener: () => void) {
       const onPopState = createLocationChangeListener(location, listener);
       window.addEventListener("popstate", onPopState);
       return () => window.removeEventListener("popstate", onPopState);
@@ -16,16 +18,20 @@ export function createWebHistory(): RouterHistory {
     back: () => window.history.back(),
     forward: () => window.history.forward(),
   };
+
+  return history;
 }
 
 export function createWebHashHistory(): RouterHistory {
   const location = () => normalizeHashLocation(window.location.hash);
 
-  return {
+  const history = {
     location,
-    push: (path) => window.history.pushState(null, "", `#${normalizeHashTarget(path)}`),
-    replace: (path) => window.history.replaceState(null, "", `#${normalizeHashTarget(path)}`),
-    listen(listener) {
+    [historyHrefFormatterKey]: (path: string) => `#${normalizeHashTarget(path)}`,
+    push: (path: string) => window.history.pushState(null, "", `#${normalizeHashTarget(path)}`),
+    replace: (path: string) =>
+      window.history.replaceState(null, "", `#${normalizeHashTarget(path)}`),
+    listen(listener: () => void) {
       const onHistoryChange = createLocationChangeListener(location, listener);
       window.addEventListener("popstate", onHistoryChange);
       window.addEventListener("hashchange", onHistoryChange);
@@ -37,6 +43,8 @@ export function createWebHashHistory(): RouterHistory {
     back: () => window.history.back(),
     forward: () => window.history.forward(),
   };
+
+  return history;
 }
 
 function createLocationChangeListener(location: () => string, listener: () => void): () => void {
