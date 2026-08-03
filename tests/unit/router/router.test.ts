@@ -82,15 +82,21 @@ describe("createRouter", () => {
       useRouter: expect.any(Function),
     });
     expect(routerModule).not.toHaveProperty("createMemoryHistory");
+    expect(routerModule).not.toHaveProperty("historyHrefFormatterKey");
+    expect(routerModule).not.toHaveProperty("hasHistoryHrefFormatter");
     expect(routerModule).not.toHaveProperty("NavigationGuard");
     expect(routerModule).not.toHaveProperty("RouteMeta");
+    expect(routerModule).not.toHaveProperty("routerHrefFormatterKey");
     expect(routerModule).not.toHaveProperty("createSSRRouter");
   });
 
   it("keeps deferred router APIs out of the package root", () => {
     expect(rootModule).not.toHaveProperty("createMemoryHistory");
+    expect(rootModule).not.toHaveProperty("historyHrefFormatterKey");
+    expect(rootModule).not.toHaveProperty("hasHistoryHrefFormatter");
     expect(rootModule).not.toHaveProperty("NavigationGuard");
     expect(rootModule).not.toHaveProperty("RouteMeta");
+    expect(rootModule).not.toHaveProperty("routerHrefFormatterKey");
     expect(rootModule).not.toHaveProperty("createSSRRouter");
   });
 

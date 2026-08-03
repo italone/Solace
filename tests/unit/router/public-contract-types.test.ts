@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { createRouter, h, lazyRoute } from "../../../src";
 import type {
   NavigationGuard,
+  Router,
   RouteComponent,
   RouteLocationRaw,
   RouteRecord,
@@ -30,6 +31,14 @@ function acceptRouterOptions(options: RouterOptions): RouterOptions {
 
 function acceptRouteLocationRaw(location: RouteLocationRaw): RouteLocationRaw {
   return location;
+}
+
+function acceptRouterHistory(history: RouterHistory): RouterHistory {
+  return history;
+}
+
+function acceptRouterContract(router: Router): Router {
+  return router;
 }
 
 acceptRouteRecord({ path: "/", component: Home });
@@ -86,6 +95,30 @@ acceptRouteLocationRaw({ path: "/users/1", params: { id: "1" } });
 
 // @ts-expect-error object locations must include a string path
 acceptRouteLocationRaw({ query: { tab: "profile" } });
+
+acceptRouterHistory({
+  location: () => "/",
+  push: () => undefined,
+  replace: () => undefined,
+  listen: () => () => undefined,
+  back: () => undefined,
+  forward: () => undefined,
+  // @ts-expect-error href formatters are internal to first-party history adapters
+  href: (path: string) => path,
+});
+
+acceptRouterContract({
+  currentRoute: router.currentRoute,
+  install: router.install,
+  push: router.push,
+  replace: router.replace,
+  back: router.back,
+  forward: router.forward,
+  resolve: router.resolve,
+  beforeEach: router.beforeEach,
+  // @ts-expect-error href formatting is not part of the public Router contract
+  href: (path: string) => path,
+});
 
 describe("router public contract types", () => {
   it("keeps the widened beta route fields typed", () => {

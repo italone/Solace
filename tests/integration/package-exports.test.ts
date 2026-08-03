@@ -118,8 +118,11 @@ describe("package exports", () => {
       "watchEffect",
     ]);
     expect(api).not.toHaveProperty("createMemoryHistory");
+    expect(api).not.toHaveProperty("historyHrefFormatterKey");
+    expect(api).not.toHaveProperty("hasHistoryHrefFormatter");
     expect(api).not.toHaveProperty("NavigationGuard");
     expect(api).not.toHaveProperty("RouteMeta");
+    expect(api).not.toHaveProperty("routerHrefFormatterKey");
     expect(api).not.toHaveProperty("createSSRRouter");
   });
 
