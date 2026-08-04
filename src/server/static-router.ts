@@ -102,7 +102,7 @@ function resolveStaticRouterPath(matcher: Matcher, rawFullPath: string): RouteLo
   const rawPath = searchIndex === -1 ? rawFullPath : rawFullPath.slice(0, searchIndex);
   const rawSearch = searchIndex === -1 ? "" : rawFullPath.slice(searchIndex);
   const resolved = resolveMatcherPath(matcher, rawPath || "/");
-  const query = parseQuery(rawSearch);
+  const query = parseStaticRouterQuery(rawSearch);
   const fullPath = `${resolved.path}${stringifyQuery(query)}`;
 
   return {
@@ -110,6 +110,21 @@ function resolveStaticRouterPath(matcher: Matcher, rawFullPath: string): RouteLo
     fullPath,
     query,
   };
+}
+
+function parseStaticRouterQuery(search: string): RouteLocationNormalized["query"] {
+  try {
+    return parseQuery(search);
+  } catch (error) {
+    if (
+      error instanceof TypeError &&
+      error.message === "Router query contains malformed percent encoding"
+    ) {
+      throw new TypeError("Static router query contains malformed percent encoding");
+    }
+
+    throw error;
+  }
 }
 
 function resolveStaticRouteSource(route: RouteLocationNormalized): StaticRoute["source"] {

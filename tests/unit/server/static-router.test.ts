@@ -133,6 +133,15 @@ describe("createStaticRoutesFromRouter", () => {
     ).toThrow(/Static router path contains malformed percent encoding/);
   });
 
+  it("throws a stable TypeError for malformed query percent encoding", () => {
+    expect(() =>
+      createStaticRoutesFromRouter({
+        routes: [{ path: "/users/:id", component: User }],
+        paths: ["/users/42?tab=%E0%A4%A"],
+      }),
+    ).toThrow(/Static router query contains malformed percent encoding/);
+  });
+
   it("rejects static router paths with hash fragments before matching", () => {
     expect(() =>
       createStaticRoutesFromRouter({
