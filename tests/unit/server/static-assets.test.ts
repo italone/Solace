@@ -11,6 +11,18 @@ describe("resolveStaticAssets", () => {
     }
   });
 
+  it("rejects non-string asset bases", () => {
+    for (const base of [null, 42, {}]) {
+      expect(() =>
+        resolveStaticAssets({
+          base: base as never,
+          entry: "src/main.ts",
+          manifest: { "src/main.ts": { file: "assets/main.js" } },
+        }),
+      ).toThrow(TypeError("Static asset base must be a string"));
+    }
+  });
+
   it("emits imported chunks before the entry chunk and dedupes css", () => {
     const assets = resolveStaticAssets({
       entry: "src/main.ts",

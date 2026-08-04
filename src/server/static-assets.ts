@@ -59,6 +59,10 @@ function assertStaticAssetOptions(options: ResolveStaticAssetOptions): void {
   if (options === null || typeof options !== "object" || Array.isArray(options)) {
     throw new TypeError("Static asset options must be an object");
   }
+
+  if (options.base !== undefined && typeof options.base !== "string") {
+    throw new TypeError("Static asset base must be a string");
+  }
 }
 
 function visitManifestChunk(
