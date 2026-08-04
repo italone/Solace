@@ -117,6 +117,23 @@ describe("devtools extension panel transport", () => {
     source.stop();
   });
 
+  it("stops local preview event sources only once", async () => {
+    const { createPanelEventSource } =
+      await import("../../../examples/devtools-extension/src/panel/transport");
+    const unsubscribe = vi.fn();
+    const removeWindowListener = vi.spyOn(window, "removeEventListener");
+
+    const source = createPanelEventSource(() => {}, {
+      subscribe: () => unsubscribe,
+    });
+
+    source.stop();
+    source.stop();
+
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
+    expect(removeWindowListener).toHaveBeenCalledTimes(1);
+  });
+
   it("ignores malformed extension runtime messages", async () => {
     const { createPanelEventSource } =
       await import("../../../examples/devtools-extension/src/panel/transport");

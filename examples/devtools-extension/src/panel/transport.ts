@@ -115,6 +115,7 @@ function createLocalPanelEventSource(
 ): PanelEventSource {
   const windowTarget = options.windowTarget ?? window;
   const unsubscribe = options.subscribe?.(onEvent) ?? (() => {});
+  let stopped = false;
   const handleMessage = (message: MessageEvent<unknown>) => {
     if (
       message.source !== windowTarget ||
@@ -135,6 +136,10 @@ function createLocalPanelEventSource(
   return {
     setPaused() {},
     stop() {
+      if (stopped) {
+        return;
+      }
+      stopped = true;
       windowTarget.removeEventListener("message", handleMessage);
       unsubscribe();
     },
