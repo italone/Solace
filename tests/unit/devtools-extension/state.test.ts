@@ -219,4 +219,26 @@ describe("devtools extension panel state", () => {
     expect(emptyFilter.selectedEventId).toBeNull();
     expect(getSelectedTimelineRow(emptyFilter)).toBeUndefined();
   });
+
+  it("does not select newly recorded events hidden by the active family filter", () => {
+    const filtered = setTimelineFilter(createPanelState(), { family: "scheduler" });
+    const hiddenComponent = recordDevtoolsEvent(filtered, componentMount, { now: 1 });
+
+    expect(hiddenComponent.selectedEventId).toBeNull();
+    expect(getSelectedTimelineRow(hiddenComponent)).toBeUndefined();
+
+    const visibleScheduler = recordDevtoolsEvent(
+      hiddenComponent,
+      {
+        type: "scheduler:flush",
+        queuedJobs: 2,
+        dedupedJobs: 1,
+        durationMs: 3,
+      },
+      { now: 2 },
+    );
+
+    expect(visibleScheduler.selectedEventId).toBe("timeline-2");
+    expect(getSelectedTimelineRow(visibleScheduler)?.event.type).toBe("scheduler:flush");
+  });
 });

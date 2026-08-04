@@ -64,10 +64,7 @@ export function recordDevtoolsEvent(
     event,
   };
   const rows = trimTimelineRows([...state.events, row].sort(compareTimelineRows), state.limit);
-  const selectedEventId =
-    rows.some((candidate) => candidate.id === row.id) || rows.length === 0
-      ? row.id
-      : rows[rows.length - 1].id;
+  const selectedEventId = resolveSelectedEventId(rows, state.filter, state.selectedEventId, row.id);
 
   return {
     ...state,
@@ -95,12 +92,7 @@ export function setPanelPaused(state: PanelState, paused: boolean): PanelState {
 export function setRecorderLimit(state: PanelState, limit: number): PanelState {
   assertValidLimit(limit);
   const events = trimTimelineRows(state.events, limit);
-  const selectedEventId =
-    state.selectedEventId !== null && events.some((row) => row.id === state.selectedEventId)
-      ? state.selectedEventId
-      : events.length > 0
-        ? events[events.length - 1].id
-        : null;
+  const selectedEventId = resolveSelectedEventId(events, state.filter, state.selectedEventId);
 
   return {
     ...state,
@@ -111,11 +103,7 @@ export function setRecorderLimit(state: PanelState, limit: number): PanelState {
 }
 
 export function setTimelineFilter(state: PanelState, filter: TimelineFilter): PanelState {
-  const visibleRows = filterTimeline(state.events, filter);
-  const selectedEventId =
-    state.selectedEventId !== null && visibleRows.some((row) => row.id === state.selectedEventId)
-      ? state.selectedEventId
-      : (visibleRows[visibleRows.length - 1]?.id ?? null);
+  const selectedEventId = resolveSelectedEventId(state.events, filter, state.selectedEventId);
 
   return {
     ...state,
@@ -186,6 +174,25 @@ function trimTimelineRows(rows: TimelineRow[], limit: number): TimelineRow[] {
   }
 
   return rows.slice(rows.length - limit);
+}
+
+function resolveSelectedEventId(
+  rows: TimelineRow[],
+  filter: TimelineFilter,
+  selectedEventId: string | null,
+  preferredEventId?: string,
+): string | null {
+  const visibleRows = filterTimeline(rows, filter);
+
+  if (preferredEventId !== undefined && visibleRows.some((row) => row.id === preferredEventId)) {
+    return preferredEventId;
+  }
+
+  if (selectedEventId !== null && visibleRows.some((row) => row.id === selectedEventId)) {
+    return selectedEventId;
+  }
+
+  return visibleRows[visibleRows.length - 1]?.id ?? null;
 }
 
 function getTimelineSequence(id: string): number {
