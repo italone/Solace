@@ -197,7 +197,7 @@ returns `{ pages }`. Each route must have a string path that begins with `/` and
 rendering and must be a `Map`; optional route `context` is forwarded to the shell and must be a
 plain record object.
 The shell receives read-only copies of `styles` and `context`, so shell mutations do not feed back
-into the returned page metadata.
+into the returned page metadata. When provided, the shell must return a string.
 When app-level `manifest` and `clientEntry` are provided together, `generateStaticSite()` resolves
 production asset tags once and passes them to each shell as `assets`. The shell owns placement of
 `assets.modulePreloads`, `assets.stylesheets`, collected `styles`, and `assets.scripts`. Supplying

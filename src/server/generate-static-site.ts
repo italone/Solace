@@ -83,6 +83,10 @@ export function generateStaticSite(options: GenerateStaticSiteOptions): Generate
         })
       : body;
 
+    if (typeof html !== "string") {
+      throw new TypeError("SSG shell must return a string");
+    }
+
     return {
       path: route.path,
       html,

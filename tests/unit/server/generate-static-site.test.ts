@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { h, inject } from "../../../src";
 
@@ -16,6 +16,10 @@ vi.mock("../../../src/server/render-to-string", () => ({
 import { generateStaticSite } from "../../../src/server";
 
 describe("generateStaticSite", () => {
+  beforeEach(() => {
+    renderToStringMock.mockClear();
+  });
+
   it("rejects non-object options", () => {
     for (const options of [null, []]) {
       expect(() => generateStaticSite(options as never)).toThrow(
@@ -31,6 +35,15 @@ describe("generateStaticSite", () => {
         shell: "page" as never,
       }),
     ).toThrow(TypeError("SSG shell must be a function"));
+  });
+
+  it("rejects non-string shell results", () => {
+    expect(() =>
+      generateStaticSite({
+        routes: [{ path: "/", source: h("p", null, "home") }],
+        shell: () => null as never,
+      }),
+    ).toThrow(TypeError("SSG shell must return a string"));
   });
 
   it("renders routes in order and passes shell inputs", () => {
