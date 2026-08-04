@@ -23,6 +23,17 @@ describe("resolveStaticAssets", () => {
     }
   });
 
+  it("rejects invalid manifests", () => {
+    for (const manifest of [null, [], "manifest"]) {
+      expect(() =>
+        resolveStaticAssets({
+          entry: "src/main.ts",
+          manifest: manifest as never,
+        }),
+      ).toThrow(TypeError("Static asset manifest must be an object"));
+    }
+  });
+
   it("emits imported chunks before the entry chunk and dedupes css", () => {
     const assets = resolveStaticAssets({
       entry: "src/main.ts",
