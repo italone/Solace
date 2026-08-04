@@ -49,6 +49,8 @@ export function generateStaticSite(options: GenerateStaticSiteOptions): Generate
   const seenPaths = new Set<string>();
   const pages = options.routes.map((route) => {
     assertNoDeferredRouteIntegrationOptions(route);
+    assertStaticRouteContext(route.context);
+    assertStaticRouteProvides(route.provides);
 
     if (typeof route.path !== "string") {
       throw new TypeError("SSG route path must be a string");
@@ -149,5 +151,28 @@ function assertNoDeferredRouteIntegrationOptions(route: StaticRoute): void {
     throw new TypeError(
       "Router-aware SSG route integration is deferred; pass explicit route sources instead.",
     );
+  }
+}
+
+function assertStaticRouteContext(
+  context: unknown,
+): asserts context is Record<string, unknown> | undefined {
+  if (context === undefined) {
+    return;
+  }
+
+  if (context === null || typeof context !== "object" || Array.isArray(context)) {
+    throw new TypeError("SSG route context must be a plain object");
+  }
+
+  const prototype = Object.getPrototypeOf(context);
+  if (prototype !== Object.prototype && prototype !== null) {
+    throw new TypeError("SSG route context must be a plain object");
+  }
+}
+
+function assertStaticRouteProvides(provides: unknown): asserts provides is Provides | undefined {
+  if (provides !== undefined && !(provides instanceof Map)) {
+    throw new TypeError("SSG route provides must be a Map");
   }
 }

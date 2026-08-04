@@ -194,7 +194,8 @@ remain deferred.
 `generateStaticSite({ routes, shell })` renders explicit route entries through `renderToString()` and
 returns `{ pages }`. Each route must have a string path that begins with `/` and is unique, plus a
 `source` accepted by `renderToString()`. Optional route-level `provides` values are passed into
-rendering, and optional route `context` is forwarded to the shell.
+rendering and must be a `Map`; optional route `context` is forwarded to the shell and must be a
+plain record object.
 The shell receives read-only copies of `styles` and `context`, so shell mutations do not feed back
 into the returned page metadata.
 When app-level `manifest` and `clientEntry` are provided together, `generateStaticSite()` resolves

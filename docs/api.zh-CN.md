@@ -168,8 +168,8 @@ hydration 仍保持 deferred。
 
 `generateStaticSite({ routes, shell })` 会通过 `renderToString()` 渲染显式 route entries，并返回
 `{ pages }`。每个 route 都必须有字符串 path，且 path 需要以 `/` 开头并保持唯一；同时需要有可被
-`renderToString()` 接收的 `source`。可选的 route `provides` 会传入 rendering；可选的 route
-`context` 会继续传给 shell。
+`renderToString()` 接收的 `source`。可选的 route `provides` 会传入 rendering，且必须是
+`Map`；可选的 route `context` 会继续传给 shell，且必须是 plain record object。
 shell 会收到 `styles` 和 `context` 的只读副本，因此 shell 里的 mutation 不会回写到返回的
 page 元数据。
 当 app-level `manifest` 和 `clientEntry` 成对提供时，`generateStaticSite()` 会先解析一次

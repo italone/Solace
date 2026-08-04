@@ -105,6 +105,22 @@ describe("generateStaticSite", () => {
     ).toThrow(TypeError);
   });
 
+  it("rejects invalid route context and provides values", () => {
+    for (const context of ["title", [], null, new Date()]) {
+      expect(() =>
+        generateStaticSite({
+          routes: [{ path: "/", source: h("p", null, "bad"), context: context as never }],
+        }),
+      ).toThrow(TypeError("SSG route context must be a plain object"));
+    }
+
+    expect(() =>
+      generateStaticSite({
+        routes: [{ path: "/", source: h("p", null, "bad"), provides: {} as never }],
+      }),
+    ).toThrow(TypeError("SSG route provides must be a Map"));
+  });
+
   it("passes resolved manifest assets into each shell call", () => {
     const observedAssets: unknown[] = [];
     const shell = vi.fn(({ body, assets }) => {
