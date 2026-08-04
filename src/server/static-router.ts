@@ -69,7 +69,7 @@ function assertStaticRouterOptions(options: StaticRouterOptions): void {
 }
 
 function assertStaticRouterRouteRecord(route: RouteRecord): void {
-  if (route === null || typeof route !== "object") {
+  if (route === null || typeof route !== "object" || Array.isArray(route)) {
     throw new TypeError("Static router route record must be an object");
   }
 

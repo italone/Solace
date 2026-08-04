@@ -140,6 +140,12 @@ describe("createStaticRoutesFromRouter", () => {
         paths: ["/"],
       }),
     ).toThrow(/Static router route record must be an object/);
+    expect(() =>
+      createStaticRoutesFromRouter({
+        routes: [[] as never],
+        paths: ["/"],
+      }),
+    ).toThrow(/Static router route record must be an object/);
 
     expect(() =>
       createStaticRoutesFromRouter({
