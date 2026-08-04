@@ -165,6 +165,42 @@ describe("devtools extension bridge", () => {
     ]);
   });
 
+  it("ignores page bridge control messages from unexpected origins", async () => {
+    const { createDevtoolsPageBridge } =
+      await import("../../examples/devtools-extension/src/bridge");
+    const session = createDevtoolsSession();
+    const messages: unknown[] = [];
+    const bridge = createDevtoolsPageBridge({
+      postMessage(message) {
+        messages.push(message);
+      },
+      subscribe: session.subscribe,
+    });
+
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        source: window,
+        origin: "https://example.invalid",
+        data: { type: "devtools:control", paused: true },
+      }),
+    );
+    session.emit(mountEvent);
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        source: window,
+        origin: window.location.origin,
+        data: { type: "devtools:control", paused: true },
+      }),
+    );
+    session.emit({ type: "component:update", id: 1, name: "Counter" });
+
+    expect(messages).toEqual([
+      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter" } },
+    ]);
+
+    bridge.disconnect();
+  });
+
   it("waits for a tab-scoped panel activation before injecting the page bridge", async () => {
     const { createContentScriptRelay } =
       await import("../../examples/devtools-extension/src/content-script");

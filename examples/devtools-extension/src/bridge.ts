@@ -62,7 +62,11 @@ export function createDevtoolsPageBridge(
     });
   });
   const handleControlMessage = (message: MessageEvent<unknown>) => {
-    if (message.source !== window || !isDevtoolsControlMessage(message.data)) {
+    if (
+      message.source !== window ||
+      message.origin !== window.location.origin ||
+      !isDevtoolsControlMessage(message.data)
+    ) {
       return;
     }
 
