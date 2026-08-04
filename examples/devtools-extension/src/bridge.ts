@@ -124,7 +124,7 @@ function getPageDevtoolsSubscribe(): (listener: DevtoolsEventListener) => () => 
   return window[GLOBAL_DEVTOOLS_HOOK_KEY]?.onDevtoolsEvent ?? (() => () => {});
 }
 
-function copyDevtoolsEvent(event: unknown): DevtoolsEvent | undefined {
+export function copyDevtoolsEvent(event: unknown): DevtoolsEvent | undefined {
   if (!isRecord(event) || typeof event.type !== "string") {
     return undefined;
   }

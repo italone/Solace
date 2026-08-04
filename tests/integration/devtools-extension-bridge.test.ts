@@ -230,6 +230,45 @@ describe("devtools extension bridge", () => {
     expect(otherContentPort.messages).toEqual([]);
   });
 
+  it("serializes content events before forwarding them to panels", async () => {
+    const { createDevtoolsBackgroundRelay } =
+      await import("../../examples/devtools-extension/src/background");
+    const runtimeListeners = new Set<(port: BackgroundRuntimePort) => void>();
+    const runtime = {
+      onConnect: {
+        addListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.add(listener);
+        },
+        removeListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.delete(listener);
+        },
+      },
+    } satisfies BackgroundRuntime;
+    const contentPort = createRuntimePort("solace-devtools-content", 7);
+    const panelPort = createRuntimePort("solace-devtools-panel");
+
+    createDevtoolsBackgroundRelay(runtime);
+    for (const listener of runtimeListeners) {
+      listener(contentPort);
+      listener(panelPort);
+    }
+
+    panelPort.emit({ type: "devtools:panel:connect", tabId: 7 });
+    contentPort.emit({
+      type: "devtools:event",
+      event: {
+        ...mountEvent,
+        target: { count: 1 },
+        vnode: { type: "button" },
+      },
+    } as never);
+    contentPort.emit({ type: "devtools:event", event: { type: "component:mount" } } as never);
+
+    expect(panelPort.messages).toEqual([
+      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter" } },
+    ]);
+  });
+
   it("ignores content ports without a sender tab id", async () => {
     const { createDevtoolsBackgroundRelay } =
       await import("../../examples/devtools-extension/src/background");

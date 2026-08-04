@@ -1,3 +1,4 @@
+import { copyDevtoolsEvent, DEVTOOLS_EXTENSION_EVENT_TYPE } from "./bridge";
 import type { DevtoolsExtensionEventMessage } from "./bridge";
 
 export const DEVTOOLS_PANEL_PORT = "solace-devtools-panel";
@@ -53,8 +54,11 @@ export function createDevtoolsBackgroundRelay(runtime: BackgroundRuntime): Devto
         port.postMessage({ type: DEVTOOLS_CONTENT_CONNECT_TYPE });
       }
       port.onMessage.addListener((message) => {
-        if (message.type === "devtools:event") {
-          forwardToPorts(panelsByTab.get(tabId), message);
+        if (message.type === DEVTOOLS_EXTENSION_EVENT_TYPE) {
+          const event = copyDevtoolsEvent(message.event);
+          if (event !== undefined) {
+            forwardToPorts(panelsByTab.get(tabId), { type: DEVTOOLS_EXTENSION_EVENT_TYPE, event });
+          }
         }
       });
       return;
