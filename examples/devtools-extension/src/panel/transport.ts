@@ -116,7 +116,11 @@ function createLocalPanelEventSource(
   const windowTarget = options.windowTarget ?? window;
   const unsubscribe = options.subscribe?.(onEvent) ?? (() => {});
   const handleMessage = (message: MessageEvent<unknown>) => {
-    if (message.source !== windowTarget || !isDevtoolsEventMessage(message.data)) {
+    if (
+      message.source !== windowTarget ||
+      message.origin !== windowTarget.location.origin ||
+      !isDevtoolsEventMessage(message.data)
+    ) {
       return;
     }
 

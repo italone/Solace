@@ -82,6 +82,41 @@ describe("devtools extension panel transport", () => {
     source.stop();
   });
 
+  it("ignores local preview messages from unexpected origins", async () => {
+    const { createPanelEventSource } =
+      await import("../../../examples/devtools-extension/src/panel/transport");
+    const observed: DevtoolsEvent[] = [];
+
+    const source = createPanelEventSource((event) => {
+      observed.push(event);
+    });
+
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        source: window,
+        origin: "https://example.invalid",
+        data: {
+          type: "devtools:event",
+          event: { type: "component:mount", id: 1, name: "Counter" },
+        },
+      }),
+    );
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        source: window,
+        origin: window.location.origin,
+        data: {
+          type: "devtools:event",
+          event: { type: "component:update", id: 1, name: "Counter" },
+        },
+      }),
+    );
+
+    expect(observed).toEqual([{ type: "component:update", id: 1, name: "Counter" }]);
+
+    source.stop();
+  });
+
   it("ignores malformed extension runtime messages", async () => {
     const { createPanelEventSource } =
       await import("../../../examples/devtools-extension/src/panel/transport");
