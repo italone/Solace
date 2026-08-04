@@ -11,6 +11,17 @@ describe("resolveStaticAssets", () => {
     }
   });
 
+  it("rejects non-record options objects", () => {
+    const options = Object.assign(new Date(), {
+      entry: "src/main.ts",
+      manifest: {},
+    });
+
+    expect(() => resolveStaticAssets(options as never)).toThrow(
+      TypeError("Static asset options must be an object"),
+    );
+  });
+
   it("rejects non-string asset bases", () => {
     for (const base of [null, 42, {}]) {
       expect(() =>

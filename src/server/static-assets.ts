@@ -60,6 +60,11 @@ function assertStaticAssetOptions(options: ResolveStaticAssetOptions): void {
     throw new TypeError("Static asset options must be an object");
   }
 
+  const optionsPrototype = Object.getPrototypeOf(options);
+  if (optionsPrototype !== Object.prototype && optionsPrototype !== null) {
+    throw new TypeError("Static asset options must be an object");
+  }
+
   if (options.base !== undefined && typeof options.base !== "string") {
     throw new TypeError("Static asset base must be a string");
   }
