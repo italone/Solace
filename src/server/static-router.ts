@@ -79,6 +79,14 @@ function assertStaticRouterOptions(options: StaticRouterOptions): void {
       throw new TypeError("Static router path must be a string");
     }
   }
+
+  if (options.context !== undefined && typeof options.context !== "function") {
+    throw new TypeError("Static router context must be a function");
+  }
+
+  if (options.provides !== undefined && typeof options.provides !== "function") {
+    throw new TypeError("Static router provides must be a function");
+  }
 }
 
 function assertStaticRouterRouteRecord(route: RouteRecord): void {
