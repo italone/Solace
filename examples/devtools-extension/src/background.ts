@@ -73,6 +73,12 @@ export function createDevtoolsBackgroundRelay(runtime: BackgroundRuntime): Devto
         if (!isValidTabId(message.tabId)) {
           return;
         }
+        const previousTabId = findPortTab(panelsByTab, port);
+        if (previousTabId !== undefined && previousTabId !== message.tabId) {
+          unregisterPort(panelsByTab, previousTabId, port, (tabId) => {
+            forwardToPorts(contentsByTab.get(tabId), { type: DEVTOOLS_CONTENT_DISCONNECT_TYPE });
+          });
+        }
         registerPort(panelsByTab, message.tabId, port, (tabId) => {
           forwardToPorts(contentsByTab.get(tabId), { type: DEVTOOLS_CONTENT_DISCONNECT_TYPE });
         });
@@ -116,6 +122,23 @@ function registerPort(
       onEmpty?.(tabId);
     }
   });
+}
+
+function unregisterPort(
+  portsByTab: Map<number, Set<RuntimePort>>,
+  tabId: number,
+  port: RuntimePort,
+  onEmpty?: (tabId: number) => void,
+): void {
+  const ports = portsByTab.get(tabId);
+  if (ports === undefined || !ports.delete(port)) {
+    return;
+  }
+
+  if (ports.size === 0) {
+    portsByTab.delete(tabId);
+    onEmpty?.(tabId);
+  }
 }
 
 function forwardToPorts(
