@@ -67,6 +67,15 @@ describe("resolveStaticAssets", () => {
     }
   });
 
+  it("rejects manifest chunks with empty files", () => {
+    expect(() =>
+      resolveStaticAssets({
+        entry: "src/main.ts",
+        manifest: { "src/main.ts": { file: "" } },
+      }),
+    ).toThrow(TypeError("Static asset manifest chunk file must not be empty"));
+  });
+
   it("rejects manifest chunks with non-array css", () => {
     for (const css of [null, "assets/main.css", {}]) {
       expect(() =>
