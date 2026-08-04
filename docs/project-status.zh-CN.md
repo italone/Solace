@@ -16,7 +16,7 @@ Solace 当前是一个早期 alpha runtime，npm 最新公开版本是 `@italone
 - npm dist-tag：`latest` 指向 `0.0.5`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
-- 本地分支状态：截至 2026-08-03，本地 `main` release baseline 已与 `origin/main` 同步。后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
+- 本地分支状态：当前本地 `main` 含有未推送的提交，尚未与 `origin/main` 同步。后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
 - 发布阶段：alpha 已发布；beta 契约稳定、SSR/hydration minimum loop，以及首个浏览器
   DevTools 扩展 timeline panel 已在仓库中实现
 

@@ -16,10 +16,10 @@ Current repository state:
 - npm dist-tag: `latest` points to `0.0.5`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: the local `main` release baseline has been synchronized with `origin/main` as of
-  2026-08-03. Recheck with `git fetch origin main`, `git status --short --branch`, and
-  `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
-  synchronization claim.
+- Remote state: the local `main` branch currently has unpublished local commits and is not
+  synchronized with `origin/main`. Recheck with `git fetch origin main`, `git status --short
+--branch`, and `git rev-list --left-right --count origin/main...HEAD` before any future release,
+  publish, or synchronization claim.
 - Phase: alpha released; beta contract stabilization, SSR/hydration minimum loop, and first
   browser DevTools extension timeline panel implemented in the repository
 
