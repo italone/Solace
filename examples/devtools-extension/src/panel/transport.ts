@@ -14,7 +14,7 @@ export interface CreatePanelEventSourceOptions {
 
 interface RuntimePort {
   disconnect(): void;
-  onMessage: RuntimeEvent<PanelTransportMessage>;
+  onMessage: RuntimeEvent<unknown>;
   postMessage(message: PanelTransportMessage): void;
 }
 
@@ -76,12 +76,14 @@ function createExtensionPanelEventSource(
   inspectedTabId: number,
   onEvent: (event: DevtoolsEvent) => void,
 ): PanelEventSource {
-  const handleMessage = (message: PanelTransportMessage) => {
-    if (message.type === "devtools:event") {
-      const event = copyDevtoolsEvent(message.event);
-      if (event !== undefined) {
-        onEvent(event);
-      }
+  const handleMessage = (message: unknown) => {
+    if (!isDevtoolsEventMessage(message)) {
+      return;
+    }
+
+    const event = copyDevtoolsEvent(message.event);
+    if (event !== undefined) {
+      onEvent(event);
     }
   };
 
