@@ -485,7 +485,12 @@ function isLazyRouteComponent(component: unknown): component is LazyRouteCompone
 }
 
 function assertRouteRecordRedirectContract(redirect: RouteRecord["redirect"]): void {
-  if (redirect === undefined || typeof redirect === "string" || typeof redirect === "function") {
+  if (redirect === undefined || typeof redirect === "function") {
+    return;
+  }
+
+  if (typeof redirect === "string") {
+    normalizeRawLocation(redirect);
     return;
   }
 

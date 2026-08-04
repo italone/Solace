@@ -667,6 +667,8 @@ array, and route record paths must be strings; invalid options, history adapters
 shapes are rejected before matcher compilation. Route record paths must be relative paths and must
 not include query strings or hash fragments. Route records must be non-array objects, and route
 components must be functions, valid `lazyRoute()` values, or omitted/`null` for layout-less records.
+Route redirect strings and object locations are validated against the same route location contract at
+router creation time.
 Route locations must be strings or non-array objects. Object route locations are limited to
 `{ path, query }`; named locations, hash fragments in string or object-path locations, and params
 objects are rejected until those router contracts are separately designed. Object location `path`

@@ -613,7 +613,8 @@ createApp(App)
 必须是字符串；无效的 options、history adapter、route list 或 path 形状会在 matcher 编译前被
 拒绝。route record path 必须是相对路径，且不能包含 query string 或 hash fragment。route record
 必须是非数组 object，route component 必须是函数、有效的 `lazyRoute()` value，或为 layout-less
-record 省略 / 设为 `null`。
+record 省略 / 设为 `null`。route redirect string 和 object location 会在 router 创建阶段按同一套
+route location 契约校验。
 route location 必须是 string 或非数组 object。object route location 目前只支持 `{ path, query }`；
 string 或 object path 中的 hash fragment、named location 和 params object 会被拒绝，直到这些
 router 契约被单独设计。object location 的 `path` 不能包含 query string；需要 query 时应使用单独的

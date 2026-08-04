@@ -132,6 +132,8 @@ describe("createRouter", () => {
 
     const invalidRoutes = [
       { path: "/bad-redirect", redirect: 42 },
+      { path: "/bad-redirect-string", redirect: "https://example.com" },
+      { path: "/bad-redirect-string-hash", redirect: "/login#profile" },
       { path: "/bad-redirect-location", redirect: { name: "home" } },
       { path: "/bad-redirect-query", redirect: { path: "/", query: [] } },
       { path: "/bad-redirect-path-query", redirect: { path: "/?tab=profile" } },

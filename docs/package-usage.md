@@ -273,9 +273,10 @@ SSR, SSG, or hydration router integration. Passing still-deferred route fields s
 Object route locations only support `{ path, query }`; named locations, hash fragments in string or
 object-path locations, and params objects are rejected. Object location `path` values must not
 include query strings; use the separate `query` field instead. Route record paths must be relative
-paths and must not include query strings or hash fragments. Dynamic params are limited to simple
-`:name` segments and `/:pathMatch(.*)*` wildcard fallback. Lazy route component load failures
-surface `RouterNavigationError` with type
+paths and must not include query strings or hash fragments. Route redirect strings and object
+locations are validated at router creation time. Dynamic params are limited to simple `:name`
+segments and `/:pathMatch(.*)*` wildcard fallback. Lazy route component load failures surface
+`RouterNavigationError` with type
 `"lazy-load-failed"`.
 Supported path locations normalize to a leading slash and trim trailing slashes except for `/`;
 string locations split path and query at the first `?`, preserving later `?` characters inside
