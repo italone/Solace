@@ -67,6 +67,17 @@ describe("resolveStaticAssets", () => {
     }
   });
 
+  it("rejects manifest chunks with non-array css", () => {
+    for (const css of [null, "assets/main.css", {}]) {
+      expect(() =>
+        resolveStaticAssets({
+          entry: "src/main.ts",
+          manifest: { "src/main.ts": { file: "assets/main.js", css: css as never } },
+        }),
+      ).toThrow(TypeError("Static asset manifest chunk css must be an array"));
+    }
+  });
+
   it("emits imported chunks before the entry chunk and dedupes css", () => {
     const assets = resolveStaticAssets({
       entry: "src/main.ts",

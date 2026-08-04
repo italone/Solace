@@ -112,6 +112,10 @@ function assertStaticAssetManifestChunk(
   if (typeof chunk.file !== "string") {
     throw new TypeError("Static asset manifest chunk file must be a string");
   }
+
+  if (chunk.css !== undefined && !Array.isArray(chunk.css)) {
+    throw new TypeError("Static asset manifest chunk css must be an array");
+  }
 }
 
 function normalizeAssetBase(base: string): string {
