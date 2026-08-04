@@ -243,4 +243,28 @@ describe("devtools extension panel transport", () => {
 
     source.stop();
   });
+
+  it("ignores extension stop disconnect failures", async () => {
+    const { createPanelEventSource } =
+      await import("../../../examples/devtools-extension/src/panel/transport");
+    const port = {
+      disconnect: vi.fn(() => {
+        throw new Error("panel port already disconnected");
+      }),
+      onMessage: {
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+      },
+      postMessage: vi.fn(),
+    } satisfies PanelRuntimePort;
+
+    const source = createPanelEventSource(() => {}, {
+      connectRuntime: () => port,
+      inspectedTabId: 7,
+    });
+
+    expect(() => source.stop()).not.toThrow();
+    expect(port.onMessage.removeListener).toHaveBeenCalledTimes(1);
+    expect(port.disconnect).toHaveBeenCalledTimes(1);
+  });
 });

@@ -108,7 +108,11 @@ function createExtensionPanelEventSource(
       }
       stopped = true;
       port.onMessage.removeListener?.(handleMessage);
-      port.disconnect();
+      try {
+        port.disconnect();
+      } catch {
+        // Ignore stale extension ports during panel cleanup.
+      }
     },
   };
 }
