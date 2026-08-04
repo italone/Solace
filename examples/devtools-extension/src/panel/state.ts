@@ -136,7 +136,7 @@ export function getSelectedTimelineRow(state: PanelState): TimelineRow | undefin
     return undefined;
   }
 
-  return state.events.find((row) => row.id === state.selectedEventId);
+  return filterTimeline(state.events, state.filter).find((row) => row.id === state.selectedEventId);
 }
 
 function getTimelineFamily(event: DevtoolsEvent): TimelineFamily {
