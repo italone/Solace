@@ -16,6 +16,23 @@ vi.mock("../../../src/server/render-to-string", () => ({
 import { generateStaticSite } from "../../../src/server";
 
 describe("generateStaticSite", () => {
+  it("rejects non-object options", () => {
+    for (const options of [null, []]) {
+      expect(() => generateStaticSite(options as never)).toThrow(
+        TypeError("SSG options must be an object"),
+      );
+    }
+  });
+
+  it("rejects non-function shells", () => {
+    expect(() =>
+      generateStaticSite({
+        routes: [{ path: "/", source: h("p", null, "home") }],
+        shell: "page" as never,
+      }),
+    ).toThrow(TypeError("SSG shell must be a function"));
+  });
+
   it("renders routes in order and passes shell inputs", () => {
     const shell = vi.fn(({ path, body, styles, context, assets }) => {
       return `<!doctype html><html data-path="${path}" data-title="${String(context.title ?? "")}"><head>${assets.modulePreloads.join("")}${assets.stylesheets.join("")}${assets.scripts.join("")}</head><body>${body}<style>${styles.join(",")}</style></body></html>`;

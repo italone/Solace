@@ -115,6 +115,14 @@ function assertStaticRouteRecord(route: unknown): asserts route is StaticRoute {
 }
 
 function assertNoDeferredIntegrationOptions(options: GenerateStaticSiteOptions): void {
+  if (options === null || typeof options !== "object" || Array.isArray(options)) {
+    throw new TypeError("SSG options must be an object");
+  }
+
+  if (options.shell !== undefined && typeof options.shell !== "function") {
+    throw new TypeError("SSG shell must be a function");
+  }
+
   if ((options.manifest === undefined) !== (options.clientEntry === undefined)) {
     throw new TypeError("SSG manifest integration requires both manifest and clientEntry.");
   }
