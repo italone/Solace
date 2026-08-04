@@ -65,6 +65,14 @@ describe("renderToString", () => {
     expect(renderToString(App).html).toBe("<p>component source</p>");
   });
 
+  it("rejects invalid render sources", () => {
+    for (const source of [null, {}, "page"]) {
+      expect(() => renderToString(source as never)).toThrow(
+        TypeError("SSR source must be a VNode or component function"),
+      );
+    }
+  });
+
   it("rejects async component SSR instead of rendering an empty subtree", () => {
     const AsyncApp = async () => h("p", null, "async");
     const AsyncSetupApp = () => async () => h("p", null, "async setup");

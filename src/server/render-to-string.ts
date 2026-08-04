@@ -44,7 +44,11 @@ function normalizeSource(source: RenderToStringSource): VNode {
     return source;
   }
 
-  return h(source as ComponentType);
+  if (typeof source === "function") {
+    return h(source as ComponentType);
+  }
+
+  throw new TypeError("SSR source must be a VNode or component function");
 }
 
 function renderVNodeToString(
