@@ -121,8 +121,9 @@ Solace 当前有意不包含：
 ## 发布协调状态
 
 发布独立于仓库就绪度。`@italone/solace@0.0.5` 已发布到 npm，并且 `latest`
-dist-tag 指向 `0.0.5`。当前仓库 `main` 已与 `origin/main` 同步；发布后 registry 检查确认 npm
-当前最新公开版本是 `@italone/solace@0.0.5`。
+dist-tag 指向 `0.0.5`。发布后 registry 检查确认 npm 当前最新公开版本是
+`@italone/solace@0.0.5`。当前本地 `main` 在该发布基线之后已经包含未推送提交，后续任何发布
+或同步声明前都必须先完成同步。
 
 未来发布任何后续版本前：
 

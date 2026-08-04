@@ -127,9 +127,10 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Release Coordination State
 
-`@italone/solace@0.0.5` has been published to npm with the `latest` dist-tag. Repository `main` is
-synchronized with `origin/main`, and post-publish registry checks confirmed npm reports
-`@italone/solace@0.0.5` as the latest published version.
+`@italone/solace@0.0.5` has been published to npm with the `latest` dist-tag. Post-publish registry
+checks confirmed npm reports `@italone/solace@0.0.5` as the latest published version. The current
+local `main` branch now contains unpublished commits after that release baseline and must be synced
+before any future publish or synchronization claim.
 
 Before publishing any future version, follow the same checklist:
 
