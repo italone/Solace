@@ -98,6 +98,15 @@ describe("resolveStaticAssets", () => {
     }
   });
 
+  it("rejects manifest chunks with empty css items", () => {
+    expect(() =>
+      resolveStaticAssets({
+        entry: "src/main.ts",
+        manifest: { "src/main.ts": { file: "assets/main.js", css: [""] } },
+      }),
+    ).toThrow(TypeError("Static asset manifest chunk css items must not be empty"));
+  });
+
   it("rejects manifest chunks with non-array imports", () => {
     for (const imports of [null, "_vendor.js", {}]) {
       expect(() =>

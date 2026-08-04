@@ -125,6 +125,10 @@ function assertStaticAssetManifestChunk(
     if (typeof cssFile !== "string") {
       throw new TypeError("Static asset manifest chunk css items must be strings");
     }
+
+    if (cssFile === "") {
+      throw new TypeError("Static asset manifest chunk css items must not be empty");
+    }
   }
 
   if (chunk.imports !== undefined && !Array.isArray(chunk.imports)) {
