@@ -241,4 +241,27 @@ describe("devtools extension panel state", () => {
     expect(visibleScheduler.selectedEventId).toBe("timeline-2");
     expect(getSelectedTimelineRow(visibleScheduler)?.event.type).toBe("scheduler:flush");
   });
+
+  it("ignores selection requests for hidden or missing timeline rows", () => {
+    const state = [
+      componentMount,
+      {
+        type: "scheduler:flush",
+        queuedJobs: 2,
+        dedupedJobs: 1,
+        durationMs: 3,
+      } satisfies DevtoolsEvent,
+    ].reduce((panelState, event, index) => {
+      return recordDevtoolsEvent(panelState, event, { now: index + 1 });
+    }, createPanelState());
+    const schedulerOnly = setTimelineFilter(state, { family: "scheduler" });
+
+    const hiddenSelection = selectTimelineEvent(schedulerOnly, "timeline-1");
+    expect(hiddenSelection.selectedEventId).toBe("timeline-2");
+    expect(getSelectedTimelineRow(hiddenSelection)?.event.type).toBe("scheduler:flush");
+
+    const missingSelection = selectTimelineEvent(schedulerOnly, "timeline-999");
+    expect(missingSelection.selectedEventId).toBe("timeline-2");
+    expect(getSelectedTimelineRow(missingSelection)?.event.type).toBe("scheduler:flush");
+  });
 });

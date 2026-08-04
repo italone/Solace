@@ -64,7 +64,9 @@ export function recordDevtoolsEvent(
     event,
   };
   const rows = trimTimelineRows([...state.events, row].sort(compareTimelineRows), state.limit);
-  const selectedEventId = resolveSelectedEventId(rows, state.filter, state.selectedEventId, row.id);
+  const selectedEventId = resolveSelectedEventId(rows, state.filter, state.selectedEventId, {
+    preferredEventId: row.id,
+  });
 
   return {
     ...state,
@@ -115,7 +117,9 @@ export function setTimelineFilter(state: PanelState, filter: TimelineFilter): Pa
 export function selectTimelineEvent(state: PanelState, selectedEventId: string | null): PanelState {
   return {
     ...state,
-    selectedEventId,
+    selectedEventId: resolveSelectedEventId(state.events, state.filter, state.selectedEventId, {
+      explicitEventId: selectedEventId,
+    }),
   };
 }
 
@@ -180,12 +184,26 @@ function resolveSelectedEventId(
   rows: TimelineRow[],
   filter: TimelineFilter,
   selectedEventId: string | null,
-  preferredEventId?: string,
+  options: { preferredEventId?: string; explicitEventId?: string | null } = {},
 ): string | null {
   const visibleRows = filterTimeline(rows, filter);
 
-  if (preferredEventId !== undefined && visibleRows.some((row) => row.id === preferredEventId)) {
-    return preferredEventId;
+  if (options.explicitEventId === null) {
+    return null;
+  }
+
+  if (
+    options.explicitEventId !== undefined &&
+    visibleRows.some((row) => row.id === options.explicitEventId)
+  ) {
+    return options.explicitEventId;
+  }
+
+  if (
+    options.preferredEventId !== undefined &&
+    visibleRows.some((row) => row.id === options.preferredEventId)
+  ) {
+    return options.preferredEventId;
   }
 
   if (selectedEventId !== null && visibleRows.some((row) => row.id === selectedEventId)) {
