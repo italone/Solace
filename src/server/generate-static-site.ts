@@ -98,6 +98,12 @@ function assertValidRoutes(routes: StaticRoute[]): void {
   if (!Array.isArray(routes) || routes.length === 0) {
     throw new TypeError("SSG routes must be a non-empty array");
   }
+
+  for (let index = 0; index < routes.length; index += 1) {
+    if (!(index in routes)) {
+      throw new TypeError("SSG routes must not be sparse");
+    }
+  }
 }
 
 function assertNoDeferredIntegrationOptions(options: GenerateStaticSiteOptions): void {

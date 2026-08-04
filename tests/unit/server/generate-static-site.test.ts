@@ -121,6 +121,15 @@ describe("generateStaticSite", () => {
     ).toThrow(TypeError("SSG route provides must be a Map"));
   });
 
+  it("rejects sparse route lists", () => {
+    const routes = [{ path: "/", source: h("p", null, "home") }];
+    routes.length = 2;
+
+    expect(() => generateStaticSite({ routes })).toThrow(
+      TypeError("SSG routes must not be sparse"),
+    );
+  });
+
   it("passes resolved manifest assets into each shell call", () => {
     const observedAssets: unknown[] = [];
     const shell = vi.fn(({ body, assets }) => {
