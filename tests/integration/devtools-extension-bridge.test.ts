@@ -439,6 +439,48 @@ describe("devtools extension bridge", () => {
     expect(injectBridge).not.toHaveBeenCalled();
     expect(windowListeners.size).toBe(0);
   });
+
+  it("does not reactivate content relays after stop", async () => {
+    const { createContentScriptRelay } =
+      await import("../../examples/devtools-extension/src/content-script");
+    let runtimeListener: ((message: DevtoolsContentMessage) => void) | undefined;
+    const windowListeners = new Set<EventListenerOrEventListenerObject>();
+    const injectBridge = vi.fn();
+    const port = {
+      disconnect: vi.fn(),
+      onMessage: {
+        addListener(listener: (message: DevtoolsContentMessage) => void) {
+          runtimeListener = listener;
+        },
+        removeListener(listener: (message: DevtoolsContentMessage) => void) {
+          if (runtimeListener === listener) {
+            runtimeListener = undefined;
+          }
+        },
+      },
+      postMessage: vi.fn(),
+    } satisfies ContentRuntimePort;
+
+    const stop = createContentScriptRelay({
+      addWindowListener(_type: string, listener: EventListenerOrEventListenerObject) {
+        windowListeners.add(listener);
+      },
+      connectRuntime: () => port,
+      injectBridge,
+      removeWindowListener(_type: string, listener: EventListenerOrEventListenerObject) {
+        windowListeners.delete(listener);
+      },
+    });
+    const staleRuntimeListener = runtimeListener;
+
+    stop();
+    staleRuntimeListener?.({ type: "devtools:content:connect" });
+    stop();
+
+    expect(injectBridge).not.toHaveBeenCalled();
+    expect(windowListeners.size).toBe(0);
+    expect(port.disconnect).toHaveBeenCalledTimes(1);
+  });
 });
 
 function createRuntimePort(name: string, tabId?: number) {

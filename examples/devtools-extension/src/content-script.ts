@@ -57,7 +57,12 @@ export function createContentScriptRelay(
   const port = connectRuntime();
   let active = false;
   let bridgeInjected = false;
+  let stopped = false;
   const relayContentMessage = (message: DevtoolsContentMessage) => {
+    if (stopped) {
+      return;
+    }
+
     if (!isDevtoolsContentMessage(message)) {
       return;
     }
@@ -108,8 +113,13 @@ export function createContentScriptRelay(
   port.onMessage.addListener(relayContentMessage);
 
   return () => {
+    if (stopped) {
+      return;
+    }
+    stopped = true;
     if (active) {
       removeWindowListener("message", relayMessage);
+      active = false;
     }
     port.onMessage.removeListener?.(relayContentMessage);
     port.disconnect();
