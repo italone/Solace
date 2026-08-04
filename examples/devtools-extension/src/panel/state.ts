@@ -111,9 +111,16 @@ export function setRecorderLimit(state: PanelState, limit: number): PanelState {
 }
 
 export function setTimelineFilter(state: PanelState, filter: TimelineFilter): PanelState {
+  const visibleRows = filterTimeline(state.events, filter);
+  const selectedEventId =
+    state.selectedEventId !== null && visibleRows.some((row) => row.id === state.selectedEventId)
+      ? state.selectedEventId
+      : (visibleRows[visibleRows.length - 1]?.id ?? null);
+
   return {
     ...state,
     filter,
+    selectedEventId,
   };
 }
 

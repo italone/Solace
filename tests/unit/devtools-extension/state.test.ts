@@ -10,6 +10,7 @@ import {
   selectTimelineEvent,
   setPanelPaused,
   setRecorderLimit,
+  setTimelineFilter,
 } from "../../../examples/devtools-extension/src/panel/state";
 
 const componentMount: DevtoolsEvent = {
@@ -194,5 +195,28 @@ describe("devtools extension panel state", () => {
     expect(getSelectedTimelineRow(selected)?.event).toBe(componentMount);
     expect(cleared.events).toEqual([]);
     expect(cleared.selectedEventId).toBeNull();
+  });
+
+  it("keeps selected details aligned with the active family filter", () => {
+    const state = [
+      componentMount,
+      {
+        type: "scheduler:flush",
+        queuedJobs: 2,
+        dedupedJobs: 1,
+        durationMs: 3,
+      } satisfies DevtoolsEvent,
+    ].reduce((panelState, event, index) => {
+      return recordDevtoolsEvent(panelState, event, { now: index + 1 });
+    }, createPanelState());
+    const selectedComponent = selectTimelineEvent(state, "timeline-1");
+
+    const schedulerOnly = setTimelineFilter(selectedComponent, { family: "scheduler" });
+    expect(schedulerOnly.selectedEventId).toBe("timeline-2");
+    expect(getSelectedTimelineRow(schedulerOnly)?.event.type).toBe("scheduler:flush");
+
+    const emptyFilter = setTimelineFilter(schedulerOnly, { family: "store" });
+    expect(emptyFilter.selectedEventId).toBeNull();
+    expect(getSelectedTimelineRow(emptyFilter)).toBeUndefined();
   });
 });

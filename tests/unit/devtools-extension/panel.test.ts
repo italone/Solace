@@ -92,6 +92,7 @@ describe("devtools extension timeline panel", () => {
     expect(getTimelineRows(container).map((row) => row.textContent)).toEqual([
       "scheduler:flush2 jobs flushed, 1 deduped in 3ms",
     ]);
+    expect(getDetailsText(container)).toBe(JSON.stringify(schedulerFlush, null, 2));
 
     findButton(container, "Pause")?.click();
     await nextTick();
