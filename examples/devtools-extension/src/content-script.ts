@@ -96,7 +96,11 @@ export function createContentScriptRelay(
 
   const relayMessage = (event: Event) => {
     const messageEvent = event as MessageEvent<unknown>;
-    if (messageEvent.source !== window || !isDevtoolsExtensionEventMessage(messageEvent.data)) {
+    if (
+      messageEvent.source !== window ||
+      messageEvent.origin !== window.location.origin ||
+      !isDevtoolsExtensionEventMessage(messageEvent.data)
+    ) {
       return;
     }
 

@@ -44,6 +44,21 @@ function createDevtoolsSession() {
   };
 }
 
+function dispatchWindowMessage(listener: EventListenerOrEventListenerObject, origin: string): void {
+  const event = new MessageEvent("message", {
+    data: { type: "devtools:event", event: mountEvent },
+    origin,
+    source: window,
+  });
+
+  if (typeof listener === "function") {
+    listener(event);
+    return;
+  }
+
+  listener.handleEvent(event);
+}
+
 describe("devtools extension bridge", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -192,6 +207,53 @@ describe("devtools extension bridge", () => {
 
     expect(injectBridge).toHaveBeenCalledTimes(1);
     expect(windowListeners.size).toBe(1);
+
+    stop();
+  });
+
+  it("ignores page bridge messages from unexpected origins", async () => {
+    const { createContentScriptRelay } =
+      await import("../../examples/devtools-extension/src/content-script");
+    const messages: unknown[] = [];
+    const portListeners = new Set<(message: DevtoolsContentMessage) => void>();
+    const windowListeners = new Set<EventListenerOrEventListenerObject>();
+    const port = {
+      disconnect: vi.fn(),
+      onMessage: {
+        addListener(listener: (message: DevtoolsContentMessage) => void) {
+          portListeners.add(listener);
+        },
+        removeListener(listener: (message: DevtoolsContentMessage) => void) {
+          portListeners.delete(listener);
+        },
+      },
+      postMessage(message: unknown) {
+        messages.push(message);
+      },
+    } satisfies ContentRuntimePort;
+
+    const stop = createContentScriptRelay({
+      addWindowListener(_type: string, listener: EventListenerOrEventListenerObject) {
+        windowListeners.add(listener);
+      },
+      connectRuntime: () => port,
+      injectBridge: vi.fn(),
+      removeWindowListener(_type: string, listener: EventListenerOrEventListenerObject) {
+        windowListeners.delete(listener);
+      },
+    });
+
+    for (const listener of portListeners) {
+      listener({ type: "devtools:content:connect" });
+    }
+    for (const listener of windowListeners) {
+      dispatchWindowMessage(listener, "https://example.invalid");
+      dispatchWindowMessage(listener, window.location.origin);
+    }
+
+    expect(messages).toEqual([
+      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter" } },
+    ]);
 
     stop();
   });
