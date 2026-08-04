@@ -117,6 +117,12 @@ function assertStaticAssetManifestChunk(
     throw new TypeError("Static asset manifest chunk css must be an array");
   }
 
+  for (const cssFile of chunk.css ?? []) {
+    if (typeof cssFile !== "string") {
+      throw new TypeError("Static asset manifest chunk css items must be strings");
+    }
+  }
+
   if (chunk.imports !== undefined && !Array.isArray(chunk.imports)) {
     throw new TypeError("Static asset manifest chunk imports must be an array");
   }
