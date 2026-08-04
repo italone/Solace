@@ -425,6 +425,43 @@ describe("devtools extension bridge", () => {
     ]);
   });
 
+  it("continues forwarding content events when one panel port rejects messages", async () => {
+    const { createDevtoolsBackgroundRelay } =
+      await import("../../examples/devtools-extension/src/background");
+    const runtimeListeners = new Set<(port: BackgroundRuntimePort) => void>();
+    const runtime = {
+      onConnect: {
+        addListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.add(listener);
+        },
+        removeListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.delete(listener);
+        },
+      },
+    } satisfies BackgroundRuntime;
+    const contentPort = createRuntimePort("solace-devtools-content", 7);
+    const brokenPanelPort = createRuntimePort("solace-devtools-panel");
+    const panelPort = createRuntimePort("solace-devtools-panel");
+    brokenPanelPort.postMessage = () => {
+      throw new Error("panel port disconnected");
+    };
+
+    createDevtoolsBackgroundRelay(runtime);
+    for (const listener of runtimeListeners) {
+      listener(contentPort);
+      listener(brokenPanelPort);
+      listener(panelPort);
+    }
+
+    brokenPanelPort.emit({ type: "devtools:panel:connect", tabId: 7 });
+    panelPort.emit({ type: "devtools:panel:connect", tabId: 7 });
+
+    expect(() => contentPort.emit({ type: "devtools:event", event: mountEvent })).not.toThrow();
+    expect(panelPort.messages).toEqual([
+      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter" } },
+    ]);
+  });
+
   it("keeps a panel scoped to its latest connected tab", async () => {
     const { createDevtoolsBackgroundRelay } =
       await import("../../examples/devtools-extension/src/background");

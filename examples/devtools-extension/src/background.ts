@@ -160,7 +160,11 @@ function forwardToPorts(
   }
 
   for (const port of ports) {
-    port.postMessage(message);
+    try {
+      port.postMessage(message);
+    } catch {
+      // Ignore disconnected ports so one stale endpoint cannot block the rest of the relay.
+    }
   }
 }
 
