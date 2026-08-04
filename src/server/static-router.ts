@@ -73,6 +73,12 @@ function assertStaticRouterOptions(options: StaticRouterOptions): void {
   if (!Array.isArray(options.paths) || options.paths.length === 0) {
     throw new TypeError("Static router paths must be a non-empty array");
   }
+
+  for (let index = 0; index < options.paths.length; index += 1) {
+    if (typeof options.paths[index] !== "string") {
+      throw new TypeError("Static router path must be a string");
+    }
+  }
 }
 
 function assertStaticRouterRouteRecord(route: RouteRecord): void {

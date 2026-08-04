@@ -125,6 +125,14 @@ describe("createStaticRoutesFromRouter", () => {
         paths: [42 as unknown as string],
       }),
     ).toThrow(TypeError("Static router path must be a string"));
+    const sparsePaths = ["/"] as string[];
+    sparsePaths.length = 2;
+    expect(() =>
+      createStaticRoutesFromRouter({
+        routes: createRoutes(),
+        paths: sparsePaths,
+      }),
+    ).toThrow(TypeError("Static router path must be a string"));
   });
 
   it("throws a stable TypeError for malformed path percent encoding", () => {
