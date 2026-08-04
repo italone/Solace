@@ -101,10 +101,10 @@ function visitManifestChunk(
     return;
   }
 
-  const chunk = manifest[chunkId];
-  if (chunk === undefined) {
+  if (!hasOwn(manifest, chunkId)) {
     throw new TypeError(`Static asset manifest entry not found: ${chunkId}`);
   }
+  const chunk = manifest[chunkId];
   assertStaticAssetManifestChunk(chunk);
 
   visited.add(chunkId);
@@ -120,6 +120,11 @@ function assertStaticAssetManifestChunk(
   chunk: StaticAssetManifestChunk,
 ): asserts chunk is StaticAssetManifestChunk {
   if (chunk === null || typeof chunk !== "object" || Array.isArray(chunk)) {
+    throw new TypeError("Static asset manifest chunk must be an object");
+  }
+
+  const chunkPrototype = Object.getPrototypeOf(chunk);
+  if (chunkPrototype !== Object.prototype && chunkPrototype !== null) {
     throw new TypeError("Static asset manifest chunk must be an object");
   }
 
@@ -167,6 +172,10 @@ function normalizeAssetBase(base: string): string {
 
 function joinAssetBase(base: string, file: string): string {
   return `${base}${file.replace(/^\/+/, "")}`;
+}
+
+function hasOwn(value: object, key: PropertyKey): boolean {
+  return Object.prototype.hasOwnProperty.call(value, key);
 }
 
 function renderModulePreloadTag(href: string): string {

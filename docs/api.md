@@ -226,7 +226,8 @@ outside the current public contract.
 client entry id into complete HTML tag strings. Imported chunks are walked before the entry chunk,
 CSS files are deduped in first-seen order, imported JavaScript files become `modulepreload` links,
 and the entry file becomes the single module script. `base` defaults to `/` and is normalized to one
-trailing slash.
+trailing slash. `options`, `manifest`, and each manifest chunk must be plain objects or
+null-prototype records.
 
 ### `createStaticRoutesFromRouter(options)`
 

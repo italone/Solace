@@ -76,6 +76,17 @@ describe("resolveStaticAssets", () => {
     }
   });
 
+  it("rejects non-record manifest chunks", () => {
+    const chunk = Object.assign(new Date(), { file: "assets/main.js" });
+
+    expect(() =>
+      resolveStaticAssets({
+        entry: "src/main.ts",
+        manifest: { "src/main.ts": chunk as never },
+      }),
+    ).toThrow(TypeError("Static asset manifest chunk must be an object"));
+  });
+
   it("rejects manifest chunks with non-string files", () => {
     for (const file of [undefined, null, 42, {}]) {
       expect(() =>
@@ -288,5 +299,39 @@ describe("resolveStaticAssets", () => {
         },
       }),
     ).toThrow(/Static asset manifest entry not found: _missing\.js/);
+  });
+
+  it("rejects inherited manifest entries", () => {
+    const objectPrototype = Object.prototype as Record<string, unknown>;
+
+    Object.defineProperty(objectPrototype, "src/prototype-main.ts", {
+      configurable: true,
+      value: { file: "assets/main.js" },
+    });
+    Object.defineProperty(objectPrototype, "_prototype-vendor.js", {
+      configurable: true,
+      value: { file: "assets/vendor.js" },
+    });
+
+    try {
+      expect(() =>
+        resolveStaticAssets({
+          entry: "src/prototype-main.ts",
+          manifest: {},
+        }),
+      ).toThrow(/Static asset manifest entry not found: src\/prototype-main\.ts/);
+
+      expect(() =>
+        resolveStaticAssets({
+          entry: "src/main.ts",
+          manifest: {
+            "src/main.ts": { file: "assets/main.js", imports: ["_prototype-vendor.js"] },
+          },
+        }),
+      ).toThrow(/Static asset manifest entry not found: _prototype-vendor\.js/);
+    } finally {
+      delete objectPrototype["src/prototype-main.ts"];
+      delete objectPrototype["_prototype-vendor.js"];
+    }
   });
 });

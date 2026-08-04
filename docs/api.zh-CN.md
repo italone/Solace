@@ -196,7 +196,8 @@ filesystem output、route crawling、app-level router 和 CLI integration 仍不
 `resolveStaticAssets({ manifest, entry, base })` 会把 Vite-like production manifest 和 client
 entry id 转换为完整的 HTML tag 字符串。imported chunks 会先于 entry chunk 遍历，CSS 会按首次
 出现顺序去重，imported JavaScript 文件会生成 `modulepreload` links，entry 文件会生成唯一的
-module script。`base` 默认为 `/`，并规范化为一个 trailing slash。
+module script。`base` 默认为 `/`，并规范化为一个 trailing slash。`options`、`manifest`
+以及每个 manifest chunk 必须是 plain object 或 null-prototype record。
 
 ### `createStaticRoutesFromRouter(options)`
 
