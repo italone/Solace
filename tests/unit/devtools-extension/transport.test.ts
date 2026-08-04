@@ -125,4 +125,44 @@ describe("devtools extension panel transport", () => {
 
     source.stop();
   });
+
+  it("does not send extension controls after the source stops", async () => {
+    const { createPanelEventSource } =
+      await import("../../../examples/devtools-extension/src/panel/transport");
+    const portListeners = new Set<(message: unknown) => void>();
+    const port = {
+      disconnect: vi.fn(),
+      onMessage: {
+        addListener(listener: (message: unknown) => void) {
+          portListeners.add(listener);
+        },
+        removeListener(listener: (message: unknown) => void) {
+          portListeners.delete(listener);
+        },
+      },
+      postMessage: vi.fn(),
+    } satisfies PanelRuntimePort;
+
+    const source = createPanelEventSource(() => {}, {
+      connectRuntime: () => port,
+      inspectedTabId: 7,
+    });
+
+    source.setPaused(true);
+    source.stop();
+    source.setPaused(false);
+    source.stop();
+
+    expect(port.postMessage).toHaveBeenCalledTimes(2);
+    expect(port.postMessage).toHaveBeenNthCalledWith(1, {
+      type: "devtools:panel:connect",
+      tabId: 7,
+    });
+    expect(port.postMessage).toHaveBeenNthCalledWith(2, {
+      type: "devtools:control",
+      paused: true,
+    });
+    expect(port.disconnect).toHaveBeenCalledTimes(1);
+    expect(portListeners.size).toBe(0);
+  });
 });

@@ -76,6 +76,7 @@ function createExtensionPanelEventSource(
   inspectedTabId: number,
   onEvent: (event: DevtoolsEvent) => void,
 ): PanelEventSource {
+  let stopped = false;
   const handleMessage = (message: unknown) => {
     if (!isDevtoolsEventMessage(message)) {
       return;
@@ -92,9 +93,16 @@ function createExtensionPanelEventSource(
 
   return {
     setPaused(paused) {
+      if (stopped) {
+        return;
+      }
       port.postMessage({ type: "devtools:control", paused });
     },
     stop() {
+      if (stopped) {
+        return;
+      }
+      stopped = true;
       port.onMessage.removeListener?.(handleMessage);
       port.disconnect();
     },
