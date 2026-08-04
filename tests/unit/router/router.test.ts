@@ -439,6 +439,12 @@ describe("createRouter", () => {
     expect(() => router.resolve({ path: "/", query: [] } as never)).toThrow(
       /Router location query must be an object/,
     );
+    expect(() => router.resolve({ path: "/", query: new Date(0) } as never)).toThrow(
+      /Router location query must be a plain object/,
+    );
+    expect(() => router.resolve({ path: "/", query: new Map() } as never)).toThrow(
+      /Router location query must be a plain object/,
+    );
     await expect(router.push({ path: "/", query: "tab=profile" } as never)).rejects.toThrow(
       /Router location query must be an object/,
     );

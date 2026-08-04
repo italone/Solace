@@ -561,7 +561,15 @@ function assertRouterLocationContract(location: {
   }
 
   if (location.query !== undefined) {
+    assertRouterLocationQueryObjectContract(location.query);
     assertRouterLocationQueryContract(location.query);
+  }
+}
+
+function assertRouterLocationQueryObjectContract(query: object): void {
+  const prototype = Object.getPrototypeOf(query);
+  if (prototype !== Object.prototype && prototype !== null) {
+    throw new TypeError("Router location query must be a plain object");
   }
 }
 

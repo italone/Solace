@@ -629,7 +629,9 @@ key，跳过 object location 中的 nullish 值，将 `+` 保持为字面加号�
 value 中，并在 canonical `fullPath` 中被编码。object route location 的 query value 必须是
 string、number、boolean、null、undefined，或这些值的数组。导航到当前 `fullPath`，或导航到最终
 redirect 回当前 `fullPath` 的 route 时，会解析为当前 route，且不会写入重复 history entry 或运行
-navigation guards。浏览器 history listener 在首次 router install settle
+navigation guards。object route location 的 `query` 容器必须是 plain record object；
+`URLSearchParams`、`Map`、`Date`、arrays 和其他 object instances 仍不在 beta contract 内。
+浏览器 history listener 在首次 router install settle
 之后收到当前 `fullPath` 时，会保持 `currentRoute` 不变，并跳过 navigation guards。
 nested route match 中的 redirects 会按父到子的顺序解析，并且先于任何 matched `beforeEnter`
 guards 运行。

@@ -685,6 +685,8 @@ are encoded in the canonical `fullPath`. Object route location query values must
 booleans, null, undefined, or arrays of those values. Navigating to the current `fullPath`, or to a
 route redirect that resolves back to the current `fullPath`, resolves with the current route without
 writing a duplicate history entry or running navigation guards.
+Object route location `query` containers must be plain record objects; `URLSearchParams`, `Map`,
+`Date`, arrays, and other object instances remain outside the beta contract.
 Browser history listener updates for the current `fullPath` leave
 `currentRoute` unchanged and skip navigation guards after the initial router install settlement.
 For nested route matches, redirects are resolved from parent to child before any matched
