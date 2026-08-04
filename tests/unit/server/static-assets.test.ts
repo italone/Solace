@@ -3,6 +3,14 @@ import { describe, expect, it } from "vitest";
 import { resolveStaticAssets } from "../../../src/server";
 
 describe("resolveStaticAssets", () => {
+  it("rejects invalid options containers", () => {
+    for (const options of [null, [], "assets"]) {
+      expect(() => resolveStaticAssets(options as never)).toThrow(
+        TypeError("Static asset options must be an object"),
+      );
+    }
+  });
+
   it("emits imported chunks before the entry chunk and dedupes css", () => {
     const assets = resolveStaticAssets({
       entry: "src/main.ts",

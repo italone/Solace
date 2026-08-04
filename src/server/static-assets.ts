@@ -21,6 +21,7 @@ export interface ResolveStaticAssetOptions {
 }
 
 export function resolveStaticAssets(options: ResolveStaticAssetOptions): StaticAssetTags {
+  assertStaticAssetOptions(options);
   const base = normalizeAssetBase(options.base ?? "/");
   const orderedChunkIds: string[] = [];
   const visited = new Set<string>();
@@ -52,6 +53,12 @@ export function resolveStaticAssets(options: ResolveStaticAssetOptions): StaticA
     stylesheets: cssFiles.map((file) => renderStylesheetTag(joinAssetBase(base, file))),
     scripts: [renderModuleScriptTag(joinAssetBase(base, entryChunk.file))],
   };
+}
+
+function assertStaticAssetOptions(options: ResolveStaticAssetOptions): void {
+  if (options === null || typeof options !== "object" || Array.isArray(options)) {
+    throw new TypeError("Static asset options must be an object");
+  }
 }
 
 function visitManifestChunk(
