@@ -91,6 +91,7 @@ function visitManifestChunk(
   if (chunk === undefined) {
     throw new TypeError(`Static asset manifest entry not found: ${chunkId}`);
   }
+  assertStaticAssetManifestChunk(chunk);
 
   visited.add(chunkId);
 
@@ -99,6 +100,14 @@ function visitManifestChunk(
   }
 
   orderedChunkIds.push(chunkId);
+}
+
+function assertStaticAssetManifestChunk(
+  chunk: StaticAssetManifestChunk,
+): asserts chunk is StaticAssetManifestChunk {
+  if (chunk === null || typeof chunk !== "object" || Array.isArray(chunk)) {
+    throw new TypeError("Static asset manifest chunk must be an object");
+  }
 }
 
 function normalizeAssetBase(base: string): string {
