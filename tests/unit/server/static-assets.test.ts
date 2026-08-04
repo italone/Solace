@@ -56,6 +56,17 @@ describe("resolveStaticAssets", () => {
     }
   });
 
+  it("rejects manifest chunks with non-string files", () => {
+    for (const file of [undefined, null, 42, {}]) {
+      expect(() =>
+        resolveStaticAssets({
+          entry: "src/main.ts",
+          manifest: { "src/main.ts": { file: file as never } },
+        }),
+      ).toThrow(TypeError("Static asset manifest chunk file must be a string"));
+    }
+  });
+
   it("emits imported chunks before the entry chunk and dedupes css", () => {
     const assets = resolveStaticAssets({
       entry: "src/main.ts",
