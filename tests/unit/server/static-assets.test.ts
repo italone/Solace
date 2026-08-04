@@ -34,6 +34,17 @@ describe("resolveStaticAssets", () => {
     }
   });
 
+  it("rejects non-string asset entries", () => {
+    for (const entry of [null, 42, {}]) {
+      expect(() =>
+        resolveStaticAssets({
+          entry: entry as never,
+          manifest: { "src/main.ts": { file: "assets/main.js" } },
+        }),
+      ).toThrow(TypeError("Static asset entry must be a string"));
+    }
+  });
+
   it("emits imported chunks before the entry chunk and dedupes css", () => {
     const assets = resolveStaticAssets({
       entry: "src/main.ts",

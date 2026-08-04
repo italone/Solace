@@ -71,6 +71,10 @@ function assertStaticAssetOptions(options: ResolveStaticAssetOptions): void {
   ) {
     throw new TypeError("Static asset manifest must be an object");
   }
+
+  if (typeof options.entry !== "string") {
+    throw new TypeError("Static asset entry must be a string");
+  }
 }
 
 function visitManifestChunk(
