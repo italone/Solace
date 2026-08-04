@@ -103,6 +103,9 @@ describe("createStaticRoutesFromRouter", () => {
     expect(() => createStaticRoutesFromRouter(null as unknown as never)).toThrow(
       /Static router options must be an object/,
     );
+    expect(() => createStaticRoutesFromRouter([] as never)).toThrow(
+      /Static router options must be an object/,
+    );
     expect(() =>
       createStaticRoutesFromRouter({
         routes: createRoutes(),

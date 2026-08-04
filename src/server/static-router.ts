@@ -52,7 +52,7 @@ function assertStaticRouterPathHasNoHash(path: string): void {
 }
 
 function assertStaticRouterOptions(options: StaticRouterOptions): void {
-  if (options === null || typeof options !== "object") {
+  if (options === null || typeof options !== "object" || Array.isArray(options)) {
     throw new TypeError("Static router options must be an object");
   }
 
