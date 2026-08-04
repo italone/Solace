@@ -49,8 +49,8 @@ export function createDevtoolsBackgroundRelay(runtime: BackgroundRuntime): Devto
       if (tabId === undefined) {
         return;
       }
-      registerPort(contentsByTab, tabId, port);
-      if (panelsByTab.has(tabId)) {
+      const didRegister = registerPort(contentsByTab, tabId, port);
+      if (didRegister && panelsByTab.has(tabId)) {
         port.postMessage({ type: DEVTOOLS_CONTENT_CONNECT_TYPE });
       }
       port.onMessage.addListener((message) => {
@@ -79,10 +79,12 @@ export function createDevtoolsBackgroundRelay(runtime: BackgroundRuntime): Devto
             forwardToPorts(contentsByTab.get(tabId), { type: DEVTOOLS_CONTENT_DISCONNECT_TYPE });
           });
         }
-        registerPort(panelsByTab, message.tabId, port, (tabId) => {
+        const didRegister = registerPort(panelsByTab, message.tabId, port, (tabId) => {
           forwardToPorts(contentsByTab.get(tabId), { type: DEVTOOLS_CONTENT_DISCONNECT_TYPE });
         });
-        forwardToPorts(contentsByTab.get(message.tabId), { type: DEVTOOLS_CONTENT_CONNECT_TYPE });
+        if (didRegister) {
+          forwardToPorts(contentsByTab.get(message.tabId), { type: DEVTOOLS_CONTENT_CONNECT_TYPE });
+        }
         return;
       }
 
@@ -111,8 +113,12 @@ function registerPort(
   tabId: number,
   port: RuntimePort,
   onEmpty?: (tabId: number) => void,
-): void {
+): boolean {
   const ports = portsByTab.get(tabId) ?? new Set<RuntimePort>();
+  if (ports.has(port)) {
+    return false;
+  }
+
   ports.add(port);
   portsByTab.set(tabId, ports);
   port.onDisconnect.addListener(() => {
@@ -122,6 +128,7 @@ function registerPort(
       onEmpty?.(tabId);
     }
   });
+  return true;
 }
 
 function unregisterPort(

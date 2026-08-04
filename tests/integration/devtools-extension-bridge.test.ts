@@ -310,6 +310,39 @@ describe("devtools extension bridge", () => {
     ]);
   });
 
+  it("ignores duplicate panel connections for the same tab", async () => {
+    const { createDevtoolsBackgroundRelay } =
+      await import("../../examples/devtools-extension/src/background");
+    const runtimeListeners = new Set<(port: BackgroundRuntimePort) => void>();
+    const runtime = {
+      onConnect: {
+        addListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.add(listener);
+        },
+        removeListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.delete(listener);
+        },
+      },
+    } satisfies BackgroundRuntime;
+    const contentPort = createRuntimePort("solace-devtools-content", 7);
+    const panelPort = createRuntimePort("solace-devtools-panel");
+
+    createDevtoolsBackgroundRelay(runtime);
+    for (const listener of runtimeListeners) {
+      listener(contentPort);
+      listener(panelPort);
+    }
+
+    panelPort.emit({ type: "devtools:panel:connect", tabId: 7 });
+    panelPort.emit({ type: "devtools:panel:connect", tabId: 7 });
+    panelPort.disconnect();
+
+    expect(contentPort.messages).toEqual([
+      { type: "devtools:content:connect" },
+      { type: "devtools:content:disconnect" },
+    ]);
+  });
+
   it("ignores content ports without a sender tab id", async () => {
     const { createDevtoolsBackgroundRelay } =
       await import("../../examples/devtools-extension/src/background");
