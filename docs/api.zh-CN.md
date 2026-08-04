@@ -205,6 +205,9 @@ paths 转换为 `generateStaticSite()` routes。每个生成 route 都会渲染 
 `{ route }` context，其中包含 `{ path, fullPath, query, params, matched }`。可选
 `context(route)` 会在默认 context 后浅合并，可选 `provides(route)` 会传给该 route 的
 `renderToString()`。
+static router record 的契约有意窄于 SPA `RouteRecord`：只接受 `path` 和 eager function
+`component`。nested records、redirects、guards、`meta`、lazy route components，以及
+layout-less 的 `null` components 在该 adapter 中仍保持 deferred。
 
 该 adapter 不安装 router plugin，不让 `useRoute()` 在 SSR 中生效，不渲染 nested `RouterView`
 trees，也不会 crawl 或推断 dynamic params。需要传入 `/users/42` 这类显式 path，不要把

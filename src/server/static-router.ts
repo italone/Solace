@@ -2,10 +2,16 @@ import type { Provides } from "../component/provide";
 import { createMatcher, type Matcher } from "../router/matcher";
 import { parseQuery, stringifyQuery } from "../router/query";
 import type { RouteLocationNormalized, RouteRecord } from "../router/types";
+import type { ComponentType } from "../vnode/vnode";
 import type { StaticRoute } from "./generate-static-site";
 
+export interface StaticRouterRouteRecord {
+  path: string;
+  component: ComponentType;
+}
+
 export interface StaticRouterOptions {
-  routes: RouteRecord[];
+  routes: StaticRouterRouteRecord[];
   paths: string[];
   context?: (route: RouteLocationNormalized) => Record<string, unknown>;
   provides?: (route: RouteLocationNormalized) => Provides;

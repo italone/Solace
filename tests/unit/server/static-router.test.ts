@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { h, type RouteLocationNormalized, type RouteRecord } from "../../../src";
+import { h, type RouteLocationNormalized } from "../../../src";
 import { createStaticRoutesFromRouter } from "../../../src/server";
+import type { StaticRouterRouteRecord } from "../../../src/server";
 
 const Home = () => h("main", null, "home");
 const User = () => h("main", null, "user");
 const NotFound = () => h("main", null, "not found");
 
-function createRoutes(): RouteRecord[] {
+function createRoutes(): StaticRouterRouteRecord[] {
   return [
     { path: "/", component: Home },
     { path: "/users/:id", component: User },
@@ -109,9 +110,9 @@ describe("createStaticRoutesFromRouter", () => {
         router: {},
       } as never),
     ).toThrow(/Deferred static router option is not part of the beta contract: router/);
-    expect(() =>
-      createStaticRoutesFromRouter({ routes: null as unknown as RouteRecord[], paths: ["/"] }),
-    ).toThrow(TypeError("Static router routes must be an array"));
+    expect(() => createStaticRoutesFromRouter({ routes: null as never, paths: ["/"] })).toThrow(
+      TypeError("Static router routes must be an array"),
+    );
     expect(() => createStaticRoutesFromRouter({ routes: [], paths: [] })).toThrow(
       TypeError("Static router paths must be a non-empty array"),
     );
@@ -135,14 +136,14 @@ describe("createStaticRoutesFromRouter", () => {
   it("rejects route records with non-string paths", () => {
     expect(() =>
       createStaticRoutesFromRouter({
-        routes: [null as unknown as RouteRecord],
+        routes: [null as never],
         paths: ["/"],
       }),
     ).toThrow(/Static router route record must be an object/);
 
     expect(() =>
       createStaticRoutesFromRouter({
-        routes: [{ path: 42, component: Home } as unknown as RouteRecord],
+        routes: [{ path: 42, component: Home } as never],
         paths: ["/"],
       }),
     ).toThrow(/Static router route record path must be a string/);
@@ -152,7 +153,7 @@ describe("createStaticRoutesFromRouter", () => {
     for (const field of ["children", "redirect", "beforeEnter", "meta", "name"]) {
       expect(() =>
         createStaticRoutesFromRouter({
-          routes: [{ path: "/", component: Home, [field]: {} } as unknown as RouteRecord],
+          routes: [{ path: "/", component: Home, [field]: {} } as never],
           paths: ["/"],
         }),
       ).toThrow(
@@ -166,13 +167,13 @@ describe("createStaticRoutesFromRouter", () => {
   it("rejects route records with missing or non-function components", () => {
     expect(() =>
       createStaticRoutesFromRouter({
-        routes: [{ path: "/" } as unknown as RouteRecord],
+        routes: [{ path: "/" } as never],
         paths: ["/"],
       }),
     ).toThrow(/Static router route record component must be a function/);
     expect(() =>
       createStaticRoutesFromRouter({
-        routes: [{ path: "/", component: "home" } as unknown as RouteRecord],
+        routes: [{ path: "/", component: "home" } as never],
         paths: ["/"],
       }),
     ).toThrow(/Static router route record component must be a function/);

@@ -234,6 +234,9 @@ paths into `generateStaticSite()` routes. Each generated route renders the match
 a default `{ route }` context containing `{ path, fullPath, query, params, matched }`. Optional
 `context(route)` shallow-merges after the default context, and optional `provides(route)` is passed
 to `renderToString()` for that route.
+Static router records intentionally use a narrower contract than SPA `RouteRecord`: only `path` and
+an eager function `component` are accepted. Nested records, redirects, guards, `meta`, lazy route
+components, and layout-less `null` components remain deferred for this adapter.
 
 This adapter does not install the router plugin, does not enable `useRoute()` during SSR, does not
 render nested `RouterView` trees, and does not crawl or infer dynamic params. Use explicit paths such

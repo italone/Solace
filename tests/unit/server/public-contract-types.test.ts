@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import { h } from "../../../src";
-import type { App, HydrationOptions, RouteLocationNormalized, RouteRecord } from "../../../src";
+import type { App, HydrationOptions, RouteLocationNormalized } from "../../../src";
 import { createStaticRoutesFromRouter, resolveStaticAssets } from "../../../src/server";
 import type {
   GenerateStaticSiteOptions,
   RenderToStringOptions,
   StaticRouterOptions,
+  StaticRouterRouteRecord,
   StaticAssetManifest,
   StaticAssetTags,
 } from "../../../src/server";
@@ -71,7 +72,9 @@ acceptSSGOptions({
   routes: [{ path: "/", source: h("p", null, "home") }],
 });
 
-const typedRoutes: RouteRecord[] = [{ path: "/", component: () => h("p", null, "home") }];
+const typedRoutes: StaticRouterRouteRecord[] = [
+  { path: "/", component: () => h("p", null, "home") },
+];
 const staticRouterOptions = acceptStaticRouterOptions({
   routes: typedRoutes,
   paths: ["/"],
@@ -88,6 +91,9 @@ acceptRouteCallback((route) => ({ path: route.path, matched: route.matched }));
 acceptSSGOptions({
   routes: createStaticRoutesFromRouter(staticRouterOptions),
 });
+
+// @ts-expect-error static router routes require eager function components
+acceptStaticRouterOptions({ routes: [{ path: "/group", component: null }], paths: ["/group"] });
 
 acceptSSGOptions({
   routes: [{ path: "/", source: h("p", null, "home") }],
