@@ -101,6 +101,23 @@ describe("router matcher", () => {
     expect(match.params).toEqual({});
   });
 
+  it("does not match null layout-less parents without index children as standalone routes", () => {
+    const Settings = () => h("p", null, "settings");
+    const matcher = createMatcher([
+      {
+        path: "/admin",
+        component: null,
+        children: [{ path: "settings", component: Settings }],
+      },
+    ]);
+
+    expect(matcher.resolve("/admin").matched).toEqual([]);
+    expect(matcher.resolve("/admin/settings").matched.map((record) => record.path)).toEqual([
+      "/admin",
+      "settings",
+    ]);
+  });
+
   it("keeps absolute children in the parent chain", () => {
     const AppLayout = () => h("section", null, "app");
     const Account = () => h("p", null, "account");

@@ -59,7 +59,7 @@ function flattenRoutes(
     const chain = [...parentChain, route];
     const children = route.children ?? [];
 
-    if (route.component !== undefined || route.redirect !== undefined || children.length === 0) {
+    if (route.component != null || route.redirect !== undefined || children.length === 0) {
       records.push({ record: route, fullPath, chain });
     }
 
