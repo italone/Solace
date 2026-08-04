@@ -53,6 +53,9 @@ export function createDevtoolsBackgroundRelay(runtime: BackgroundRuntime): Devto
       if (didRegister && panelsByTab.has(tabId)) {
         port.postMessage({ type: DEVTOOLS_CONTENT_CONNECT_TYPE });
       }
+      if (!didRegister) {
+        return;
+      }
       port.onMessage.addListener((message) => {
         if (message.type === DEVTOOLS_EXTENSION_EVENT_TYPE) {
           const event = copyDevtoolsEvent(message.event);
