@@ -217,4 +217,30 @@ describe("devtools extension panel transport", () => {
     expect(port.disconnect).toHaveBeenCalledTimes(1);
     expect(portListeners.size).toBe(0);
   });
+
+  it("ignores extension control send failures", async () => {
+    const { createPanelEventSource } =
+      await import("../../../examples/devtools-extension/src/panel/transport");
+    const port = {
+      disconnect: vi.fn(),
+      onMessage: {
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+      },
+      postMessage: vi.fn((message) => {
+        if (message.type === "devtools:control") {
+          throw new Error("panel port disconnected");
+        }
+      }),
+    } satisfies PanelRuntimePort;
+
+    const source = createPanelEventSource(() => {}, {
+      connectRuntime: () => port,
+      inspectedTabId: 7,
+    });
+
+    expect(() => source.setPaused(true)).not.toThrow();
+
+    source.stop();
+  });
 });

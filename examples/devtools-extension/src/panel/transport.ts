@@ -96,7 +96,11 @@ function createExtensionPanelEventSource(
       if (stopped) {
         return;
       }
-      port.postMessage({ type: "devtools:control", paused });
+      try {
+        port.postMessage({ type: "devtools:control", paused });
+      } catch {
+        // Ignore stale extension ports so capture controls cannot crash the panel UI.
+      }
     },
     stop() {
       if (stopped) {
