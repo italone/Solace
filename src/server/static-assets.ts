@@ -72,6 +72,11 @@ function assertStaticAssetOptions(options: ResolveStaticAssetOptions): void {
     throw new TypeError("Static asset manifest must be an object");
   }
 
+  const manifestPrototype = Object.getPrototypeOf(options.manifest);
+  if (manifestPrototype !== Object.prototype && manifestPrototype !== null) {
+    throw new TypeError("Static asset manifest must be an object");
+  }
+
   if (typeof options.entry !== "string") {
     throw new TypeError("Static asset entry must be a string");
   }

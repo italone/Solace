@@ -24,7 +24,7 @@ describe("resolveStaticAssets", () => {
   });
 
   it("rejects invalid manifests", () => {
-    for (const manifest of [null, [], "manifest"]) {
+    for (const manifest of [null, [], "manifest", new Date()]) {
       expect(() =>
         resolveStaticAssets({
           entry: "src/main.ts",
