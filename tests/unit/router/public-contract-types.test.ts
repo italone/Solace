@@ -54,6 +54,11 @@ acceptRouteRecord({
 });
 acceptRouteRecord({ path: "/legacy", redirect: "/dashboard" });
 acceptRouteRecord({ path: "/lazy", component: lazyHome });
+acceptRouteRecord({
+  path: "/group",
+  component: null,
+  children: [{ path: "child", component: Home }],
+});
 acceptRouteLocationRaw("/");
 acceptRouteLocationRaw({ path: "/", query: { tab: "profile" } });
 

@@ -20,7 +20,7 @@ export type NavigationGuard = (
 
 export interface RouteRecord {
   path: string;
-  component?: RouteComponent;
+  component?: RouteComponent | null;
   children?: RouteRecord[];
   redirect?: RouteLocationRaw | ((to: RouteLocationNormalized) => RouteLocationRaw);
   beforeEnter?: NavigationGuard | NavigationGuard[];
