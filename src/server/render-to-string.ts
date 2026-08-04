@@ -184,6 +184,10 @@ function assertSafeHtmlName(name: string, kind: "attribute" | "element"): void {
 }
 
 function assertNoDeferredIntegrationOptions(options: RenderToStringOptions): void {
+  if (options === null || typeof options !== "object" || Array.isArray(options)) {
+    throw new TypeError("SSR options must be an object");
+  }
+
   if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
     throw new TypeError(
       "SSR manifest integration is deferred; compose assets in an app-local shell or adapter.",

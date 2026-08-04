@@ -73,6 +73,14 @@ describe("renderToString", () => {
     }
   });
 
+  it("rejects invalid render options", () => {
+    for (const options of [null, [], "options"]) {
+      expect(() => renderToString(h("p", null, "server"), options as never)).toThrow(
+        TypeError("SSR options must be an object"),
+      );
+    }
+  });
+
   it("rejects async component SSR instead of rendering an empty subtree", () => {
     const AsyncApp = async () => h("p", null, "async");
     const AsyncSetupApp = () => async () => h("p", null, "async setup");
