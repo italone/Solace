@@ -155,4 +155,13 @@ describe("router matcher", () => {
       TypeError("Router route record path must not include query or hash"),
     );
   });
+
+  it("rejects route record paths that look like absolute URLs", () => {
+    expect(() => createMatcher([{ path: "https://example.com", component: User }])).toThrow(
+      TypeError("Router route record path must be a relative path"),
+    );
+    expect(() => createMatcher([{ path: "//example.com", component: User }])).toThrow(
+      TypeError("Router route record path must be a relative path"),
+    );
+  });
 });

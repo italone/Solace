@@ -249,6 +249,18 @@ describe("createRouter", () => {
         routes: [{ path: 42, component: Home }],
       } as never),
     ).toThrow(/Router route record path must be a string/);
+    expect(() =>
+      createRouter({
+        history: createMemoryLikeHistory(),
+        routes: [{ path: "https://example.com", component: Home }],
+      }),
+    ).toThrow(TypeError("Router route record path must be a relative path"));
+    expect(() =>
+      createRouter({
+        history: createMemoryLikeHistory(),
+        routes: [{ path: "//example.com", component: Home }],
+      }),
+    ).toThrow(TypeError("Router route record path must be a relative path"));
   });
 
   it("rejects invalid route lists before compiling matchers", () => {
