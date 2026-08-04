@@ -165,6 +165,23 @@ describe("devtools extension bridge", () => {
     ]);
   });
 
+  it("clears the page bridge global when the mounted bridge disconnects", async () => {
+    const { createDevtoolsPageBridge } =
+      await import("../../examples/devtools-extension/src/bridge");
+    const firstBridge = createDevtoolsPageBridge({ subscribe: () => () => {} });
+    const secondBridge = createDevtoolsPageBridge({ subscribe: () => () => {} });
+
+    window.__solaceDevtoolsPageBridge__ = firstBridge;
+    firstBridge.disconnect();
+    expect(window.__solaceDevtoolsPageBridge__).toBeUndefined();
+
+    window.__solaceDevtoolsPageBridge__ = secondBridge;
+    firstBridge.disconnect();
+    expect(window.__solaceDevtoolsPageBridge__).toBe(secondBridge);
+
+    secondBridge.disconnect();
+  });
+
   it("ignores page bridge control messages from unexpected origins", async () => {
     const { createDevtoolsPageBridge } =
       await import("../../examples/devtools-extension/src/bridge");

@@ -77,7 +77,7 @@ export function createDevtoolsPageBridge(
     window.addEventListener("message", handleControlMessage);
   }
 
-  return {
+  const bridge: DevtoolsPageBridge = {
     disconnect() {
       if (!connected) {
         return;
@@ -86,6 +86,9 @@ export function createDevtoolsPageBridge(
       connected = false;
       if (typeof window !== "undefined") {
         window.removeEventListener("message", handleControlMessage);
+        if (window[BRIDGE_GLOBAL_KEY] === bridge) {
+          delete window[BRIDGE_GLOBAL_KEY];
+        }
       }
       unsubscribe();
     },
@@ -99,6 +102,8 @@ export function createDevtoolsPageBridge(
       return paused;
     },
   };
+
+  return bridge;
 }
 
 function isDevtoolsControlMessage(value: unknown): value is DevtoolsControlMessage {
