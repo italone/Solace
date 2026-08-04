@@ -83,6 +83,16 @@ describe("createStaticRoutesFromRouter", () => {
     }
   });
 
+  it("rejects invalid static router provides callback results", () => {
+    expect(() =>
+      createStaticRoutesFromRouter({
+        routes: createRoutes(),
+        paths: ["/"],
+        provides: (() => ({ theme: "dark" })) as never,
+      }),
+    ).toThrow(TypeError("Static router provides result must be a Map"));
+  });
+
   it("uses wildcard routes for otherwise unmatched paths", () => {
     const routes = createStaticRoutesFromRouter({
       routes: [{ path: "/:pathMatch(.*)*", component: NotFound }],

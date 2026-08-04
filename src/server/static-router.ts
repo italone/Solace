@@ -41,7 +41,7 @@ export function createStaticRoutesFromRouter(options: StaticRouterOptions): Stat
         route,
         ...context,
       },
-      provides: options.provides?.(route),
+      provides: resolveStaticRouterProvides(options, route),
     };
   });
 }
@@ -57,6 +57,22 @@ function resolveStaticRouterContext(
   const context = options.context(route);
   assertStaticRouterContextResult(context);
   return context;
+}
+
+function resolveStaticRouterProvides(
+  options: StaticRouterOptions,
+  route: RouteLocationNormalized,
+): Provides | undefined {
+  if (options.provides === undefined) {
+    return undefined;
+  }
+
+  const provides = options.provides(route);
+  if (!(provides instanceof Map)) {
+    throw new TypeError("Static router provides result must be a Map");
+  }
+
+  return provides;
 }
 
 function assertStaticRouterContextResult(
