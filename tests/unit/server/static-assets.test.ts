@@ -100,6 +100,17 @@ describe("resolveStaticAssets", () => {
     }
   });
 
+  it("rejects manifest chunks with non-string import items", () => {
+    for (const imports of [[null], ["_vendor.js", {}]]) {
+      expect(() =>
+        resolveStaticAssets({
+          entry: "src/main.ts",
+          manifest: { "src/main.ts": { file: "assets/main.js", imports: imports as never } },
+        }),
+      ).toThrow(TypeError("Static asset manifest chunk import items must be strings"));
+    }
+  });
+
   it("emits imported chunks before the entry chunk and dedupes css", () => {
     const assets = resolveStaticAssets({
       entry: "src/main.ts",

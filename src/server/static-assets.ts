@@ -126,6 +126,12 @@ function assertStaticAssetManifestChunk(
   if (chunk.imports !== undefined && !Array.isArray(chunk.imports)) {
     throw new TypeError("Static asset manifest chunk imports must be an array");
   }
+
+  for (const importedChunkId of chunk.imports ?? []) {
+    if (typeof importedChunkId !== "string") {
+      throw new TypeError("Static asset manifest chunk import items must be strings");
+    }
+  }
 }
 
 function normalizeAssetBase(base: string): string {
