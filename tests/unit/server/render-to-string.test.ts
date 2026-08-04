@@ -109,6 +109,14 @@ describe("renderToString", () => {
     ).toBe("<span>parent:dark</span>");
   });
 
+  it("rejects non-Map app provides", () => {
+    const App = () => h("p", null, inject("theme", "light"));
+
+    expect(() => renderToString(h(App), { provides: {} } as never)).toThrow(
+      TypeError("SSR provides must be a Map"),
+    );
+  });
+
   it("rejects deferred manifest and router integration options", () => {
     expect(() => renderToString(h("p", null, "server"), { manifest: {} } as never)).toThrow(
       /SSR manifest integration is deferred/,

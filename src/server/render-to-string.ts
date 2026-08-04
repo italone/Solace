@@ -188,6 +188,10 @@ function assertNoDeferredIntegrationOptions(options: RenderToStringOptions): voi
     throw new TypeError("SSR options must be an object");
   }
 
+  if (options.provides !== undefined && !(options.provides instanceof Map)) {
+    throw new TypeError("SSR provides must be a Map");
+  }
+
   if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
     throw new TypeError(
       "SSR manifest integration is deferred; compose assets in an app-local shell or adapter.",
