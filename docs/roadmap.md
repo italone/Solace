@@ -9,7 +9,7 @@ The alpha runtime is feature-complete for its declared scope:
 
 ## Next Phase: Beta
 
-Planned work, in rough priority order:
+Work remaining, in rough priority order:
 
 1. **SFC compiler stabilization** — keep the public contract limited to `@italone/solace/vite` and `@italone/solace/sfc`, then harden diagnostics, source-map policy, compatibility tests, and documented syntax before promoting the compiler beyond alpha.
 2. **Router beta stabilization** — keep the beta slice limited to static routes, dynamic params, wildcard fallback routes, query strings, web/hash history, nested routes, redirects, global and route-level guards, explicit `lazyRoute()` components, `RouterLink`, `RouterView`, `useRoute`, and `useRouter`; defer route names, aliases, route props, scroll behavior, memory history, SSR/SSG/hydration integration, auth, and permissions.
@@ -26,7 +26,7 @@ Planned work, in rough priority order:
    `docs/superpowers/specs/2026-07-28-ssr-ssg-hydration-next-phase-design.md`; harden hydration
    mismatch diagnostics, document SSG shell/style placement, and keep full router-aware SSR and
    hydration deferred until separately designed.
-7. **Browser DevTools extension UI** — first example panel implemented under
+7. **Browser DevTools extension UI** — the first example panel is implemented under
    `examples/devtools-extension`; continue hardening extension packaging, browser-extension manual
    QA, richer event contracts, and future inspectors without reading private runtime state.
 8. **Production adoption guidance** — large-app patterns, performance tuning, migration notes.
