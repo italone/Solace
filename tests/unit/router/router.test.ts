@@ -135,6 +135,7 @@ describe("createRouter", () => {
       { path: "/bad-redirect-location", redirect: { name: "home" } },
       { path: "/bad-redirect-query", redirect: { path: "/", query: [] } },
       { path: "/bad-redirect-path-query", redirect: { path: "/?tab=profile" } },
+      { path: "/bad-redirect-absolute-url", redirect: { path: "https://example.com" } },
       { path: "/bad-before-enter", beforeEnter: true },
       { path: "/bad-before-enter-array", beforeEnter: [() => true, null] },
       { path: "/bad-before-enter-sparse-array", beforeEnter: sparseBeforeEnter },
@@ -367,8 +368,14 @@ describe("createRouter", () => {
     expect(() => router.resolve({ path: "/users/1?tab=profile" })).toThrow(
       TypeError("Router object location paths must not include query strings"),
     );
+    expect(() => router.resolve({ path: "https://example.com" })).toThrow(
+      TypeError("Router location must be a relative path"),
+    );
     await expect(router.push({ path: "/users/1", name: "user" } as never)).rejects.toThrow(
       /Deferred router location field/,
+    );
+    await expect(router.push({ path: "//example.com" })).rejects.toThrow(
+      TypeError("Router location must be a relative path"),
     );
     await expect(router.push("/users/1#profile")).rejects.toThrow(
       TypeError("Router location hash fragments are not part of the beta contract"),
@@ -381,6 +388,9 @@ describe("createRouter", () => {
     );
     await expect(router.replace({ path: "/users/1?tab=profile" })).rejects.toThrow(
       TypeError("Router object location paths must not include query strings"),
+    );
+    await expect(router.replace({ path: "https://example.com" })).rejects.toThrow(
+      TypeError("Router location must be a relative path"),
     );
   });
 

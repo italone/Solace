@@ -545,6 +545,7 @@ function assertRouterLocationContract(location: {
   }
 
   assertRouterLocationPathHasNoHash(location.path);
+  assertRouterLocationIsRelative(location.path);
   assertRouterObjectLocationPathHasNoQuery(location.path);
 
   if (

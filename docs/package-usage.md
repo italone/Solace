@@ -278,9 +278,9 @@ surface `RouterNavigationError` with type
 `"lazy-load-failed"`.
 Supported path locations normalize to a leading slash and trim trailing slashes except for `/`;
 string locations split path and query at the first `?`, preserving later `?` characters inside
-query values, string locations must be relative paths, malformed query percent encoding throws a
-TypeError, and browser history adapter write targets reject relative/absolute URL-like targets or
-hash fragments.
+query values, string locations and object location `path` values must be relative paths, malformed
+query percent encoding throws a TypeError, and browser history adapter write targets reject
+relative/absolute URL-like targets or hash fragments.
 
 ## Use The DevTools Extension Example
 
