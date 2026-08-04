@@ -45,6 +45,15 @@ describe("resolveStaticAssets", () => {
     }
   });
 
+  it("rejects empty asset entries", () => {
+    expect(() =>
+      resolveStaticAssets({
+        entry: "",
+        manifest: {},
+      }),
+    ).toThrow(TypeError("Static asset entry must not be empty"));
+  });
+
   it("rejects invalid manifest chunks", () => {
     for (const chunk of [null, [], "chunk"]) {
       expect(() =>

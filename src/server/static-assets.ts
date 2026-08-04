@@ -75,6 +75,10 @@ function assertStaticAssetOptions(options: ResolveStaticAssetOptions): void {
   if (typeof options.entry !== "string") {
     throw new TypeError("Static asset entry must be a string");
   }
+
+  if (options.entry === "") {
+    throw new TypeError("Static asset entry must not be empty");
+  }
 }
 
 function visitManifestChunk(
