@@ -240,7 +240,8 @@ components, and layout-less `null` components remain deferred for this adapter.
 
 This adapter does not install the router plugin, does not enable `useRoute()` during SSR, does not
 render nested `RouterView` trees, and does not crawl or infer dynamic params. Use explicit paths such
-as `/users/42`; do not pass `/users/:id` as a path to render.
+as `/users/42`; do not pass `/users/:id` as a path to render. Static paths may include query strings
+but must not include hash fragments.
 
 ## Runtime Style Registration
 

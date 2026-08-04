@@ -133,6 +133,15 @@ describe("createStaticRoutesFromRouter", () => {
     ).toThrow(/Static router path contains malformed percent encoding/);
   });
 
+  it("rejects static router paths with hash fragments before matching", () => {
+    expect(() =>
+      createStaticRoutesFromRouter({
+        routes: [{ path: "/:pathMatch(.*)*", component: NotFound }],
+        paths: ["/users/42#profile"],
+      }),
+    ).toThrow(TypeError("Static router paths must not include hash fragments"));
+  });
+
   it("rejects route records with non-string paths", () => {
     expect(() =>
       createStaticRoutesFromRouter({

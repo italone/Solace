@@ -26,6 +26,7 @@ export function createStaticRoutesFromRouter(options: StaticRouterOptions): Stat
       throw new TypeError("Static router path must be a string");
     }
 
+    assertStaticRouterPathHasNoHash(path);
     const route = resolveStaticRouterPath(matcher, path);
     if (route.matched.length === 0) {
       throw new TypeError(`Static router path did not match any route: ${path}`);
@@ -42,6 +43,12 @@ export function createStaticRoutesFromRouter(options: StaticRouterOptions): Stat
       provides: options.provides?.(route),
     };
   });
+}
+
+function assertStaticRouterPathHasNoHash(path: string): void {
+  if (path.includes("#")) {
+    throw new TypeError("Static router paths must not include hash fragments");
+  }
 }
 
 function assertStaticRouterOptions(options: StaticRouterOptions): void {

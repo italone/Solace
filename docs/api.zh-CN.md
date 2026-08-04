@@ -211,7 +211,7 @@ layout-less 的 `null` components 在该 adapter 中仍保持 deferred。
 
 该 adapter 不安装 router plugin，不让 `useRoute()` 在 SSR 中生效，不渲染 nested `RouterView`
 trees，也不会 crawl 或推断 dynamic params。需要传入 `/users/42` 这类显式 path，不要把
-`/users/:id` 当作待渲染 path。
+`/users/:id` 当作待渲染 path。static paths 可以包含 query string，但不能包含 hash fragments。
 
 ## Runtime Style 注册
 
