@@ -196,6 +196,47 @@ describe("devtools extension bridge", () => {
     stop();
   });
 
+  it("resumes the page bridge when content capture reconnects", async () => {
+    const { createContentScriptRelay } =
+      await import("../../examples/devtools-extension/src/content-script");
+    let runtimeListener: ((message: DevtoolsContentMessage) => void) | undefined;
+    const postWindowMessage = vi.spyOn(window, "postMessage");
+    const port = {
+      disconnect: vi.fn(),
+      onMessage: {
+        addListener(listener: (message: DevtoolsContentMessage) => void) {
+          runtimeListener = listener;
+        },
+        removeListener(listener: (message: DevtoolsContentMessage) => void) {
+          if (runtimeListener === listener) {
+            runtimeListener = undefined;
+          }
+        },
+      },
+      postMessage: vi.fn(),
+    } satisfies ContentRuntimePort;
+
+    const stop = createContentScriptRelay({
+      connectRuntime: () => port,
+      injectBridge: vi.fn(),
+    });
+
+    runtimeListener?.({ type: "devtools:content:connect" });
+    runtimeListener?.({ type: "devtools:content:disconnect" });
+    runtimeListener?.({ type: "devtools:content:connect" });
+
+    expect(postWindowMessage).toHaveBeenCalledWith(
+      { type: "devtools:control", paused: true },
+      window.location.origin,
+    );
+    expect(postWindowMessage).toHaveBeenCalledWith(
+      { type: "devtools:control", paused: false },
+      window.location.origin,
+    );
+
+    stop();
+  });
+
   it("activates content scripts only after a panel connects for the same tab", async () => {
     const { createDevtoolsBackgroundRelay } =
       await import("../../examples/devtools-extension/src/background");

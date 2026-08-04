@@ -72,6 +72,7 @@ export function createContentScriptRelay(
         injectBridge();
         bridgeInjected = true;
       }
+      postControlMessage(false);
       if (!active) {
         addWindowListener("message", relayMessage);
         active = true;
@@ -84,10 +85,7 @@ export function createContentScriptRelay(
         removeWindowListener("message", relayMessage);
         active = false;
       }
-      window.postMessage(
-        { type: DEVTOOLS_CONTROL_EVENT_TYPE, paused: true },
-        window.location.origin,
-      );
+      postControlMessage(true);
       return;
     }
 
@@ -124,6 +122,10 @@ export function createContentScriptRelay(
     port.onMessage.removeListener?.(relayContentMessage);
     port.disconnect();
   };
+}
+
+function postControlMessage(paused: boolean): void {
+  window.postMessage({ type: DEVTOOLS_CONTROL_EVENT_TYPE, paused }, window.location.origin);
 }
 
 export function injectDevtoolsPageBridge(): void {
