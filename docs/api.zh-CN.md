@@ -204,7 +204,7 @@ module script。`base` 默认为 `/`，并规范化为一个 trailing slash。
 paths 转换为 `generateStaticSite()` routes。每个生成 route 都会渲染 matched component，并获得默认
 `{ route }` context，其中包含 `{ path, fullPath, query, params, matched }`。可选
 `context(route)` 会在默认 context 后浅合并，可选 `provides(route)` 会传给该 route 的
-`renderToString()`。
+`renderToString()`。`context(route)` 必须返回 plain record object。
 static router record 的契约有意窄于 SPA `RouteRecord`：只接受 `path` 和 eager function
 `component`。nested records、redirects、guards、`meta`、lazy route components，以及
 layout-less 的 `null` components 在该 adapter 中仍保持 deferred。

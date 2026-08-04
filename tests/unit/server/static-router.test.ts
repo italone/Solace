@@ -71,6 +71,18 @@ describe("createStaticRoutesFromRouter", () => {
     expect(routes[0].provides).toBe(provides);
   });
 
+  it("rejects invalid static router context callback results", () => {
+    for (const context of [() => "title", () => [], () => null]) {
+      expect(() =>
+        createStaticRoutesFromRouter({
+          routes: createRoutes(),
+          paths: ["/"],
+          context: context as never,
+        }),
+      ).toThrow(TypeError("Static router context result must be a plain object"));
+    }
+  });
+
   it("uses wildcard routes for otherwise unmatched paths", () => {
     const routes = createStaticRoutesFromRouter({
       routes: [{ path: "/:pathMatch(.*)*", component: NotFound }],

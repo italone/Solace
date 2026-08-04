@@ -32,17 +32,44 @@ export function createStaticRoutesFromRouter(options: StaticRouterOptions): Stat
       throw new TypeError(`Static router path did not match any route: ${path}`);
     }
     const source = resolveStaticRouteSource(route);
+    const context = resolveStaticRouterContext(options, route);
 
     return {
       path: route.fullPath,
       source,
       context: {
         route,
-        ...(options.context?.(route) ?? {}),
+        ...context,
       },
       provides: options.provides?.(route),
     };
   });
+}
+
+function resolveStaticRouterContext(
+  options: StaticRouterOptions,
+  route: RouteLocationNormalized,
+): Record<string, unknown> {
+  if (options.context === undefined) {
+    return {};
+  }
+
+  const context = options.context(route);
+  assertStaticRouterContextResult(context);
+  return context;
+}
+
+function assertStaticRouterContextResult(
+  context: unknown,
+): asserts context is Record<string, unknown> {
+  if (context === null || typeof context !== "object" || Array.isArray(context)) {
+    throw new TypeError("Static router context result must be a plain object");
+  }
+
+  const prototype = Object.getPrototypeOf(context);
+  if (prototype !== Object.prototype && prototype !== null) {
+    throw new TypeError("Static router context result must be a plain object");
+  }
 }
 
 function assertStaticRouterPathHasNoHash(path: string): void {
