@@ -103,6 +103,14 @@ function assertValidRoutes(routes: StaticRoute[]): void {
     if (!(index in routes)) {
       throw new TypeError("SSG routes must not be sparse");
     }
+
+    assertStaticRouteRecord(routes[index]);
+  }
+}
+
+function assertStaticRouteRecord(route: unknown): asserts route is StaticRoute {
+  if (route === null || typeof route !== "object" || Array.isArray(route)) {
+    throw new TypeError("SSG route must be an object");
   }
 }
 

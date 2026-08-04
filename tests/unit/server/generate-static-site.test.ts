@@ -130,6 +130,16 @@ describe("generateStaticSite", () => {
     );
   });
 
+  it("rejects non-object route records", () => {
+    for (const route of [null, []]) {
+      expect(() =>
+        generateStaticSite({
+          routes: [route] as never,
+        }),
+      ).toThrow(TypeError("SSG route must be an object"));
+    }
+  });
+
   it("passes resolved manifest assets into each shell call", () => {
     const observedAssets: unknown[] = [];
     const shell = vi.fn(({ body, assets }) => {
