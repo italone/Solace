@@ -129,6 +129,15 @@ describe("resolveStaticAssets", () => {
     }
   });
 
+  it("rejects manifest chunks with empty import items", () => {
+    expect(() =>
+      resolveStaticAssets({
+        entry: "src/main.ts",
+        manifest: { "src/main.ts": { file: "assets/main.js", imports: [""] } },
+      }),
+    ).toThrow(TypeError("Static asset manifest chunk import items must not be empty"));
+  });
+
   it("emits imported chunks before the entry chunk and dedupes css", () => {
     const assets = resolveStaticAssets({
       entry: "src/main.ts",

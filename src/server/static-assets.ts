@@ -139,6 +139,10 @@ function assertStaticAssetManifestChunk(
     if (typeof importedChunkId !== "string") {
       throw new TypeError("Static asset manifest chunk import items must be strings");
     }
+
+    if (importedChunkId === "") {
+      throw new TypeError("Static asset manifest chunk import items must not be empty");
+    }
   }
 }
 
