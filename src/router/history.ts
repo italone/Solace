@@ -1,6 +1,33 @@
 import { historyHrefFormatterKey } from "./internal";
 import type { RouterHistory } from "./types";
 
+export function createMemoryHistory(initial: string | string[] = "/"): RouterHistory {
+  const first = Array.isArray(initial) ? (initial[initial.length - 1] ?? "/") : initial;
+  let current = first;
+  const listeners = new Set<() => void>();
+
+  const history = {
+    location: () => current,
+    [historyHrefFormatterKey]: (path: string) => path,
+    push(path: string) {
+      current = path;
+      for (const listener of listeners) listener();
+    },
+    replace(path: string) {
+      current = path;
+      for (const listener of listeners) listener();
+    },
+    listen(listener: () => void) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    back() {},
+    forward() {},
+  };
+
+  return history;
+}
+
 export function createWebHistory(): RouterHistory {
   const location = () =>
     normalizeHistoryTarget(`${window.location.pathname}${window.location.search}`);

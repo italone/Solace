@@ -57,6 +57,7 @@ describe("package exports", () => {
 
     expect(api).toMatchObject({
       createApp: expect.any(Function),
+      createMemoryHistory: expect.any(Function),
       createRouter: expect.any(Function),
       createWebHashHistory: expect.any(Function),
       createWebHistory: expect.any(Function),
@@ -93,6 +94,7 @@ describe("package exports", () => {
       "RouterView",
       "computed",
       "createApp",
+      "createMemoryHistory",
       "createRouter",
       "createStore",
       "createWebHashHistory",
@@ -117,7 +119,6 @@ describe("package exports", () => {
       "watch",
       "watchEffect",
     ]);
-    expect(api).not.toHaveProperty("createMemoryHistory");
     expect(api).not.toHaveProperty("historyHrefFormatterKey");
     expect(api).not.toHaveProperty("hasHistoryHrefFormatter");
     expect(api).not.toHaveProperty("NavigationGuard");

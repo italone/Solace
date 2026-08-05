@@ -1,18 +1,22 @@
 import { describe, expect, it } from "vitest";
 
-import { createRouter, h, lazyRoute } from "../../../src";
+import { createMemoryHistory, createRouter, h, lazyRoute } from "../../../src";
 import type {
   NavigationGuard,
   Router,
   RouteComponent,
   RouteLocationRaw,
+  RouteProps,
   RouteRecord,
+  RouteRecordName,
   RouterOptions,
 } from "../../../src";
 import type { RouterHistory } from "../../../src/router/types";
 
 const Home = () => h("div", null, "home");
 const lazyHome: RouteComponent = lazyRoute(() => Promise.resolve(Home));
+const routeName: RouteRecordName = "user";
+const routeProps: RouteProps = (route) => ({ id: route.params.id });
 const guarded: NavigationGuard = (to, from) => {
   if (to.fullPath === from.fullPath) {
     return false;
@@ -54,6 +58,10 @@ acceptRouteRecord({
 });
 acceptRouteRecord({ path: "/legacy", redirect: "/dashboard" });
 acceptRouteRecord({ path: "/lazy", component: lazyHome });
+acceptRouteRecord({ path: "/named/:id", component: Home, name: routeName, props: routeProps });
+acceptRouteRecord({ path: "/alias", component: Home, alias: ["/a", "relative-a"] });
+acceptRouteRecord({ path: "/props-true/:id", component: Home, props: true });
+acceptRouteRecord({ path: "/props-object", component: Home, props: { mode: "static" } });
 acceptRouteRecord({
   path: "/group",
   component: null,
@@ -61,6 +69,7 @@ acceptRouteRecord({
 });
 acceptRouteLocationRaw("/");
 acceptRouteLocationRaw({ path: "/", query: { tab: "profile" } });
+acceptRouteLocationRaw({ name: "user", params: { id: 42 }, query: { tab: "profile" } });
 
 const history: RouterHistory = {
   location: () => "/",
@@ -76,30 +85,19 @@ const router = createRouter({
 });
 const pushed = router.push("/");
 pushed.then((route) => route.fullPath);
-
-// @ts-expect-error named routes are not part of the router beta contract
-acceptRouteRecord({ path: "/named", component: Home, name: "home" });
-
-// @ts-expect-error aliases are not part of the router beta contract
-acceptRouteRecord({ path: "/alias", component: Home, alias: "/a" });
-
-// @ts-expect-error route props mapping is not part of the router beta contract
-acceptRouteRecord({ path: "/props", component: Home, props: true });
+acceptRouterHistory(createMemoryHistory());
 
 // @ts-expect-error scroll behavior is not part of the router beta contract
 acceptRouterOptions({ history, routes: [], scrollBehavior: () => undefined });
 
-// @ts-expect-error named locations are not part of the router beta contract
-acceptRouteLocationRaw({ name: "home" });
-
 // @ts-expect-error hash locations are not part of the router beta contract
 acceptRouteLocationRaw({ path: "/", hash: "#section" });
 
-// @ts-expect-error params locations are not part of the router beta contract
+// @ts-expect-error path locations do not accept params
 acceptRouteLocationRaw({ path: "/users/1", params: { id: "1" } });
 
-// @ts-expect-error object locations must include a string path
-acceptRouteLocationRaw({ query: { tab: "profile" } });
+// @ts-expect-error named locations must include a string name
+acceptRouteLocationRaw({ name: 42, params: { id: "1" } });
 
 acceptRouterHistory({
   location: () => "/",

@@ -63,6 +63,7 @@ describe("createRouter", () => {
       "RouterLink",
       "RouterNavigationError",
       "RouterView",
+      "createMemoryHistory",
       "createRouter",
       "createWebHashHistory",
       "createWebHistory",
@@ -74,6 +75,7 @@ describe("createRouter", () => {
       RouterLink: expect.any(Function),
       RouterNavigationError: expect.any(Function),
       RouterView: expect.any(Function),
+      createMemoryHistory: expect.any(Function),
       createRouter: expect.any(Function),
       createWebHashHistory: expect.any(Function),
       createWebHistory: expect.any(Function),
@@ -81,7 +83,6 @@ describe("createRouter", () => {
       useRoute: expect.any(Function),
       useRouter: expect.any(Function),
     });
-    expect(routerModule).not.toHaveProperty("createMemoryHistory");
     expect(routerModule).not.toHaveProperty("historyHrefFormatterKey");
     expect(routerModule).not.toHaveProperty("hasHistoryHrefFormatter");
     expect(routerModule).not.toHaveProperty("NavigationGuard");
@@ -91,7 +92,6 @@ describe("createRouter", () => {
   });
 
   it("keeps deferred router APIs out of the package root", () => {
-    expect(rootModule).not.toHaveProperty("createMemoryHistory");
     expect(rootModule).not.toHaveProperty("historyHrefFormatterKey");
     expect(rootModule).not.toHaveProperty("hasHistoryHrefFormatter");
     expect(rootModule).not.toHaveProperty("NavigationGuard");

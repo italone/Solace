@@ -18,13 +18,22 @@ export type NavigationGuard = (
   from: RouteLocationNormalized,
 ) => NavigationGuardResult;
 
+export type RouteRecordName = string;
+export type RouteParamInputValue = string | number;
+export type RouteParamsInput = Record<string, RouteParamInputValue>;
+export type RouteProps =
+  boolean | Record<string, unknown> | ((route: RouteLocationNormalized) => Record<string, unknown>);
+
 export interface RouteRecord {
   path: string;
+  name?: RouteRecordName;
   component?: RouteComponent | null;
   children?: RouteRecord[];
   redirect?: RouteLocationRaw | ((to: RouteLocationNormalized) => RouteLocationRaw);
   beforeEnter?: NavigationGuard | NavigationGuard[];
   meta?: Record<string, unknown>;
+  alias?: string | string[];
+  props?: RouteProps;
 }
 
 export interface RouteLocationNormalized {
@@ -33,10 +42,14 @@ export interface RouteLocationNormalized {
   query: Query;
   params: Record<string, string>;
   matched: RouteRecord[];
+  name?: RouteRecordName;
   redirectedFrom?: RouteLocationNormalized;
 }
 
-export type RouteLocationRaw = string | { path: string; query?: QueryInput };
+export type RouteLocationRaw =
+  | string
+  | { path: string; name?: never; params?: never; query?: QueryInput }
+  | { name: RouteRecordName; path?: never; params?: RouteParamsInput; query?: QueryInput };
 
 export interface RouterHistory {
   location(): string;
