@@ -462,6 +462,48 @@ describe("devtools extension bridge", () => {
     ]);
   });
 
+  it("drops panel ports that reject forwarded content events", async () => {
+    const { createDevtoolsBackgroundRelay } =
+      await import("../../examples/devtools-extension/src/background");
+    const runtimeListeners = new Set<(port: BackgroundRuntimePort) => void>();
+    const runtime = {
+      onConnect: {
+        addListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.add(listener);
+        },
+        removeListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.delete(listener);
+        },
+      },
+    } satisfies BackgroundRuntime;
+    const contentPort = createRuntimePort("solace-devtools-content", 7);
+    const brokenPanelPort = createRuntimePort("solace-devtools-panel");
+    const healthyPanelPort = createRuntimePort("solace-devtools-panel");
+    const brokenPostMessage = vi.fn(() => {
+      throw new Error("panel port disconnected");
+    });
+    brokenPanelPort.postMessage = brokenPostMessage;
+
+    createDevtoolsBackgroundRelay(runtime);
+    for (const listener of runtimeListeners) {
+      listener(contentPort);
+      listener(brokenPanelPort);
+      listener(healthyPanelPort);
+    }
+
+    brokenPanelPort.emit({ type: "devtools:panel:connect", tabId: 7 });
+    healthyPanelPort.emit({ type: "devtools:panel:connect", tabId: 7 });
+    contentPort.emit({ type: "devtools:event", event: mountEvent });
+    contentPort.emit({ type: "devtools:event", event: mountEvent });
+
+    expect(brokenPanelPort.messages).toEqual([]);
+    expect(brokenPostMessage).toHaveBeenCalledTimes(1);
+    expect(healthyPanelPort.messages).toEqual([
+      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter" } },
+      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter" } },
+    ]);
+  });
+
   it("keeps a panel scoped to its latest connected tab", async () => {
     const { createDevtoolsBackgroundRelay } =
       await import("../../examples/devtools-extension/src/background");

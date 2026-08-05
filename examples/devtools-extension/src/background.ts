@@ -60,7 +60,7 @@ export function createDevtoolsBackgroundRelay(runtime: BackgroundRuntime): Devto
         if (message.type === DEVTOOLS_EXTENSION_EVENT_TYPE) {
           const event = copyDevtoolsEvent(message.event);
           if (event !== undefined) {
-            forwardToPorts(panelsByTab.get(tabId), { type: DEVTOOLS_EXTENSION_EVENT_TYPE, event });
+            forwardToPorts(panelsByTab, tabId, { type: DEVTOOLS_EXTENSION_EVENT_TYPE, event });
           }
         }
       });
@@ -79,14 +79,14 @@ export function createDevtoolsBackgroundRelay(runtime: BackgroundRuntime): Devto
         const previousTabId = findPortTab(panelsByTab, port);
         if (previousTabId !== undefined && previousTabId !== message.tabId) {
           unregisterPort(panelsByTab, previousTabId, port, (tabId) => {
-            forwardToPorts(contentsByTab.get(tabId), { type: DEVTOOLS_CONTENT_DISCONNECT_TYPE });
+            forwardToPorts(contentsByTab, tabId, { type: DEVTOOLS_CONTENT_DISCONNECT_TYPE });
           });
         }
         const didRegister = registerPort(panelsByTab, message.tabId, port, (tabId) => {
-          forwardToPorts(contentsByTab.get(tabId), { type: DEVTOOLS_CONTENT_DISCONNECT_TYPE });
+          forwardToPorts(contentsByTab, tabId, { type: DEVTOOLS_CONTENT_DISCONNECT_TYPE });
         });
         if (didRegister) {
-          forwardToPorts(contentsByTab.get(message.tabId), { type: DEVTOOLS_CONTENT_CONNECT_TYPE });
+          forwardToPorts(contentsByTab, message.tabId, { type: DEVTOOLS_CONTENT_CONNECT_TYPE });
         }
         return;
       }
@@ -94,7 +94,7 @@ export function createDevtoolsBackgroundRelay(runtime: BackgroundRuntime): Devto
       if (message.type === "devtools:control") {
         const panelTab = findPortTab(panelsByTab, port);
         if (panelTab !== undefined) {
-          forwardToPorts(contentsByTab.get(panelTab), message);
+          forwardToPorts(contentsByTab, panelTab, message);
         }
       }
     });
@@ -152,19 +152,26 @@ function unregisterPort(
 }
 
 function forwardToPorts(
-  ports: Set<RuntimePort> | undefined,
+  portsByTab: Map<number, Set<RuntimePort>>,
+  tabId: number,
   message: DevtoolsBackgroundMessage,
 ): void {
+  const ports = portsByTab.get(tabId);
   if (ports === undefined) {
     return;
   }
 
+  const failedPorts: RuntimePort[] = [];
   for (const port of ports) {
     try {
       port.postMessage(message);
     } catch {
-      // Ignore disconnected ports so one stale endpoint cannot block the rest of the relay.
+      failedPorts.push(port);
     }
+  }
+
+  for (const failedPort of failedPorts) {
+    unregisterPort(portsByTab, tabId, failedPort);
   }
 }
 
