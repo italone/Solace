@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { compile } from "../../../src/compiler";
+import { formatSolaceCompileError } from "../../../src/compiler/diagnostics";
 
 describe("compile", () => {
   it("compiles a counter SFC", () => {
@@ -47,7 +48,21 @@ describe("compile", () => {
   });
 
   it("throws when template block is missing", () => {
-    expect(() => compile("<script></script>")).toThrow("Missing <template> block");
+    try {
+      compile("<script></script>");
+      throw new Error("compile should have thrown");
+    } catch (error) {
+      expect(error).toMatchObject({
+        name: "SolaceCompileError",
+        code: "SFC_MISSING_TEMPLATE",
+        filename: undefined,
+        loc: undefined,
+        message: "Missing <template> block",
+      });
+      expect(formatSolaceCompileError(error as never)).toBe(
+        "[SFC_MISSING_TEMPLATE] unknown Missing <template> block",
+      );
+    }
   });
 
   it("throws SolaceCompileError with code and location for missing template", () => {
@@ -85,7 +100,9 @@ describe("compile", () => {
         loc: { line: 4, column: 11 },
         cause: expect.any(Error),
       });
-      expect(String((error as Error).message)).toContain("Unclosed interpolation expression");
+      expect(formatSolaceCompileError(error as never)).toBe(
+        "[SFC_PARSE_ERROR] /app/src/Broken.solace:4:11 Unclosed interpolation expression",
+      );
     }
   });
 });

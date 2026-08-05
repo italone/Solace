@@ -12,7 +12,7 @@ function expectViteTypeErrors(): void {
 void expectViteTypeErrors;
 
 describe("Vite public contract types", () => {
-  it("keeps plugin options out of the SFC alpha contract", () => {
+  it("keeps plugin options out of the narrow SFC contract", () => {
     expect(true).toBe(true);
   });
 });
