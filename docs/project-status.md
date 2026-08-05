@@ -6,22 +6,22 @@ This document summarizes the current completion level of Solace as an open-sourc
 
 ## Summary
 
-Solace is an alpha runtime whose latest published npm package is `@italone/solace@0.0.5`. It provides a working public API, package exports, examples, tests, benchmarks, and release checks. It is suitable as a compact educational and experimental frontend framework, but it should not be described as a mature production replacement for React, Vue, Svelte, or similar ecosystems.
+Solace is now on a local beta line whose repository package version is `0.1.0-beta.0`. The latest published npm package is still `@italone/solace@0.0.5`. It provides a working public API, package exports, examples, tests, benchmarks, and release checks. It is suitable as a compact educational and experimental frontend framework, but it should not be described as a mature production replacement for React, Vue, Svelte, or similar ecosystems.
 
 Current repository state:
 
 - Package name: `@italone/solace`
-- Repository package version: `0.0.5`
+- Repository package version: `0.1.0-beta.0`
 - Published npm version: `0.0.5`
 - npm dist-tag: `latest` points to `0.0.5`
 - Public package metadata: `"private": false`
 - Current branch: `main`
-- Remote state: the local `main` branch currently has unpublished local commits and is not
-  synchronized with `origin/main`. Recheck with `git fetch origin main`, `git status --short
---branch`, and `git rev-list --left-right --count origin/main...HEAD` before any future release,
-  publish, or synchronization claim.
-- Phase: alpha released; beta contract stabilization, SSR/hydration minimum loop, and first
-  browser DevTools extension timeline panel implemented in the repository
+- Remote state: recheck with `git fetch origin main`, `git status --short --branch`, and
+  `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
+  synchronization claim.
+- Phase: local beta line in progress; initial runtime scope remains complete, with beta contract
+  stabilization, SSR/hydration minimum loop, and the first browser DevTools extension timeline
+  panel implemented in the repository
 
 ## Completion Map
 
@@ -34,7 +34,7 @@ Current repository state:
 | Components       | Implemented                    | Function components, setup context, props, emit, slots, lifecycle hooks, provide/inject, and async components are documented and tested.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Store            | Implemented                    | `createStore` combines reactive state, computed getters, and named actions, with DevTools action summaries.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | JSX              | Implemented                    | Package exports include `jsx-runtime` and `jsx-dev-runtime`, with JSX examples and typecheck coverage.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| SFC compiler     | Alpha public contract narrowed | `.solace` parsing, template code generation, runtime-helper style injection, `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, explicit `map: null` source-map policy, rejected plugin options, and rejected `.solace?*` query transforms are documented and covered by package-boundary tests.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| SFC compiler     | Narrow compiler surface        | `.solace` parsing, template code generation, runtime-helper style injection, `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, explicit `map: null` source-map policy, rejected plugin options, and rejected `.solace?*` query transforms are documented and covered by package-boundary tests.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Router           | Beta next slice stabilized     | Matcher, history adapters with location-based listener deduplication, query helpers, nested route chains, parent-to-child redirects, global and route-level guards, initial history navigation pipeline, duplicate current-route navigation, redirect-to-current, and current history-listener guard skip/no-op handling, stale async navigation result protection, rejected-guard history recovery, invalid history location recovery, invalid initial history fallback, creation-time options/history adapter and route record/component validation, global `beforeEach()` registration validation, route `redirect-rejected` errors, `lazyRoute()` components, surfaced `lazy-load-failed` errors, history-aware `RouterLink` href coverage, browser-owned `RouterLink` targets/downloads, nested `RouterView`, root exports, deferred API boundaries, package export coverage, packed-consumer smoke, and expanded `router-basic` e2e coverage exist. |
 | SSR/hydration    | Minimum loop implemented       | `renderToString()` renders synchronous trees, rejects async/thenable SSR sources, and collects `useStyle()` output, while `generateStaticSite()` enforces explicit string route paths, accepts manifest asset tags, and `createApp(App).hydrate(container)` attaches behavior, dedupes matching style tags, reports structured hydration mismatches, cleans up failed root hydration effects, and supports explicit `{ recover: true }` deopt. `resolveStaticAssets()` and `createStaticRoutesFromRouter()` are available from `@italone/solace/server`.                                                                                                                                                                                                                                                                                                                                                                                                  |
 | DevTools subpath | Implemented with example panel | `@italone/solace/devtools` exposes listener and recorder APIs, and `examples/devtools-extension` consumes that public subpath through a browser DevTools timeline panel without changing runtime payloads.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
@@ -42,6 +42,29 @@ Current repository state:
 | Package output   | Implemented                    | Rollup builds ESM, CJS, and type declarations; package export tests and packed-consumer smoke tests validate public entries.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Documentation    | Mostly complete                | English and Chinese README files, API docs, package usage, release, performance, architecture, DevTools, contributing, and security docs exist.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | Release gates    | Implemented                    | `release:readiness`, `quality`, `release:check`, package smoke tests, benchmarks, and e2e scripts are configured; `release:check` starts with release readiness.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+
+## Strengths and Tradeoffs
+
+Primary strengths:
+
+- The core runtime loop is coherent. App APIs, reactivity, rendering, components, store, JSX, SSR/hydration minimum loop, SSG core, the DevTools public subpath, and the example browser extension now form a working end-to-end system.
+- Public boundaries are explicit. `package.json` exports, API docs, package smoke tests, and deep subpath blocking tests work together to define the external contract.
+- Validation coverage is comparatively strong for the project size. Format, typecheck, lint, unit and integration tests, package smoke, coverage, jsdom benchmarks, Chromium browser benchmarks, and browser e2e all have runnable scripts.
+- The project positioning is honest. The docs distinguish the local beta line, latest published npm version, documented public entries, internal implementation details, and deferred production-grade capabilities.
+- The codebase remains approachable for study and review. Compared with a mature ecosystem framework, Solace is better suited for understanding reactivity, VNode patching, component models, router guard pipelines, SSR/SSG, and DevTools event contracts.
+
+Primary weaknesses and risks:
+
+- Ecosystem capabilities are still thin. There is no first-party UI component library, stable plugin ecosystem, production-grade DevTools distribution, or large-application adoption guide.
+- SFC/Vite remains a narrow compiler surface. The current compiler contract covers only
+  `@italone/solace/vite`, the `@italone/solace/sfc` type entry, the documented block model, Vite
+  transform diagnostics, and explicit `map: null`; syntax expansion and generated code shape should
+  not be treated as stable.
+- Router remains beta. The current slice covers basic SPA workflows and several guard/history boundaries, but route names, aliases, route props, scroll behavior, memory history, SSR/hydration integration, auth, and permissions remain outside the stable public contract.
+- SSR/hydration remains a minimum loop. Synchronous SSR, manifest asset tags, and explicit hydration recovery exist, but streaming SSR, async component SSR, router-aware hydration, and full production pipeline automation are deferred.
+- Internal modules are unstable. Compatibility promises cover documented public entries only; `src/**`, `dist/**`, and internal diagnostics/instrumentation are not suitable external dependencies.
+
+As a result, Solace is currently a good fit for learning, experiments, small demos, framework mechanism validation, and controlled internal prototypes. It is not yet a good fit as the foundation for large production applications or for consumers that depend on internals or undocumented deep subpaths.
 
 ## Validation Coverage
 
@@ -104,13 +127,13 @@ Unsupported private areas:
 - VNode factory internals
 - DevTools internal emit helpers
 
-The alpha compatibility promise applies to documented public entries only. Internal modules can change while the framework is still stabilizing.
+The compatibility promise applies to documented public entries only. Internal modules remain implementation details and can change while the framework is still stabilizing.
 
 ## Known Gaps
 
 Solace intentionally does not yet include:
 
-- A stable template/SFC compiler contract beyond the current narrow alpha surface. The current `.solace` compiler and Vite plugin are documented for one `<template>`, optional `<script>`, optional `<style>`, Vite transform diagnostics, and explicit `map: null` source-map policy; syntax expansion remains deferred.
+- A stable template/SFC compiler contract beyond the current narrow compiler surface. The current `.solace` compiler and Vite plugin are documented for one `<template>`, optional `<script>`, optional `<style>`, Vite transform diagnostics, and explicit `map: null` source-map policy; syntax expansion remains deferred.
 - A full first-party router contract. The current beta router covers static routes, dynamic params, wildcard fallback routes, query strings, web/hash history, nested routes, parent-to-child redirects, global and route-level guards, initial history navigation through the guard/redirect pipeline, duplicate current-route navigation, redirect-to-current, and current history-listener guard skip/no-op handling, stale async navigation result protection, rejected-guard history recovery, invalid history location recovery, invalid initial history fallback, creation-time options/history adapter and route record/component validation, global `beforeEach()` registration validation, route `redirect-rejected` errors, `lazyRoute()` components, surfaced `lazy-load-failed` errors, browser-owned `RouterLink` targets/downloads, `RouterView`, and composition helpers, but route names, aliases, route props, scroll behavior, memory history, SSR/hydration integration, auth, and permission routing remain deferred.
 - Streaming SSR, async component SSR beyond explicit runtime rejection, automatic hydration
   mismatch recovery beyond explicit `{ recover: true }`, router-aware SSR/SSG/hydration, and fully
@@ -123,14 +146,14 @@ Solace intentionally does not yet include:
 - A long-term compatibility policy for internal modules.
 - Production adoption guidance for large applications.
 
-These gaps should stay visible in promotional material so the project is positioned honestly as an alpha runtime.
+These gaps should stay visible in promotional material so the project is positioned honestly as a beta-line runtime with deferred production-grade capabilities.
 
 ## Release Coordination State
 
 `@italone/solace@0.0.5` has been published to npm with the `latest` dist-tag. Post-publish registry
 checks confirmed npm reports `@italone/solace@0.0.5` as the latest published version. The current
-local `main` branch now contains unpublished commits after that release baseline and must be synced
-before any future publish or synchronization claim.
+repository is now preparing a local beta-line update at `0.1.0-beta.0`; recheck Git state and the
+published registry before any future publish or synchronization claim.
 
 Before publishing any future version, follow the same checklist:
 
@@ -146,7 +169,9 @@ Before publishing any future version, follow the same checklist:
 1. **Keep the release baseline synchronized before any future publish**. Before the next release
    preparation, recheck `main` with `git fetch origin main`, `git status --short --branch`, and
    `git rev-list --left-right --count origin/main...HEAD`.
-2. **Continue stabilizing the SFC/Vite contract without syntax expansion**: keep the public surface limited to `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, and the documented alpha `.solace` block model.
+2. **Continue stabilizing the SFC/Vite contract without syntax expansion**: keep the public surface
+   limited to `@italone/solace/sfc`, `@italone/solace/vite`, Vite transform diagnostics, explicit
+   `map: null`, and the documented `.solace` block model.
 3. **Continue narrowing the router beta API without adding still-deferred features**: keep route names, aliases, route props, scroll behavior, memory history, SSR/hydration integration, auth, and permissions out of the beta slice until separately designed.
 4. **Keep public API gates mandatory**: `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e` must run for public API changes.
 5. **Harden the first DevTools extension panel without widening runtime payloads**: keep the
