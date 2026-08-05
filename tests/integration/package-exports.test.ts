@@ -263,7 +263,7 @@ describe("package exports", () => {
           history,
           routes: [route],
         } as never),
-      ).toThrow(/Deferred router route record field/);
+      ).not.toThrow();
     }
     expect(() =>
       api.createRouter({

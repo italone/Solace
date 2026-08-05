@@ -134,7 +134,6 @@ describe("createRouter", () => {
       { path: "/bad-redirect", redirect: 42 },
       { path: "/bad-redirect-string", redirect: "https://example.com" },
       { path: "/bad-redirect-string-hash", redirect: "/login#profile" },
-      { path: "/bad-redirect-location", redirect: { name: "home" } },
       { path: "/bad-redirect-query", redirect: { path: "/", query: [] } },
       { path: "/bad-redirect-path-query", redirect: { path: "/?tab=profile" } },
       { path: "/bad-redirect-absolute-url", redirect: { path: "https://example.com" } },
@@ -207,11 +206,13 @@ describe("createRouter", () => {
     ).not.toThrow();
   });
 
-  it("keeps still-deferred route record fields rejected", () => {
-    const deferredRecords = [
+  it("accepts public route record name, alias, and props fields", () => {
+    const acceptedRecords = [
       { path: "/named", component: Home, name: "home" },
-      { path: "/alias", component: Home, alias: "/a" },
-      { path: "/props", component: Home, props: true },
+      { path: "/alias", component: Home, alias: ["/a", "relative-a"] },
+      { path: "/props-boolean", component: Home, props: true },
+      { path: "/props-object", component: Home, props: { mode: "static" } },
+      { path: "/props-function/:id", component: Home, props: () => ({ mode: "mapped" }) },
       {
         path: "/parent",
         component: Home,
@@ -219,13 +220,34 @@ describe("createRouter", () => {
       },
     ];
 
-    for (const route of deferredRecords) {
+    for (const route of acceptedRecords) {
+      expect(() =>
+        createRouter({
+          history: createMemoryLikeHistory(),
+          routes: [route],
+        }),
+      ).not.toThrow();
+    }
+  });
+
+  it("rejects invalid public route record name, alias, and props values", () => {
+    const invalidRoutes = [
+      { path: "/empty-name", component: Home, name: "" },
+      { path: "/bad-name", component: Home, name: 42 },
+      { path: "/bad-alias", component: Home, alias: 42 },
+      { path: "/bad-alias-array", component: Home, alias: ["/a", 42] },
+      { path: "/bad-props-null", component: Home, props: null },
+      { path: "/bad-props-array", component: Home, props: [] },
+      { path: "/bad-props-number", component: Home, props: 42 },
+    ];
+
+    for (const route of invalidRoutes) {
       expect(() =>
         createRouter({
           history: createMemoryLikeHistory(),
           routes: [route] as never,
         }),
-      ).toThrow(/Deferred router route record field/);
+      ).toThrow(TypeError);
     }
   });
 
@@ -405,6 +427,75 @@ describe("createRouter", () => {
     );
     await expect(router.replace({ path: "https://example.com" })).rejects.toThrow(
       TypeError("Router location must be a relative path"),
+    );
+  });
+
+  it("resolves named routes with encoded params and query strings", () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory(),
+      routes: [
+        { path: "/", component: Home },
+        { path: "/users/:id", component: User, name: "user" },
+        {
+          path: "/teams/:teamId",
+          component: Home,
+          children: [{ path: "users/:userId", component: User, name: "team-user" }],
+        },
+      ],
+    });
+
+    expect(router.resolve({ name: "user", params: { id: 42 } })).toMatchObject({
+      path: "/users/42",
+      fullPath: "/users/42",
+      params: { id: "42" },
+      name: "user",
+    });
+    expect(
+      router.resolve({
+        name: "team-user",
+        params: { teamId: "platform", userId: "a/b" },
+        query: { tab: "profile" },
+      }),
+    ).toMatchObject({
+      path: "/teams/platform/users/a%2Fb",
+      fullPath: "/teams/platform/users/a%2Fb?tab=profile",
+      params: { teamId: "platform", userId: "a/b" },
+      name: "team-user",
+    });
+  });
+
+  it("rejects duplicate and invalid named route records", () => {
+    expect(() =>
+      createRouter({
+        history: createMemoryLikeHistory(),
+        routes: [
+          { path: "/users/:id", component: User, name: "user" },
+          { path: "/profiles/:id", component: User, name: "user" },
+        ],
+      }),
+    ).toThrow(TypeError("Router route record names must be unique: user"));
+  });
+
+  it("rejects invalid named route locations", async () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory(),
+      routes: [{ path: "/users/:id", component: User, name: "user" }],
+    });
+
+    expect(() => router.resolve({ name: "missing" })).toThrow(
+      TypeError("Router named route was not found: missing"),
+    );
+    expect(() => router.resolve({ name: "user" })).toThrow(
+      TypeError("Router named route is missing required param: id"),
+    );
+    expect(() => router.resolve({ name: "user", params: { id: "1", extra: "x" } })).toThrow(
+      TypeError("Router named route received unknown param: extra"),
+    );
+    expect(() => router.resolve({ name: "user", params: { id: true } } as never)).toThrow(
+      TypeError("Router named route params must be strings or numbers"),
+    );
+    await expect(router.push({ name: 42, params: { id: "1" } } as never)).rejects.toThrow(
+      TypeError("Router location name must be a non-empty string"),
     );
   });
 
@@ -1137,7 +1228,7 @@ describe("createRouter", () => {
 
     const slowNavigation = router.push("/slow");
     await expect(router.push({ name: "missing" } as never)).rejects.toThrow(
-      /Deferred router location field/,
+      TypeError("Router named route was not found: missing"),
     );
 
     allowSlowRoute();

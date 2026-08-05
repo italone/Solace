@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createWebHashHistory, createWebHistory } from "../../../src/router/history";
+import {
+  createMemoryHistory,
+  createWebHashHistory,
+  createWebHistory,
+} from "../../../src/router/history";
 
 describe("router history", () => {
   it("reads, pushes, and replaces web history paths", () => {
@@ -103,6 +107,18 @@ describe("router history", () => {
     history.push("/pushed");
     history.replace("/replaced");
 
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it("does not notify memory history listeners from push or replace", () => {
+    const history = createMemoryHistory();
+    const listener = vi.fn();
+    history.listen(listener);
+
+    history.push("/pushed");
+    history.replace("/replaced");
+
+    expect(history.location()).toBe("/replaced");
     expect(listener).not.toHaveBeenCalled();
   });
 

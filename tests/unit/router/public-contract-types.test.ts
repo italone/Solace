@@ -4,18 +4,22 @@ import { createMemoryHistory, createRouter, h, lazyRoute } from "../../../src";
 import type {
   NavigationGuard,
   Router,
+  RouterHistory,
   RouteComponent,
   RouteLocationRaw,
+  RouteParamInputValue,
+  RouteParamsInput,
   RouteProps,
   RouteRecord,
   RouteRecordName,
   RouterOptions,
 } from "../../../src";
-import type { RouterHistory } from "../../../src/router/types";
 
 const Home = () => h("div", null, "home");
 const lazyHome: RouteComponent = lazyRoute(() => Promise.resolve(Home));
 const routeName: RouteRecordName = "user";
+const routeParamValue: RouteParamInputValue = 42;
+const routeParams: RouteParamsInput = { id: routeParamValue };
 const routeProps: RouteProps = (route) => ({ id: route.params.id });
 const guarded: NavigationGuard = (to, from) => {
   if (to.fullPath === from.fullPath) {
@@ -69,7 +73,7 @@ acceptRouteRecord({
 });
 acceptRouteLocationRaw("/");
 acceptRouteLocationRaw({ path: "/", query: { tab: "profile" } });
-acceptRouteLocationRaw({ name: "user", params: { id: 42 }, query: { tab: "profile" } });
+acceptRouteLocationRaw({ name: "user", params: routeParams, query: { tab: "profile" } });
 
 const history: RouterHistory = {
   location: () => "/",

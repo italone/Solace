@@ -11,11 +11,9 @@ export function createMemoryHistory(initial: string | string[] = "/"): RouterHis
     [historyHrefFormatterKey]: (path: string) => path,
     push(path: string) {
       current = path;
-      for (const listener of listeners) listener();
     },
     replace(path: string) {
       current = path;
-      for (const listener of listeners) listener();
     },
     listen(listener: () => void) {
       listeners.add(listener);

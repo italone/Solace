@@ -1,4 +1,10 @@
-import type { RouteLocationNormalized, RouteRecord } from "./types";
+import type {
+  RouteLocationNormalized,
+  RouteParamInputValue,
+  RouteParamsInput,
+  RouteRecord,
+  RouteRecordName,
+} from "./types";
 
 interface CompiledRoute {
   record: RouteRecord;
@@ -6,22 +12,44 @@ interface CompiledRoute {
   regex: RegExp;
   keys: string[];
   score: number;
+  fullPath: string;
+  name?: RouteRecordName;
+  matchable: boolean;
 }
 
 export interface Matcher {
-  resolve(path: string): Pick<RouteLocationNormalized, "path" | "params" | "matched">;
+  resolve(path: string): Pick<RouteLocationNormalized, "path" | "params" | "matched" | "name">;
+  resolveByName(
+    name: RouteRecordName,
+    params?: RouteParamsInput,
+  ): Pick<RouteLocationNormalized, "path" | "params" | "matched" | "name">;
 }
 
 export function createMatcher(routes: RouteRecord[]): Matcher {
-  const compiled = flattenRoutes(routes)
-    .map(compileRoute)
+  const flattened = flattenRoutes(routes);
+  const compiledRoutes = flattened.map(compileRoute);
+  const pathRoutes = compiledRoutes
+    .filter((route) => route.matchable)
     .sort((a, b) => b.score - a.score || b.chain.length - a.chain.length);
+  const namedRoutes = new Map<RouteRecordName, CompiledRoute>();
+
+  for (const route of compiledRoutes) {
+    if (route.name === undefined) {
+      continue;
+    }
+
+    if (namedRoutes.has(route.name)) {
+      throw new TypeError(`Router route record names must be unique: ${route.name}`);
+    }
+
+    namedRoutes.set(route.name, route);
+  }
 
   return {
     resolve(path: string) {
       const normalized = normalizePath(path);
 
-      for (const route of compiled) {
+      for (const route of pathRoutes) {
         const match = route.regex.exec(normalized);
         if (match === null) {
           continue;
@@ -32,10 +60,31 @@ export function createMatcher(routes: RouteRecord[]): Matcher {
           params[route.keys[index]] = decodePathParam(match[index + 1] ?? "");
         }
 
-        return { path: normalized, params, matched: route.chain };
+        return {
+          path: normalized,
+          params,
+          matched: route.chain,
+          name: route.name,
+        };
       }
 
-      return { path: normalized, params: {}, matched: [] };
+      return { path: normalized, params: {}, matched: [], name: undefined };
+    },
+    resolveByName(name: RouteRecordName, params?: RouteParamsInput) {
+      const route = namedRoutes.get(name);
+      if (route === undefined) {
+        throw new TypeError(`Router named route was not found: ${name}`);
+      }
+
+      const normalizedParams = params ?? {};
+      const path = buildPathFromTemplate(route.fullPath, normalizedParams);
+
+      return {
+        path,
+        params: extractPathParams(route.fullPath, normalizedParams),
+        matched: route.chain,
+        name: route.name,
+      };
     },
   };
 }
@@ -44,6 +93,8 @@ interface NormalizedRouteRecord {
   record: RouteRecord;
   fullPath: string;
   chain: RouteRecord[];
+  name?: RouteRecordName;
+  matchable: boolean;
 }
 
 function flattenRoutes(
@@ -58,9 +109,12 @@ function flattenRoutes(
     const fullPath = joinRoutePaths(parentPath, route.path);
     const chain = [...parentChain, route];
     const children = route.children ?? [];
+    const name = route.name;
+    const matchable =
+      route.component != null || route.redirect !== undefined || children.length === 0;
 
-    if (route.component != null || route.redirect !== undefined || children.length === 0) {
-      records.push({ record: route, fullPath, chain });
+    if (matchable || name !== undefined) {
+      records.push({ record: route, fullPath, chain, name, matchable });
     }
 
     records.push(...flattenRoutes(children, fullPath, chain));
@@ -98,6 +152,9 @@ function compileRoute(route: NormalizedRouteRecord): CompiledRoute {
       regex: /^\/(.*)$/,
       keys: ["pathMatch"],
       score: 0,
+      fullPath: normalized,
+      name: route.name,
+      matchable: route.matchable,
     };
   }
 
@@ -125,6 +182,9 @@ function compileRoute(route: NormalizedRouteRecord): CompiledRoute {
     regex: new RegExp(`^/${pattern}$`),
     keys,
     score,
+    fullPath: normalized,
+    name: route.name,
+    matchable: route.matchable,
   };
 }
 
@@ -180,4 +240,56 @@ function decodePathParam(value: string): string {
 
     throw error;
   }
+}
+
+function buildPathFromTemplate(fullPath: string, params: RouteParamsInput): string {
+  const segments = normalizePath(fullPath).split("/").filter(Boolean);
+  const keys = new Set<string>();
+  const parts = segments.map((segment) => {
+    if (!segment.startsWith(":")) {
+      return segment;
+    }
+
+    const key = segment.slice(1);
+    keys.add(key);
+    if (!Object.prototype.hasOwnProperty.call(params, key)) {
+      throw new TypeError(`Router named route is missing required param: ${key}`);
+    }
+
+    const value = params[key];
+
+    return encodeURIComponent(serializePathParam(value));
+  });
+
+  for (const key of Object.keys(params)) {
+    if (!keys.has(key)) {
+      throw new TypeError(`Router named route received unknown param: ${key}`);
+    }
+  }
+
+  return `/${parts.join("/")}` || "/";
+}
+
+function extractPathParams(fullPath: string, params: RouteParamsInput): Record<string, string> {
+  const extracted: Record<string, string> = {};
+  const segments = normalizePath(fullPath).split("/").filter(Boolean);
+
+  for (const segment of segments) {
+    if (!segment.startsWith(":")) {
+      continue;
+    }
+
+    const key = segment.slice(1);
+    extracted[key] = String(params[key]);
+  }
+
+  return extracted;
+}
+
+function serializePathParam(value: RouteParamInputValue): string {
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value);
+  }
+
+  throw new TypeError("Router named route params must be strings or numbers");
 }

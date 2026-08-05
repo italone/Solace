@@ -14,6 +14,7 @@ import type {
   NavigationGuard,
   RouteLocationNormalized,
   RouteLocationRaw,
+  RouteParamInputValue,
   RouteRecord,
   Router,
   RouterOptions,
@@ -37,11 +38,14 @@ export class RouterNavigationError extends Error {
 
 const allowedRouteRecordFields = new Set([
   "path",
+  "name",
   "component",
   "children",
   "redirect",
   "beforeEnter",
   "meta",
+  "alias",
+  "props",
 ]);
 const requiredHistoryMethods = [
   "location",
@@ -310,6 +314,23 @@ export function createRouter(options: RouterOptions): Router {
   }
 
   function resolveLocation(to: RouteLocationRaw): RouteLocationNormalized {
+    if (typeof to === "object" && to !== null && !Array.isArray(to) && "name" in to) {
+      assertRouterNamedLocationContract(to);
+      const match = matcher.resolveByName(to.name, to.params);
+      const query =
+        to.query === undefined ? parseQuery("") : parseQuery(stringifyQuery(to.query).slice(1));
+      const search = stringifyQuery(query);
+
+      return {
+        path: match.path,
+        fullPath: `${match.path}${search}`,
+        query,
+        params: match.params,
+        matched: match.matched,
+        name: match.name ?? to.name,
+      };
+    }
+
     const fullPath = normalizeRawLocation(to);
     const [rawPath, rawSearch] = splitLocationPathAndSearch(fullPath);
     const match = matcher.resolve(rawPath || "/");
@@ -322,6 +343,7 @@ export function createRouter(options: RouterOptions): Router {
       query,
       params: match.params,
       matched: match.matched,
+      name: match.name,
     };
   }
 
@@ -444,6 +466,9 @@ function assertRouteRecordContract(route: RouteRecord): void {
     throw new TypeError("Router route record path must be a string");
   }
 
+  assertRouteRecordNameContract(route.name);
+  assertRouteRecordAliasContract(route.alias);
+  assertRouteRecordPropsContract(route.props);
   assertRouteRecordComponentContract(route.component);
   assertRouteRecordRedirectContract(route.redirect);
   assertRouteRecordBeforeEnterContract(route.beforeEnter);
@@ -530,8 +555,82 @@ function assertRouteRecordMetaContract(meta: RouteRecord["meta"]): void {
   throw new TypeError("Router route record meta must be an object");
 }
 
+function assertRouteRecordNameContract(name: RouteRecord["name"]): void {
+  if (name === undefined) {
+    return;
+  }
+
+  if (typeof name !== "string" || name.length === 0) {
+    throw new TypeError("Router route record name must be a non-empty string");
+  }
+}
+
+function assertRouteRecordAliasContract(alias: RouteRecord["alias"]): void {
+  if (alias === undefined || typeof alias === "string") {
+    return;
+  }
+
+  if (!Array.isArray(alias)) {
+    throw new TypeError("Router route record alias must be a string or string array");
+  }
+
+  for (const value of alias) {
+    if (typeof value !== "string") {
+      throw new TypeError("Router route record alias must be a string or string array");
+    }
+  }
+}
+
+function assertRouteRecordPropsContract(props: RouteRecord["props"]): void {
+  if (props === undefined || typeof props === "boolean" || typeof props === "function") {
+    return;
+  }
+
+  if (
+    typeof props === "object" &&
+    props !== null &&
+    !Array.isArray(props) &&
+    Object.getPrototypeOf(props) === Object.prototype
+  ) {
+    return;
+  }
+
+  throw new TypeError("Router route record props must be a boolean, function, or plain object");
+}
+
 function assertRouterLocationContract(location: {
   path?: unknown;
+  name?: unknown;
+  params?: unknown;
+  query?: unknown;
+}): asserts location is {
+  path: string;
+  query?: unknown;
+} {
+  for (const key of Object.keys(location)) {
+    const isNamedLocation = "name" in location;
+    const isAllowedPathKey = !isNamedLocation && (key === "path" || key === "query");
+    const isAllowedNamedKey =
+      isNamedLocation && (key === "name" || key === "query" || key === "params");
+    if (!isAllowedPathKey && !isAllowedNamedKey) {
+      throw new TypeError(
+        `Deferred router location field is not part of the beta contract: ${key}`,
+      );
+    }
+  }
+
+  if ("name" in location) {
+    assertRouterNamedLocationContract(location);
+    return;
+  }
+
+  assertRouterPathLocationContract(location);
+}
+
+function assertRouterPathLocationContract(location: {
+  path?: unknown;
+  name?: unknown;
+  params?: unknown;
   query?: unknown;
 }): asserts location is {
   path: string;
@@ -552,6 +651,58 @@ function assertRouterLocationContract(location: {
   assertRouterLocationPathHasNoHash(location.path);
   assertRouterLocationIsRelative(location.path);
   assertRouterObjectLocationPathHasNoQuery(location.path);
+
+  if (
+    location.query !== undefined &&
+    (typeof location.query !== "object" || location.query === null || Array.isArray(location.query))
+  ) {
+    throw new TypeError("Router location query must be an object");
+  }
+
+  if (location.query !== undefined) {
+    assertRouterLocationQueryObjectContract(location.query);
+    assertRouterLocationQueryContract(location.query);
+  }
+}
+
+function assertRouterNamedLocationContract(location: {
+  name?: unknown;
+  params?: unknown;
+  query?: unknown;
+}): asserts location is {
+  name: string;
+  params?: Record<string, RouteParamInputValue>;
+  query?: unknown;
+} {
+  for (const key of Object.keys(location)) {
+    if (key !== "name" && key !== "query" && key !== "params") {
+      throw new TypeError(
+        `Deferred router location field is not part of the beta contract: ${key}`,
+      );
+    }
+  }
+
+  if (typeof location.name !== "string" || location.name === "") {
+    throw new TypeError("Router location name must be a non-empty string");
+  }
+
+  if (location.params !== undefined) {
+    if (
+      typeof location.params !== "object" ||
+      location.params === null ||
+      Array.isArray(location.params)
+    ) {
+      throw new TypeError("Router location params must be a plain object");
+    }
+
+    for (const value of Object.values(location.params)) {
+      if (typeof value === "string" || typeof value === "number") {
+        continue;
+      }
+
+      throw new TypeError("Router named route params must be strings or numbers");
+    }
+  }
 
   if (
     location.query !== undefined &&
