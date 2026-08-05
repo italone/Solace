@@ -68,7 +68,11 @@ export function createContentScriptRelay(
       active = false;
     }
     port.onMessage.removeListener?.(relayContentMessage);
-    port.disconnect();
+    try {
+      port.disconnect();
+    } catch {
+      // Ignore stale extension ports during content relay cleanup.
+    }
   };
   const relayContentMessage = (message: DevtoolsContentMessage) => {
     if (stopped) {

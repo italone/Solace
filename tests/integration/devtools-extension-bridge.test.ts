@@ -805,6 +805,47 @@ describe("devtools extension bridge", () => {
     expect(windowListeners.size).toBe(0);
     expect(port.disconnect).toHaveBeenCalledTimes(1);
   });
+
+  it("ignores content relay stop disconnect failures", async () => {
+    const { createContentScriptRelay } =
+      await import("../../examples/devtools-extension/src/content-script");
+    let runtimeListener: ((message: DevtoolsContentMessage) => void) | undefined;
+    const windowListeners = new Set<EventListenerOrEventListenerObject>();
+    const port = {
+      disconnect: vi.fn(() => {
+        throw new Error("content runtime port already disconnected");
+      }),
+      onMessage: {
+        addListener(listener: (message: DevtoolsContentMessage) => void) {
+          runtimeListener = listener;
+        },
+        removeListener(listener: (message: DevtoolsContentMessage) => void) {
+          if (runtimeListener === listener) {
+            runtimeListener = undefined;
+          }
+        },
+      },
+      postMessage: vi.fn(),
+    } satisfies ContentRuntimePort;
+
+    const stop = createContentScriptRelay({
+      addWindowListener(_type: string, listener: EventListenerOrEventListenerObject) {
+        windowListeners.add(listener);
+      },
+      connectRuntime: () => port,
+      injectBridge: vi.fn(),
+      removeWindowListener(_type: string, listener: EventListenerOrEventListenerObject) {
+        windowListeners.delete(listener);
+      },
+    });
+
+    runtimeListener?.({ type: "devtools:content:connect" });
+
+    expect(() => stop()).not.toThrow();
+    expect(port.disconnect).toHaveBeenCalledTimes(1);
+    expect(runtimeListener).toBeUndefined();
+    expect(windowListeners.size).toBe(0);
+  });
 });
 
 function createRuntimePort(name: string, tabId?: number) {
