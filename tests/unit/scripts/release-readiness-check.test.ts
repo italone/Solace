@@ -94,6 +94,16 @@ describe("release readiness check CLI", () => {
     ]);
   });
 
+  test("keeps beta releases off the latest npm dist-tag", async () => {
+    const packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
+      scripts?: Record<string, string>;
+    };
+
+    expect(packageJson.scripts?.["release:publish:beta"]).toBe(
+      "pnpm release:check && changeset publish --tag beta",
+    );
+  });
+
   test("builds declarations before typechecking in the quality gate", async () => {
     const packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
       scripts?: Record<string, string>;

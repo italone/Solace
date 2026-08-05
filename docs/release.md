@@ -79,14 +79,23 @@ Before publishing, explicitly confirm:
 - `pnpm package:smoke` passes after the final version update,
 - Changesets versioning has been run for user-visible changes.
 
-After that decision, run:
+For beta prereleases, publish with the `beta` npm dist-tag so `latest` continues to point at the
+latest stable public release:
+
+```bash
+pnpm release:publish:beta
+```
+
+After a maintainer decides the current version should become the default npm release, run:
 
 ```bash
 pnpm release:publish
 ```
 
-`release:publish` runs the full local release gate before `changeset publish`.
+`release:publish:beta` and `release:publish` both run the full local release gate before
+`changeset publish`. `release:publish:beta` passes `--tag beta`; `release:publish` uses Changesets'
+default npm tag behavior.
 
-If publishing is skipped, do not run `release:publish`, `changeset publish`, or `npm publish`.
-Leave the local version state documented in `docs/project-status.md` until a maintainer makes a
-separate release decision.
+If publishing is skipped, do not run `release:publish:beta`, `release:publish`, `changeset publish`,
+or `npm publish`. Leave the local version state documented in `docs/project-status.md` until a
+maintainer makes a separate release decision.

@@ -31,6 +31,7 @@ requireScript("quality");
 requireScript("package:smoke");
 requireScript("release:check");
 requireScript("release:version");
+requireScript("release:publish:beta");
 requireScript("release:publish");
 requireReleaseCheckCommand("pnpm release:readiness");
 requireReleaseCheckCommand("pnpm package:smoke");
