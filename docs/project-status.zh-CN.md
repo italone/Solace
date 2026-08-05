@@ -56,6 +56,9 @@ React、Vue、Svelte 或同类生态的成熟生产替代品。
 
 主要缺点和风险：
 
+SFC、Router 和 SSR/hydration 目前保留的限制是显式的 beta 范围边界，不是隐藏的实现缺口。
+项目今天已经可用且文档齐全，但这些子系统仍然有意保持在冻结生产契约之前的范围内。
+
 - 生态能力仍薄。没有一方 UI component library、稳定 plugin ecosystem、生产级 DevTools 发布形态或大型应用落地指南。
 - SFC/Vite 仍是窄编译器表面。当前 compiler 契约只覆盖 `@italone/solace/vite`、`@italone/solace/sfc` 类型入口、文档化 block model、Vite transform diagnostics 和显式 `map: null`；不能假设语法或生成代码形状稳定。
 - Router 仍处 beta。当前 slice 已覆盖基础 SPA 工作流和多个 guard/history 边界，但 route names、aliases、route props、scroll behavior、memory history、SSR/hydration integration、auth 和 permissions 仍未纳入公开稳定契约。

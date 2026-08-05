@@ -62,6 +62,10 @@ Primary strengths:
 
 Primary weaknesses and risks:
 
+The remaining SFC, Router, and SSR/hydration limits are explicit beta scope boundaries, not hidden
+implementation gaps. The project is usable and documented today, but these subsystems are still
+intentionally scoped short of a frozen production contract.
+
 - Ecosystem capabilities are still thin. There is no first-party UI component library, stable plugin ecosystem, production-grade DevTools distribution, or large-application adoption guide.
 - SFC/Vite remains a narrow compiler surface. The current compiler contract covers only
   `@italone/solace/vite`, the `@italone/solace/sfc` type entry, the documented block model, Vite
