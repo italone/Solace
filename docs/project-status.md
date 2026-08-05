@@ -16,8 +16,9 @@ Current repository state:
 
 - Package name: `@italone/solace`
 - Repository package version: `0.1.0-beta.1`
-- npm `latest` line: stable `0.0.5`
-- npm `beta` line: moving beta dist-tag; verify with `npm view @italone/solace dist-tags --json`
+- Published npm `latest`: `0.0.5`
+- Published npm `beta`: `0.1.0-beta.1`
+- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.1`
 - Public package metadata: `"private": false`
 - Current branch: `main`
 - Remote state: recheck with `git fetch origin main`, `git status --short --branch`, and
@@ -116,6 +117,13 @@ which reran `pnpm release:check` before `changeset publish --tag beta`. Post-pub
 confirmed npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.0`, and the matching Git tag
 `v0.1.0-beta.0` was pushed.
 
+The 2026-08-05 beta documentation refresh publish for `@italone/solace@0.1.0-beta.1` also used
+`pnpm release:publish:beta`, rerunning `pnpm release:check` before `changeset publish --tag beta`.
+Post-publish registry checks confirmed npm reports `latest -> 0.0.5` and
+`beta -> 0.1.0-beta.1`. A registry beta smoke imported the root, server, Vite, and DevTools public
+entries from `@italone/solace@beta`, and the published beta.1 tarball README/docs were checked for
+the updated beta install-line wording.
+
 ## Public API Boundary
 
 Supported public entries:
@@ -162,12 +170,10 @@ These gaps should stay visible in promotional material so the project is positio
 ## Release Coordination State
 
 `@italone/solace@0.0.5` has been published to npm with the `latest` dist-tag.
-`@italone/solace@0.1.0-beta.0` has been published to npm with the `beta` dist-tag. Post-publish
-registry checks confirmed npm reported `latest -> 0.0.5` and `beta -> 0.1.0-beta.0`, and the
-matching Git tag is `v0.1.0-beta.0`. The repository package version has since moved to
-`0.1.0-beta.1` so beta tarballs can carry package-included docs that describe the beta line as
-published rather than local-only. Recheck Git state and the published registry before any future
-publish or synchronization claim.
+`@italone/solace@0.1.0-beta.1` has been published to npm with the `beta` dist-tag. Post-publish
+registry checks confirmed npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.1`, and the matching
+Git tag is `v0.1.0-beta.1`. Recheck Git state and the published registry before any future publish
+or synchronization claim.
 
 Before publishing any future version, follow the same checklist:
 
