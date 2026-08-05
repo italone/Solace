@@ -19,6 +19,7 @@
       "@italone/solace/jsx-dev-runtime": ["src/jsx-dev-runtime.ts"],
       "@italone/solace/devtools": ["src/devtools/index.ts"],
       "@italone/solace/sfc": ["src/sfc-entry.ts"],
+      "@italone/solace/server": ["src/server/index.ts"],
       "@italone/solace/vite": ["src/vite/index.ts"]
     }
   },

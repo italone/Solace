@@ -56,6 +56,24 @@ function copySfcTypes() {
   };
 }
 
+function emitSfcRuntimeShims() {
+  return {
+    name: "emit-sfc-runtime-shims",
+    generateBundle() {
+      this.emitFile({
+        type: "asset",
+        fileName: "sfc.js",
+        source: "export {};\n",
+      });
+      this.emitFile({
+        type: "asset",
+        fileName: "sfc.cjs",
+        source: '"use strict";\n',
+      });
+    },
+  };
+}
+
 export default [
   {
     input: {
@@ -63,7 +81,6 @@ export default [
       "jsx-runtime": "src/jsx-runtime.ts",
       "jsx-dev-runtime": "src/jsx-dev-runtime.ts",
       devtools: "src/devtools/index.ts",
-      sfc: "src/sfc-entry.ts",
       server: "src/server/index.ts",
       vite: "src/vite/index.ts",
     },
@@ -72,6 +89,7 @@ export default [
       nodeResolve({ extensions: [".mjs", ".js", ".json", ".node", ".ts"] }),
       commonjs(),
       typescript(),
+      emitSfcRuntimeShims(),
     ],
     external: ["vite"],
     output: [
