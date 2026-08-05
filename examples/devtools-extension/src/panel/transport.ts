@@ -89,7 +89,11 @@ function createExtensionPanelEventSource(
   };
 
   port.onMessage.addListener(handleMessage);
-  port.postMessage({ type: "devtools:panel:connect", tabId: inspectedTabId });
+  try {
+    port.postMessage({ type: "devtools:panel:connect", tabId: inspectedTabId });
+  } catch {
+    // Ignore stale extension ports so panel setup can continue safely.
+  }
 
   return {
     setPaused(paused) {
