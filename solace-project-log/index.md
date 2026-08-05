@@ -210,6 +210,12 @@
 | ---- | --------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | 001  | 实现 DevTools 浏览器扩展 timeline panel | DevTools extension、browser UI、文档、项目日志 | `examples/devtools-extension/**`, `src/devtools/events.ts`, `tests/unit/devtools-extension/**`, `tests/integration/devtools-extension-bridge.test.ts`, `tests/e2e/devtools-extension.spec.ts`, `package.json`, `playwright*.config.ts`, `docs/**`, `readme*.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-29-001-devtools-extension-ui.md) |
 
+## 2026-08-05
+
+| 编号 | 变动               | 影响范围                               | 涉及文件                                                                                                                                     | 日志                                                            |
+| ---- | ------------------ | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| 001  | 记录 beta npm 发布 | npm release、dist-tags、文档、项目日志 | `CHANGELOG.md`, `package.json`, `docs/project-status*.md`, `docs/package-usage.md`, `docs/roadmap.md`, `readme*.md`, `solace-project-log/**` | [查看](./solace-entries/2026-08-05-001-beta-npm-publication.md) |
+
 ## 维护说明
 
 后续每次变更完成后，应执行以下动作：
