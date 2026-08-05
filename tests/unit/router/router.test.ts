@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { h, lazyRoute } from "../../../src/index";
+import { createMemoryHistory, h, lazyRoute } from "../../../src/index";
 import * as rootModule from "../../../src/index";
 import * as routerModule from "../../../src/router";
 import { createRouter } from "../../../src/router/router";
@@ -357,6 +357,45 @@ describe("createRouter", () => {
     );
   });
 
+  it("provides deterministic memory history stack navigation", () => {
+    const history = createMemoryHistory(["/", "/users/1"]);
+    const listener = vi.fn();
+    const stop = history.listen(listener);
+
+    expect(history.location()).toBe("/users/1");
+    history.back();
+    expect(history.location()).toBe("/");
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    history.forward();
+    expect(history.location()).toBe("/users/1");
+    expect(listener).toHaveBeenCalledTimes(2);
+
+    history.push("/users/2?tab=profile");
+    expect(history.location()).toBe("/users/2?tab=profile");
+    history.back();
+    history.push("/users/3");
+    history.forward();
+    expect(history.location()).toBe("/users/3");
+    expect(listener).toHaveBeenCalledTimes(5);
+
+    stop();
+    history.replace("/users/4");
+    expect(history.location()).toBe("/users/4");
+    expect(listener).toHaveBeenCalledTimes(5);
+  });
+
+  it("normalizes and validates memory history targets", () => {
+    expect(createMemoryHistory("users/1///").location()).toBe("/users/1");
+    expect(createMemoryHistory([]).location()).toBe("/");
+    expect(() => createMemoryHistory("https://example.com")).toThrow(
+      TypeError("Router history target must be a relative path"),
+    );
+    expect(() => createMemoryHistory("/users#profile")).toThrow(
+      TypeError("Router history target must not include hash fragments"),
+    );
+  });
+
   it("rejects deferred router options instead of widening the beta contract", () => {
     expect(() =>
       createRouter({
@@ -462,6 +501,54 @@ describe("createRouter", () => {
       params: { teamId: "platform", userId: "a/b" },
       name: "team-user",
     });
+  });
+
+  it("resolves alias routes to canonical records", () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory(),
+      routes: [
+        {
+          path: "/users/:id",
+          component: User,
+          name: "user",
+          alias: ["/members/:id", "/people/:id"],
+        },
+      ],
+    });
+
+    expect(router.resolve("/members/42?tab=profile")).toMatchObject({
+      path: "/members/42",
+      fullPath: "/members/42?tab=profile",
+      params: { id: "42" },
+      name: "user",
+      matched: [expect.objectContaining({ path: "/users/:id", name: "user" })],
+    });
+    expect(router.resolve("/people/7")).toMatchObject({
+      path: "/people/7",
+      fullPath: "/people/7",
+      params: { id: "7" },
+      name: "user",
+    });
+    expect(router.resolve({ name: "user", params: { id: 1 } })).toMatchObject({
+      path: "/users/1",
+      fullPath: "/users/1",
+    });
+  });
+
+  it("rejects duplicate alias path collisions", () => {
+    expect(() =>
+      createRouter({
+        history: createMemoryLikeHistory(),
+        routes: [
+          {
+            path: "/users/:id",
+            component: User,
+            alias: "/members/:id",
+          },
+          { path: "/members/:id", component: User },
+        ],
+      }),
+    ).toThrow(TypeError("Router route path or alias is already registered: /members/:id"));
   });
 
   it("rejects duplicate and invalid named route records", () => {

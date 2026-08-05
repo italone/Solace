@@ -66,7 +66,11 @@ export function RouterView(): ComponentRender {
     const record = getRenderableRecord(route.value.matched, depth);
     const component = record?.component;
     const resolvedComponent = resolveRouteComponent(component, route);
-    return resolvedComponent === null ? h(Fragment, null, []) : h(resolvedComponent);
+    if (resolvedComponent === null) {
+      return h(Fragment, null, []);
+    }
+
+    return h(resolvedComponent, resolveRouteProps(record, route.value));
   };
 }
 
@@ -147,6 +151,41 @@ function getRenderableRecord(records: RouteRecord[], depth: number): RouteRecord
   }
 
   return undefined;
+}
+
+function resolveRouteProps(
+  record: RouteRecord | undefined,
+  route: RouteLocationNormalized,
+): Record<string, unknown> | null {
+  const props = record?.props;
+
+  if (props === undefined || props === false) {
+    return null;
+  }
+
+  if (props === true) {
+    return { ...route.params };
+  }
+
+  if (typeof props === "function") {
+    const resolved = props(route);
+    if (!isPlainObject(resolved)) {
+      throw new TypeError("Router route record props function must return a plain object");
+    }
+
+    return resolved;
+  }
+
+  return props;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return false;
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
 }
 
 function isLazyRouteComponent(

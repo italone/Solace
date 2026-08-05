@@ -2,25 +2,49 @@ import { historyHrefFormatterKey } from "./internal";
 import type { RouterHistory } from "./types";
 
 export function createMemoryHistory(initial: string | string[] = "/"): RouterHistory {
-  const first = Array.isArray(initial) ? (initial[initial.length - 1] ?? "/") : initial;
-  let current = first;
+  const entries = normalizeMemoryHistoryEntries(initial);
+  let index = entries.length - 1;
   const listeners = new Set<() => void>();
 
+  const notify = () => {
+    for (const listener of listeners) {
+      listener();
+    }
+  };
+
   const history = {
-    location: () => current,
-    [historyHrefFormatterKey]: (path: string) => path,
+    location: () => entries[index] ?? "/",
+    [historyHrefFormatterKey]: (path: string) => normalizeHistoryTarget(path),
     push(path: string) {
-      current = path;
+      const next = normalizeHistoryTarget(path);
+      entries.splice(index + 1, entries.length - index - 1, next);
+      index = entries.length - 1;
+      notify();
     },
     replace(path: string) {
-      current = path;
+      entries[index] = normalizeHistoryTarget(path);
+      notify();
     },
     listen(listener: () => void) {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
-    back() {},
-    forward() {},
+    back() {
+      if (index === 0) {
+        return;
+      }
+
+      index -= 1;
+      notify();
+    },
+    forward() {
+      if (index >= entries.length - 1) {
+        return;
+      }
+
+      index += 1;
+      notify();
+    },
   };
 
   return history;
@@ -93,6 +117,12 @@ function normalizeHashLocation(hash: string): string {
 
 function normalizeHashTarget(path: string): string {
   return normalizeHistoryTarget(path);
+}
+
+function normalizeMemoryHistoryEntries(initial: string | string[]): string[] {
+  const rawEntries = Array.isArray(initial) ? initial : [initial];
+  const normalized = rawEntries.map((entry) => normalizeHistoryTarget(entry));
+  return normalized.length === 0 ? ["/"] : normalized;
 }
 
 function normalizeHistoryTarget(path: string): string {

@@ -110,16 +110,30 @@ describe("router history", () => {
     expect(listener).not.toHaveBeenCalled();
   });
 
-  it("does not notify memory history listeners from push or replace", () => {
-    const history = createMemoryHistory();
+  it("notifies memory history listeners on stack changes", () => {
+    const history = createMemoryHistory(["/", "/start"]);
     const listener = vi.fn();
-    history.listen(listener);
+    const stop = history.listen(listener);
+
+    expect(history.location()).toBe("/start");
 
     history.push("/pushed");
-    history.replace("/replaced");
+    expect(history.location()).toBe("/pushed");
+    expect(listener).toHaveBeenCalledTimes(1);
 
+    history.back();
+    expect(history.location()).toBe("/start");
+    expect(listener).toHaveBeenCalledTimes(2);
+
+    history.forward();
+    expect(history.location()).toBe("/pushed");
+    expect(listener).toHaveBeenCalledTimes(3);
+
+    history.replace("/replaced");
     expect(history.location()).toBe("/replaced");
-    expect(listener).not.toHaveBeenCalled();
+    expect(listener).toHaveBeenCalledTimes(4);
+
+    stop();
   });
 
   it("rejects web history write targets with hash fragments", () => {

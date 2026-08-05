@@ -5,6 +5,7 @@ import {
   RouterNavigationError,
   RouterView,
   createApp,
+  createMemoryHistory,
   createRouter,
   createWebHashHistory,
   h,
@@ -200,6 +201,41 @@ describe("router components", () => {
     expect(container.querySelector<HTMLAnchorElement>("#array-link")?.getAttribute("href")).toBe(
       "/users/8?tag=a&tag=b",
     );
+  });
+
+  it("passes route props to RouterView components", async () => {
+    const TrueProps = (props: { id?: string }) => h("p", { id: "true-props" }, props.id ?? "");
+    const ObjectProps = (props: { label?: string }) =>
+      h("p", { id: "object-props" }, props.label ?? "");
+    const FunctionProps = (props: { id?: string; tab?: string }) =>
+      h("p", { id: "function-props" }, `${props.id ?? ""}:${props.tab ?? ""}`);
+    const router = createRouter({
+      history: createMemoryHistory("/true/42"),
+      routes: [
+        { path: "/true/:id", component: TrueProps, props: true },
+        { path: "/object", component: ObjectProps, props: { label: "static" } },
+        {
+          path: "/function/:id",
+          component: FunctionProps,
+          props: (route) => ({ id: route.params.id, tab: route.query.tab as string }),
+        },
+      ],
+    });
+    const container = document.createElement("div");
+
+    createApp(() => h(RouterView))
+      .use(router)
+      .mount(container);
+    await nextTick();
+    expect(container.querySelector("#true-props")?.textContent).toBe("42");
+
+    await router.push("/object");
+    await nextTick();
+    expect(container.querySelector("#object-props")?.textContent).toBe("static");
+
+    await router.push("/function/7?tab=profile");
+    await nextTick();
+    expect(container.querySelector("#function-props")?.textContent).toBe("7:profile");
   });
 
   it("renders hash history RouterLink hrefs for browser-owned navigation", () => {

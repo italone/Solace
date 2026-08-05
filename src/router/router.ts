@@ -63,6 +63,7 @@ export function createRouter(options: RouterOptions): Router {
   const beforeEachGuards: NavigationGuard[] = [];
   let stopListening: (() => void) | null = null;
   let hasStartedHistorySettlement = false;
+  let isWritingHistory = false;
   let navigationId = 0;
   const currentRoute = ref(resolveInitialHistoryLocation());
 
@@ -73,6 +74,10 @@ export function createRouter(options: RouterOptions): Router {
       app.provide(routeKey, currentRoute);
       stopListening?.();
       const stop = options.history.listen(() => {
+        if (isWritingHistory) {
+          return;
+        }
+
         void settleHistoryLocation();
       });
       if (typeof stop !== "function") {
@@ -141,11 +146,13 @@ export function createRouter(options: RouterOptions): Router {
       return from;
     }
 
-    if (mode === "replace") {
-      options.history.replace(finalRoute.fullPath);
-    } else {
-      options.history.push(finalRoute.fullPath);
-    }
+    writeHistory(() => {
+      if (mode === "replace") {
+        options.history.replace(finalRoute.fullPath);
+      } else {
+        options.history.push(finalRoute.fullPath);
+      }
+    });
 
     currentRoute.value = finalRoute;
     return finalRoute;
@@ -213,7 +220,7 @@ export function createRouter(options: RouterOptions): Router {
       finalRoute = await resolveNavigation(initial, from);
     } catch {
       if (activeNavigationId === navigationId && options.history.location() !== from.fullPath) {
-        options.history.replace(from.fullPath);
+        writeHistory(() => options.history.replace(from.fullPath));
       }
       return;
     }
@@ -224,23 +231,32 @@ export function createRouter(options: RouterOptions): Router {
 
     if (finalRoute === false) {
       if (options.history.location() !== from.fullPath) {
-        options.history.replace(from.fullPath);
+        writeHistory(() => options.history.replace(from.fullPath));
       }
       return;
     }
 
     if (finalRoute.fullPath === from.fullPath) {
       if (options.history.location() !== from.fullPath) {
-        options.history.replace(from.fullPath);
+        writeHistory(() => options.history.replace(from.fullPath));
       }
       return;
     }
 
     if (finalRoute.fullPath !== initial.fullPath) {
-      options.history.replace(finalRoute.fullPath);
+      writeHistory(() => options.history.replace(finalRoute.fullPath));
     }
 
     currentRoute.value = finalRoute;
+  }
+
+  function writeHistory(write: () => void): void {
+    isWritingHistory = true;
+    try {
+      write();
+    } finally {
+      isWritingHistory = false;
+    }
   }
 
   function resolveRedirects(

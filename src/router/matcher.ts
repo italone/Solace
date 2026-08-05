@@ -15,6 +15,7 @@ interface CompiledRoute {
   fullPath: string;
   name?: RouteRecordName;
   matchable: boolean;
+  isAlias: boolean;
 }
 
 export interface Matcher {
@@ -28,13 +29,33 @@ export interface Matcher {
 export function createMatcher(routes: RouteRecord[]): Matcher {
   const flattened = flattenRoutes(routes);
   const compiledRoutes = flattened.map(compileRoute);
+  const registeredPaths = new Map<string, boolean>();
+
+  for (const route of compiledRoutes) {
+    if (!route.matchable) {
+      continue;
+    }
+
+    const normalized = normalizePath(route.fullPath);
+    const existingIsAlias = registeredPaths.get(normalized);
+    if (existingIsAlias === true || route.isAlias) {
+      if (existingIsAlias !== undefined) {
+        throw new TypeError(`Router route path or alias is already registered: ${normalized}`);
+      }
+    }
+
+    if (!registeredPaths.has(normalized)) {
+      registeredPaths.set(normalized, route.isAlias);
+    }
+  }
+
   const pathRoutes = compiledRoutes
     .filter((route) => route.matchable)
     .sort((a, b) => b.score - a.score || b.chain.length - a.chain.length);
   const namedRoutes = new Map<RouteRecordName, CompiledRoute>();
 
   for (const route of compiledRoutes) {
-    if (route.name === undefined) {
+    if (route.isAlias || route.name === undefined) {
       continue;
     }
 
@@ -95,6 +116,7 @@ interface NormalizedRouteRecord {
   chain: RouteRecord[];
   name?: RouteRecordName;
   matchable: boolean;
+  isAlias: boolean;
 }
 
 function flattenRoutes(
@@ -110,11 +132,24 @@ function flattenRoutes(
     const chain = [...parentChain, route];
     const children = route.children ?? [];
     const name = route.name;
+    const aliasPaths = normalizeRouteAliases(route.alias);
     const matchable =
       route.component != null || route.redirect !== undefined || children.length === 0;
 
-    if (matchable || name !== undefined) {
-      records.push({ record: route, fullPath, chain, name, matchable });
+    if (matchable || name !== undefined || aliasPaths.length > 0) {
+      records.push({ record: route, fullPath, chain, name, matchable, isAlias: false });
+    }
+
+    for (const alias of aliasPaths) {
+      assertBetaRoutePathSyntax(alias);
+      records.push({
+        record: route,
+        fullPath: joinRoutePaths(parentPath, alias),
+        chain,
+        name,
+        matchable: true,
+        isAlias: true,
+      });
     }
 
     records.push(...flattenRoutes(children, fullPath, chain));
@@ -155,6 +190,7 @@ function compileRoute(route: NormalizedRouteRecord): CompiledRoute {
       fullPath: normalized,
       name: route.name,
       matchable: route.matchable,
+      isAlias: route.isAlias,
     };
   }
 
@@ -184,6 +220,7 @@ function compileRoute(route: NormalizedRouteRecord): CompiledRoute {
     fullPath: normalized,
     name: route.name,
     matchable: route.matchable,
+    isAlias: route.isAlias,
   };
 }
 
@@ -239,6 +276,14 @@ function decodePathParam(value: string): string {
 
     throw error;
   }
+}
+
+function normalizeRouteAliases(alias: RouteRecord["alias"]): string[] {
+  if (alias === undefined) {
+    return [];
+  }
+
+  return Array.isArray(alias) ? alias : [alias];
 }
 
 function buildPathFromTemplate(fullPath: string, params: RouteParamsInput): string {
