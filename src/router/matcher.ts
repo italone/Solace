@@ -163,9 +163,8 @@ function compileRoute(route: NormalizedRouteRecord): CompiledRoute {
   let score = normalized === "/" ? 100 : 0;
   const pattern = segments
     .map((segment) => {
-      if (segment.startsWith(":")) {
-        const key = segment.slice(1);
-        assertBetaParamSyntax(key);
+      const key = getRouteParamKey(segment);
+      if (key !== null) {
         keys.push(key);
         score += 1;
         return "([^/]+)";
@@ -246,11 +245,11 @@ function buildPathFromTemplate(fullPath: string, params: RouteParamsInput): stri
   const segments = normalizePath(fullPath).split("/").filter(Boolean);
   const keys = new Set<string>();
   const parts = segments.map((segment) => {
-    if (!segment.startsWith(":")) {
+    const key = getRouteParamKey(segment);
+    if (key === null) {
       return segment;
     }
 
-    const key = segment.slice(1);
     keys.add(key);
     if (!Object.prototype.hasOwnProperty.call(params, key)) {
       throw new TypeError(`Router named route is missing required param: ${key}`);
@@ -275,11 +274,11 @@ function extractPathParams(fullPath: string, params: RouteParamsInput): Record<s
   const segments = normalizePath(fullPath).split("/").filter(Boolean);
 
   for (const segment of segments) {
-    if (!segment.startsWith(":")) {
+    const key = getRouteParamKey(segment);
+    if (key === null) {
       continue;
     }
 
-    const key = segment.slice(1);
     extracted[key] = String(params[key]);
   }
 
@@ -292,4 +291,18 @@ function serializePathParam(value: RouteParamInputValue): string {
   }
 
   throw new TypeError("Router named route params must be strings or numbers");
+}
+
+function getRouteParamKey(segment: string): string | null {
+  if (segment === ":pathMatch(.*)*") {
+    return "pathMatch";
+  }
+
+  if (!segment.startsWith(":")) {
+    return null;
+  }
+
+  const key = segment.slice(1);
+  assertBetaParamSyntax(key);
+  return key;
 }
