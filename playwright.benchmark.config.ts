@@ -1,11 +1,16 @@
 import { defineConfig, devices } from "@playwright/test";
 
+import { createPlaywrightWebServerEnv, sanitizePlaywrightProcessEnv } from "./playwright.env";
+
+sanitizePlaywrightProcessEnv();
+
 export default defineConfig({
   testDir: "./tests/e2e",
   testMatch: "browser-benchmark.spec.ts",
   webServer: {
     command:
       "pnpm exec vite build examples/performance-benchmark && pnpm exec vite preview examples/performance-benchmark --host 127.0.0.1 --port 5177",
+    env: createPlaywrightWebServerEnv(),
     url: "http://127.0.0.1:5177",
     reuseExistingServer: !process.env.CI,
   },
