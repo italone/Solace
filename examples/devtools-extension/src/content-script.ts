@@ -58,6 +58,18 @@ export function createContentScriptRelay(
   let active = false;
   let bridgeInjected = false;
   let stopped = false;
+  const stopRelay = () => {
+    if (stopped) {
+      return;
+    }
+    stopped = true;
+    if (active) {
+      removeWindowListener("message", relayMessage);
+      active = false;
+    }
+    port.onMessage.removeListener?.(relayContentMessage);
+    port.disconnect();
+  };
   const relayContentMessage = (message: DevtoolsContentMessage) => {
     if (stopped) {
       return;
@@ -109,23 +121,16 @@ export function createContentScriptRelay(
       return;
     }
 
-    port.postMessage({ type: DEVTOOLS_EXTENSION_EVENT_TYPE, event: devtoolsEvent });
+    try {
+      port.postMessage({ type: DEVTOOLS_EXTENSION_EVENT_TYPE, event: devtoolsEvent });
+    } catch {
+      stopRelay();
+    }
   };
 
   port.onMessage.addListener(relayContentMessage);
 
-  return () => {
-    if (stopped) {
-      return;
-    }
-    stopped = true;
-    if (active) {
-      removeWindowListener("message", relayMessage);
-      active = false;
-    }
-    port.onMessage.removeListener?.(relayContentMessage);
-    port.disconnect();
-  };
+  return stopRelay;
 }
 
 function postControlMessage(paused: boolean): void {

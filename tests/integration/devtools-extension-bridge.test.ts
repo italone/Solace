@@ -311,6 +311,53 @@ describe("devtools extension bridge", () => {
     stop();
   });
 
+  it("stops content relays when runtime event forwarding fails", async () => {
+    const { createContentScriptRelay } =
+      await import("../../examples/devtools-extension/src/content-script");
+    let runtimeListener: ((message: DevtoolsContentMessage) => void) | undefined;
+    const windowListeners = new Set<EventListenerOrEventListenerObject>();
+    const port = {
+      disconnect: vi.fn(),
+      onMessage: {
+        addListener(listener: (message: DevtoolsContentMessage) => void) {
+          runtimeListener = listener;
+        },
+        removeListener(listener: (message: DevtoolsContentMessage) => void) {
+          if (runtimeListener === listener) {
+            runtimeListener = undefined;
+          }
+        },
+      },
+      postMessage: vi.fn(() => {
+        throw new Error("content runtime port disconnected");
+      }),
+    } satisfies ContentRuntimePort;
+
+    const stop = createContentScriptRelay({
+      addWindowListener(_type: string, listener: EventListenerOrEventListenerObject) {
+        windowListeners.add(listener);
+      },
+      connectRuntime: () => port,
+      injectBridge: vi.fn(),
+      removeWindowListener(_type: string, listener: EventListenerOrEventListenerObject) {
+        windowListeners.delete(listener);
+      },
+    });
+
+    runtimeListener?.({ type: "devtools:content:connect" });
+    const [windowListener] = windowListeners;
+
+    expect(() => dispatchWindowMessage(windowListener, window.location.origin)).not.toThrow();
+    expect(port.postMessage).toHaveBeenCalledTimes(1);
+    expect(port.disconnect).toHaveBeenCalledTimes(1);
+    expect(runtimeListener).toBeUndefined();
+    expect(windowListeners.size).toBe(0);
+
+    stop();
+
+    expect(port.disconnect).toHaveBeenCalledTimes(1);
+  });
+
   it("resumes the page bridge when content capture reconnects", async () => {
     const { createContentScriptRelay } =
       await import("../../examples/devtools-extension/src/content-script");
