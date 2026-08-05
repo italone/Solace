@@ -17,9 +17,13 @@ Solace focuses on a small runtime core: reactive state, scheduled rendering, VNo
 
 ## Project Status
 
-Solace is currently on a local beta line (`0.1.0-beta.0`). The repository is functional, validated locally, and configured as a public npm package. The latest published npm release is still `0.0.5`, so published installs may intentionally lag the current `main` branch while release preparation is in progress.
+Solace is currently on a published beta line (`0.1.0-beta.0`). The repository is functional,
+validated locally, and configured as a public npm package. npm `latest` remains `0.0.5`; npm `beta`
+points to `0.1.0-beta.0`.
 
-Use the local development workflow below to explore the framework. Install the npm package when you want the latest published npm release, and use the repository directly when you need unreleased documentation or runtime changes from `main`.
+Use the local development workflow below to explore the framework. Install the default npm package
+when you want the latest stable line, install `@italone/solace@beta` when you want the beta line, and
+use the repository directly when you need unreleased documentation or runtime changes from `main`.
 
 Current completion highlights:
 
@@ -27,7 +31,8 @@ Current completion highlights:
 - Package outputs include ESM, CJS, TypeScript declarations, JSX runtime subpaths, `@italone/solace/server`, and the `@italone/solace/devtools` subpath.
 - The repository includes an example browser DevTools timeline panel that consumes the public DevTools subpath without changing runtime payloads.
 - Validation covers format, typecheck, lint, unit tests, integration tests, package export tests, coverage thresholds, packed-consumer smoke tests, jsdom benchmarks, Chromium production browser benchmarks, and browser e2e tests.
-- Release publishing is a separate maintainer decision. A local version may be prepared without being pushed to GitHub or published to npm.
+- Release publishing remains a separate maintainer decision. npm `latest` and npm `beta` may point
+  to different maturity lines.
 
 See [docs/project-status.md](./docs/project-status.md) for the current completion map and release boundary.
 
@@ -351,10 +356,16 @@ The public package shape is:
 - `@italone/solace/sfc`: TypeScript type shim for `.solace` imports.
 - `@italone/solace/vite`: Vite plugin for narrow `.solace` single-file components.
 
-Install the latest published npm release with:
+Install the npm `latest` dist-tag with:
 
 ```bash
 pnpm add @italone/solace
+```
+
+Install the published beta line with:
+
+```bash
+pnpm add @italone/solace@beta
 ```
 
 If the repository version is ahead of npm, use the repository examples or the packed-consumer smoke test described in [docs/package-usage.md](./docs/package-usage.md).

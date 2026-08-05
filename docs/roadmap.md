@@ -2,7 +2,8 @@
 
 ## Current Phase: Beta (in progress)
 
-The initial runtime scope is feature-complete, and the repository is now tracking a local beta line:
+The initial runtime scope is feature-complete, and the repository is now tracking a published beta
+line:
 
 - Reactive core, scheduler, renderer, components, events, store, JSX runtime, DevTools API, examples, and release gates.
 - All tests passing, coverage above thresholds, package exports validated.

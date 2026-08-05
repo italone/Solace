@@ -17,9 +17,9 @@ Solace 聚焦于小型运行时核心：响应式状态、调度渲染、VNode d
 
 ## 项目状态
 
-Solace 当前处于本地 beta 线（`0.1.0-beta.0`）。仓库功能可运行，并已经通过本地验证；当前 package metadata 已配置为公开 npm package。npm 上最近一次已发布版本仍是 `0.0.5`，因此在 release 准备期间，npm 安装包可能会有意落后于当前 `main` 分支。
+Solace 当前处于已发布 beta 线（`0.1.0-beta.0`）。仓库功能可运行，并已经通过本地验证；当前 package metadata 已配置为公开 npm package。npm `latest` 仍是 `0.0.5`，npm `beta` 已指向 `0.1.0-beta.0`。
 
-目前可以通过下面的本地开发流程体验框架。需要使用 npm 最新已发布版本时，可以安装 npm package；需要查看 `main` 上尚未发布的文档或运行时变更时，应直接使用仓库。
+目前可以通过下面的本地开发流程体验框架。需要使用最新稳定线时，可以安装默认 npm package；需要使用 beta 线时，可以安装 `@italone/solace@beta`；需要查看 `main` 上尚未发布的文档或运行时变更时，应直接使用仓库。
 
 当前完成度摘要：
 
@@ -27,7 +27,7 @@ Solace 当前处于本地 beta 线（`0.1.0-beta.0`）。仓库功能可运行�
 - 包产物包含 ESM、CJS、TypeScript declarations、JSX runtime 子路径、`@italone/solace/server`，以及 `@italone/solace/devtools` 子路径。
 - 仓库包含一个示例级浏览器 DevTools timeline panel，它只消费公开 DevTools 子路径，不改变 runtime payload。
 - 验证覆盖 format、typecheck、lint、单元测试、集成测试、包导出测试、覆盖率阈值、packed-consumer 冒烟测试、jsdom benchmark、Chromium 生产构建浏览器 benchmark 和浏览器 e2e 测试。
-- npm 发布是独立的维护者决策。本地可以先准备版本，但不一定已经 push 到 GitHub 或发布到 npm。
+- npm 发布仍是独立的维护者决策。npm `latest` 和 npm `beta` 可以指向不同成熟度的版本线。
 
 当前完成度映射和发布边界见 [docs/project-status.zh-CN.md](./docs/project-status.zh-CN.md)。
 
@@ -344,10 +344,16 @@ pnpm test:e2e
 - `@italone/solace/sfc`：`.solace` imports 的 TypeScript 类型声明入口。
 - `@italone/solace/vite`：窄 `.solace` 单文件组件的 Vite plugin。
 
-安装 npm 最新已发布版本：
+安装 npm `latest` dist-tag：
 
 ```bash
 pnpm add @italone/solace
+```
+
+安装已发布 beta 线：
+
+```bash
+pnpm add @italone/solace@beta
 ```
 
 如果仓库版本领先于 npm，请使用仓库示例，或参考 [docs/package-usage.md](./docs/package-usage.md) 中的 packed-consumer 冒烟测试。

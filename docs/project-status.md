@@ -6,20 +6,26 @@ This document summarizes the current completion level of Solace as an open-sourc
 
 ## Summary
 
-Solace is now on a local beta line whose repository package version is `0.1.0-beta.0`. The latest published npm package is still `@italone/solace@0.0.5`. It provides a working public API, package exports, examples, tests, benchmarks, and release checks. It is suitable as a compact educational and experimental frontend framework, but it should not be described as a mature production replacement for React, Vue, Svelte, or similar ecosystems.
+Solace is now on a published beta line whose repository package version is `0.1.0-beta.0`. npm
+`latest` remains `@italone/solace@0.0.5`, while npm `beta` points to
+`@italone/solace@0.1.0-beta.0`. It provides a working public API, package exports, examples, tests,
+benchmarks, and release checks. It is suitable as a compact educational and experimental frontend
+framework, but it should not be described as a mature production replacement for React, Vue, Svelte,
+or similar ecosystems.
 
 Current repository state:
 
 - Package name: `@italone/solace`
 - Repository package version: `0.1.0-beta.0`
-- Published npm version: `0.0.5`
-- npm dist-tag: `latest` points to `0.0.5`
+- Published npm `latest`: `0.0.5`
+- Published npm `beta`: `0.1.0-beta.0`
+- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.0`
 - Public package metadata: `"private": false`
 - Current branch: `main`
 - Remote state: recheck with `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
   synchronization claim.
-- Phase: local beta line in progress; initial runtime scope remains complete, with beta contract
+- Phase: published beta line; initial runtime scope remains complete, with beta contract
   stabilization, SSR/hydration minimum loop, and the first browser DevTools extension timeline
   panel implemented in the repository
 
@@ -50,7 +56,9 @@ Primary strengths:
 - The core runtime loop is coherent. App APIs, reactivity, rendering, components, store, JSX, SSR/hydration minimum loop, SSG core, the DevTools public subpath, and the example browser extension now form a working end-to-end system.
 - Public boundaries are explicit. `package.json` exports, API docs, package smoke tests, and deep subpath blocking tests work together to define the external contract.
 - Validation coverage is comparatively strong for the project size. Format, typecheck, lint, unit and integration tests, package smoke, coverage, jsdom benchmarks, Chromium browser benchmarks, and browser e2e all have runnable scripts.
-- The project positioning is honest. The docs distinguish the local beta line, latest published npm version, documented public entries, internal implementation details, and deferred production-grade capabilities.
+- The project positioning is honest. The docs distinguish the published beta line, npm `latest` and
+  `beta` dist-tags, documented public entries, internal implementation details, and deferred
+  production-grade capabilities.
 - The codebase remains approachable for study and review. Compared with a mature ecosystem framework, Solace is better suited for understanding reactivity, VNode patching, component models, router guard pipelines, SSR/SSG, and DevTools event contracts.
 
 Primary weaknesses and risks:
@@ -105,6 +113,11 @@ also passed, `npm pack --dry-run --json` confirmed the publish tarball, and a po
 smoke installed `@italone/solace@0.0.5` from npm and verified the package root, public subpaths, and
 private subpath blocking.
 
+The 2026-08-05 beta publish for `@italone/solace@0.1.0-beta.0` used `pnpm release:publish:beta`,
+which reran `pnpm release:check` before `changeset publish --tag beta`. Post-publish registry checks
+confirmed npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.0`, and the matching Git tag
+`v0.1.0-beta.0` was pushed.
+
 ## Public API Boundary
 
 Supported public entries:
@@ -150,10 +163,11 @@ These gaps should stay visible in promotional material so the project is positio
 
 ## Release Coordination State
 
-`@italone/solace@0.0.5` has been published to npm with the `latest` dist-tag. Post-publish registry
-checks confirmed npm reports `@italone/solace@0.0.5` as the latest published version. The current
-repository is now preparing a local beta-line update at `0.1.0-beta.0`; recheck Git state and the
-published registry before any future publish or synchronization claim.
+`@italone/solace@0.0.5` has been published to npm with the `latest` dist-tag.
+`@italone/solace@0.1.0-beta.0` has been published to npm with the `beta` dist-tag. Post-publish
+registry checks confirmed npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.0`, and the matching
+Git tag is `v0.1.0-beta.0`. Recheck Git state and the published registry before any future publish
+or synchronization claim.
 
 Before publishing any future version, follow the same checklist:
 

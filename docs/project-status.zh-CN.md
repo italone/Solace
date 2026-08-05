@@ -6,18 +6,23 @@
 
 ## 总览
 
-Solace 当前已经进入本地 beta 线，仓库 package 版本是 `0.1.0-beta.0`。npm 最新公开版本仍是 `@italone/solace@0.0.5`。它已经具备可运行的公共 API、包导出、示例、测试、benchmark 和发布检查，适合作为一个小型、可阅读、可实验的前端框架进行推广，但不应被描述为 React、Vue、Svelte 或同类生态的成熟生产替代品。
+Solace 当前已经进入已发布 beta 线，仓库 package 版本是 `0.1.0-beta.0`。npm `latest`
+仍是 `@italone/solace@0.0.5`，npm `beta` 已指向
+`@italone/solace@0.1.0-beta.0`。它已经具备可运行的公共 API、包导出、示例、测试、benchmark
+和发布检查，适合作为一个小型、可阅读、可实验的前端框架进行推广，但不应被描述为
+React、Vue、Svelte 或同类生态的成熟生产替代品。
 
 当前本地仓库状态：
 
 - 包名：`@italone/solace`
 - 仓库 package 版本：`0.1.0-beta.0`
-- npm 已发布版本：`0.0.5`
-- npm dist-tag：`latest` 指向 `0.0.5`
+- npm `latest` 已发布版本：`0.0.5`
+- npm `beta` 已发布版本：`0.1.0-beta.0`
+- npm dist-tags：`latest` 指向 `0.0.5`；`beta` 指向 `0.1.0-beta.0`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
 - 本地分支状态：后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
-- 发布阶段：本地 beta 线推进中；初始运行时范围已完成，beta 契约稳定、SSR/hydration minimum loop，以及首个浏览器
+- 发布阶段：已发布 beta 线；初始运行时范围已完成，beta 契约稳定、SSR/hydration minimum loop，以及首个浏览器
   DevTools 扩展 timeline panel 已在仓库中实现
 
 ## 完成度映射
@@ -47,7 +52,7 @@ Solace 当前已经进入本地 beta 线，仓库 package 版本是 `0.1.0-beta.
 - 核心运行时闭环完整。App、响应式、渲染、组件、store、JSX、SSR/hydration minimum loop、SSG core、DevTools public subpath 和示例级浏览器扩展已经形成可运行闭环。
 - 公共入口边界清晰。`package.json` exports、API 文档、package smoke 和 deep subpath blocking 测试共同约束了对外契约。
 - 验证门禁相对扎实。格式、typecheck、lint、单元/集成测试、package smoke、coverage、jsdom benchmark、Chromium browser benchmark 和 browser e2e 都已有脚本覆盖。
-- 项目定位诚实。文档明确区分仓库本地 beta 线、npm 已发布版本、文档化公共入口、内部实现细节和仍 deferred 的生产级能力。
+- 项目定位诚实。文档明确区分已发布 beta 线、npm `latest` 和 `beta` dist-tags、文档化公共入口、内部实现细节和仍 deferred 的生产级能力。
 - 代码规模适合学习和审阅。相比完整生态框架，Solace 更适合用来研究响应式、VNode patch、组件模型、router guard pipeline、SSR/SSG 和 DevTools event contract 的实现方式。
 
 主要缺点和风险：
@@ -95,6 +100,11 @@ jsdom benchmark、Chromium browser benchmark 和 browser e2e。`pnpm release:rea
 也已通过，`npm pack --dry-run --json` 已确认发布 tarball；发布后 registry smoke 从 npm 安装
 `@italone/solace@0.0.5`，并验证了 package root、公开子路径和私有子路径阻断。
 
+2026-08-05 发布 `@italone/solace@0.1.0-beta.0` 到 npm beta 线时，使用了
+`pnpm release:publish:beta`，该命令会在 `changeset publish --tag beta` 前重新运行
+`pnpm release:check`。发布后 registry 检查确认 npm registry 返回 `latest -> 0.0.5`
+和 `beta -> 0.1.0-beta.0`，匹配的 Git tag `v0.1.0-beta.0` 已 push。
+
 ## 公共 API 边界
 
 支持的公开入口：
@@ -141,9 +151,10 @@ Solace 当前有意不包含：
 ## 发布协调状态
 
 发布独立于仓库就绪度。`@italone/solace@0.0.5` 已发布到 npm，并且 `latest`
-dist-tag 指向 `0.0.5`。发布后 registry 检查确认 npm 当前最新公开版本是
-`@italone/solace@0.0.5`。仓库当前正在准备本地 beta 线更新到 `0.1.0-beta.0`；后续任何发布
-或同步声明前都应重新核对 Git 状态和 npm registry。
+dist-tag 指向 `0.0.5`。`@italone/solace@0.1.0-beta.0` 已发布到 npm，并且
+`beta` dist-tag 指向 `0.1.0-beta.0`。发布后 registry 检查确认 npm registry 返回
+`latest -> 0.0.5` 和 `beta -> 0.1.0-beta.0`，匹配的 Git tag 是
+`v0.1.0-beta.0`。后续任何发布或同步声明前都应重新核对 Git 状态和 npm registry。
 
 未来发布任何后续版本前：
 

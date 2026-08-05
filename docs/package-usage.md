@@ -8,11 +8,15 @@ Solace is published as a public npm package:
 pnpm add @italone/solace
 ```
 
-The repository is currently on a local beta line (`0.1.0-beta.0`), while the latest published npm
-release is still `@italone/solace@0.0.5`. The repository `main` branch can be ahead of npm while
-documentation or release-preparation work is still local or not yet published. Check
-[project-status.md](./project-status.md) before treating local repository state as npm package
-state.
+Install the published beta line with:
+
+```bash
+pnpm add @italone/solace@beta
+```
+
+npm `latest` currently points to `@italone/solace@0.0.5`; npm `beta` points to
+`@italone/solace@0.1.0-beta.0`. Check [project-status.md](./project-status.md) before treating the
+repository state, npm `latest`, and npm `beta` as interchangeable.
 
 Before preparing another release, run `pnpm release:readiness -- --publishable` to check package
 metadata, public access configuration, and local Git synchronization. Run `pnpm package:smoke`
