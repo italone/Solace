@@ -504,6 +504,48 @@ describe("devtools extension bridge", () => {
     ]);
   });
 
+  it("drops content ports that reject panel-present connect notifications", async () => {
+    const { createDevtoolsBackgroundRelay } =
+      await import("../../examples/devtools-extension/src/background");
+    const runtimeListeners = new Set<(port: BackgroundRuntimePort) => void>();
+    const runtime = {
+      onConnect: {
+        addListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.add(listener);
+        },
+        removeListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.delete(listener);
+        },
+      },
+    } satisfies BackgroundRuntime;
+    const panelPort = createRuntimePort("solace-devtools-panel");
+    const brokenContentPort = createRuntimePort("solace-devtools-content", 7);
+    const healthyContentPort = createRuntimePort("solace-devtools-content", 7);
+    const brokenPostMessage = vi.fn(() => {
+      throw new Error("content port disconnected");
+    });
+    brokenContentPort.postMessage = brokenPostMessage;
+
+    createDevtoolsBackgroundRelay(runtime);
+    for (const listener of runtimeListeners) {
+      listener(panelPort);
+    }
+    panelPort.emit({ type: "devtools:panel:connect", tabId: 7 });
+
+    for (const listener of runtimeListeners) {
+      expect(() => listener(brokenContentPort)).not.toThrow();
+      listener(healthyContentPort);
+    }
+    panelPort.emit({ type: "devtools:control", paused: true });
+
+    expect(brokenContentPort.messages).toEqual([]);
+    expect(brokenPostMessage).toHaveBeenCalledTimes(1);
+    expect(healthyContentPort.messages).toEqual([
+      { type: "devtools:content:connect" },
+      { type: "devtools:control", paused: true },
+    ]);
+  });
+
   it("keeps a panel scoped to its latest connected tab", async () => {
     const { createDevtoolsBackgroundRelay } =
       await import("../../examples/devtools-extension/src/background");

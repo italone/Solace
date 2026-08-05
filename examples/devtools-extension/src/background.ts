@@ -50,10 +50,15 @@ export function createDevtoolsBackgroundRelay(runtime: BackgroundRuntime): Devto
         return;
       }
       const didRegister = registerPort(contentsByTab, tabId, port);
-      if (didRegister && panelsByTab.has(tabId)) {
-        port.postMessage({ type: DEVTOOLS_CONTENT_CONNECT_TYPE });
-      }
       if (!didRegister) {
+        return;
+      }
+      if (
+        panelsByTab.has(tabId) &&
+        !postToRegisteredPort(contentsByTab, tabId, port, {
+          type: DEVTOOLS_CONTENT_CONNECT_TYPE,
+        })
+      ) {
         return;
       }
       port.onMessage.addListener((message) => {
@@ -172,6 +177,21 @@ function forwardToPorts(
 
   for (const failedPort of failedPorts) {
     unregisterPort(portsByTab, tabId, failedPort);
+  }
+}
+
+function postToRegisteredPort(
+  portsByTab: Map<number, Set<RuntimePort>>,
+  tabId: number,
+  port: RuntimePort,
+  message: DevtoolsBackgroundMessage,
+): boolean {
+  try {
+    port.postMessage(message);
+    return true;
+  } catch {
+    unregisterPort(portsByTab, tabId, port);
+    return false;
   }
 }
 
