@@ -17,9 +17,9 @@ Solace 聚焦于小型运行时核心：响应式状态、调度渲染、VNode d
 
 ## 项目状态
 
-Solace 当前处于早期 alpha runtime 阶段。仓库功能可运行，并已经通过本地验证；当前 package metadata 已配置为公开 npm package。发布到 npm 的版本可能会在 release 准备期间有意落后于当前 `main` 分支。
+Solace 当前处于本地 beta 线（`0.1.0-beta.0`）。仓库功能可运行，并已经通过本地验证；当前 package metadata 已配置为公开 npm package。npm 上最近一次已发布版本仍是 `0.0.5`，因此在 release 准备期间，npm 安装包可能会有意落后于当前 `main` 分支。
 
-目前可以通过下面的本地开发流程体验框架。需要使用最新已发布 alpha 时，可以安装 npm package；需要查看 `main` 上尚未发布的文档或运行时变更时，应直接使用仓库。
+目前可以通过下面的本地开发流程体验框架。需要使用 npm 最新已发布版本时，可以安装 npm package；需要查看 `main` 上尚未发布的文档或运行时变更时，应直接使用仓库。
 
 当前完成度摘要：
 
@@ -31,9 +31,9 @@ Solace 当前处于早期 alpha runtime 阶段。仓库功能可运行，并已�
 
 当前完成度映射和发布边界见 [docs/project-status.zh-CN.md](./docs/project-status.zh-CN.md)。
 
-## Alpha 范围
+## 当前范围
 
-Solace 当前适合用于学习小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 alpha 已包含 alpha `.solace` compiler、`@italone/solace/vite` plugin、beta 一方 router slice、通过 `generateStaticSite()` 暴露的 SSG core、通过 `@italone/solace/server` 暴露的 production asset tag resolution 和 explicit-path router-aware SSG helpers、通过 `@italone/solace/server` 和 `createApp(App).hydrate(container)` 暴露的 minimum SSR/hydration loop，以及示例级浏览器 DevTools timeline panel；它还不包含完整 production SSR pipeline automation、streaming SSR、async SSR、一方 UI 组件、生产级 DevTools 发布形态，也不为内部模块提供兼容性承诺。
+Solace 当前适合用于学习小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 beta 线仍包含窄 `.solace` compiler surface、`@italone/solace/vite` plugin、beta 一方 router slice、通过 `generateStaticSite()` 暴露的 SSG core、通过 `@italone/solace/server` 暴露的 production asset tag resolution 和 explicit-path router-aware SSG helpers、通过 `@italone/solace/server` 和 `createApp(App).hydrate(container)` 暴露的 minimum SSR/hydration loop，以及示例级浏览器 DevTools timeline panel；它还不包含完整 production SSR pipeline automation、streaming SSR、async SSR、一方 UI 组件、生产级 DevTools 发布形态，也不为内部模块提供兼容性承诺。
 
 ## 快速开始
 
@@ -320,10 +320,10 @@ Solace 包含多个 Vite 示例，用于覆盖不同运行时路径：
 | Todo app       | `pnpm dev:todo`               | 表单输入、keyed list 更新、checkbox 状态、删除                                      |
 | Large list     | `pnpm dev:large`              | 10,000 个 keyed rows、定向 class/text 更新                                          |
 | Router basic   | `pnpm dev:router`             | beta router、嵌套路由、redirects、guards、lazyRoute、已暴露的 lazy-load-failed 错误 |
-| SFC counter    | `pnpm dev:sfc`                | alpha `.solace` compiler 和 Vite plugin                                             |
+| SFC counter    | `pnpm dev:sfc`                | 窄 `.solace` compiler surface 和 Vite plugin                                        |
 | DevTools panel | `pnpm dev:devtools-extension` | 浏览器 DevTools extension timeline 示例                                             |
 
-`examples/sfc-counter` 应用演示 alpha `.solace` compiler 和 Vite plugin。
+`examples/sfc-counter` 应用演示窄 `.solace` compiler surface 和 Vite plugin。
 
 运行浏览器 e2e 覆盖：
 
@@ -342,9 +342,9 @@ pnpm test:e2e
 - `@italone/solace/jsx-dev-runtime`：开发环境 JSX runtime。
 - `@italone/solace/devtools`：扩展示例消费的底层 DevTools listener 和 recorder API。
 - `@italone/solace/sfc`：`.solace` imports 的 TypeScript 类型声明入口。
-- `@italone/solace/vite`：alpha `.solace` 单文件组件的 Vite plugin。
+- `@italone/solace/vite`：窄 `.solace` 单文件组件的 Vite plugin。
 
-安装最新已发布 alpha：
+安装 npm 最新已发布版本：
 
 ```bash
 pnpm add @italone/solace

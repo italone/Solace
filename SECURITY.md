@@ -1,11 +1,11 @@
 # Security Policy
 
-Solace is an early alpha frontend runtime. Please report security issues privately instead of
+Solace is a beta-line frontend runtime. Please report security issues privately instead of
 opening a public issue.
 
 ## Supported Versions
 
-Only the current `main` branch and the latest published alpha, once publishing is enabled, are in
+Only the current `main` branch and the latest published release, once publishing is enabled, are in
 scope for security review.
 
 ## Reporting A Vulnerability

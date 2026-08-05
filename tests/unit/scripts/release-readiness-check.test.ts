@@ -77,10 +77,12 @@ describe("release readiness check CLI", () => {
 
   test("keeps release:check ordered around mandatory public API gates", async () => {
     const packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
+      version?: string;
       scripts?: Record<string, string>;
     };
     const releaseCheck = packageJson.scripts?.["release:check"];
 
+    expect(packageJson.version).not.toMatch(/^0\.0\./);
     expect(releaseCheck?.split(" && ")).toEqual([
       "pnpm release:readiness",
       "pnpm quality",

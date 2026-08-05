@@ -1,8 +1,8 @@
 # Solace Roadmap
 
-## Current Phase: Alpha (completed)
+## Current Phase: Beta (in progress)
 
-The alpha runtime is feature-complete for its declared scope:
+The initial runtime scope is feature-complete, and the repository is now tracking a local beta line:
 
 - Reactive core, scheduler, renderer, components, events, store, JSX runtime, DevTools API, examples, and release gates.
 - All tests passing, coverage above thresholds, package exports validated.
@@ -11,7 +11,7 @@ The alpha runtime is feature-complete for its declared scope:
 
 Work remaining, in rough priority order:
 
-1. **SFC compiler stabilization** — keep the public contract limited to `@italone/solace/vite` and `@italone/solace/sfc`, then harden diagnostics, source-map policy, compatibility tests, and documented syntax before promoting the compiler beyond alpha.
+1. **SFC compiler stabilization** — keep the public contract limited to `@italone/solace/vite` and `@italone/solace/sfc`, then harden diagnostics, source-map policy, compatibility tests, and documented syntax before promoting the compiler beyond the current narrow surface.
 2. **Router beta stabilization** — keep the beta slice limited to static routes, dynamic params, wildcard fallback routes, query strings, web/hash history, nested routes, redirects, global and route-level guards, explicit `lazyRoute()` components, `RouterLink`, `RouterView`, `useRoute`, and `useRouter`; defer route names, aliases, route props, scroll behavior, memory history, SSR/SSG/hydration integration, auth, and permissions.
 3. **Mandatory public API gates** — keep package export tests, packed-consumer smoke, browser e2e, and release readiness required for public API changes.
 4. **SSR / hydration minimum loop** — implemented through `@italone/solace/server` and

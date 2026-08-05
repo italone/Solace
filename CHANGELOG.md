@@ -1,5 +1,11 @@
 # @italone/solace
 
+## 0.1.0-beta.0
+
+### Patch Changes
+
+- Move the repository onto the beta line while keeping compatibility promises limited to documented public entries.
+
 ## 0.0.5
 
 ### Patch Changes

@@ -17,9 +17,9 @@ Solace focuses on a small runtime core: reactive state, scheduled rendering, VNo
 
 ## Project Status
 
-Solace is currently an early alpha runtime. The repository is functional, validated locally, and configured as a public npm package. Published npm versions may intentionally lag the current `main` branch while release preparation is in progress.
+Solace is currently on a local beta line (`0.1.0-beta.0`). The repository is functional, validated locally, and configured as a public npm package. The latest published npm release is still `0.0.5`, so published installs may intentionally lag the current `main` branch while release preparation is in progress.
 
-Use the local development workflow below to explore the framework. Install the npm package when you want the latest published alpha, and use the repository directly when you need unreleased documentation or runtime changes from `main`.
+Use the local development workflow below to explore the framework. Install the npm package when you want the latest published npm release, and use the repository directly when you need unreleased documentation or runtime changes from `main`.
 
 Current completion highlights:
 
@@ -31,9 +31,9 @@ Current completion highlights:
 
 See [docs/project-status.md](./docs/project-status.md) for the current completion map and release boundary.
 
-## Alpha Scope
+## Current Scope
 
-Solace is suitable today for studying a compact frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current alpha includes an alpha `.solace` compiler, `@italone/solace/vite` plugin, beta first-party router slice, SSG core through `generateStaticSite()`, production asset tag resolution and explicit-path router-aware SSG helpers through `@italone/solace/server`, a minimum SSR/hydration loop through `@italone/solace/server` plus `createApp(App).hydrate(container)`, and an example browser DevTools timeline panel; it does not yet include full production SSR pipeline automation, streaming SSR, async SSR, first-party UI components, production-grade DevTools distribution, or a compatibility guarantee for internal modules.
+Solace is suitable today for studying a compact frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current beta line still includes a narrow `.solace` compiler surface, `@italone/solace/vite` plugin, beta first-party router slice, SSG core through `generateStaticSite()`, production asset tag resolution and explicit-path router-aware SSG helpers through `@italone/solace/server`, a minimum SSR/hydration loop through `@italone/solace/server` plus `createApp(App).hydrate(container)`, and an example browser DevTools timeline panel; it does not yet include full production SSR pipeline automation, streaming SSR, async SSR, first-party UI components, production-grade DevTools distribution, or compatibility guarantees for internal modules.
 
 ## Quick Start
 
@@ -327,10 +327,10 @@ Solace includes Vite examples that exercise different runtime paths:
 | Todo app       | `pnpm dev:todo`               | form input, keyed list updates, checkbox state, deletion                              |
 | Large list     | `pnpm dev:large`              | 10,000 keyed rows, targeted class/text updates                                        |
 | Router basic   | `pnpm dev:router`             | beta router, nested routes, redirects, guards, lazyRoute, surfaced lazy-load failures |
-| SFC counter    | `pnpm dev:sfc`                | alpha `.solace` compiler and Vite plugin                                              |
+| SFC counter    | `pnpm dev:sfc`                | narrow `.solace` compiler surface and Vite plugin                                     |
 | DevTools panel | `pnpm dev:devtools-extension` | browser DevTools extension timeline example                                           |
 
-The `examples/sfc-counter` app demonstrates the alpha `.solace` compiler and Vite plugin.
+The `examples/sfc-counter` app demonstrates the narrow `.solace` compiler surface and Vite plugin.
 
 Run browser e2e coverage:
 
@@ -349,9 +349,9 @@ The public package shape is:
 - `@italone/solace/jsx-dev-runtime`: development JSX runtime.
 - `@italone/solace/devtools`: low-level DevTools listener and recorder APIs used by the extension example.
 - `@italone/solace/sfc`: TypeScript type shim for `.solace` imports.
-- `@italone/solace/vite`: Vite plugin for alpha `.solace` single-file components.
+- `@italone/solace/vite`: Vite plugin for narrow `.solace` single-file components.
 
-Install the latest published alpha with:
+Install the latest published npm release with:
 
 ```bash
 pnpm add @italone/solace

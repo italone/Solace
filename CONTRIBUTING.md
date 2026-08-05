@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for contributing to Solace. This project is an early alpha TypeScript frontend runtime, so
+Thanks for contributing to Solace. This project is a beta-line TypeScript frontend runtime, so
 changes should stay focused and include validation that matches the affected area.
 
 ## Before You Start
@@ -8,7 +8,7 @@ changes should stay focused and include validation that matches the affected are
 - Check the current project status in [readme.md](./readme.md).
 - Read the public API boundary in [docs/api.md](./docs/api.md).
 - Keep public API changes intentional and documented.
-- **Public API freeze is in effect for the alpha release.** Any change to the supported public entries
+- **Public API boundary is intentionally narrow.** Any change to the supported public entries
   (`@italone/solace`, `@italone/solace/jsx-runtime`, `@italone/solace/jsx-dev-runtime`,
   `@italone/solace/devtools`) must include updates to the package-exports tests in
   `tests/integration/package-exports.test.ts` and the packed-consumer smoke test in
