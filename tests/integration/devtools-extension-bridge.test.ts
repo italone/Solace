@@ -165,6 +165,22 @@ describe("devtools extension bridge", () => {
     ]);
   });
 
+  it("ignores page bridge post message failures", async () => {
+    const { createDevtoolsPageBridge } =
+      await import("../../examples/devtools-extension/src/bridge");
+    const session = createDevtoolsSession();
+    const bridge = createDevtoolsPageBridge({
+      postMessage() {
+        throw new Error("page message target unavailable");
+      },
+      subscribe: session.subscribe,
+    });
+
+    expect(() => session.emit(mountEvent)).not.toThrow();
+
+    bridge.disconnect();
+  });
+
   it("clears the page bridge global when the mounted bridge disconnects", async () => {
     const { createDevtoolsPageBridge } =
       await import("../../examples/devtools-extension/src/bridge");

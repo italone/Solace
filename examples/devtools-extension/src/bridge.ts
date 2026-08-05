@@ -56,10 +56,14 @@ export function createDevtoolsPageBridge(
       return;
     }
 
-    postMessage({
-      type: DEVTOOLS_EXTENSION_EVENT_TYPE,
-      event: serializedEvent,
-    });
+    try {
+      postMessage({
+        type: DEVTOOLS_EXTENSION_EVENT_TYPE,
+        event: serializedEvent,
+      });
+    } catch {
+      // Ignore unavailable page message targets so DevTools capture cannot crash the app.
+    }
   });
   const handleControlMessage = (message: MessageEvent<unknown>) => {
     if (
