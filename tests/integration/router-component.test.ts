@@ -441,11 +441,18 @@ describe("router components", () => {
     const container = document.createElement("div");
 
     createApp(App).use(router).mount(container);
-    container
-      .querySelector<HTMLAnchorElement>("#meta-link")
-      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, metaKey: true }));
+    const metaLink = container.querySelector<HTMLAnchorElement>("#meta-link");
+    let metaWasPreventedBeforeBrowserDefault = true;
+    metaLink?.addEventListener("click", (event) => {
+      metaWasPreventedBeforeBrowserDefault = event.defaultPrevented;
+      event.preventDefault();
+    });
+    metaLink?.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true, metaKey: true }),
+    );
     container.querySelector<HTMLAnchorElement>("#prevented-link")?.click();
 
+    expect(metaWasPreventedBeforeBrowserDefault).toBe(false);
     expect(history.pushedPaths).toEqual([]);
     expect(router.currentRoute.value.fullPath).toBe("/");
   });
