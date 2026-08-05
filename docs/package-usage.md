@@ -14,9 +14,9 @@ Install the published beta line with:
 pnpm add @italone/solace@beta
 ```
 
-npm `latest` currently points to `@italone/solace@0.0.5`; npm `beta` points to
-`@italone/solace@0.1.0-beta.0`. Check [project-status.md](./project-status.md) before treating the
-repository state, npm `latest`, and npm `beta` as interchangeable.
+npm `latest` currently points to the stable `@italone/solace@0.0.5` line; npm `beta` is the beta
+install line. Run `npm view @italone/solace dist-tags --json` before treating the repository state,
+npm `latest`, and npm `beta` as interchangeable.
 
 Before preparing another release, run `pnpm release:readiness -- --publishable` to check package
 metadata, public access configuration, and local Git synchronization. Run `pnpm package:smoke`

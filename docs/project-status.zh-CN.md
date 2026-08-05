@@ -6,19 +6,17 @@
 
 ## 总览
 
-Solace 当前已经进入已发布 beta 线，仓库 package 版本是 `0.1.0-beta.0`。npm `latest`
-仍是 `@italone/solace@0.0.5`，npm `beta` 已指向
-`@italone/solace@0.1.0-beta.0`。它已经具备可运行的公共 API、包导出、示例、测试、benchmark
-和发布检查，适合作为一个小型、可阅读、可实验的前端框架进行推广，但不应被描述为
+Solace 当前已经进入 `0.1.0` beta 线，仓库 package 版本是 `0.1.0-beta.1`。npm
+`latest` 仍是稳定 `@italone/solace@0.0.5` 线，npm `beta` 是 beta 安装线。它已经具备可运行的公共
+API、包导出、示例、测试、benchmark 和发布检查，适合作为一个小型、可阅读、可实验的前端框架进行推广，但不应被描述为
 React、Vue、Svelte 或同类生态的成熟生产替代品。
 
 当前本地仓库状态：
 
 - 包名：`@italone/solace`
-- 仓库 package 版本：`0.1.0-beta.0`
-- npm `latest` 已发布版本：`0.0.5`
-- npm `beta` 已发布版本：`0.1.0-beta.0`
-- npm dist-tags：`latest` 指向 `0.0.5`；`beta` 指向 `0.1.0-beta.0`
+- 仓库 package 版本：`0.1.0-beta.1`
+- npm `latest` 线：稳定 `0.0.5`
+- npm `beta` 线：移动中的 beta dist-tag；声明同步状态前运行 `npm view @italone/solace dist-tags --json` 核对
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
 - 本地分支状态：后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
@@ -154,7 +152,8 @@ Solace 当前有意不包含：
 dist-tag 指向 `0.0.5`。`@italone/solace@0.1.0-beta.0` 已发布到 npm，并且
 `beta` dist-tag 指向 `0.1.0-beta.0`。发布后 registry 检查确认 npm registry 返回
 `latest -> 0.0.5` 和 `beta -> 0.1.0-beta.0`，匹配的 Git tag 是
-`v0.1.0-beta.0`。后续任何发布或同步声明前都应重新核对 Git 状态和 npm registry。
+`v0.1.0-beta.0`。仓库 package version 之后已推进到 `0.1.0-beta.1`，用于让 beta tarball
+自带的文档把 beta 线描述为已发布安装线，而不是本地状态。后续任何发布或同步声明前都应重新核对 Git 状态和 npm registry。
 
 未来发布任何后续版本前：
 

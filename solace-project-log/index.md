@@ -212,9 +212,10 @@
 
 ## 2026-08-05
 
-| 编号 | 变动               | 影响范围                               | 涉及文件                                                                                                                                     | 日志                                                            |
-| ---- | ------------------ | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| 001  | 记录 beta npm 发布 | npm release、dist-tags、文档、项目日志 | `CHANGELOG.md`, `package.json`, `docs/project-status*.md`, `docs/package-usage.md`, `docs/roadmap.md`, `readme*.md`, `solace-project-log/**` | [查看](./solace-entries/2026-08-05-001-beta-npm-publication.md) |
+| 编号 | 变动                       | 影响范围                                 | 涉及文件                                                                                                                                     | 日志                                                                |
+| ---- | -------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| 001  | 记录 beta npm 发布         | npm release、dist-tags、文档、项目日志   | `CHANGELOG.md`, `package.json`, `docs/project-status*.md`, `docs/package-usage.md`, `docs/roadmap.md`, `readme*.md`, `solace-project-log/**` | [查看](./solace-entries/2026-08-05-001-beta-npm-publication.md)     |
+| 002  | 准备 beta package 文档刷新 | package metadata、tarball docs、项目日志 | `package.json`, `CHANGELOG.md`, `readme*.md`, `docs/package-usage.md`, `docs/project-status*.md`, `solace-project-log/**`                    | [查看](./solace-entries/2026-08-05-002-beta-package-doc-refresh.md) |
 
 ## 维护说明
 

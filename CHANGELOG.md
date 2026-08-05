@@ -1,5 +1,13 @@
 # @italone/solace
 
+## 0.1.0-beta.1
+
+### Patch Changes
+
+- Refresh the beta package documentation so published tarballs describe the npm `beta` install line,
+  npm `latest` boundary, and narrow SFC/Vite compatibility contract without treating the beta state
+  as local-only.
+
 ## 0.1.0-beta.0
 
 ### Patch Changes

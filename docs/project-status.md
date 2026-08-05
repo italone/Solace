@@ -6,20 +6,18 @@ This document summarizes the current completion level of Solace as an open-sourc
 
 ## Summary
 
-Solace is now on a published beta line whose repository package version is `0.1.0-beta.0`. npm
-`latest` remains `@italone/solace@0.0.5`, while npm `beta` points to
-`@italone/solace@0.1.0-beta.0`. It provides a working public API, package exports, examples, tests,
-benchmarks, and release checks. It is suitable as a compact educational and experimental frontend
-framework, but it should not be described as a mature production replacement for React, Vue, Svelte,
-or similar ecosystems.
+Solace is now on the `0.1.0` beta line whose repository package version is `0.1.0-beta.1`. npm
+`latest` remains the stable `@italone/solace@0.0.5` line, while npm `beta` is the beta install line.
+It provides a working public API, package exports, examples, tests, benchmarks, and release checks.
+It is suitable as a compact educational and experimental frontend framework, but it should not be
+described as a mature production replacement for React, Vue, Svelte, or similar ecosystems.
 
 Current repository state:
 
 - Package name: `@italone/solace`
-- Repository package version: `0.1.0-beta.0`
-- Published npm `latest`: `0.0.5`
-- Published npm `beta`: `0.1.0-beta.0`
-- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.0`
+- Repository package version: `0.1.0-beta.1`
+- npm `latest` line: stable `0.0.5`
+- npm `beta` line: moving beta dist-tag; verify with `npm view @italone/solace dist-tags --json`
 - Public package metadata: `"private": false`
 - Current branch: `main`
 - Remote state: recheck with `git fetch origin main`, `git status --short --branch`, and
@@ -165,9 +163,11 @@ These gaps should stay visible in promotional material so the project is positio
 
 `@italone/solace@0.0.5` has been published to npm with the `latest` dist-tag.
 `@italone/solace@0.1.0-beta.0` has been published to npm with the `beta` dist-tag. Post-publish
-registry checks confirmed npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.0`, and the matching
-Git tag is `v0.1.0-beta.0`. Recheck Git state and the published registry before any future publish
-or synchronization claim.
+registry checks confirmed npm reported `latest -> 0.0.5` and `beta -> 0.1.0-beta.0`, and the
+matching Git tag is `v0.1.0-beta.0`. The repository package version has since moved to
+`0.1.0-beta.1` so beta tarballs can carry package-included docs that describe the beta line as
+published rather than local-only. Recheck Git state and the published registry before any future
+publish or synchronization claim.
 
 Before publishing any future version, follow the same checklist:
 
