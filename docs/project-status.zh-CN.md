@@ -6,7 +6,7 @@
 
 ## 总览
 
-Solace 当前已经进入 `0.1.0` beta 线，仓库 package 版本是 `0.1.0-beta.1`。npm
+Solace 当前已经进入 `0.1.0` beta 线，仓库 package 版本是 `0.1.0-beta.2`。npm
 `latest` 仍是稳定 `@italone/solace@0.0.5` 线，npm `beta` 是 beta 安装线。它已经具备可运行的公共
 API、包导出、示例、测试、benchmark 和发布检查，适合作为一个小型、可阅读、可实验的前端框架进行推广，但不应被描述为
 React、Vue、Svelte 或同类生态的成熟生产替代品。
@@ -14,7 +14,7 @@ React、Vue、Svelte 或同类生态的成熟生产替代品。
 当前本地仓库状态：
 
 - 包名：`@italone/solace`
-- 仓库 package 版本：`0.1.0-beta.1`
+- 仓库 package 版本：`0.1.0-beta.2`
 - npm `latest` 已发布版本：`0.0.5`
 - npm `beta` 已发布版本：`0.1.0-beta.1`
 - npm dist-tags：`latest` 指向 `0.0.5`；`beta` 指向 `0.1.0-beta.1`
@@ -160,9 +160,10 @@ Solace 当前有意不包含：
 
 发布独立于仓库就绪度。`@italone/solace@0.0.5` 已发布到 npm，并且 `latest`
 dist-tag 指向 `0.0.5`。`@italone/solace@0.1.0-beta.1` 已发布到 npm，并且
-`beta` dist-tag 指向 `0.1.0-beta.1`。发布后 registry 检查确认 npm registry 返回
-`latest -> 0.0.5` 和 `beta -> 0.1.0-beta.1`，匹配的 Git tag 是
-`v0.1.0-beta.1`。后续任何发布或同步声明前都应重新核对 Git 状态和 npm registry。
+`beta` dist-tag 指向 `0.1.0-beta.1`。仓库已准备 `0.1.0-beta.2`，但该版本要等 beta 发布流程
+完成后才算已发布。beta.1 发布后 registry 检查确认 npm registry 返回 `latest -> 0.0.5` 和
+`beta -> 0.1.0-beta.1`，匹配的 Git tag 是 `v0.1.0-beta.1`。后续任何发布或同步声明前都应重新
+核对 Git 状态和 npm registry。
 
 未来发布任何后续版本前：
 

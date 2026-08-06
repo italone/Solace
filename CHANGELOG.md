@@ -1,5 +1,13 @@
 # @italone/solace
 
+## 0.1.0-beta.2
+
+### Patch Changes
+
+- Stabilize the beta router contract for route names, aliases, route props, named locations, and
+  `createMemoryHistory()` while keeping scroll behavior, auth, permissions, and router-aware
+  SSR/SSG/hydration deferred.
+
 ## 0.1.0-beta.1
 
 ### Patch Changes

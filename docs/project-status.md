@@ -6,7 +6,7 @@ This document summarizes the current completion level of Solace as an open-sourc
 
 ## Summary
 
-Solace is now on the `0.1.0` beta line whose repository package version is `0.1.0-beta.1`. npm
+Solace is now on the `0.1.0` beta line whose repository package version is `0.1.0-beta.2`. npm
 `latest` remains the stable `@italone/solace@0.0.5` line, while npm `beta` is the beta install line.
 It provides a working public API, package exports, examples, tests, benchmarks, and release checks.
 It is suitable as a compact educational and experimental frontend framework, but it should not be
@@ -15,7 +15,7 @@ described as a mature production replacement for React, Vue, Svelte, or similar 
 Current repository state:
 
 - Package name: `@italone/solace`
-- Repository package version: `0.1.0-beta.1`
+- Repository package version: `0.1.0-beta.2`
 - Published npm `latest`: `0.0.5`
 - Published npm `beta`: `0.1.0-beta.1`
 - npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.1`
@@ -190,10 +190,11 @@ These gaps should stay visible in promotional material so the project is positio
 ## Release Coordination State
 
 `@italone/solace@0.0.5` has been published to npm with the `latest` dist-tag.
-`@italone/solace@0.1.0-beta.1` has been published to npm with the `beta` dist-tag. Post-publish
-registry checks confirmed npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.1`, and the matching
-Git tag is `v0.1.0-beta.1`. Recheck Git state and the published registry before any future publish
-or synchronization claim.
+`@italone/solace@0.1.0-beta.1` has been published to npm with the `beta` dist-tag. The repository is
+prepared for `0.1.0-beta.2`, but that version is not published until the beta publish workflow
+completes. Post-publish registry checks for beta.1 confirmed npm reports `latest -> 0.0.5` and
+`beta -> 0.1.0-beta.1`, and the matching Git tag is `v0.1.0-beta.1`. Recheck Git state and the
+published registry before any future publish or synchronization claim.
 
 Before publishing any future version, follow the same checklist:
 
