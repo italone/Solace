@@ -63,7 +63,7 @@ try {
   );
   await writeFile(
     join(consumerDir, "src", "main.tsx"),
-    `import { RouterLink, RouterView, createApp, createRouter, createStore, createWebHashHistory, createWebHistory, defineAsyncComponent, defineComponent, h, inject, lazyRoute, reactive, useRoute, useRouter, watchEffect } from "@italone/solace";
+    `import { RouterLink, RouterView, createApp, createMemoryHistory, createRouter, createStore, createWebHashHistory, createWebHistory, defineAsyncComponent, defineComponent, h, inject, lazyRoute, reactive, useRoute, useRouter, watchEffect } from "@italone/solace";
 import type { AsyncComponentOptions, ComponentSetupContext, HydrationOptions, NavigationGuard, Plugin, RouteComponent, RouteLocationRaw, RouterHistory, StoreContext, StoreGetterContext } from "@italone/solace";
 import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtools";
 import type { DevtoolsEvent } from "@italone/solace/devtools";
@@ -100,7 +100,7 @@ const router = createRouter({
     { path: "/guarded", component: () => h("p", null, "guarded"), beforeEnter: routeGuard },
   ],
 });
-const routerApi = [createWebHistory, createWebHashHistory, RouterLink, RouterView, useRouter, useRoute];
+const routerApi = [createMemoryHistory, createWebHistory, createWebHashHistory, RouterLink, RouterView, useRouter, useRoute];
 if (routerApi.some((item) => typeof item !== "function")) {
   throw new Error("router API export mismatch");
 }
@@ -215,7 +215,7 @@ await router.push("/child");
   );
   await writeFile(
     join(consumerDir, "src", "public-contract-types.ts"),
-    `import { createRouter, h, lazyRoute } from "@italone/solace";
+    `import { createMemoryHistory, createRouter, h, lazyRoute } from "@italone/solace";
 import type { HydrationOptions, NavigationGuard, RouteComponent, RouteLocationRaw, RouteRecord, RouterOptions } from "@italone/solace";
 import type { GenerateStaticSiteOptions, RenderToStringOptions } from "@italone/solace/server";
 import { solacePlugin } from "@italone/solace/vite";
@@ -250,6 +250,10 @@ function acceptHydrationOptions(options: HydrationOptions): HydrationOptions {
 
 solacePlugin();
 acceptRouteRecord({ path: "/", component: Home });
+acceptRouteRecord({ path: "/named/:id", component: Home, name: "user", props: true });
+acceptRouteRecord({ path: "/alias", component: Home, alias: ["/a", "relative-a"] });
+acceptRouteRecord({ path: "/props-object", component: Home, props: { mode: "static" } });
+acceptRouteRecord({ path: "/props-function/:id", component: Home, props: (route) => ({ id: route.params.id }) });
 acceptRouteRecord({
   path: "/dashboard",
   component: Home,
@@ -259,18 +263,12 @@ acceptRouteRecord({
 });
 acceptRouteRecord({ path: "/legacy", redirect: "/dashboard/settings" });
 acceptRouterOptions({
-  history: {
-    location: () => "/",
-    push: () => undefined,
-    replace: () => undefined,
-    listen: () => () => undefined,
-    back: () => undefined,
-    forward: () => undefined,
-  },
+  history: createMemoryHistory(),
   routes: [{ path: "/", component: Home }],
 });
 acceptRouteLocationRaw("/");
 acceptRouteLocationRaw({ path: "/", query: { tab: "profile" } });
+acceptRouteLocationRaw({ name: "user", params: { id: 42 }, query: { tab: "profile" } });
 acceptSSGOptions({ routes: [{ path: "/", source: h("p", null, "home") }] });
 acceptSSGOptions({
   routes: [{ path: "/", source: h("p", null, "home") }],
@@ -289,20 +287,11 @@ acceptHydrationOptions({ recover: "yes" });
 // @ts-expect-error production manifest integration is not part of the hydration public contract
 acceptHydrationOptions({ manifest: {} });
 
-// @ts-expect-error named routes are deferred
-acceptRouteRecord({ path: "/named", component: Home, name: "home" });
-
-// @ts-expect-error aliases are deferred
-acceptRouteRecord({ path: "/alias", component: Home, alias: "/a" });
-
-// @ts-expect-error route props are deferred
-acceptRouteRecord({ path: "/props", component: Home, props: true });
-
 // @ts-expect-error scroll behavior is deferred
 acceptRouterOptions({ history: {} as never, routes: [], scrollBehavior: () => undefined });
 
-// @ts-expect-error named locations are deferred
-acceptRouteLocationRaw({ name: "home" });
+// @ts-expect-error named locations must include a string name
+acceptRouteLocationRaw({ name: 42 });
 
 // @ts-expect-error hash locations are deferred
 acceptRouteLocationRaw({ path: "/", hash: "#section" });
@@ -422,9 +411,14 @@ if (solacePlugin().name !== "solace-sfc" || namedSolacePlugin().name !== "solace
 expectThrows("vite plugin options", () => solacePlugin({ customBlocks: true }), /Solace Vite plugin options are not part of the public contract/);
 expectThrows("vite plugin query transforms", () => solacePlugin().transform("<template><p>raw</p></template>", "/app/src/App.solace?raw"), /Solace Vite plugin query transforms are not part of the public contract/);
 api.createRouter({ history, routes: [{ path: "/nested", component: Home, children: [{ path: "child", component: api.lazyRoute(() => Promise.resolve(Home)) }], beforeEnter: () => true, redirect: "/", meta: { beta: true } }] });
-expectThrows("router deferred route name", () => api.createRouter({ history, routes: [{ path: "/named", component: Home, name: "home" }] }), /Deferred router route record field/);
-expectThrows("router deferred route alias", () => api.createRouter({ history, routes: [{ path: "/alias", component: Home, alias: "/a" }] }), /Deferred router route record field/);
-expectThrows("router deferred route props", () => api.createRouter({ history, routes: [{ path: "/props", component: Home, props: true }] }), /Deferred router route record field/);
+const contractRouter = api.createRouter({ history: api.createMemoryHistory(), routes: [{ path: "/users/:id", name: "user", alias: "/members/:id", component: Home, props: true }] });
+const aliasRoute = contractRouter.resolve("/members/42?tab=profile");
+if (aliasRoute.name !== "user" || aliasRoute.path !== "/members/42" || aliasRoute.matched[0].path !== "/users/:id") {
+  throw new Error("router alias contract mismatch");
+}
+if (contractRouter.resolve({ name: "user", params: { id: 42 } }).fullPath !== "/users/42") {
+  throw new Error("router named location contract mismatch");
+}
 expectThrows("router invalid route path", () => api.createRouter({ history, routes: [{ path: 42, component: Home }] }), /Router route record path must be a string/);
 expectThrows("router invalid routes list", () => api.createRouter({ history, routes: null }), /Router routes must be an array/);
 expectThrows("router deferred options", () => api.createRouter({ history, routes: [{ path: "/", component: Home }], scrollBehavior: () => ({ left: 0, top: 0 }) }), /Deferred router option/);
@@ -491,9 +485,14 @@ if (vite.solacePlugin().name !== "solace-sfc" || vite.default().name !== "solace
 expectThrows("vite plugin options", () => vite.solacePlugin({ customBlocks: true }), /Solace Vite plugin options are not part of the public contract/);
 expectThrows("vite plugin query transforms", () => vite.solacePlugin().transform("<template><p>raw</p></template>", "/app/src/App.solace?raw"), /Solace Vite plugin query transforms are not part of the public contract/);
 api.createRouter({ history, routes: [{ path: "/nested", component: Home, children: [{ path: "child", component: api.lazyRoute(() => Promise.resolve(Home)) }], beforeEnter: () => true, redirect: "/", meta: { beta: true } }] });
-expectThrows("router deferred route name", () => api.createRouter({ history, routes: [{ path: "/named", component: Home, name: "home" }] }), /Deferred router route record field/);
-expectThrows("router deferred route alias", () => api.createRouter({ history, routes: [{ path: "/alias", component: Home, alias: "/a" }] }), /Deferred router route record field/);
-expectThrows("router deferred route props", () => api.createRouter({ history, routes: [{ path: "/props", component: Home, props: true }] }), /Deferred router route record field/);
+const contractRouter = api.createRouter({ history: api.createMemoryHistory(), routes: [{ path: "/users/:id", name: "user", alias: "/members/:id", component: Home, props: true }] });
+const aliasRoute = contractRouter.resolve("/members/42?tab=profile");
+if (aliasRoute.name !== "user" || aliasRoute.path !== "/members/42" || aliasRoute.matched[0].path !== "/users/:id") {
+  throw new Error("router alias contract mismatch");
+}
+if (contractRouter.resolve({ name: "user", params: { id: 42 } }).fullPath !== "/users/42") {
+  throw new Error("router named location contract mismatch");
+}
 expectThrows("router invalid route path", () => api.createRouter({ history, routes: [{ path: 42, component: Home }] }), /Router route record path must be a string/);
 expectThrows("router invalid routes list", () => api.createRouter({ history, routes: null }), /Router routes must be an array/);
 expectThrows("router deferred options", () => api.createRouter({ history, routes: [{ path: "/", component: Home }], scrollBehavior: () => ({ left: 0, top: 0 }) }), /Deferred router option/);
@@ -531,7 +530,7 @@ expectThrows("SSG router option", () => server.generateStaticSite({ routes: [{ p
     [
       "--input-type=module",
       "-e",
-      "const api = await import('@italone/solace'); const runtime = await import('@italone/solace/jsx-runtime'); const dev = await import('@italone/solace/jsx-dev-runtime'); const devtools = await import('@italone/solace/devtools'); const server = await import('@italone/solace/server'); const vite = await import('@italone/solace/vite'); if (!api.useStyle) throw new Error('missing useStyle export'); if (!api.createApp || !api.createRouter || !api.createWebHistory || !api.RouterLink || !api.RouterNavigationError || !api.RouterView || !api.lazyRoute || !api.h || !api.useRoute || !api.useRouter || !api.defineAsyncComponent || !api.defineComponent || !api.inject || !api.provide || !api.watchEffect || !runtime.jsx || !dev.jsxDEV || !devtools.createDevtoolsRecorder || !devtools.onDevtoolsEvent || devtools.emitDevtoolsEvent || !server.renderToString || !vite.solacePlugin) throw new Error('package export mismatch'); const Styled = () => { api.useStyle('abc123', '.consumer-smoke { color: blue; }'); return api.h('button', { class: 'consumer-smoke' }, 'styled'); }; const styleRendered = server.renderToString(api.h(Styled)); if (styleRendered.html !== '<button class=\"consumer-smoke\">styled</button>' || styleRendered.styles.length !== 1 || styleRendered.styles[0] !== '<style data-s-id=\"abc123\">.consumer-smoke { color: blue; }</style>') throw new Error('style runtime export mismatch');",
+      "const api = await import('@italone/solace'); const runtime = await import('@italone/solace/jsx-runtime'); const dev = await import('@italone/solace/jsx-dev-runtime'); const devtools = await import('@italone/solace/devtools'); const server = await import('@italone/solace/server'); const vite = await import('@italone/solace/vite'); if (!api.useStyle) throw new Error('missing useStyle export'); if (!api.createApp || !api.createMemoryHistory || !api.createRouter || !api.createWebHistory || !api.RouterLink || !api.RouterNavigationError || !api.RouterView || !api.lazyRoute || !api.h || !api.useRoute || !api.useRouter || !api.defineAsyncComponent || !api.defineComponent || !api.inject || !api.provide || !api.watchEffect || !runtime.jsx || !dev.jsxDEV || !devtools.createDevtoolsRecorder || !devtools.onDevtoolsEvent || devtools.emitDevtoolsEvent || !server.renderToString || !vite.solacePlugin) throw new Error('package export mismatch'); const Styled = () => { api.useStyle('abc123', '.consumer-smoke { color: blue; }'); return api.h('button', { class: 'consumer-smoke' }, 'styled'); }; const styleRendered = server.renderToString(api.h(Styled)); if (styleRendered.html !== '<button class=\"consumer-smoke\">styled</button>' || styleRendered.styles.length !== 1 || styleRendered.styles[0] !== '<style data-s-id=\"abc123\">.consumer-smoke { color: blue; }</style>') throw new Error('style runtime export mismatch');",
     ],
     consumerDir,
   );
@@ -539,7 +538,7 @@ expectThrows("SSG router option", () => server.generateStaticSite({ routes: [{ p
     "node",
     [
       "-e",
-      "const api = require('@italone/solace'); const runtime = require('@italone/solace/jsx-runtime'); const dev = require('@italone/solace/jsx-dev-runtime'); const devtools = require('@italone/solace/devtools'); const server = require('@italone/solace/server'); const vite = require('@italone/solace/vite'); if (!api.useStyle) throw new Error('missing useStyle export'); if (!api.createApp || !api.createRouter || !api.createWebHistory || !api.RouterLink || !api.RouterNavigationError || !api.RouterView || !api.lazyRoute || !api.h || !api.useRoute || !api.useRouter || !api.defineAsyncComponent || !api.defineComponent || !api.inject || !api.provide || !api.watchEffect || !runtime.jsx || !dev.jsxDEV || !devtools.createDevtoolsRecorder || !devtools.onDevtoolsEvent || devtools.emitDevtoolsEvent || !server.renderToString || !vite.solacePlugin) throw new Error('package export mismatch'); const Styled = () => { api.useStyle('abc123', '.consumer-smoke { color: blue; }'); return api.h('button', { class: 'consumer-smoke' }, 'styled'); }; const styleRendered = server.renderToString(api.h(Styled)); if (styleRendered.html !== '<button class=\"consumer-smoke\">styled</button>' || styleRendered.styles.length !== 1 || styleRendered.styles[0] !== '<style data-s-id=\"abc123\">.consumer-smoke { color: blue; }</style>') throw new Error('style runtime export mismatch');",
+      "const api = require('@italone/solace'); const runtime = require('@italone/solace/jsx-runtime'); const dev = require('@italone/solace/jsx-dev-runtime'); const devtools = require('@italone/solace/devtools'); const server = require('@italone/solace/server'); const vite = require('@italone/solace/vite'); if (!api.useStyle) throw new Error('missing useStyle export'); if (!api.createApp || !api.createMemoryHistory || !api.createRouter || !api.createWebHistory || !api.RouterLink || !api.RouterNavigationError || !api.RouterView || !api.lazyRoute || !api.h || !api.useRoute || !api.useRouter || !api.defineAsyncComponent || !api.defineComponent || !api.inject || !api.provide || !api.watchEffect || !runtime.jsx || !dev.jsxDEV || !devtools.createDevtoolsRecorder || !devtools.onDevtoolsEvent || devtools.emitDevtoolsEvent || !server.renderToString || !vite.solacePlugin) throw new Error('package export mismatch'); const Styled = () => { api.useStyle('abc123', '.consumer-smoke { color: blue; }'); return api.h('button', { class: 'consumer-smoke' }, 'styled'); }; const styleRendered = server.renderToString(api.h(Styled)); if (styleRendered.html !== '<button class=\"consumer-smoke\">styled</button>' || styleRendered.styles.length !== 1 || styleRendered.styles[0] !== '<style data-s-id=\"abc123\">.consumer-smoke { color: blue; }</style>') throw new Error('style runtime export mismatch');",
     ],
     consumerDir,
   );
