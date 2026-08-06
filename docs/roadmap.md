@@ -13,7 +13,12 @@ line:
 Work remaining, in rough priority order:
 
 1. **SFC compiler stabilization** — keep the public contract limited to `@italone/solace/vite` and `@italone/solace/sfc`, then harden diagnostics, source-map policy, compatibility tests, and documented syntax before promoting the compiler beyond the current narrow surface.
-2. **Router beta stabilization** — keep the beta slice limited to static routes, dynamic params, wildcard fallback routes, query strings, web/hash history, nested routes, redirects, global and route-level guards, explicit `lazyRoute()` components, `RouterLink`, `RouterView`, `useRoute`, and `useRouter`; defer route names, aliases, route props, scroll behavior, memory history, SSR/SSG/hydration integration, auth, and permissions.
+2. **Router beta stabilization** — the stable slice now covers static routes, dynamic params,
+   wildcard fallback routes, query strings, web/hash/memory history, nested routes, redirects, route
+   names, aliases, route props, named locations, global and route-level guards, explicit
+   `lazyRoute()` components, `RouterLink`, `RouterView`, `useRoute`, and `useRouter`; keep scroll
+   behavior, SSR/SSG/hydration integration, auth, and permissions deferred until separately
+   designed.
 3. **Mandatory public API gates** — keep package export tests, packed-consumer smoke, browser e2e, and release readiness required for public API changes.
 4. **SSR / hydration minimum loop** — implemented through `@italone/solace/server` and
    `createApp(App).hydrate(container)` for synchronous VNode/component trees, including
