@@ -12,17 +12,17 @@
 
 包根入口暴露文档化运行时能力：
 
-| 领域       | API                                                                                                                                                   |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App        | `createApp`                                                                                                                                           |
-| Reactivity | `reactive`、`ref`、`computed`、`effect`、`watch`、`watchEffect`                                                                                       |
-| Rendering  | `h`、`render`、`Fragment`、`useStyle`                                                                                                                 |
-| Components | `defineComponent`、`defineAsyncComponent`                                                                                                             |
-| Context    | `provide`、`inject`                                                                                                                                   |
-| Lifecycle  | `onMounted`、`onUpdated`、`onUnmounted`                                                                                                               |
-| Scheduler  | `nextTick`                                                                                                                                            |
-| Store      | `createStore`                                                                                                                                         |
-| Router     | `createRouter`、`createWebHistory`、`createWebHashHistory`、`RouterLink`、`RouterView`、`RouterNavigationError`、`lazyRoute`、`useRouter`、`useRoute` |
+| 领域       | API                                                                                                                                                                          |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App        | `createApp`                                                                                                                                                                  |
+| Reactivity | `reactive`、`ref`、`computed`、`effect`、`watch`、`watchEffect`                                                                                                              |
+| Rendering  | `h`、`render`、`Fragment`、`useStyle`                                                                                                                                        |
+| Components | `defineComponent`、`defineAsyncComponent`                                                                                                                                    |
+| Context    | `provide`、`inject`                                                                                                                                                          |
+| Lifecycle  | `onMounted`、`onUpdated`、`onUnmounted`                                                                                                                                      |
+| Scheduler  | `nextTick`                                                                                                                                                                   |
+| Store      | `createStore`                                                                                                                                                                |
+| Router     | `createRouter`、`createMemoryHistory`、`createWebHistory`、`createWebHashHistory`、`RouterLink`、`RouterView`、`RouterNavigationError`、`lazyRoute`、`useRouter`、`useRoute` |
 
 公共 TypeScript 辅助类型包括：
 
@@ -52,7 +52,7 @@ beta 线兼容性契约仍有意保持较窄。文档化公开入口应在 patch
 
 `.solace` compiler 契约当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口。parser、生成 JavaScript 形状和内部 compiler modules 仍属于窄编译器表面背后的实现细节。scoped style 会通过公开的 `useStyle()` runtime helper 注册，但生成模块形状和 compiler 内部实现不属于兼容性目标。Vite plugin 还没有公开 options；传入 options 会抛出 `TypeError`，避免暗示语法扩展。SFC block attributes 和自定义顶层 blocks 会被拒绝；文档化 block model 仍是一个 `<template>`、可选 `<script>` 和可选 `<style>`。无效 `.solace` 文件的公开 diagnostics surface 是 Vite transform failure，当前 transform policy 会有意返回 `map: null`，不发布 source maps。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
 
-包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。当前支持 nested route records、redirects、全局 `beforeEach` guards、route-level `beforeEnter` guards、route `meta`，以及通过 `lazyRoute()` 声明的 route lazy components。route names、aliases、route props、scroll behavior、memory history、SSR/SSG/hydration router integration、auth、permissions 和长期 router 兼容策略仍被推迟。传入仍 deferred 的 route record fields 或 router options 会抛出 `TypeError`，而不是静默扩大 beta contract。
+包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。当前支持 nested route records、redirects、全局 `beforeEach` guards、route-level `beforeEnter` guards、route `meta`、route names、aliases、route props、named locations、`createMemoryHistory()`，以及通过 `lazyRoute()` 声明的 route lazy components。scroll behavior、auth、permissions、SSR/SSG/hydration router integration 和长期 router 兼容策略仍被推迟。传入仍 deferred 的 router options 会抛出 `TypeError`，而不是静默扩大 beta contract。
 
 大多数应用应从包根入口导入。`@italone/solace/server` 只应在 server-side 代码中使用。JSX
 子路径通常只通过 `jsxImportSource` 或 bundler 生成导入使用。只有在构建 instrumentation 或需要
@@ -558,7 +558,7 @@ Store 行为：
 
 ## Router
 
-Router 是包根入口中的 beta API，面向小型单页应用示例。当前支持静态路由、动态 params、wildcard fallback records、query 解析/序列化、browser history adapters、nested route records、redirects、全局 `beforeEach` guards、route-level `beforeEnter` guards、route `meta`、通过 `lazyRoute()` 声明的 route lazy components、`RouterLink`、`RouterView`，并可通过 `createApp(App).use(router)` 安装。
+Router 是包根入口中的 beta API，面向小型单页应用示例。当前支持静态路由、动态 params、wildcard fallback records、query 解析/序列化、browser history adapters、nested route records、redirects、route names、aliases、route props、全局 `beforeEach` guards、route-level `beforeEnter` guards、route `meta`、通过 `lazyRoute()` 声明的 route lazy components、`RouterLink`、`RouterView`，并可通过 `createApp(App).use(router)` 安装。
 
 ```ts
 import {
@@ -566,7 +566,7 @@ import {
   RouterView,
   createApp,
   createRouter,
-  createWebHistory,
+  createMemoryHistory,
   h,
   lazyRoute,
   useRoute,
@@ -580,7 +580,7 @@ const User = () => {
 };
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createMemoryHistory(),
   routes: [
     { path: "/", component: Home },
     { path: "/users/:id", component: User },
@@ -612,7 +612,7 @@ createApp(App)
 
 ### `createRouter({ history, routes })`
 
-创建 router plugin。`routes` 按 path 匹配。静态路由优先于动态路由，`/:pathMatch(.*)*` 可作为 wildcard fallback。`router.currentRoute` 是一个 ref，包含 `{ path, fullPath, query, params, matched }`。
+创建 router plugin。`routes` 按 path 匹配。静态路由优先于动态路由，`/:pathMatch(.*)*` 可作为 wildcard fallback。`router.currentRoute` 是一个 ref，包含 `{ path, fullPath, query, params, matched, name }`。
 `options` 必须是非数组 object，`history` 必须是实现 `location()`、`push()`、`replace()`、
 `listen()`、`back()` 和 `forward()` 的非数组 object。`routes` 必须是数组，route record path
 必须是字符串；无效的 options、history adapter、route list 或 path 形状会在 matcher 编译前被
@@ -620,10 +620,10 @@ createApp(App)
 必须是非数组 object，route component 必须是函数、有效的 `lazyRoute()` value，或为 layout-less
 record 省略 / 设为 `null`。route redirect string 和 object location 会在 router 创建阶段按同一套
 route location 契约校验。
-route location 必须是 string 或非数组 object。object route location 目前只支持 `{ path, query }`；
-string 或 object path 中的 hash fragment、named location 和 params object 会被拒绝，直到这些
-router 契约被单独设计。object location 的 `path` 不能包含 query string；需要 query 时应使用单独的
-`query` 字段。
+route location 必须是 string 或非数组 object。object route location 支持 `{ path, query }`，
+named location 使用 `{ name, params, query }`；string 或 object path 中的 hash fragment 会被
+拒绝。object location 的 `path` 不能包含 query string；需要 query 时应使用单独的 `query`
+字段。
 string route location 和 object location 的 `path` 都必须是相对路径。受支持的 path location 会规范化为前导
 `/`，并移除除 `/` 之外的尾随斜杠。空字符串 location 会解析为 `/`。query string 对数组使用重复
 key，跳过 object location 中的 nullish 值，将 `+` 保持为字面加号；percent encoding 非法时会抛出
@@ -638,7 +638,12 @@ navigation guards。object route location 的 `query` 容器必须是 plain reco
 nested route match 中的 redirects 会按父到子的顺序解析，并且先于任何 matched `beforeEnter`
 guards 运行。
 
-### `createWebHistory()` / `createWebHashHistory()`
+route record 的 name、alias 和 props 已纳入公开契约。named location 会经过 canonical path
+解析，alias 会保留 canonical matched records 和 route name，而 route props 支持 `true`、plain
+object 或基于 matched route 计算的 function。`props: true` 时，router 会传入 `route.params`
+的浅拷贝。
+
+### `createWebHistory()` / `createWebHashHistory()` / `createMemoryHistory()`
 
 创建浏览器 history adapters。普通 path routing 使用 `createWebHistory()`，hash routing 使用
 `createWebHashHistory()`。`listen()` 会在 normalized location 发生变化时通知各 listener，并
@@ -646,6 +651,9 @@ guards 运行。
 会补前导 `/`、移除除 `/` 外的 path 尾随斜杠，保留 query string，并拒绝相对/绝对 URL
 风格 target 或 write target 中的 hash fragment。`push()` 和 `replace()` 更新浏览器状态，
 但不会直接调用 listener。
+
+`createMemoryHistory()` 提供同一个 `RouterHistory` interface，但使用内存 stack。它是确定性的，
+支持 push/replace/back/forward，适合 non-browser 测试和受控导航流程。
 
 ### `RouterLink` / `RouterView`
 
@@ -660,12 +668,10 @@ href。带 modifier、已被阻止、非 `_self` target 或 `download` attribute
 
 当前 beta router 限制：
 
-- 不包含 route names、aliases、route props、scroll behavior 或 memory history。
-- 不包含 auth、permissions、SSR、SSG 或 hydration router integration。
+- 不包含 scroll behavior、auth、permissions、SSR、SSG 或 hydration router integration。
 - dynamic params 仅限简单 `:name` segments 和文档化的 wildcard `/:pathMatch(.*)*`；optional
   params、repeat params 和 custom regex params 会抛出 `TypeError`。
-- 传入 `name`、`alias`、`props` 等 deferred route fields，或 `scrollBehavior` 等 deferred
-  options，会抛出 `TypeError`。
+- 传入 `scrollBehavior` 等 deferred options，会抛出 `TypeError`。
 - 直接 URL 访问的 fallback 仍依赖部署宿主配置。
 - unknown route 行为应通过显式 wildcard route 处理。
 

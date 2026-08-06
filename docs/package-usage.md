@@ -230,15 +230,16 @@ generateStaticSite({ routes: staticRoutes });
 
 ## Use The Beta Router
 
-Solace exposes a beta router from the package root for small SPA examples:
+Solace exposes the beta router from the package root. The stabilized slice now includes route
+names, aliases, route props, named locations, and `createMemoryHistory()` for small SPA examples:
 
 ```ts
 import {
   RouterLink,
   RouterView,
   createApp,
+  createMemoryHistory,
   createRouter,
-  createWebHistory,
   h,
   lazyRoute,
 } from "@italone/solace";
@@ -247,9 +248,9 @@ const Home = () => h("p", null, "home");
 const User = () => h("p", null, "user");
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createMemoryHistory(),
   routes: [
-    { path: "/", component: Home },
+    { path: "/", name: "home", component: Home, alias: "/start" },
     { path: "/legacy", redirect: "/" },
     {
       path: "/dashboard",
@@ -258,7 +259,7 @@ const router = createRouter({
       meta: { section: "dashboard" },
       children: [{ path: "report", component: lazyRoute(() => import("./Report")) }],
     },
-    { path: "/users/:id", component: User },
+    { path: "/users/:id", name: "user", component: User, props: true },
   ],
 });
 
@@ -272,17 +273,19 @@ createApp(App)
 
 The current beta router supports path matching, dynamic params, query parsing, browser history
 adapters, nested route records, redirects, global `beforeEach` guards, route-level `beforeEnter`
-guards, route `meta`, `lazyRoute()` route components, `RouterLink`, and `RouterView`. It does not
-yet include route names, aliases, route props, scroll behavior, memory history, auth, permissions,
-SSR, SSG, or hydration router integration. Passing still-deferred route fields such as `name`,
-`alias`, or `props`, or deferred options such as `scrollBehavior`, throws a `TypeError`.
-Object route locations only support `{ path, query }`; named locations, hash fragments in string or
-object-path locations, and params objects are rejected. Object location `path` values must not
-include query strings; use the separate `query` field instead. Route record paths must be relative
-paths and must not include query strings or hash fragments. Route redirect strings and object
-locations are validated at router creation time. Dynamic params are limited to simple `:name`
-segments and `/:pathMatch(.*)*` wildcard fallback. Lazy route component load failures surface
-`RouterNavigationError` with type
+guards, route `meta`, route names, aliases, route props, named locations, `createMemoryHistory()`,
+`lazyRoute()` route components, `RouterLink`, and `RouterView`. Scroll behavior, auth, permissions,
+SSR, SSG, and hydration router integration remain deferred. `props: true` passes route params,
+plain object props are used as-is, and function props are evaluated from the matched route. Named
+locations preserve canonical path generation, and alias URLs preserve canonical matched/name
+behavior.
+Object route locations support `{ path, query }` and `{ name, params, query }`; hash fragments in
+string or object-path locations, and params objects on path-based locations, are rejected. Object
+location `path` values must not include query strings; use the separate `query` field instead. Route
+record paths must be relative paths and must not include query strings or hash fragments. Route
+redirect strings and object locations are validated at router creation time. Dynamic params are
+limited to simple `:name` segments and `/:pathMatch(.*)*` wildcard fallback. Lazy route component
+load failures surface `RouterNavigationError` with type
 `"lazy-load-failed"`.
 Supported path locations normalize to a leading slash and trim trailing slashes except for `/`;
 string locations split path and query at the first `?`, preserving later `?` characters inside

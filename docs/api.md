@@ -13,17 +13,17 @@ component instances, and VNode factory internals are not part of the compatibili
 
 The package root exposes the documented runtime surface:
 
-| Area       | APIs                                                                                                                                                  |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App        | `createApp`                                                                                                                                           |
-| Reactivity | `reactive`, `ref`, `computed`, `effect`, `watch`, `watchEffect`                                                                                       |
-| Rendering  | `h`, `render`, `Fragment`, `useStyle`                                                                                                                 |
-| Components | `defineComponent`, `defineAsyncComponent`                                                                                                             |
-| Context    | `provide`, `inject`                                                                                                                                   |
-| Lifecycle  | `onMounted`, `onUpdated`, `onUnmounted`                                                                                                               |
-| Scheduler  | `nextTick`                                                                                                                                            |
-| Store      | `createStore`                                                                                                                                         |
-| Router     | `createRouter`, `createWebHistory`, `createWebHashHistory`, `RouterLink`, `RouterView`, `RouterNavigationError`, `lazyRoute`, `useRouter`, `useRoute` |
+| Area       | APIs                                                                                                                                                                         |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App        | `createApp`                                                                                                                                                                  |
+| Reactivity | `reactive`, `ref`, `computed`, `effect`, `watch`, `watchEffect`                                                                                                              |
+| Rendering  | `h`, `render`, `Fragment`, `useStyle`                                                                                                                                        |
+| Components | `defineComponent`, `defineAsyncComponent`                                                                                                                                    |
+| Context    | `provide`, `inject`                                                                                                                                                          |
+| Lifecycle  | `onMounted`, `onUpdated`, `onUnmounted`                                                                                                                                      |
+| Scheduler  | `nextTick`                                                                                                                                                                   |
+| Store      | `createStore`                                                                                                                                                                |
+| Router     | `createRouter`, `createMemoryHistory`, `createWebHistory`, `createWebHashHistory`, `RouterLink`, `RouterView`, `RouterNavigationError`, `lazyRoute`, `useRouter`, `useRoute` |
 
 Public TypeScript helper types include:
 
@@ -69,11 +69,11 @@ of publishing source maps. Do not import compiler or router deep subpaths such a
 `@italone/solace/compiler`, `@italone/solace/router`, or `@italone/solace/dist/**`.
 
 The router exports in the package root are beta APIs for small SPA examples. Nested route records,
-redirects, global `beforeEach` guards, route-level `beforeEnter` guards, route `meta`, and explicit
-route lazy components through `lazyRoute()` are supported. Route names, aliases, route props, scroll
-behavior, memory history, SSR/SSG/hydration router integration, auth, permissions, and a long-term
-router compatibility policy remain deferred. Passing still-deferred route record fields or router
-options throws a `TypeError` instead of silently widening the beta contract.
+redirects, global `beforeEach` guards, route-level `beforeEnter` guards, route `meta`, route names,
+aliases, route props, named locations, memory history, and explicit route lazy components through
+`lazyRoute()` are supported. Scroll behavior, auth, permissions, SSR/SSG/hydration router
+integration, and a long-term router compatibility policy remain deferred. Passing still-deferred
+router options throws a `TypeError` instead of silently widening the beta contract.
 
 Most applications should import from the root package. Use `@italone/solace/server` only from
 server-side code. Use JSX subpaths only through `jsxImportSource` or bundler-generated imports. Use
@@ -609,9 +609,9 @@ Store behavior:
 
 The router is a beta package-root API for small single-page examples. It supports static routes,
 dynamic params, wildcard fallback records, query parsing/stringifying, browser history adapters,
-nested route records, redirects, global `beforeEach` guards, route-level `beforeEnter` guards, route
-`meta`, route lazy components through `lazyRoute()`, `RouterLink`, `RouterView`, and app
-installation through `createApp(App).use(router)`.
+nested route records, redirects, route names, aliases, route props, global `beforeEach` guards,
+route-level `beforeEnter` guards, route `meta`, route lazy components through `lazyRoute()`,
+`RouterLink`, `RouterView`, and app installation through `createApp(App).use(router)`.
 
 ```ts
 import {
@@ -635,8 +635,8 @@ const User = () => {
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: "/", component: Home },
-    { path: "/users/:id", component: User },
+    { path: "/", name: "home", component: Home, alias: "/start" },
+    { path: "/users/:id", name: "user", component: User, props: true },
     { path: "/old-dashboard", redirect: "/dashboard" },
     {
       path: "/dashboard",
@@ -667,7 +667,7 @@ createApp(App)
 
 Creates a router plugin. `routes` are matched by path. Static routes are prioritized before dynamic
 routes, and `/:pathMatch(.*)*` can be used as a wildcard fallback. `router.currentRoute` is a ref
-containing `{ path, fullPath, query, params, matched }`.
+containing `{ path, fullPath, query, params, matched, name }`.
 `options` must be a non-array object, and `history` must be a non-array object implementing
 `location()`, `push()`, `replace()`, `listen()`, `back()`, and `forward()`. `routes` must be an
 array, and route record paths must be strings; invalid options, history adapters, route list, or path
@@ -677,9 +677,9 @@ components must be functions, valid `lazyRoute()` values, or omitted/`null` for 
 Route redirect strings and object locations are validated against the same route location contract at
 router creation time.
 Route locations must be strings or non-array objects. Object route locations are limited to
-`{ path, query }`; named locations, hash fragments in string or object-path locations, and params
-objects are rejected until those router contracts are separately designed. Object location `path`
-values must not include query strings; use the separate `query` field instead.
+`{ path, query }`, and named locations use `{ name, params, query }`; hash fragments in string or
+object-path locations are rejected. Object location `path` values must not include query strings;
+use the separate `query` field instead.
 String route locations and object location `path` values must be relative paths. Supported path
 locations normalize to a leading slash and trim trailing slashes except for `/`. Empty string
 locations resolve to `/`. Query strings use repeated keys for arrays, skip nullish object values,
@@ -696,7 +696,12 @@ Browser history listener updates for the current `fullPath` leave
 For nested route matches, redirects are resolved from parent to child before any matched
 `beforeEnter` guards run.
 
-### `createWebHistory()` / `createWebHashHistory()`
+Route record names, aliases, and props are part of the public contract. Named locations resolve
+through canonical paths, aliases preserve the canonical matched records and route name, and route
+props support `true`, plain objects, or functions evaluated from the matched route. When
+`props: true`, the router passes a shallow copy of `route.params`.
+
+### `createWebHistory()` / `createWebHashHistory()` / `createMemoryHistory()`
 
 Create browser-backed history adapters. Use `createWebHistory()` for normal path routing and
 `createWebHashHistory()` for hash routing. `listen()` notifies each listener when the normalized
@@ -705,6 +710,10 @@ unchanged location. Adapter normalization adds a leading slash, trims trailing s
 except for `/`, keeps the query string, and rejects relative/absolute URL-like targets or hash
 fragments in write targets. `push()` and `replace()` update browser state without invoking listeners
 directly.
+
+`createMemoryHistory()` provides the same `RouterHistory` interface with an in-memory stack. It is
+deterministic, supports push/replace/back/forward navigation, and is the first-party adapter to use
+for non-browser tests and controlled navigation flows.
 
 ### `RouterLink` / `RouterView`
 
@@ -726,12 +735,10 @@ location is the route whose redirect failed.
 
 Current beta router limitations:
 
-- No route names, aliases, route props, scroll behavior, or memory history.
-- No auth, permissions, SSR, SSG, or hydration router integration.
+- No scroll behavior, auth, permissions, SSR, SSG, or hydration router integration.
 - Dynamic params are limited to simple `:name` segments plus the documented wildcard
   `/:pathMatch(.*)*`; optional params, repeat params, and custom regex params throw a `TypeError`.
-- Passing deferred route fields such as `name`, `alias`, or `props`, or deferred options such as
-  `scrollBehavior`, throws a `TypeError`.
+- Passing deferred options such as `scrollBehavior` throws a TypeError.
 - Direct URL fallback still depends on the hosting configuration.
 - Unknown-route behavior should be handled by an explicit wildcard route.
 
