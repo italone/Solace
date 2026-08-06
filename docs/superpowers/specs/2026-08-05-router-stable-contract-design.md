@@ -26,9 +26,7 @@ Route records should allow names, aliases, and route props:
 export type RouteRecordName = string;
 
 export type RouteProps =
-  | boolean
-  | Record<string, unknown>
-  | ((route: RouteLocationNormalized) => Record<string, unknown>);
+  boolean | Record<string, unknown> | ((route: RouteLocationNormalized) => Record<string, unknown>);
 
 export interface RouteRecord {
   path: string;
