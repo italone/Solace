@@ -102,4 +102,39 @@ describe("solacePlugin", () => {
       ),
     ).toThrow(/\[SFC_PARSE_ERROR\] \/app\/src\/Duplicate\.solace:1:32 Duplicate <template> block/);
   });
+
+  it("reports rejected block attributes through the Vite diagnostic surface", () => {
+    const plugin = solacePlugin();
+
+    expect(() =>
+      transformWith(
+        plugin,
+        `<template><p>one</p></template><script setup></script>`,
+        "/app/src/Setup.solace",
+      ),
+    ).toThrow(
+      "[SFC_PARSE_ERROR] /app/src/Setup.solace:1:32 Attributes on <script> blocks are not supported",
+    );
+    expect(() =>
+      transformWith(
+        plugin,
+        `<template><p>one</p></template><style scoped></style>`,
+        "/app/src/Scoped.solace",
+      ),
+    ).toThrow(
+      "[SFC_PARSE_ERROR] /app/src/Scoped.solace:1:32 Attributes on <style> blocks are not supported",
+    );
+  });
+
+  it("reports custom block rejection through the Vite diagnostic surface", () => {
+    const plugin = solacePlugin();
+
+    expect(() =>
+      transformWith(
+        plugin,
+        `<template><p>one</p></template><docs>notes</docs>`,
+        "/app/src/Docs.solace",
+      ),
+    ).toThrow("[SFC_PARSE_ERROR] /app/src/Docs.solace:1:32 Unsupported top-level <docs> block");
+  });
 });

@@ -52,8 +52,17 @@ describe("parseSFC", () => {
     expect(() => parseSFC('<template lang="html"><p>one</p></template>')).toThrow(
       "Attributes on <template> blocks are not supported",
     );
+    expect(() => parseSFC("<template><p>one</p></template><script setup></script>")).toThrow(
+      "Attributes on <script> blocks are not supported",
+    );
+    expect(() => parseSFC("<template><p>one</p></template><style scoped></style>")).toThrow(
+      "Attributes on <style> blocks are not supported",
+    );
     expect(() => parseSFC("<template><p>one</p></template><i18n>{}</i18n>")).toThrow(
       "Unsupported top-level <i18n> block",
+    );
+    expect(() => parseSFC("<template><p>one</p></template><docs>notes</docs>")).toThrow(
+      "Unsupported top-level <docs> block",
     );
   });
 });

@@ -219,8 +219,10 @@ await router.push("/child");
 import type { HydrationOptions, NavigationGuard, RouteComponent, RouteLocationRaw, RouteRecord, RouterOptions } from "@italone/solace";
 import type { GenerateStaticSiteOptions, RenderToStringOptions } from "@italone/solace/server";
 import { solacePlugin } from "@italone/solace/vite";
+import SfcSmoke from "./SfcSmoke.solace";
 
 const Home = () => h("p", null, "home");
+const SfcComponent: RouteComponent = SfcSmoke;
 const guard: NavigationGuard = () => true;
 const lazyComponent: RouteComponent = lazyRoute(() => Promise.resolve(Home));
 
@@ -250,6 +252,7 @@ function acceptHydrationOptions(options: HydrationOptions): HydrationOptions {
 
 solacePlugin();
 acceptRouteRecord({ path: "/", component: Home });
+acceptRouteRecord({ path: "/sfc", component: SfcComponent });
 acceptRouteRecord({ path: "/named/:id", component: Home, name: "user", props: true });
 acceptRouteRecord({ path: "/alias", component: Home, alias: ["/a", "relative-a"] });
 acceptRouteRecord({ path: "/props-object", component: Home, props: { mode: "static" } });
@@ -410,6 +413,9 @@ if (solacePlugin().name !== "solace-sfc" || namedSolacePlugin().name !== "solace
 }
 expectThrows("vite plugin options", () => solacePlugin({ customBlocks: true }), /Solace Vite plugin options are not part of the public contract/);
 expectThrows("vite plugin query transforms", () => solacePlugin().transform("<template><p>raw</p></template>", "/app/src/App.solace?raw"), /Solace Vite plugin query transforms are not part of the public contract/);
+expectThrows("SFC script setup block", () => solacePlugin().transform("<template><p>one</p></template><script setup></script>", "/app/src/Setup.solace"), /Attributes on <script> blocks are not supported/);
+expectThrows("SFC scoped style block", () => solacePlugin().transform("<template><p>one</p></template><style scoped></style>", "/app/src/Scoped.solace"), /Attributes on <style> blocks are not supported/);
+expectThrows("SFC custom block", () => solacePlugin().transform("<template><p>one</p></template><docs>notes</docs>", "/app/src/Docs.solace"), /Unsupported top-level <docs> block/);
 api.createRouter({ history, routes: [{ path: "/nested", component: Home, children: [{ path: "child", component: api.lazyRoute(() => Promise.resolve(Home)) }], beforeEnter: () => true, redirect: "/", meta: { beta: true } }] });
 const contractRouter = api.createRouter({ history: api.createMemoryHistory(), routes: [{ path: "/users/:id", name: "user", alias: "/members/:id", component: Home, props: true }] });
 const aliasRoute = contractRouter.resolve("/members/42?tab=profile");
@@ -484,6 +490,9 @@ if (vite.solacePlugin().name !== "solace-sfc" || vite.default().name !== "solace
 }
 expectThrows("vite plugin options", () => vite.solacePlugin({ customBlocks: true }), /Solace Vite plugin options are not part of the public contract/);
 expectThrows("vite plugin query transforms", () => vite.solacePlugin().transform("<template><p>raw</p></template>", "/app/src/App.solace?raw"), /Solace Vite plugin query transforms are not part of the public contract/);
+expectThrows("SFC script setup block", () => vite.solacePlugin().transform("<template><p>one</p></template><script setup></script>", "/app/src/Setup.solace"), /Attributes on <script> blocks are not supported/);
+expectThrows("SFC scoped style block", () => vite.solacePlugin().transform("<template><p>one</p></template><style scoped></style>", "/app/src/Scoped.solace"), /Attributes on <style> blocks are not supported/);
+expectThrows("SFC custom block", () => vite.solacePlugin().transform("<template><p>one</p></template><docs>notes</docs>", "/app/src/Docs.solace"), /Unsupported top-level <docs> block/);
 api.createRouter({ history, routes: [{ path: "/nested", component: Home, children: [{ path: "child", component: api.lazyRoute(() => Promise.resolve(Home)) }], beforeEnter: () => true, redirect: "/", meta: { beta: true } }] });
 const contractRouter = api.createRouter({ history: api.createMemoryHistory(), routes: [{ path: "/users/:id", name: "user", alias: "/members/:id", component: Home, props: true }] });
 const aliasRoute = contractRouter.resolve("/members/42?tab=profile");

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make the alpha `.solace` compiler and `@italone/solace/vite` contract explicit for diagnostics and source-map behavior without expanding SFC syntax or public APIs.
+**Goal:** Make the stable narrow `.solace` compiler and `@italone/solace/vite` contract explicit for diagnostics and source-map behavior without expanding SFC syntax or public APIs.
 
 **Architecture:** Keep the public surface unchanged and move only the contract-hardening pieces behind small internal helpers. One helper should format compiler diagnostics consistently for compiler/Vite consumers; another should centralize the Vite transform result shape so `map: null` stays deliberate. Tests should prove the contract from the compiler layer, the Vite layer, and the public package boundary.
 
@@ -254,7 +254,7 @@ In `docs/api.md`, replace the SFC paragraph that ends with `do not import compil
 ```md
 The `.solace` compiler contract is currently limited to the documented Vite plugin and the
 `@italone/solace/sfc` type shim. The parser, generated JavaScript shape, and internal compiler
-modules remain alpha implementation details. Scoped styles are registered through the public
+modules remain private implementation details. Scoped styles are registered through the public
 `useStyle()` runtime helper, but generated module shape and compiler internals are not compatibility
 targets. The Vite plugin does not accept public options yet; passing options throws a `TypeError` so
 syntax expansion is not implied. SFC block attributes and custom top-level blocks are rejected; the
@@ -270,9 +270,9 @@ In `docs/package-usage.md`, replace the paragraph that starts with `The public S
 ```md
 The public SFC contract is intentionally narrow: use `@italone/solace/vite` as the Vite plugin and
 `@italone/solace/sfc` as the TypeScript type shim for `.solace` imports. The compiler remains an
-alpha surface. It supports a small syntax subset, reports compile diagnostics through Vite transform
+current contract. It supports a small syntax subset, reports compile diagnostics through Vite transform
 errors, routes scoped styles through the public `useStyle()` runtime helper, and currently returns
-`map: null` because source maps are not part of the alpha contract. Parser internals, generated
+`map: null` because source maps are not part of the current contract. Parser internals, generated
 module shape, and scoped-style implementation details are not public compatibility targets. The
 plugin does not accept public options yet; passing options throws a `TypeError`. SFC query
 transforms such as `.solace?raw` are rejected until sub-request semantics are designed. SFC block
@@ -287,7 +287,7 @@ optional-script, optional-style model. The `@italone/solace/vite` subpath intent
 In `docs/api.zh-CN.md`, replace the SFC contract paragraph with:
 
 ```md
-`.solace` compiler 契约当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口。parser、生成 JavaScript 形状和内部 compiler modules 仍属于 alpha 实现细节。scoped style 会通过公开的 `useStyle()` runtime helper 注册，但生成模块形状和 compiler 内部实现不属于兼容性目标。Vite plugin 还没有公开 options；传入 options 会抛出 `TypeError`，避免暗示语法扩展。SFC block attributes 和自定义顶层 blocks 会被拒绝；文档化 block model 仍是一个 `<template>`、可选 `<script>` 和可选 `<style>`。无效 `.solace` 文件的公开 diagnostics surface 是 Vite transform failure，当前 transform policy 会有意返回 `map: null`，不发布 source maps。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
+`.solace` compiler 契约当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口。parser、生成 JavaScript 形状和内部 compiler modules 仍属于实现细节。scoped style 会通过公开的 `useStyle()` runtime helper 注册，但生成模块形状和 compiler 内部实现不属于兼容性目标。Vite plugin 还没有公开 options；传入 options 会抛出 `TypeError`，避免暗示语法扩展。SFC block attributes 和自定义顶层 blocks 会被拒绝；文档化 block model 仍是一个 `<template>`、可选 `<script>` 和可选 `<style>`。无效 `.solace` 文件的公开 diagnostics surface 是 Vite transform failure，当前 transform policy 会有意返回 `map: null`，不发布 source maps。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
 ```
 
 In `docs/project-status.md`, update the SFC compiler evidence row to include:
@@ -319,7 +319,7 @@ In `docs/project-status.zh-CN.md`, update the SFC known-gap bullet so it says:
 Run:
 
 ```bash
-rg -n "map: null|Vite transform diagnostics|source maps are not part of the alpha contract" docs/api.md docs/api.zh-CN.md docs/package-usage.md docs/project-status.md docs/project-status.zh-CN.md
+rg -n "map: null|Vite transform diagnostics|source maps are not part of the current contract" docs/api.md docs/api.zh-CN.md docs/package-usage.md docs/project-status.md docs/project-status.zh-CN.md
 ```
 
 Expected: the new wording appears in the updated files and the old stale phrases are gone from the

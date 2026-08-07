@@ -21,7 +21,7 @@
 - Create `tests/unit/vite/solace-plugin.test.ts`: unit-test transform filtering, successful transform result shape, and error context.
 - Modify `tests/integration/package-exports.test.ts`: assert ESM and CJS `@italone/solace/vite` exports.
 - Modify `scripts/package-consumer-smoke.mjs`: typecheck a consumer Vite config importing `solacePlugin` and default plugin export.
-- Modify `docs/package-usage.md`, `docs/api.md`, `docs/api.zh-CN.md`, `docs/examples.md`, `readme.md`, and `readme.zh-CN.md`: document alpha SFC usage, syntax constraints, diagnostics, and source-map policy.
+- Modify `docs/package-usage.md`, `docs/api.md`, `docs/api.zh-CN.md`, `docs/examples.md`, `readme.md`, and `readme.zh-CN.md`: document stable narrow SFC usage, syntax constraints, diagnostics, and source-map policy.
 
 ---
 
@@ -743,7 +743,7 @@ Template expressions use JSX-like braces and runtime identifiers from the script
 </style>
 ```
 
-The compiler is an alpha surface. It intentionally supports a small syntax subset, reports compile
+The compiler is a stable narrow surface. It intentionally supports a small syntax subset, reports compile
 diagnostics through Vite transform errors, injects scoped styles at runtime, and currently returns
 `map: null` to match the package policy of not publishing production source maps.
 ````
@@ -830,7 +830,7 @@ Run:
 
 ```bash
 git add docs/package-usage.md docs/api.md docs/api.zh-CN.md docs/examples.md readme.md readme.zh-CN.md
-git commit -m "docs: document alpha SFC compiler usage"
+git commit -m "docs: document stable narrow SFC compiler usage"
 ```
 
 ---

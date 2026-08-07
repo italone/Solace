@@ -1017,7 +1017,7 @@ Update `docs/roadmap.md`:
 
 - [ ] **Step 4: Update READMEs**
 
-Add `@italone/solace/server` to package entries in both READMEs and mention the minimum SSR/hydration loop in the alpha scope paragraph.
+Add `@italone/solace/server` to package entries in both READMEs and mention the minimum SSR/hydration loop in the scope paragraph.
 
 - [ ] **Step 5: Format docs**
 

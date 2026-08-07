@@ -45,12 +45,12 @@
 | `@italone/solace/devtools`         | 公开   | 被 tooling 消费的底层 listener 和 recorder API     |
 | `@italone/solace/server`           | 公开   | server rendering、内存 SSG 和 static asset helpers |
 | `@italone/solace/sfc`              | 公开   | `.solace` 单文件组件 import 的类型声明入口         |
-| `@italone/solace/vite`             | 公开   | 窄 `.solace` 单文件组件的 Vite plugin              |
+| `@italone/solace/vite`             | 公开   | 稳定窄 `.solace` 契约的 Vite plugin                |
 | `src/**`、`dist/**`、deep subpaths | 私有   | 内部实现细节，不作为兼容性目标                     |
 
 beta 线兼容性契约仍有意保持较窄。文档化公开入口应在 patch release 之间保持可用；内部模块、event emit helpers、scheduler 队列、renderer diagnostics、组件实例和生成文件布局可能在不额外通知的情况下变化。
 
-`.solace` compiler 契约当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口。parser、生成 JavaScript 形状和内部 compiler modules 仍属于窄编译器表面背后的实现细节。scoped style 会通过公开的 `useStyle()` runtime helper 注册，但生成模块形状和 compiler 内部实现不属于兼容性目标。Vite plugin 还没有公开 options；传入 options 会抛出 `TypeError`，避免暗示语法扩展。SFC block attributes 和自定义顶层 blocks 会被拒绝；文档化 block model 仍是一个 `<template>`、可选 `<script>` 和可选 `<style>`。无效 `.solace` 文件的公开 diagnostics surface 是 Vite transform failure，当前 transform policy 会有意返回 `map: null`，不发布 source maps。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
+稳定窄 `.solace` SFC/Vite 契约当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口。这仍不是成熟 compiler 契约：parser、生成 JavaScript 形状和内部 compiler modules 仍属于实现细节。scoped style 会通过公开的 `useStyle()` runtime helper 注册，但生成模块形状和 compiler 内部实现不属于兼容性目标。Vite plugin 还没有公开 options；传入 options 会抛出 `TypeError`，避免暗示语法扩展。`<script setup>`、`<style scoped>` 这类 SFC block attributes 和 `<docs>` 这类自定义顶层 blocks 会被拒绝；文档化 block model 严格保持为一个 `<template>`、可选一个 `<script>` 和可选一个 `<style>`。无效 `.solace` 文件的公开 diagnostics surface 是 Vite transform failure，当前 transform policy 会有意返回 `map: null`，不发布 source maps。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
 
 包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。当前支持 nested route records、redirects、全局 `beforeEach` guards、route-level `beforeEnter` guards、route `meta`、route names、aliases、route props、named locations、`createMemoryHistory()`，以及通过 `lazyRoute()` 声明的 route lazy components。scroll behavior、auth、permissions、SSR/SSG/hydration router integration 和长期 router 兼容策略仍被推迟。传入仍 deferred 的 router options 会抛出 `TypeError`，而不是静默扩大 beta contract。
 
@@ -709,7 +709,9 @@ import solace, { solacePlugin } from "@italone/solace/vite";
 默认导出和具名 `solacePlugin` 导出会创建同一个 Vite plugin。该 plugin 只转换以 `.solace`
 结尾的文件，返回 JavaScript component module，并保持其他文件 id 不变。基于 query 的
 `.solace?*` transform 会被拒绝，直到 sub-request 语义被单独设计。Compiler failure 会作为 Vite
-transform error 抛出，并在可用时包含 diagnostic code、filename、line 和 column。该子路径有意只导出 `default` 和 `solacePlugin`；compiler helpers 继续保持私有。
+transform error 抛出，并在可用时包含 diagnostic code、filename、line 和 column。transform result
+会有意返回 `map: null`；source maps 不属于当前公共契约。该子路径有意只导出 `default` 和
+`solacePlugin`；compiler helpers 继续保持私有。
 
 ## DevTools 子路径
 

@@ -1254,9 +1254,9 @@ trees，也不会 crawl 或推断 dynamic params。需要传入 `/users/42` 这�
 
 - [ ] **Step 4: Update status, roadmap, and README boundaries**
 
-In `readme.md`, replace `production asset manifest integration` in the alpha scope paragraph with `full production SSR pipeline automation`, and add that the current alpha includes `production asset tag resolution and explicit-path router-aware SSG helpers through @italone/solace/server`.
+In `readme.md`, replace `production asset manifest integration` in the beta scope paragraph with `full production SSR pipeline automation`, and add that the current beta line includes `production asset tag resolution and explicit-path router-aware SSG helpers through @italone/solace/server`.
 
-In `readme.zh-CN.md`, make the parallel Chinese update: state that alpha includes `@italone/solace/server` 中的 production asset tag resolution 和 explicit-path router-aware SSG helpers, while full production SSR pipeline automation remains absent.
+In `readme.zh-CN.md`, make the parallel Chinese update: state that the beta line includes `@italone/solace/server` 中的 production asset tag resolution 和 explicit-path router-aware SSG helpers, while full production SSR pipeline automation remains absent.
 
 In `docs/roadmap.md`, update the router beta stabilization item so it defers `SSR/hydration integration` rather than `SSR/SSG/hydration integration`, and update the SSG core item to say manifest helper and explicit-path router adapter exist while filesystem output and route crawling remain deferred.
 

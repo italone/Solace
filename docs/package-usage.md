@@ -110,19 +110,19 @@ Template expressions use JSX-like braces and runtime identifiers from the script
 </style>
 ```
 
-The public SFC contract is intentionally narrow: use `@italone/solace/vite` as the Vite plugin and
-`@italone/solace/sfc` as the TypeScript type shim for `.solace` imports. The compiler remains a
-narrow compiler surface, not a mature compiler contract. It supports a small syntax subset, reports
-compile diagnostics through Vite transform errors, routes scoped styles through the public
-`useStyle()` runtime helper, and currently returns `map: null` because source maps are not part of
-the current contract. Parser internals, generated module shape, and scoped-style implementation
-details are not public compatibility targets. The
-plugin does not accept public options yet; passing options throws a `TypeError`. SFC query
-transforms such as `.solace?raw` are rejected until sub-request semantics are designed. SFC block
-attributes and custom top-level blocks also throw so the syntax remains the documented one-template,
-optional-script, optional-style model. The `@italone/solace/vite` subpath intentionally exports only
-`default` and `solacePlugin`; do not import compiler helpers or deep subpaths such as
-`@italone/solace/compiler`, `@italone/solace/router`, or `@italone/solace/dist/**`.
+The public SFC contract is intentionally narrow but stable: use `@italone/solace/vite` as the Vite
+plugin and `@italone/solace/sfc` as the TypeScript type shim for `.solace` imports. This is not a
+mature compiler contract. It supports the documented one-template, optional-script, optional-style
+syntax subset, reports compile diagnostics through Vite transform errors, routes styles through the
+public `useStyle()` runtime helper, and currently returns `map: null` because source maps are not
+part of the current contract. Parser internals, generated module shape, and style implementation
+details are not public compatibility targets. The plugin does not accept public options yet; passing
+options throws a `TypeError`. SFC query transforms such as `.solace?raw` are rejected until
+sub-request semantics are designed. SFC block attributes such as `<script setup>` or
+`<style scoped>` and custom top-level blocks such as `<docs>` also throw, so the syntax remains the
+documented model. The `@italone/solace/vite` subpath intentionally exports only `default` and
+`solacePlugin`; do not import compiler helpers or deep subpaths such as `@italone/solace/compiler`,
+`@italone/solace/router`, or `@italone/solace/dist/**`.
 
 ## Use Server Rendering And SSG
 
@@ -333,7 +333,7 @@ views.
   extension example.
 - `@italone/solace/server`: server rendering, in-memory SSG, and static asset helpers.
 - `@italone/solace/sfc`: TypeScript type shim for `.solace` imports.
-- `@italone/solace/vite`: Vite plugin for narrow `.solace` single-file components.
+- `@italone/solace/vite`: Vite plugin for the stable narrow `.solace` contract.
 
 Do not import from `src/**`, `dist/**`, or internal runtime modules directly. Those paths are implementation details and are not part of the package compatibility contract.
 

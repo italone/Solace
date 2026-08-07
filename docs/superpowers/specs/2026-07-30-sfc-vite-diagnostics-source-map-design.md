@@ -25,7 +25,7 @@ The repository already has:
 - Unit, integration, and package tests covering the narrow SFC/Vite surface.
 
 The weak point is that diagnostics and source map policy are currently implied by implementation and
-scattered tests rather than documented as a deliberate alpha contract.
+scattered tests rather than documented as a deliberate contract.
 
 ## Public Contract
 
@@ -81,7 +81,7 @@ This gives users a predictable message while avoiding a public compiler error cl
 
 The `.solace` Vite transform should continue returning `map: null`.
 
-This is intentional for the alpha contract:
+This is intentional for the current contract:
 
 - Generated JavaScript shape is still private.
 - Template and script block source mapping would require a separate design for mixed template,
@@ -151,7 +151,7 @@ changes generated runtime behavior.
 - Vite transform diagnostics have stable message-format tests.
 - Vite transform still returns `map: null` for `.solace` files.
 - Vite plugin options and `.solace?*` query transforms remain rejected.
-- Documentation states that source maps are intentionally disabled for the alpha SFC contract.
+- Documentation states that source maps are intentionally disabled for the current SFC contract.
 - Documentation states that Vite diagnostic messages are the public error surface for invalid
   `.solace` files.
 - No new public package entry or SFC syntax is introduced.

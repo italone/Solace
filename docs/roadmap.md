@@ -12,7 +12,11 @@ line:
 
 Work remaining, in rough priority order:
 
-1. **SFC compiler stabilization** — keep the public contract limited to `@italone/solace/vite` and `@italone/solace/sfc`, then harden diagnostics, source-map policy, compatibility tests, and documented syntax before promoting the compiler beyond the current narrow surface.
+1. **SFC compiler stabilization** — keep the stable narrow SFC/Vite contract limited to
+   `@italone/solace/vite`, `@italone/solace/sfc`, Vite diagnostics, explicit `map: null`, the
+   documented block model, and explicit rejection of options, block attributes, custom top-level
+   blocks, and `.solace?*` transforms before promoting the compiler beyond the current narrow
+   surface.
 2. **Router beta stabilization** — the stable slice now covers static routes, dynamic params,
    wildcard fallback routes, query strings, web/hash/memory history, nested routes, redirects, route
    names, aliases, route props, named locations, global and route-level guards, explicit

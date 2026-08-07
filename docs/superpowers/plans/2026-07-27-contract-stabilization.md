@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Close the remaining contract-stabilization gaps for Solace's alpha SFC/Vite surface, beta router surface, and mandatory public API release gates without expanding SSR/SSG/hydration or DevTools extension UI scope.
+**Goal:** Close the remaining contract-stabilization gaps for Solace's stable narrow SFC/Vite surface, beta router surface, and mandatory public API release gates without expanding SSR/SSG/hydration or DevTools extension UI scope.
 
 **Architecture:** Treat documentation, package exports, package smoke, and release scripts as the public contract boundary. Keep implementation changes limited to drift-prevention tests and documentation consistency; do not add new SFC syntax, router features, package subpaths, SSR/SSG/hydration APIs, or browser DevTools extension UI.
 
@@ -12,7 +12,7 @@
 
 ## File Structure
 
-- Modify `readme.md`: fix the top-level positioning paragraph so it says the current alpha includes an alpha SFC compiler and beta router, while SSR/SSG/hydration and browser extension DevTools remain absent.
+- Modify `readme.md`: fix the top-level positioning paragraph so it says the current beta line includes a stable narrow SFC/Vite contract and beta router, while SSR/SSG/hydration and browser extension DevTools remain scoped beta capabilities.
 - Modify `readme.zh-CN.md`: mirror the English README positioning fix in Chinese.
 - Modify `tests/unit/scripts/release-readiness-check.test.ts`: add a static script-contract test proving `release:check` starts with `pnpm release:readiness` and includes the mandatory public API gates.
 - Modify `tests/integration/package-exports.test.ts`: add package export boundary tests for the documented public subpaths and router beta/deferred API split.
@@ -32,13 +32,13 @@
 In `readme.md`, replace:
 
 ```md
-Solace is suitable today for studying a compact frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current alpha does not include a compiler, router, SSR/SSG runtime, hydration, first-party UI components, browser extension DevTools, or a compatibility guarantee for internal modules.
+Solace is suitable today for studying a compact frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current beta line does not yet provide a frozen compatibility guarantee for internal modules, and several higher-level capabilities remain intentionally scoped.
 ```
 
 With:
 
 ```md
-Solace is suitable today for studying a compact frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current alpha includes an alpha `.solace` compiler, `@italone/solace/vite` plugin, and beta first-party router slice; it does not yet include SSR/SSG runtime, hydration, first-party UI components, browser extension DevTools, or a compatibility guarantee for internal modules.
+Solace is suitable today for studying a compact frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current beta line includes a stable narrow `.solace` SFC/Vite contract, a beta first-party router slice, SSR/SSG/hydration minimum loop, and a DevTools extension example; it does not yet include first-party UI components, a production-grade DevTools distribution, or a compatibility guarantee for internal modules.
 ```
 
 - [ ] **Step 2: Replace the stale Chinese README paragraph**

@@ -7,7 +7,7 @@ components. On the server, styles registered during `renderToString()` should be
 returned with the HTML. On the client, `mount()` and `hydrate()` should reuse existing
 `style[data-s-id]` tags instead of injecting duplicates.
 
-This is a runtime contract change, not a syntax expansion. `.solace` stays within the current alpha
+This is a runtime contract change, not a syntax expansion. `.solace` stays within the current narrow
 surface.
 
 ## Context

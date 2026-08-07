@@ -4,7 +4,7 @@
 
 **Goal:** Add a shared `useStyle()` runtime path so any Solace render tree can register styles, `renderToString()` collects them for SSR/SSG, and client `mount()`/`hydrate()` reuse existing `style[data-s-id]` tags without duplicates.
 
-**Architecture:** Put style registration behind one runtime sink module, then connect that sink to both the server renderer and the client renderer. The SFC compiler stops emitting direct DOM style insertion and instead calls the shared runtime helper, which keeps `.solace` within the current alpha syntax surface. Public exports stay narrow: root runtime gains `useStyle()`, server rendering still hangs off `@italone/solace/server`, and routing stays untouched.
+**Architecture:** Put style registration behind one runtime sink module, then connect that sink to both the server renderer and the client renderer. The SFC compiler stops emitting direct DOM style insertion and instead calls the shared runtime helper, which keeps `.solace` within the current narrow syntax surface. Public exports stay narrow: root runtime gains `useStyle()`, server rendering still hangs off `@italone/solace/server`, and routing stays untouched.
 
 **Tech Stack:** TypeScript, Vitest, jsdom, Playwright, existing Solace runtime/compiler, pnpm.
 

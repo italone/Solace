@@ -33,7 +33,7 @@ Solace 当前处于 `0.1.0` beta 线。本 package build 是 `0.1.0-beta.1`。�
 
 ## 当前范围
 
-Solace 当前适合用于学习小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 beta 线把 SFC、Router 和 SSR/hydration 保持在显式范围边界内：窄 `.solace` compiler surface、`@italone/solace/vite` plugin、beta 一方 router slice、通过 `generateStaticSite()` 暴露的 SSG core、通过 `@italone/solace/server` 暴露的 production asset tag resolution 和 explicit-path router-aware SSG helpers、通过 `@italone/solace/server` 和 `createApp(App).hydrate(container)` 暴露的 minimum SSR/hydration loop，以及示例级浏览器 DevTools timeline panel 都已经可用；完整 production SSR pipeline automation、streaming SSR、async SSR、一方 UI 组件、生产级 DevTools 发布形态和内部模块兼容性承诺仍然不在冻结后的生产契约内。
+Solace 当前适合用于学习小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 beta 线把 SFC、Router 和 SSR/hydration 保持在显式范围边界内：稳定窄 `.solace` SFC/Vite 契约、beta 一方 router slice、通过 `generateStaticSite()` 暴露的 SSG core、通过 `@italone/solace/server` 暴露的 production asset tag resolution 和 explicit-path router-aware SSG helpers、通过 `@italone/solace/server` 和 `createApp(App).hydrate(container)` 暴露的 minimum SSR/hydration loop，以及示例级浏览器 DevTools timeline panel 都已经可用；成熟 SFC compiler 契约、完整 production SSR pipeline automation、streaming SSR、async SSR、一方 UI 组件、生产级 DevTools 发布形态和内部模块兼容性承诺仍然不在冻结后的生产契约内。
 
 ## 快速开始
 
@@ -320,10 +320,10 @@ Solace 包含多个 Vite 示例，用于覆盖不同运行时路径：
 | Todo app       | `pnpm dev:todo`               | 表单输入、keyed list 更新、checkbox 状态、删除                                      |
 | Large list     | `pnpm dev:large`              | 10,000 个 keyed rows、定向 class/text 更新                                          |
 | Router basic   | `pnpm dev:router`             | beta router、嵌套路由、redirects、guards、lazyRoute、已暴露的 lazy-load-failed 错误 |
-| SFC counter    | `pnpm dev:sfc`                | 窄 `.solace` compiler surface 和 Vite plugin                                        |
+| SFC counter    | `pnpm dev:sfc`                | 稳定窄 `.solace` SFC/Vite 契约                                                      |
 | DevTools panel | `pnpm dev:devtools-extension` | 浏览器 DevTools extension timeline 示例                                             |
 
-`examples/sfc-counter` 应用演示窄 `.solace` compiler surface 和 Vite plugin。
+`examples/sfc-counter` 应用演示稳定窄 `.solace` SFC/Vite 契约。
 
 运行浏览器 e2e 覆盖：
 
@@ -342,7 +342,7 @@ pnpm test:e2e
 - `@italone/solace/jsx-dev-runtime`：开发环境 JSX runtime。
 - `@italone/solace/devtools`：扩展示例消费的底层 DevTools listener 和 recorder API。
 - `@italone/solace/sfc`：`.solace` imports 的 TypeScript 类型声明入口。
-- `@italone/solace/vite`：窄 `.solace` 单文件组件的 Vite plugin。
+- `@italone/solace/vite`：稳定窄 `.solace` 契约的 Vite plugin。
 
 安装 npm `latest` dist-tag：
 
