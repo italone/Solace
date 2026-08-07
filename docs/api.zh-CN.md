@@ -2,7 +2,8 @@
 
 [English](./api.md)
 
-本文档描述 Solace 的公共运行时 API。运行时能力从包根入口导入，server rendering 和 SSG 从
+本文档描述 Solace 的公共运行时 API。Solace 的主要编写路径是 React 风格的函数组件、
+JSX/TSX 和明确的运行时 API。运行时能力从包根入口导入，server rendering 和 SSG 从
 `@italone/solace/server` 导入，JSX 支持从 JSX 子路径导入，DevTools 集成从
 `@italone/solace/devtools` 导入。
 
@@ -39,18 +40,18 @@
 
 | 入口                               | 稳定性 | 用途                                               |
 | ---------------------------------- | ------ | -------------------------------------------------- |
-| `@italone/solace`                  | 公开   | App、响应式、渲染、组件、调度器、store             |
+| `@italone/solace`                  | 公开   | App、响应式、渲染、函数组件、调度器、store         |
 | `@italone/solace/jsx-runtime`      | 公开   | TypeScript 和 bundler 使用的 automatic JSX runtime |
 | `@italone/solace/jsx-dev-runtime`  | 公开   | Vite 和 JSX dev tooling 使用的开发环境 JSX runtime |
 | `@italone/solace/devtools`         | 公开   | 被 tooling 消费的底层 listener 和 recorder API     |
 | `@italone/solace/server`           | 公开   | server rendering、内存 SSG 和 static asset helpers |
-| `@italone/solace/sfc`              | 公开   | `.solace` 单文件组件 import 的类型声明入口         |
-| `@italone/solace/vite`             | 公开   | 窄 `.solace` 单文件组件的 Vite plugin              |
+| `@italone/solace/sfc`              | 公开   | 可选实验性 `.solace` imports 的类型声明入口        |
+| `@italone/solace/vite`             | 公开   | 可选实验性 `.solace` component 的 Vite plugin      |
 | `src/**`、`dist/**`、deep subpaths | 私有   | 内部实现细节，不作为兼容性目标                     |
 
 beta 线兼容性契约仍有意保持较窄。文档化公开入口应在 patch release 之间保持可用；内部模块、event emit helpers、scheduler 队列、renderer diagnostics、组件实例和生成文件布局可能在不额外通知的情况下变化。
 
-`.solace` compiler 契约当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口。parser、生成 JavaScript 形状和内部 compiler modules 仍属于窄编译器表面背后的实现细节。scoped style 会通过公开的 `useStyle()` runtime helper 注册，但生成模块形状和 compiler 内部实现不属于兼容性目标。Vite plugin 还没有公开 options；传入 options 会抛出 `TypeError`，避免暗示语法扩展。SFC block attributes 和自定义顶层 blocks 会被拒绝；文档化 block model 仍是一个 `<template>`、可选 `<script>` 和可选 `<style>`。无效 `.solace` 文件的公开 diagnostics surface 是 Vite transform failure，当前 transform policy 会有意返回 `map: null`，不发布 source maps。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
+`.solace` compiler 契约是可选、窄、实验性的辅助能力。它当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口，不是 Solace 的主要组件模型。parser、生成 JavaScript 形状和内部 compiler modules 仍属于辅助编译器表面背后的实现细节。scoped style 会通过公开的 `useStyle()` runtime helper 注册，但生成模块形状和 compiler 内部实现不属于兼容性目标。Vite plugin 还没有公开 options；传入 options 会抛出 `TypeError`，避免暗示语法扩展。SFC block attributes 和自定义顶层 blocks 会被拒绝；文档化 block model 仍是一个 `<template>`、可选 `<script>` 和可选 `<style>`。无效 `.solace` 文件的公开 diagnostics surface 是 Vite transform failure，当前 transform policy 会有意返回 `map: null`，不发布 source maps。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
 
 包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。当前支持 nested route records、redirects、全局 `beforeEach` guards、route-level `beforeEnter` guards、route `meta`、route names、aliases、route props、named locations、`createMemoryHistory()`，以及通过 `lazyRoute()` 声明的 route lazy components。scroll behavior、auth、permissions、SSR/SSG/hydration router integration 和长期 router 兼容策略仍被推迟。传入仍 deferred 的 router options 会抛出 `TypeError`，而不是静默扩大 beta contract。
 
@@ -64,10 +65,10 @@ event snapshots 的示例，或运行 `examples/devtools-extension` 浏览器 De
 
 创建一个 app wrapper，root 可以是组件，也可以是已经创建好的 VNode。
 
-```ts
-import { createApp, h } from "@italone/solace";
+```tsx
+import { createApp } from "@italone/solace";
 
-const App = () => h("p", null, "hello");
+const App = () => <p>hello</p>;
 
 createApp(App).mount(document.querySelector("#app") as Element);
 ```
@@ -383,27 +384,23 @@ setup context 暴露：
 - `emit(event, ...args)`：组件事件。
 - `slots`：默认 slots、具名 slots 和 slot props。
 
-组件可以直接返回 VNode，也可以返回 render function。当 setup 逻辑只需要运行一次，而 render 需要重复运行时，返回 render function 更合适。
+组件可以直接返回 VNode，也可以返回 render function。当 setup 逻辑只需要运行一次，而 render 需要重复运行时，返回 render function 更合适。TSX 中写在组件标签之间的 children 会进入 `slots.default`，因此 wrapper 组件的 props 可以继续聚焦在明确输入上。
 
-```ts
-import { h } from "@italone/solace";
+```tsx
 import type { ComponentSetupContext } from "@italone/solace";
 
-const Button = (props: { label: string }, { emit }: ComponentSetupContext) =>
-  h("button", { onClick: () => emit("change") }, props.label);
+const Button = (props: { label: string }, { emit }: ComponentSetupContext) => (
+  <button onClick={() => emit("change")}>{props.label}</button>
+);
 
 const Panel =
   (_props: object, { slots }: ComponentSetupContext) =>
-  () =>
-    h("section", null, [
-      h("header", null, slots.header?.() ?? null),
-      h("main", null, slots.default?.({ text: "Body" }) ?? null),
-    ]);
-
-h(Panel, null, {
-  header: () => h("h1", null, "Title"),
-  default: (slotProps) => h("p", null, String(slotProps?.text)),
-});
+  () => (
+    <section>
+      <header>{slots.header?.()}</header>
+      <main>{slots.default?.({ text: "Body" })}</main>
+    </section>
+  );
 ```
 
 组件事件名会解析到 `onXxx` handler。kebab-case 事件名会先 camelize 再查找 handler，所以 `emit("item-change")` 可以匹配 `onItemChange`。
@@ -412,21 +409,21 @@ h(Panel, null, {
 
 声明 Solace 组件，同时保持函数组件契约不变。
 
-```ts
-import { defineComponent, h } from "@italone/solace";
+```tsx
+import { defineComponent } from "@italone/solace";
 
-const Button = defineComponent((props: { label: string }) => h("button", null, props.label));
+const Button = defineComponent((props: { label: string }) => <button>{props.label}</button>);
 ```
 
 ### `defineAsyncComponent(loader | options)`
 
 声明一个异步加载其他组件的组件。
 
-```ts
-import { defineAsyncComponent, h } from "@italone/solace";
+```tsx
+import { defineAsyncComponent } from "@italone/solace";
 
 const LazyMessage = defineAsyncComponent<{ text: string }>(() =>
-  Promise.resolve((props: { text: string }) => h("p", null, props.text)),
+  Promise.resolve((props: { text: string }) => <p>{props.text}</p>),
 );
 ```
 
@@ -444,11 +441,11 @@ options 形式支持：
 
 resolved、loading 和 error 组件都会收到最新 props 和默认 slot children。
 
-```ts
+```tsx
 const LazyPanel = defineAsyncComponent<{ title: string }>({
-  loader: () => Promise.resolve((props: { title: string }) => h("section", null, props.title)),
-  loadingComponent: () => h("span", null, "loading"),
-  errorComponent: () => h("strong", null, "failed"),
+  loader: () => Promise.resolve((props: { title: string }) => <section>{props.title}</section>),
+  loadingComponent: () => <span>loading</span>,
+  errorComponent: () => <strong>failed</strong>,
   delay: 200,
   timeout: 3000,
   retry: 2,
@@ -460,21 +457,21 @@ const LazyPanel = defineAsyncComponent<{ title: string }>({
 
 在祖先组件 setup 和后代组件 setup 之间传递值，避免 prop drilling。key 可以是字符串或 symbol。`inject()` 会先查找组件祖先，再查找 app-level providers。没有 provider 时，返回传入的默认值。
 
-```ts
-import { h, inject, provide } from "@italone/solace";
+```tsx
+import { inject, provide } from "@italone/solace";
 
 const ThemeKey = Symbol("theme");
 
 const Child = () => {
   const theme = inject(ThemeKey, "light");
 
-  return () => h("span", null, theme);
+  return () => <span>{theme}</span>;
 };
 
 const Parent = () => {
   provide(ThemeKey, "dark");
 
-  return () => h(Child);
+  return () => <Child />;
 };
 ```
 
@@ -486,15 +483,15 @@ const Parent = () => {
 
 生命周期 hooks 在组件 setup 期间注册。在组件 setup 外调用会被忽略。
 
-```ts
-import { h, onMounted, onUnmounted, onUpdated } from "@italone/solace";
+```tsx
+import { onMounted, onUnmounted, onUpdated } from "@italone/solace";
 
 const Tracked = () => {
   onMounted(() => console.log("mounted"));
   onUpdated(() => console.log("updated"));
   onUnmounted(() => console.log("unmounted"));
 
-  return () => h("p", null, "tracked");
+  return () => <p>tracked</p>;
 };
 ```
 
@@ -504,14 +501,14 @@ const Tracked = () => {
 
 在已排队的组件更新 flush 后 resolve。测试或集成代码需要在响应式 mutation 反映到 DOM 后再断言时，可以使用它。
 
-```ts
-import { nextTick, reactive, render, h } from "@italone/solace";
+```tsx
+import { createApp, nextTick, reactive } from "@italone/solace";
 
 const state = reactive({ count: 0 });
-const Counter = () => () => h("button", null, `count: ${state.count}`);
+const Counter = () => () => <button>count: {state.count}</button>;
 const container = document.querySelector("#app") as Element;
 
-render(h(Counter), container);
+createApp(Counter).mount(container);
 state.count += 1;
 
 await nextTick();
@@ -560,24 +557,30 @@ Store 行为：
 
 Router 是包根入口中的 beta API，面向小型单页应用示例。当前支持静态路由、动态 params、wildcard fallback records、query 解析/序列化、browser history adapters、nested route records、redirects、route names、aliases、route props、全局 `beforeEach` guards、route-level `beforeEnter` guards、route `meta`、通过 `lazyRoute()` 声明的 route lazy components、`RouterLink`、`RouterView`，并可通过 `createApp(App).use(router)` 安装。
 
-```ts
+```tsx
 import {
   RouterLink,
   RouterView,
   createApp,
   createRouter,
   createMemoryHistory,
-  h,
   lazyRoute,
   useRoute,
 } from "@italone/solace";
 
-const Home = () => h("p", null, "home");
+const Home = () => <p>home</p>;
 const User = () => {
   const route = useRoute();
 
-  return () => h("p", null, `user:${route.value.params.id}`);
+  return () => <p>user: {route.value.params.id}</p>;
 };
+
+const DashboardLayout = () => () => (
+  <section>
+    <h2>Dashboard</h2>
+    <RouterView />
+  </section>
+);
 
 const router = createRouter({
   history: createMemoryHistory(),
@@ -587,14 +590,14 @@ const router = createRouter({
     { path: "/old-dashboard", redirect: "/dashboard" },
     {
       path: "/dashboard",
-      component: () => h("section", null, [h("h2", null, "Dashboard"), h(RouterView)]),
+      component: DashboardLayout,
       meta: { requiresAuth: true },
       children: [
-        { path: "", component: () => h("p", null, "dashboard home") },
+        { path: "", component: () => <p>dashboard home</p> },
         { path: "report", component: lazyRoute(() => import("./Report")) },
       ],
     },
-    { path: "/:pathMatch(.*)*", component: () => h("p", null, "not found") },
+    { path: "/:pathMatch(.*)*", component: () => <p>not found</p> },
   ],
 });
 
@@ -602,8 +605,12 @@ router.beforeEach((to) =>
   to.matched.some((record) => record.meta?.requiresAuth) ? "/login" : true,
 );
 
-const App = () => () =>
-  h("main", null, [h(RouterLink, { to: "/users/42" }, "User"), h(RouterView)]);
+const App = () => () => (
+  <main>
+    <RouterLink to="/users/42">User</RouterLink>
+    <RouterView />
+  </main>
+);
 
 createApp(App)
   .use(router)
@@ -677,7 +684,7 @@ href。带 modifier、已被阻止、非 `_self` target 或 `download` attribute
 
 ## JSX
 
-使用 TypeScript automatic JSX runtime：
+把 JSX/TSX 函数组件作为 Solace 的主要编写路径。配置 TypeScript automatic JSX runtime：
 
 ```json
 {
@@ -693,14 +700,18 @@ href。带 modifier、已被阻止、非 `_self` target 或 `download` attribute
 - `@italone/solace/jsx-runtime`
 - `@italone/solace/jsx-dev-runtime`
 
+JSX `key` 是 keyed children 使用的框架级属性，接受字符串或数字；函数组件的 props 类型不需要声明 `key`。JSX component children 会进入组件 setup context 的 `slots.default`，普通 slot children 不需要在组件 props 中声明 `children` 字段。JSX `onXxx` attributes 是 `emit()` 使用的组件事件 handler 约定，因此 `emit("increment")` 会匹配已传入的 `onIncrement`。TSX component 的 `onXxx` 值类型是函数或函数数组；非函数值不属于公开 JSX 契约。DOM `onXxx` attributes 只接受函数。JSX fragment shorthand（`<>...</>`）通过 automatic runtime 支持，渲染时不会额外增加 DOM wrapper。
+
 公共 tooling 入口：
 
 - `@italone/solace/sfc`
 - `@italone/solace/vite`
 
+这些 tooling 入口用于可选实验性 `.solace` 辅助路径，不是主要组件编写模型。
+
 ## Vite Plugin 子路径
 
-从 `@italone/solace/vite` 导入当前 `.solace` compiler plugin：
+从 `@italone/solace/vite` 导入当前可选实验性 `.solace` compiler plugin：
 
 ```ts
 import solace, { solacePlugin } from "@italone/solace/vite";

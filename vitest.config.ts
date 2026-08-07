@@ -10,6 +10,12 @@ function resolveSolaceAlias(): Record<string, string> {
       "@italone/solace/devtools": fileURLToPath(
         new URL("./src/devtools/index.ts", import.meta.url),
       ),
+      "@italone/solace/jsx-dev-runtime": fileURLToPath(
+        new URL("./src/jsx-dev-runtime.ts", import.meta.url),
+      ),
+      "@italone/solace/jsx-runtime": fileURLToPath(
+        new URL("./src/jsx-runtime.ts", import.meta.url),
+      ),
       "@italone/solace": fileURLToPath(new URL("./src/index.ts", import.meta.url)),
     };
   } catch {

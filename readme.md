@@ -2,22 +2,22 @@
 
 [简体中文](./readme.zh-CN.md)
 
-Solace is a TypeScript-first frontend framework for building reactive, component-driven web interfaces.
+Solace is a JSX/TSX-first, TypeScript-first frontend framework for building reactive, component-driven web interfaces.
 
-Solace focuses on a small runtime core: reactive state, scheduled rendering, VNode diffing, functional components, JSX support, and a lightweight application API. The project is designed as a readable framework implementation with production-style tooling, tests, examples, package exports, and release checks.
+Solace focuses on a small runtime core: reactive state, scheduled rendering, VNode diffing, function components, JSX/TSX authoring, and explicit application APIs. The project is designed as a readable independent framework implementation with production-style tooling, tests, examples, package exports, and release checks.
 
 ## Why Solace
 
 - **TypeScript-first runtime**: the source, public API, examples, and tests are written in TypeScript.
 - **Reactive by default**: `reactive`, `ref`, `computed`, `effect`, `watch`, and `watchEffect` are available from the package root.
-- **Component rendering pipeline**: Solace includes VNodes, DOM rendering, keyed children diffing, Fragment support, component lifecycle hooks, props, emit, slots, and async components.
+- **Function component pipeline**: Solace includes VNodes, DOM rendering, keyed children diffing, Fragment support, function components, lifecycle hooks, props, emit, slots, and async components.
 - **Small app surface**: `createApp()` provides mounting, plugins, and app-level dependency injection without requiring a large framework shell.
-- **JSX-ready**: automatic JSX runtime entries are included for Vite and TypeScript projects.
+- **JSX/TSX-first**: automatic JSX runtime entries are the primary authoring path for Vite and TypeScript projects.
 - **Quality-gated development**: the repository includes unit tests, integration tests, browser e2e tests, package consumer smoke tests, coverage, and benchmark smoke checks.
 
 ## Project Status
 
-Solace is currently on the `0.1.0` beta line. This package build is `0.1.0-beta.1`. The repository
+Solace is currently on the `0.1.0` beta line. This package build is `0.1.0-beta.2`. The repository
 is functional, validated locally, and configured as a public npm package. npm `latest` remains the
 stable `0.0.5` line; npm `beta` is the beta install line.
 
@@ -27,8 +27,9 @@ use the repository directly when you need unreleased documentation or runtime ch
 
 Current completion highlights:
 
-- Runtime APIs for apps, reactivity, rendering, components, context, lifecycle, scheduler, store, JSX, SSR/hydration minimum loop, SSG core, runtime style registration, and DevTools integration are implemented behind documented public entry points.
+- Runtime APIs for apps, reactivity, rendering, function components, context, lifecycle, scheduler, store, JSX/TSX, SSR/hydration minimum loop, SSG core, runtime style registration, and DevTools integration are implemented behind documented public entry points.
 - Package outputs include ESM, CJS, TypeScript declarations, JSX runtime subpaths, `@italone/solace/server`, and the `@italone/solace/devtools` subpath.
+- `.solace` SFC support remains available as an optional, narrow, experimental helper through `@italone/solace/vite` and `@italone/solace/sfc`; it is not the primary Solace authoring model.
 - The repository includes an example browser DevTools timeline panel that consumes the public DevTools subpath without changing runtime payloads.
 - Validation covers format, typecheck, lint, unit tests, integration tests, package export tests, coverage thresholds, packed-consumer smoke tests, jsdom benchmarks, Chromium production browser benchmarks, and browser e2e tests.
 - Release publishing remains a separate maintainer decision. npm `latest` and npm `beta` may point
@@ -38,7 +39,7 @@ See [docs/project-status.md](./docs/project-status.md) for the current completio
 
 ## Current Scope
 
-Solace is suitable today for studying a compact frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current beta line keeps SFC, Router, and SSR/hydration on explicit scope boundaries: the narrow `.solace` compiler surface, `@italone/solace/vite` plugin, beta first-party router slice, SSG core through `generateStaticSite()`, production asset tag resolution and explicit-path router-aware SSG helpers through `@italone/solace/server`, a minimum SSR/hydration loop through `@italone/solace/server` plus `createApp(App).hydrate(container)`, and an example browser DevTools timeline panel are all usable today, while full production SSR pipeline automation, streaming SSR, async SSR, first-party UI components, production-grade DevTools distribution, and compatibility guarantees for internal modules remain outside the frozen production contract.
+Solace is suitable today for studying a compact JSX/TSX-first frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current beta line keeps optional experimental SFC support, Router, and SSR/hydration on explicit scope boundaries: function components and JSX/TSX are the primary authoring model, while the narrow `.solace` compiler surface and `@italone/solace/vite` plugin remain auxiliary. The beta first-party router slice, SSG core through `generateStaticSite()`, production asset tag resolution and explicit-path router-aware SSG helpers through `@italone/solace/server`, a minimum SSR/hydration loop through `@italone/solace/server` plus `createApp(App).hydrate(container)`, and an example browser DevTools timeline panel are all usable today, while full production SSR pipeline automation, streaming SSR, async SSR, first-party UI components, production-grade DevTools distribution, and compatibility guarantees for internal modules remain outside the frozen production contract.
 
 ## Quick Start
 
@@ -68,21 +69,20 @@ pnpm release:check
 
 ## Minimal Example
 
-```ts
-import { createApp, h, reactive } from "@italone/solace";
+```tsx
+import { createApp, reactive } from "@italone/solace";
 
 const state = reactive({ count: 0 });
 
-const App = () =>
-  h(
-    "button",
-    {
-      onClick: () => {
-        state.count += 1;
-      },
-    },
-    `count: ${state.count}`,
-  );
+const App = () => (
+  <button
+    onClick={() => {
+      state.count += 1;
+    }}
+  >
+    count: {state.count}
+  </button>
+);
 
 createApp(App).mount(document.querySelector("#app") as Element);
 ```
@@ -140,15 +140,15 @@ chainable app instance. `app.use()` installs function plugins or object plugins 
 method once per app instance. `app.provide()` registers app-level values that descendants can read
 with `inject()`.
 
-```ts
-import { createApp, h } from "@italone/solace";
+```tsx
+import { createApp } from "@italone/solace";
 import type { App, Plugin } from "@italone/solace";
 
 const themePlugin: Plugin = (app: App, theme: string) => {
   app.provide("theme", theme);
 };
 
-const AppRoot = () => h("main", null, "Hello Solace");
+const AppRoot = () => <main>Hello Solace</main>;
 
 createApp(AppRoot)
   .use(themePlugin, "dark")
@@ -223,32 +223,37 @@ VNode directly or return a render function. The setup context exposes `emit` for
 `slots` for default or named slots. `defineComponent()` preserves the same function component
 contract while improving intent and type inference at declaration sites.
 
-```ts
-import { defineComponent, h } from "@italone/solace";
+```tsx
+import { defineComponent } from "@italone/solace";
 import type { ComponentSetupContext } from "@italone/solace";
 
 const CounterButton = defineComponent(
-  (props: { count: number }, { emit, slots }: ComponentSetupContext) =>
-    h("button", { onClick: () => emit("increment") }, [
-      h("span", null, `count: ${props.count}`),
-      h("small", null, slots.default?.() ?? null),
-    ]),
+  (props: { count: number }, { emit, slots }: ComponentSetupContext) => (
+    <button onClick={() => emit("increment")}>
+      <span>count: {props.count}</span>
+      <small>{slots.default?.()}</small>
+    </button>
+  ),
 );
 
-h(CounterButton, { count: 1, onIncrement: () => console.log("increment") }, "click me");
+const App = () => (
+  <CounterButton count={1} onIncrement={() => console.log("increment")}>
+    click me
+  </CounterButton>
+);
 ```
 
 `defineAsyncComponent()` wraps a component loader. It supports a simple loader function or an
 options object with `loadingComponent`, `errorComponent`, `delay`, `timeout`, `retry`, and
 `retryDelay`. Resolved, loading, and error components receive the latest props and slot children.
 
-```ts
-import { defineAsyncComponent, h } from "@italone/solace";
+```tsx
+import { defineAsyncComponent } from "@italone/solace";
 
 const LazyPanel = defineAsyncComponent<{ title: string }>({
   loader: () => import("./panel").then((mod) => mod.Panel),
-  loadingComponent: () => h("span", null, "Loading"),
-  errorComponent: () => h("strong", null, "Failed"),
+  loadingComponent: () => <span>Loading</span>,
+  errorComponent: () => <strong>Failed</strong>,
   delay: 200,
   timeout: 3000,
   retry: 2,
@@ -261,18 +266,18 @@ providers override app-level providers. `inject()` can return `undefined` or a s
 the key is not found. Lifecycle hooks are registered during component setup and run after mount,
 after update, and during unmount cleanup.
 
-```ts
-import { defineComponent, h, inject, onMounted, provide } from "@italone/solace";
+```tsx
+import { defineComponent, inject, onMounted, provide } from "@italone/solace";
 
 const ThemeProvider = defineComponent((_props: object, { slots }) => {
   provide("theme", "dark");
-  return () => h("section", null, slots.default?.() ?? null);
+  return () => <section>{slots.default?.()}</section>;
 });
 
 const ThemeLabel = defineComponent(() => {
   const theme = inject("theme", "light");
   onMounted(() => console.log("mounted"));
-  return () => h("span", null, `theme: ${theme}`);
+  return () => <span>theme: {theme}</span>;
 });
 ```
 
@@ -332,10 +337,10 @@ Solace includes Vite examples that exercise different runtime paths:
 | Todo app       | `pnpm dev:todo`               | form input, keyed list updates, checkbox state, deletion                              |
 | Large list     | `pnpm dev:large`              | 10,000 keyed rows, targeted class/text updates                                        |
 | Router basic   | `pnpm dev:router`             | beta router, nested routes, redirects, guards, lazyRoute, surfaced lazy-load failures |
-| SFC counter    | `pnpm dev:sfc`                | narrow `.solace` compiler surface and Vite plugin                                     |
+| SFC counter    | `pnpm dev:sfc`                | optional experimental `.solace` helper and Vite plugin                                |
 | DevTools panel | `pnpm dev:devtools-extension` | browser DevTools extension timeline example                                           |
 
-The `examples/sfc-counter` app demonstrates the narrow `.solace` compiler surface and Vite plugin.
+The `examples/sfc-counter` app demonstrates the optional experimental `.solace` helper and Vite plugin. Solace's primary example path remains JSX/TSX function components.
 
 Run browser e2e coverage:
 
@@ -354,7 +359,7 @@ The public package shape is:
 - `@italone/solace/jsx-dev-runtime`: development JSX runtime.
 - `@italone/solace/devtools`: low-level DevTools listener and recorder APIs used by the extension example.
 - `@italone/solace/sfc`: TypeScript type shim for `.solace` imports.
-- `@italone/solace/vite`: Vite plugin for narrow `.solace` single-file components.
+- `@italone/solace/vite`: Vite plugin for optional experimental `.solace` single-file components.
 
 Install the npm `latest` dist-tag with:
 
@@ -456,7 +461,7 @@ See [docs/release.md](./docs/release.md) for release gates and publishing requir
 
 ## Roadmap
 
-The current focus is SFC/Vite contract stability, router beta API narrowing, DevTools extension hardening, package/version coordination, and documentation quality. Future work can expand around production guidance and ecosystem adapters after the core runtime contract is stable.
+The current focus is JSX/TSX-first runtime ergonomics, function component examples, router beta API narrowing, DevTools extension hardening, package/version coordination, and documentation quality. SFC/Vite work is limited to keeping the existing optional experimental contract reliable unless a separate design explicitly expands it.
 
 ## Contributing
 

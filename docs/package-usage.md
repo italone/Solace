@@ -24,21 +24,20 @@ separately to validate package consumption with the packed-consumer smoke test d
 
 ## Import Runtime APIs
 
-```ts
-import { createApp, h, reactive } from "@italone/solace";
+```tsx
+import { createApp, reactive } from "@italone/solace";
 
 const state = reactive({ count: 0 });
 
-const App = () =>
-  h(
-    "button",
-    {
-      onClick: () => {
-        state.count += 1;
-      },
-    },
-    `count: ${state.count}`,
-  );
+const App = () => (
+  <button
+    onClick={() => {
+      state.count += 1;
+    }}
+  >
+    count: {state.count}
+  </button>
+);
 
 createApp(App).mount(document.querySelector("#app") as Element);
 ```
@@ -76,9 +75,72 @@ const App = () => (
 createApp(App).mount(document.querySelector("#app") as Element);
 ```
 
+JSX `key` is available as a framework-level attribute for keyed children:
+
+```tsx
+const names = ["Ada", "Grace"];
+
+const NameList = () => (
+  <ul>
+    {names.map((name) => (
+      <li key={name}>{name}</li>
+    ))}
+  </ul>
+);
+```
+
+Fragment shorthand works without adding a wrapper element:
+
+```tsx
+const Toolbar = () => (
+  <>
+    <button type="button">Save</button>
+    <button type="button">Cancel</button>
+  </>
+);
+```
+
+Children passed to a function component become the component's default slot:
+
+```tsx
+import type { ComponentSetupContext } from "@italone/solace";
+
+const Panel = (_props: object, { slots }: ComponentSetupContext) => (
+  <section>{slots.default?.()}</section>
+);
+
+const App = () => (
+  <Panel>
+    <p>Inside</p>
+  </Panel>
+);
+```
+
+Component events use `emit()` with `onXxx` JSX handlers:
+
+```tsx
+import type { ComponentSetupContext } from "@italone/solace";
+
+const CounterButton = (props: { count: number }, { emit }: ComponentSetupContext) => (
+  <button onClick={() => emit("increment", props.count)}>count: {props.count}</button>
+);
+
+const App = () => <CounterButton count={1} onIncrement={(count: number) => console.log(count)} />;
+```
+
+`onXxx` component handlers are typed as a function or an array of functions, matching what
+`emit()` invokes at runtime.
+
+DOM `onXxx` handlers accept functions only.
+
 ## Use `.solace` Single-File Components
 
-The `@italone/solace/vite` entry exposes the current Vite plugin for `.solace` files:
+Solace's primary authoring path is JSX/TSX function components through the package root and JSX
+runtime entries. The `.solace` path is an optional, narrow, experimental helper for projects that
+want to exercise the compiler and Vite plugin pipeline without making SFCs the framework's main
+identity.
+
+The `@italone/solace/vite` entry exposes the current experimental Vite plugin for `.solace` files:
 
 ```ts
 import { defineConfig } from "vite";
@@ -110,19 +172,20 @@ Template expressions use JSX-like braces and runtime identifiers from the script
 </style>
 ```
 
-The public SFC contract is intentionally narrow: use `@italone/solace/vite` as the Vite plugin and
-`@italone/solace/sfc` as the TypeScript type shim for `.solace` imports. The compiler remains a
-narrow compiler surface, not a mature compiler contract. It supports a small syntax subset, reports
-compile diagnostics through Vite transform errors, routes scoped styles through the public
-`useStyle()` runtime helper, and currently returns `map: null` because source maps are not part of
-the current contract. Parser internals, generated module shape, and scoped-style implementation
-details are not public compatibility targets. The
-plugin does not accept public options yet; passing options throws a `TypeError`. SFC query
-transforms such as `.solace?raw` are rejected until sub-request semantics are designed. SFC block
-attributes and custom top-level blocks also throw so the syntax remains the documented one-template,
-optional-script, optional-style model. The `@italone/solace/vite` subpath intentionally exports only
-`default` and `solacePlugin`; do not import compiler helpers or deep subpaths such as
-`@italone/solace/compiler`, `@italone/solace/router`, or `@italone/solace/dist/**`.
+The public SFC contract is intentionally narrow and experimental: use `@italone/solace/vite` as the
+Vite plugin and `@italone/solace/sfc` as the TypeScript type shim for `.solace` imports. The
+compiler remains an auxiliary compiler surface, not a mature compiler contract or the primary Solace
+component model. It supports a small syntax subset, reports compile diagnostics through Vite
+transform errors, routes scoped styles through the public `useStyle()` runtime helper, and currently
+returns `map: null` because source maps are not part of the current contract. Parser internals,
+generated module shape, and scoped-style implementation details are not public compatibility
+targets. The plugin does not accept public options yet; passing options throws a `TypeError`. SFC
+query transforms such as `.solace?raw` are rejected until sub-request semantics are designed. SFC
+block attributes and custom top-level blocks also throw so the syntax remains the documented
+one-template, optional-script, optional-style model. The `@italone/solace/vite` subpath
+intentionally exports only `default` and `solacePlugin`; do not import compiler helpers or deep
+subpaths such as `@italone/solace/compiler`, `@italone/solace/router`, or
+`@italone/solace/dist/**`.
 
 ## Use Server Rendering And SSG
 
@@ -211,9 +274,9 @@ assets.stylesheets;
 assets.scripts;
 ```
 
-```ts
-const UserPage = () => h("p", null, "user");
-const NotFound = () => h("p", null, "not found");
+```tsx
+const UserPage = () => <p>user</p>;
+const NotFound = () => <p>not found</p>;
 
 const staticRoutes = createStaticRoutesFromRouter({
   routes: [
@@ -233,19 +296,24 @@ generateStaticSite({ routes: staticRoutes });
 Solace exposes the beta router from the package root. The stabilized slice now includes route
 names, aliases, route props, named locations, and `createMemoryHistory()` for small SPA examples:
 
-```ts
+```tsx
 import {
   RouterLink,
   RouterView,
   createApp,
   createMemoryHistory,
   createRouter,
-  h,
   lazyRoute,
 } from "@italone/solace";
 
-const Home = () => h("p", null, "home");
-const User = () => h("p", null, "user");
+const Home = () => <p>home</p>;
+const User = () => <p>user</p>;
+const Dashboard = () => (
+  <section>
+    <h2>Dashboard</h2>
+    <RouterView />
+  </section>
+);
 
 const router = createRouter({
   history: createMemoryHistory(),
@@ -254,7 +322,7 @@ const router = createRouter({
     { path: "/legacy", redirect: "/" },
     {
       path: "/dashboard",
-      component: () => h("section", null, [h("h2", null, "Dashboard"), h(RouterView)]),
+      component: Dashboard,
       beforeEnter: () => true,
       meta: { section: "dashboard" },
       children: [{ path: "report", component: lazyRoute(() => import("./Report")) }],
@@ -263,8 +331,12 @@ const router = createRouter({
   ],
 });
 
-const App = () => () =>
-  h("main", null, [h(RouterLink, { to: "/users/42" }, "User"), h(RouterView)]);
+const App = () => () => (
+  <main>
+    <RouterLink to="/users/42">User</RouterLink>
+    <RouterView />
+  </main>
+);
 
 createApp(App)
   .use(router)
@@ -333,7 +405,7 @@ views.
   extension example.
 - `@italone/solace/server`: server rendering, in-memory SSG, and static asset helpers.
 - `@italone/solace/sfc`: TypeScript type shim for `.solace` imports.
-- `@italone/solace/vite`: Vite plugin for narrow `.solace` single-file components.
+- `@italone/solace/vite`: Vite plugin for optional experimental `.solace` single-file components.
 
 Do not import from `src/**`, `dist/**`, or internal runtime modules directly. Those paths are implementation details and are not part of the package compatibility contract.
 

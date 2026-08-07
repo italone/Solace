@@ -146,10 +146,9 @@ const store = createStore({
   },
 });
 
-const Button = defineComponent((
-  props: { label: string; onChange?: () => void },
-  { emit }: ComponentSetupContext,
-) => <button onClick={() => emit("change")}>{props.label}</button>);
+const Button = defineComponent((props: { label: string }, { emit }: ComponentSetupContext) => (
+  <button onClick={() => emit("change")}>{props.label}</button>
+));
 
 const ThemeLabel = () => {
   const theme = inject(ThemeKey, "light");
@@ -157,12 +156,32 @@ const ThemeLabel = () => {
   return <span>{theme}</span>;
 };
 
-const Panel = defineComponent((_props: object, { slots }: ComponentSetupContext) =>
-  h("section", null, [
-    h("header", null, slots.header?.() ?? null),
-    h("main", null, slots.default?.({ label: "slotted" }) ?? null),
-  ]),
+const Panel = defineComponent((_props: object, { slots }: ComponentSetupContext) => (
+  <section>
+    <header>{slots.header?.()}</header>
+    <main>{slots.default?.({ label: "slotted" })}</main>
+  </section>
+));
+
+const FrameworkList = () => (
+  <>
+    {["runtime", "jsx"].map((label) => (
+      <span key={label}>{label}</span>
+    ))}
+  </>
 );
+
+// @ts-expect-error packaged TSX onXxx handlers must reject non-function values
+<Button label="invalid" onChange="change" />;
+
+// @ts-expect-error packaged DOM onXxx handlers must reject non-functions
+<button onClick="click">invalid</button>;
+
+// @ts-expect-error packaged DOM onXxx handlers must reject function arrays
+<button onClick={[() => undefined]}>invalid</button>;
+
+// @ts-expect-error packaged JSX key only accepts strings or numbers
+<Button key={false} label="invalid" />;
 
 const AsyncLoading = () => h("span", null, "loading");
 const AsyncError = () => h("span", null, "error");
@@ -190,25 +209,36 @@ const appPlugin: Plugin = (app, option) => {
   app.provide(ThemeKey, "dark");
 };
 
-const App = () => () =>
-  h("div", null, [
-    h(Button, {
-      label: \`count: \${state.count} double: \${store.getters.double}\`,
-      onChange: () => {
-        state.count += 1;
-        store.actions.increment(1);
-      },
-    }),
-    h(ThemeLabel),
-    h(Panel, null, {
+const App = () => () => (
+  <div>
+    <Button
+      label={\`count: \${state.count} double: \${store.getters.double}\`}
+      onChange={[
+        () => {
+          state.count += 1;
+        },
+        () => {
+          store.actions.increment(1);
+        },
+      ]}
+    />
+    <ThemeLabel />
+    <Panel>
+      <span>default slot</span>
+    </Panel>
+    {h(Panel, null, {
       header: () => <span>named</span>,
       default: (slotProps) => <strong>{String(slotProps?.label)}</strong>,
-    }),
-    h(LazyPanel, { title: "async" }, <em>loaded later</em>),
-  ]);
+    })}
+    <LazyPanel title="async">
+      <em>loaded later</em>
+    </LazyPanel>
+    <FrameworkList />
+  </div>
+);
 
 createApp(App).use(appPlugin, "enabled").mount(document.createElement("main"));
-createApp(() => h("p", null, "client")).hydrate(document.createElement("main"), hydrationOptions);
+createApp(() => <p>client</p>).hydrate(document.createElement("main"), hydrationOptions);
 router.resolve(targetRoute);
 await router.push("/child");
 `,
@@ -216,11 +246,14 @@ await router.push("/child");
   await writeFile(
     join(consumerDir, "src", "public-contract-types.ts"),
     `import { createMemoryHistory, createRouter, h, lazyRoute } from "@italone/solace";
+import { jsx } from "@italone/solace/jsx-runtime";
+import { jsxDEV } from "@italone/solace/jsx-dev-runtime";
 import type { HydrationOptions, NavigationGuard, RouteComponent, RouteLocationRaw, RouteRecord, RouterOptions } from "@italone/solace";
 import type { GenerateStaticSiteOptions, RenderToStringOptions } from "@italone/solace/server";
 import { solacePlugin } from "@italone/solace/vite";
 
 const Home = () => h("p", null, "home");
+const ConsumerButton = (props: { label: string }) => h("button", null, props.label);
 const guard: NavigationGuard = () => true;
 const lazyComponent: RouteComponent = lazyRoute(() => Promise.resolve(Home));
 
@@ -277,6 +310,12 @@ acceptSSGOptions({
 });
 acceptRenderOptions({ context: { title: "Home" } });
 acceptHydrationOptions({ recover: true });
+
+// @ts-expect-error packaged direct jsx component props reject non-function handlers
+jsx(ConsumerButton, { label: "ok", onChange: "change" });
+
+// @ts-expect-error packaged direct jsxDEV component props reject non-function handlers
+jsxDEV(ConsumerButton, { label: "ok", onChange: "change" });
 
 // @ts-expect-error Vite plugin options are not part of the public SFC contract
 solacePlugin({ customBlocks: true });

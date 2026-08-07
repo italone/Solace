@@ -1,7 +1,7 @@
 # Examples
 
-Solace includes Vite examples that exercise the runtime from small state updates to larger keyed
-lists and narrow `.solace` single-file components.
+Solace includes Vite examples that exercise the JSX/TSX-first runtime from small state updates to
+larger keyed lists, router workflows, and an optional experimental `.solace` helper.
 
 ## Basic Counter
 
@@ -94,11 +94,12 @@ Location: `examples/sfc-counter`
 
 Coverage:
 
-- Narrow `.solace` single-file component parsing.
+- Optional experimental `.solace` single-file component parsing.
 - `@italone/solace/vite` plugin integration.
 - Template expressions, script identifiers, and scoped style injection.
 
-The SFC example is covered by compiler, Vite plugin, package export, and packed-consumer smoke tests.
+The SFC example is an auxiliary compiler/Vite plugin smoke path. The primary example path remains
+JSX/TSX function components.
 
 ## E2E Validation
 
@@ -112,9 +113,9 @@ The Playwright config starts each example on a fixed localhost port:
 
 | Example       | Port   |
 | ------------- | ------ |
-| Basic counter | `5174` |
-| Todo app      | `5175` |
-| Large list    | `5176` |
-| Router basic  | `5178` |
+| Basic counter | `6174` |
+| Todo app      | `6175` |
+| Large list    | `6176` |
+| Router basic  | `6178` |
 
 `pnpm release:check` also runs these e2e tests after quality checks, coverage, package smoke, jsdom benchmark smoke, and the Chromium production browser benchmark.

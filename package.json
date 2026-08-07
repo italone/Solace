@@ -58,6 +58,7 @@
   "scripts": {
     "dev": "vite examples/basic-counter",
     "dev:todo": "vite examples/todo-app",
+    "dev:large": "vite examples/large-list",
     "dev:router": "vite examples/router-basic",
     "dev:sfc": "vite examples/sfc-counter",
     "dev:devtools-extension": "vite examples/devtools-extension",

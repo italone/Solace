@@ -2,9 +2,10 @@
 
 [简体中文](./api.zh-CN.md)
 
-This document describes the public Solace runtime API. Import runtime features from the package
-root, server rendering and SSG from `@italone/solace/server`, JSX support from the JSX subpaths, and
-DevTools integration from `@italone/solace/devtools`.
+This document describes the public Solace runtime API. Solace's primary authoring path is
+React-style function components with JSX/TSX and explicit runtime APIs. Import runtime features from
+the package root, server rendering and SSG from `@italone/solace/server`, JSX support from the JSX
+subpaths, and DevTools integration from `@italone/solace/devtools`.
 
 Internal files under `src/**`, generated files under `dist/**`, scheduler queues, shape flags,
 component instances, and VNode factory internals are not part of the compatibility contract.
@@ -41,32 +42,33 @@ Public TypeScript helper types include:
 
 Use Solace through the documented package entries only:
 
-| Entry                              | Stability | Purpose                                                     |
-| ---------------------------------- | --------- | ----------------------------------------------------------- |
-| `@italone/solace`                  | Public    | App, reactivity, rendering, components, scheduler, store    |
-| `@italone/solace/jsx-runtime`      | Public    | Automatic JSX runtime used by TypeScript and bundlers       |
-| `@italone/solace/jsx-dev-runtime`  | Public    | Development JSX runtime used by Vite and JSX dev tooling    |
-| `@italone/solace/devtools`         | Public    | Low-level listener and recorder APIs consumed by tooling    |
-| `@italone/solace/server`           | Public    | Server rendering, in-memory SSG, and static asset helpers   |
-| `@italone/solace/sfc`              | Public    | Type shim entry for `.solace` single-file component imports |
-| `@italone/solace/vite`             | Public    | Vite plugin for narrow `.solace` single-file components     |
-| `src/**`, `dist/**`, deep subpaths | Private   | Internal implementation details, not compatibility targets  |
+| Entry                              | Stability | Purpose                                                           |
+| ---------------------------------- | --------- | ----------------------------------------------------------------- |
+| `@italone/solace`                  | Public    | App, reactivity, rendering, function components, scheduler, store |
+| `@italone/solace/jsx-runtime`      | Public    | Automatic JSX runtime used by TypeScript and bundlers             |
+| `@italone/solace/jsx-dev-runtime`  | Public    | Development JSX runtime used by Vite and JSX dev tooling          |
+| `@italone/solace/devtools`         | Public    | Low-level listener and recorder APIs consumed by tooling          |
+| `@italone/solace/server`           | Public    | Server rendering, in-memory SSG, and static asset helpers         |
+| `@italone/solace/sfc`              | Public    | Optional experimental type shim entry for `.solace` imports       |
+| `@italone/solace/vite`             | Public    | Optional experimental Vite plugin for `.solace` components        |
+| `src/**`, `dist/**`, deep subpaths | Private   | Internal implementation details, not compatibility targets        |
 
 The beta-line compatibility contract remains intentionally narrow. Documented public entries should
 remain usable across patch releases, while internal modules, event emit helpers, scheduler queues,
 renderer diagnostics, component instances, and generated file layout can change without notice.
 
-The `.solace` compiler contract is currently limited to the documented Vite plugin and the
-`@italone/solace/sfc` type shim. The parser, generated JavaScript shape, and internal compiler
-modules remain implementation details behind the narrow compiler surface. Scoped styles are
-registered through the public `useStyle()` runtime helper, but generated module shape and compiler
-internals are not compatibility targets. The Vite plugin does not accept public options yet; passing
-options throws a `TypeError` so syntax expansion is not implied. SFC block attributes and custom
-top-level blocks are rejected; the documented block model remains one `<template>`, optional
-`<script>`, and optional `<style>`. Vite transform failures are the public diagnostics surface for
-invalid `.solace` files, and the current transform policy intentionally returns `map: null` instead
-of publishing source maps. Do not import compiler or router deep subpaths such as
-`@italone/solace/compiler`, `@italone/solace/router`, or `@italone/solace/dist/**`.
+The `.solace` compiler contract is optional, narrow, and experimental. It is limited to the
+documented Vite plugin and the `@italone/solace/sfc` type shim, and it is not the primary Solace
+component model. The parser, generated JavaScript shape, and internal compiler modules remain
+implementation details behind the auxiliary compiler surface. Scoped styles are registered through
+the public `useStyle()` runtime helper, but generated module shape and compiler internals are not
+compatibility targets. The Vite plugin does not accept public options yet; passing options throws a
+`TypeError` so syntax expansion is not implied. SFC block attributes and custom top-level blocks are
+rejected; the documented block model remains one `<template>`, optional `<script>`, and optional
+`<style>`. Vite transform failures are the public diagnostics surface for invalid `.solace` files,
+and the current transform policy intentionally returns `map: null` instead of publishing source
+maps. Do not import compiler or router deep subpaths such as `@italone/solace/compiler`,
+`@italone/solace/router`, or `@italone/solace/dist/**`.
 
 The router exports in the package root are beta APIs for small SPA examples. Nested route records,
 redirects, global `beforeEach` guards, route-level `beforeEnter` guards, route `meta`, route names,
@@ -86,10 +88,10 @@ browser DevTools extension example under `examples/devtools-extension`.
 
 Creates an app wrapper around a root component or an already-created VNode.
 
-```ts
-import { createApp, h } from "@italone/solace";
+```tsx
+import { createApp } from "@italone/solace";
 
-const App = () => h("p", null, "hello");
+const App = () => <p>hello</p>;
 
 createApp(App).mount(document.querySelector("#app") as Element);
 ```
@@ -426,27 +428,25 @@ The setup context exposes:
 - `slots` for default slots, named slots, and slot props.
 
 Components can return a VNode directly or return a render function. Returning a render function is
-useful when setup logic should run once and render should run repeatedly.
+useful when setup logic should run once and render should run repeatedly. In TSX, children passed
+between component tags become `slots.default`, so wrapper components can keep their props focused on
+explicit inputs.
 
-```ts
-import { h } from "@italone/solace";
+```tsx
 import type { ComponentSetupContext } from "@italone/solace";
 
-const Button = (props: { label: string }, { emit }: ComponentSetupContext) =>
-  h("button", { onClick: () => emit("change") }, props.label);
+const Button = (props: { label: string }, { emit }: ComponentSetupContext) => (
+  <button onClick={() => emit("change")}>{props.label}</button>
+);
 
 const Panel =
   (_props: object, { slots }: ComponentSetupContext) =>
-  () =>
-    h("section", null, [
-      h("header", null, slots.header?.() ?? null),
-      h("main", null, slots.default?.({ text: "Body" }) ?? null),
-    ]);
-
-h(Panel, null, {
-  header: () => h("h1", null, "Title"),
-  default: (slotProps) => h("p", null, String(slotProps?.text)),
-});
+  () => (
+    <section>
+      <header>{slots.header?.()}</header>
+      <main>{slots.default?.({ text: "Body" })}</main>
+    </section>
+  );
 ```
 
 Component event names resolve to `onXxx` handlers. Kebab-case event names are camelized before the
@@ -456,21 +456,21 @@ handler lookup, so `emit("item-change")` can resolve `onItemChange`.
 
 Declares a Solace component while preserving the function component contract.
 
-```ts
-import { defineComponent, h } from "@italone/solace";
+```tsx
+import { defineComponent } from "@italone/solace";
 
-const Button = defineComponent((props: { label: string }) => h("button", null, props.label));
+const Button = defineComponent((props: { label: string }) => <button>{props.label}</button>);
 ```
 
 ### `defineAsyncComponent(loader | options)`
 
 Declares a component that loads another component asynchronously.
 
-```ts
-import { defineAsyncComponent, h } from "@italone/solace";
+```tsx
+import { defineAsyncComponent } from "@italone/solace";
 
 const LazyMessage = defineAsyncComponent<{ text: string }>(() =>
-  Promise.resolve((props: { text: string }) => h("p", null, props.text)),
+  Promise.resolve((props: { text: string }) => <p>{props.text}</p>),
 );
 ```
 
@@ -488,11 +488,11 @@ The options form supports:
 
 Resolved, loading, and error components receive the latest props and default slot children.
 
-```ts
+```tsx
 const LazyPanel = defineAsyncComponent<{ title: string }>({
-  loader: () => Promise.resolve((props: { title: string }) => h("section", null, props.title)),
-  loadingComponent: () => h("span", null, "loading"),
-  errorComponent: () => h("strong", null, "failed"),
+  loader: () => Promise.resolve((props: { title: string }) => <section>{props.title}</section>),
+  loadingComponent: () => <span>loading</span>,
+  errorComponent: () => <strong>failed</strong>,
   delay: 200,
   timeout: 3000,
   retry: 2,
@@ -506,21 +506,21 @@ Passes values from an ancestor component setup to descendant component setup wit
 Keys can be strings or symbols. `inject()` searches component ancestors first, then app-level
 providers. It returns the supplied default value when no provider exists.
 
-```ts
-import { h, inject, provide } from "@italone/solace";
+```tsx
+import { inject, provide } from "@italone/solace";
 
 const ThemeKey = Symbol("theme");
 
 const Child = () => {
   const theme = inject(ThemeKey, "light");
 
-  return () => h("span", null, theme);
+  return () => <span>{theme}</span>;
 };
 
 const Parent = () => {
   provide(ThemeKey, "dark");
 
-  return () => h(Child);
+  return () => <Child />;
 };
 ```
 
@@ -532,15 +532,15 @@ const Parent = () => {
 
 Lifecycle hooks register during component setup. Calls made outside component setup are ignored.
 
-```ts
-import { h, onMounted, onUnmounted, onUpdated } from "@italone/solace";
+```tsx
+import { onMounted, onUnmounted, onUpdated } from "@italone/solace";
 
 const Tracked = () => {
   onMounted(() => console.log("mounted"));
   onUpdated(() => console.log("updated"));
   onUnmounted(() => console.log("unmounted"));
 
-  return () => h("p", null, "tracked");
+  return () => <p>tracked</p>;
 };
 ```
 
@@ -551,14 +551,14 @@ const Tracked = () => {
 Resolves after queued component updates flush. Use it in tests or integration code when a reactive
 mutation should be reflected in the DOM before the next assertion.
 
-```ts
-import { nextTick, reactive, render, h } from "@italone/solace";
+```tsx
+import { createApp, nextTick, reactive } from "@italone/solace";
 
 const state = reactive({ count: 0 });
-const Counter = () => () => h("button", null, `count: ${state.count}`);
+const Counter = () => () => <button>count: {state.count}</button>;
 const container = document.querySelector("#app") as Element;
 
-render(h(Counter), container);
+createApp(Counter).mount(container);
 state.count += 1;
 
 await nextTick();
@@ -613,24 +613,30 @@ nested route records, redirects, route names, aliases, route props, global `befo
 route-level `beforeEnter` guards, route `meta`, route lazy components through `lazyRoute()`,
 `RouterLink`, `RouterView`, and app installation through `createApp(App).use(router)`.
 
-```ts
+```tsx
 import {
   RouterLink,
   RouterView,
   createApp,
   createRouter,
   createWebHistory,
-  h,
   lazyRoute,
   useRoute,
 } from "@italone/solace";
 
-const Home = () => h("p", null, "home");
+const Home = () => <p>home</p>;
 const User = () => {
   const route = useRoute();
 
-  return () => h("p", null, `user:${route.value.params.id}`);
+  return () => <p>user: {route.value.params.id}</p>;
 };
+
+const DashboardLayout = () => () => (
+  <section>
+    <h2>Dashboard</h2>
+    <RouterView />
+  </section>
+);
 
 const router = createRouter({
   history: createWebHistory(),
@@ -640,14 +646,14 @@ const router = createRouter({
     { path: "/old-dashboard", redirect: "/dashboard" },
     {
       path: "/dashboard",
-      component: () => h("section", null, [h("h2", null, "Dashboard"), h(RouterView)]),
+      component: DashboardLayout,
       meta: { requiresAuth: true },
       children: [
-        { path: "", component: () => h("p", null, "dashboard home") },
+        { path: "", component: () => <p>dashboard home</p> },
         { path: "report", component: lazyRoute(() => import("./Report")) },
       ],
     },
-    { path: "/:pathMatch(.*)*", component: () => h("p", null, "not found") },
+    { path: "/:pathMatch(.*)*", component: () => <p>not found</p> },
   ],
 });
 
@@ -655,8 +661,12 @@ router.beforeEach((to) =>
   to.matched.some((record) => record.meta?.requiresAuth) ? "/login" : true,
 );
 
-const App = () => () =>
-  h("main", null, [h(RouterLink, { to: "/users/42" }, "User"), h(RouterView)]);
+const App = () => () => (
+  <main>
+    <RouterLink to="/users/42">User</RouterLink>
+    <RouterView />
+  </main>
+);
 
 createApp(App)
   .use(router)
@@ -744,7 +754,8 @@ Current beta router limitations:
 
 ## JSX
 
-Use the TypeScript automatic JSX runtime:
+Use JSX/TSX function components as the primary Solace authoring path. Configure the TypeScript
+automatic JSX runtime:
 
 ```json
 {
@@ -760,14 +771,27 @@ Public JSX entry points:
 - `@italone/solace/jsx-runtime`
 - `@italone/solace/jsx-dev-runtime`
 
+JSX `key` is a framework-level attribute for keyed children and accepts strings or numbers. It does
+not need to be declared on a function component's props type.
+JSX component children are routed to the component setup context as `slots.default`; component props
+do not need to declare a `children` field for normal slot children.
+JSX `onXxx` attributes are the component event handler convention used by `emit()`, so
+`emit("increment")` resolves `onIncrement` when present. TSX component `onXxx` values are typed as
+a function or an array of functions; non-function values are outside the public JSX contract.
+DOM `onXxx` attributes accept functions only. JSX fragment shorthand (`<>...</>`) is supported
+through the automatic runtime and renders without an extra DOM wrapper.
+
 Public tooling entry points:
 
 - `@italone/solace/sfc`
 - `@italone/solace/vite`
 
+These tooling entries are for the optional experimental `.solace` helper path, not the main
+component authoring model.
+
 ## Vite Plugin Subpath
 
-Import the current `.solace` compiler plugin from `@italone/solace/vite`:
+Import the current optional experimental `.solace` compiler plugin from `@italone/solace/vite`:
 
 ```ts
 import solace, { solacePlugin } from "@italone/solace/vite";

@@ -2,29 +2,30 @@
 
 [English](./readme.md)
 
-Solace 是一个 TypeScript-first 的前端框架，用于构建响应式、组件驱动的 Web 界面。
+Solace 是一个 JSX/TSX-first、TypeScript-first 的前端框架，用于构建响应式、组件驱动的 Web 界面。
 
-Solace 聚焦于小型运行时核心：响应式状态、调度渲染、VNode diff、函数式组件、JSX 支持，以及轻量的应用 API。这个项目以可阅读的框架实现为基础，同时配套了接近生产项目的工具链、测试、示例、包导出和发布检查。
+Solace 聚焦于小型运行时核心：响应式状态、调度渲染、VNode diff、函数组件、JSX/TSX 编写体验，以及明确的应用 API。这个项目以可阅读的独立框架实现为基础，同时配套了接近生产项目的工具链、测试、示例、包导出和发布检查。
 
 ## 为什么选择 Solace
 
 - **TypeScript-first 运行时**：源码、公共 API、示例和测试均使用 TypeScript 编写。
 - **默认响应式**：`reactive`、`ref`、`computed`、`effect`、`watch` 和 `watchEffect` 都可以从包根入口直接使用。
-- **组件渲染管线**：Solace 包含 VNode、DOM 渲染、keyed children diff、Fragment 支持、组件生命周期、props、emit、slots 和异步组件。
+- **函数组件渲染管线**：Solace 包含 VNode、DOM 渲染、keyed children diff、Fragment 支持、函数组件、生命周期、props、emit、slots 和异步组件。
 - **小而清晰的应用接口**：`createApp()` 提供挂载、插件和应用级依赖注入能力，不需要庞大的框架外壳。
-- **JSX 就绪**：内置自动 JSX runtime 入口，适合 Vite 和 TypeScript 项目使用。
+- **JSX/TSX-first**：内置自动 JSX runtime 入口，这是 Vite 和 TypeScript 项目的主要编写路径。
 - **质量门禁驱动开发**：仓库包含单元测试、集成测试、浏览器 e2e 测试、包消费者冒烟测试、覆盖率检查和 benchmark 冒烟检查。
 
 ## 项目状态
 
-Solace 当前处于 `0.1.0` beta 线。本 package build 是 `0.1.0-beta.1`。仓库功能可运行，并已经通过本地验证；当前 package metadata 已配置为公开 npm package。npm `latest` 仍是稳定 `0.0.5` 线，npm `beta` 是 beta 安装线。
+Solace 当前处于 `0.1.0` beta 线。本 package build 是 `0.1.0-beta.2`。仓库功能可运行，并已经通过本地验证；当前 package metadata 已配置为公开 npm package。npm `latest` 仍是稳定 `0.0.5` 线，npm `beta` 是 beta 安装线。
 
 目前可以通过下面的本地开发流程体验框架。需要使用最新稳定线时，可以安装默认 npm package；需要使用 beta 线时，可以安装 `@italone/solace@beta`；需要查看 `main` 上尚未发布的文档或运行时变更时，应直接使用仓库。
 
 当前完成度摘要：
 
-- App、响应式、渲染、组件、上下文、生命周期、调度器、store、JSX、SSR/hydration minimum loop、SSG core、runtime style registration 和 DevTools 集成已经通过文档化公开入口暴露。
+- App、响应式、渲染、函数组件、上下文、生命周期、调度器、store、JSX/TSX、SSR/hydration minimum loop、SSG core、runtime style registration 和 DevTools 集成已经通过文档化公开入口暴露。
 - 包产物包含 ESM、CJS、TypeScript declarations、JSX runtime 子路径、`@italone/solace/server`，以及 `@italone/solace/devtools` 子路径。
+- `.solace` SFC 支持仍通过 `@italone/solace/vite` 和 `@italone/solace/sfc` 提供，但它是可选、窄、实验性的辅助能力，不是 Solace 的主要组件编写模型。
 - 仓库包含一个示例级浏览器 DevTools timeline panel，它只消费公开 DevTools 子路径，不改变 runtime payload。
 - 验证覆盖 format、typecheck、lint、单元测试、集成测试、包导出测试、覆盖率阈值、packed-consumer 冒烟测试、jsdom benchmark、Chromium 生产构建浏览器 benchmark 和浏览器 e2e 测试。
 - npm 发布仍是独立的维护者决策。npm `latest` 和 npm `beta` 可以指向不同成熟度的版本线。
@@ -33,7 +34,7 @@ Solace 当前处于 `0.1.0` beta 线。本 package build 是 `0.1.0-beta.1`。�
 
 ## 当前范围
 
-Solace 当前适合用于学习小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 beta 线把 SFC、Router 和 SSR/hydration 保持在显式范围边界内：窄 `.solace` compiler surface、`@italone/solace/vite` plugin、beta 一方 router slice、通过 `generateStaticSite()` 暴露的 SSG core、通过 `@italone/solace/server` 暴露的 production asset tag resolution 和 explicit-path router-aware SSG helpers、通过 `@italone/solace/server` 和 `createApp(App).hydrate(container)` 暴露的 minimum SSR/hydration loop，以及示例级浏览器 DevTools timeline panel 都已经可用；完整 production SSR pipeline automation、streaming SSR、async SSR、一方 UI 组件、生产级 DevTools 发布形态和内部模块兼容性承诺仍然不在冻结后的生产契约内。
+Solace 当前适合用于学习 JSX/TSX-first 的小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 beta 线把可选实验性 SFC、Router 和 SSR/hydration 保持在显式范围边界内：函数组件和 JSX/TSX 是主要编写模型，窄 `.solace` compiler surface 与 `@italone/solace/vite` plugin 只是辅助入口。beta 一方 router slice、通过 `generateStaticSite()` 暴露的 SSG core、通过 `@italone/solace/server` 暴露的 production asset tag resolution 和 explicit-path router-aware SSG helpers、通过 `@italone/solace/server` 和 `createApp(App).hydrate(container)` 暴露的 minimum SSR/hydration loop，以及示例级浏览器 DevTools timeline panel 都已经可用；完整 production SSR pipeline automation、streaming SSR、async SSR、一方 UI 组件、生产级 DevTools 发布形态和内部模块兼容性承诺仍然不在冻结后的生产契约内。
 
 ## 快速开始
 
@@ -63,21 +64,20 @@ pnpm release:check
 
 ## 最小示例
 
-```ts
-import { createApp, h, reactive } from "@italone/solace";
+```tsx
+import { createApp, reactive } from "@italone/solace";
 
 const state = reactive({ count: 0 });
 
-const App = () =>
-  h(
-    "button",
-    {
-      onClick: () => {
-        state.count += 1;
-      },
-    },
-    `count: ${state.count}`,
-  );
+const App = () => (
+  <button
+    onClick={() => {
+      state.count += 1;
+    }}
+  >
+    count: {state.count}
+  </button>
+);
 
 createApp(App).mount(document.querySelector("#app") as Element);
 ```
@@ -133,15 +133,15 @@ server-rendered DOM。Hydration 默认在 mismatch 时抛错；传入 `{ recover
 client tree 替换不匹配的 server DOM。它返回可链式调用的 app 实例。`app.use()` 可以安装函数插件，也可以安装带
 `install()` 方法的对象插件，同一个插件在每个 app 实例中只会安装一次。`app.provide()` 注册应用级值，后代组件可以通过 `inject()` 读取。
 
-```ts
-import { createApp, h } from "@italone/solace";
+```tsx
+import { createApp } from "@italone/solace";
 import type { App, Plugin } from "@italone/solace";
 
 const themePlugin: Plugin = (app: App, theme: string) => {
   app.provide("theme", theme);
 };
 
-const AppRoot = () => h("main", null, "Hello Solace");
+const AppRoot = () => <main>Hello Solace</main>;
 
 createApp(AppRoot)
   .use(themePlugin, "dark")
@@ -213,32 +213,37 @@ Solace 组件是函数，接收 `props` 和 setup context。组件可以直接�
 render function。setup context 暴露 `emit` 用于组件事件，暴露 `slots` 用于默认 slot 或
 具名 slot。`defineComponent()` 保留同样的函数组件契约，同时在声明处强化意图和类型推导。
 
-```ts
-import { defineComponent, h } from "@italone/solace";
+```tsx
+import { defineComponent } from "@italone/solace";
 import type { ComponentSetupContext } from "@italone/solace";
 
 const CounterButton = defineComponent(
-  (props: { count: number }, { emit, slots }: ComponentSetupContext) =>
-    h("button", { onClick: () => emit("increment") }, [
-      h("span", null, `count: ${props.count}`),
-      h("small", null, slots.default?.() ?? null),
-    ]),
+  (props: { count: number }, { emit, slots }: ComponentSetupContext) => (
+    <button onClick={() => emit("increment")}>
+      <span>count: {props.count}</span>
+      <small>{slots.default?.()}</small>
+    </button>
+  ),
 );
 
-h(CounterButton, { count: 1, onIncrement: () => console.log("increment") }, "click me");
+const App = () => (
+  <CounterButton count={1} onIncrement={() => console.log("increment")}>
+    click me
+  </CounterButton>
+);
 ```
 
 `defineAsyncComponent()` 会包装组件 loader。它支持简单 loader 函数，也支持 options 对象，
 其中可以配置 `loadingComponent`、`errorComponent`、`delay`、`timeout`、`retry` 和
 `retryDelay`。已解析组件、loading 组件和 error 组件都会接收最新 props 和 slot children。
 
-```ts
-import { defineAsyncComponent, h } from "@italone/solace";
+```tsx
+import { defineAsyncComponent } from "@italone/solace";
 
 const LazyPanel = defineAsyncComponent<{ title: string }>({
   loader: () => import("./panel").then((mod) => mod.Panel),
-  loadingComponent: () => h("span", null, "Loading"),
-  errorComponent: () => h("strong", null, "Failed"),
+  loadingComponent: () => <span>Loading</span>,
+  errorComponent: () => <strong>Failed</strong>,
   delay: 200,
   timeout: 3000,
   retry: 2,
@@ -250,18 +255,18 @@ const LazyPanel = defineAsyncComponent<{ title: string }>({
 app-level provider。没有找到 key 时，`inject()` 可以返回 `undefined`，也可以返回传入的默认值。
 生命周期 hooks 在组件 setup 期间注册，并分别在挂载后、更新后和卸载清理时运行。
 
-```ts
-import { defineComponent, h, inject, onMounted, provide } from "@italone/solace";
+```tsx
+import { defineComponent, inject, onMounted, provide } from "@italone/solace";
 
 const ThemeProvider = defineComponent((_props: object, { slots }) => {
   provide("theme", "dark");
-  return () => h("section", null, slots.default?.() ?? null);
+  return () => <section>{slots.default?.()}</section>;
 });
 
 const ThemeLabel = defineComponent(() => {
   const theme = inject("theme", "light");
   onMounted(() => console.log("mounted"));
-  return () => h("span", null, `theme: ${theme}`);
+  return () => <span>theme: {theme}</span>;
 });
 ```
 
@@ -320,10 +325,10 @@ Solace 包含多个 Vite 示例，用于覆盖不同运行时路径：
 | Todo app       | `pnpm dev:todo`               | 表单输入、keyed list 更新、checkbox 状态、删除                                      |
 | Large list     | `pnpm dev:large`              | 10,000 个 keyed rows、定向 class/text 更新                                          |
 | Router basic   | `pnpm dev:router`             | beta router、嵌套路由、redirects、guards、lazyRoute、已暴露的 lazy-load-failed 错误 |
-| SFC counter    | `pnpm dev:sfc`                | 窄 `.solace` compiler surface 和 Vite plugin                                        |
+| SFC counter    | `pnpm dev:sfc`                | 可选实验性 `.solace` 辅助能力和 Vite plugin                                         |
 | DevTools panel | `pnpm dev:devtools-extension` | 浏览器 DevTools extension timeline 示例                                             |
 
-`examples/sfc-counter` 应用演示窄 `.solace` compiler surface 和 Vite plugin。
+`examples/sfc-counter` 应用演示可选实验性 `.solace` 辅助能力和 Vite plugin。Solace 的主要示例路径仍是 JSX/TSX 函数组件。
 
 运行浏览器 e2e 覆盖：
 
@@ -342,7 +347,7 @@ pnpm test:e2e
 - `@italone/solace/jsx-dev-runtime`：开发环境 JSX runtime。
 - `@italone/solace/devtools`：扩展示例消费的底层 DevTools listener 和 recorder API。
 - `@italone/solace/sfc`：`.solace` imports 的 TypeScript 类型声明入口。
-- `@italone/solace/vite`：窄 `.solace` 单文件组件的 Vite plugin。
+- `@italone/solace/vite`：可选实验性 `.solace` 单文件组件的 Vite plugin。
 
 安装 npm `latest` dist-tag：
 
@@ -444,7 +449,7 @@ pnpm release:readiness
 
 ## 路线图
 
-当前重点是稳定 SFC/Vite contract、收敛 router beta API、harden DevTools extension、协调 package/version 状态和维护文档质量。等核心运行时契约稳定后，后续可以继续扩展生产落地指南和生态适配器。
+当前重点是 JSX/TSX-first runtime ergonomics、函数组件示例、收敛 router beta API、harden DevTools extension、协调 package/version 状态和维护文档质量。SFC/Vite 工作仅限于保持现有可选实验性契约可靠，除非后续通过单独设计明确扩展。
 
 ## 贡献
 
