@@ -12,4 +12,15 @@ describe("DevTools documentation", () => {
     expect(docs).toContain("Renames or removals require an intentional breaking-change plan");
     expect(docs).toContain("Internal helpers remain private");
   });
+
+  test("documents browser extension QA boundaries", async () => {
+    const docs = await readFile("docs/devtools.md", "utf8");
+
+    expect(docs).toContain("## Browser Extension QA Checklist");
+    expect(docs).toContain("pnpm build:devtools-extension");
+    expect(docs).toContain("pnpm test:e2e:devtools-extension");
+    expect(docs).toContain("stale runtime ports");
+    expect(docs).toContain("Failed page `postMessage`");
+    expect(docs).toContain("do not include raw props, state, DOM nodes");
+  });
 });

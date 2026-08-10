@@ -23,8 +23,8 @@ Work remaining, in rough priority order:
 3. **Router beta stabilization** — the stable slice now covers static routes, dynamic params,
    wildcard fallback routes, query strings, web/hash/memory history, nested routes, redirects, route
    names, aliases, route props, named locations, global and route-level guards, explicit
-   `lazyRoute()` components, `RouterLink`, `RouterView`, `useRoute`, and `useRouter`; keep scroll
-   behavior, SSR/SSG/hydration integration, auth, and permissions deferred until separately
+   `lazyRoute()` components, `RouterLink`, `RouterView`, `useRoute`, `useRouter`, and scroll
+   behavior; keep SSR/SSG/hydration integration, auth, and permissions deferred until separately
    designed.
 4. **Mandatory public API gates** — keep package export tests, packed-consumer smoke, browser e2e, and release readiness required for public API changes.
 5. **SSR / hydration minimum loop** — implemented through `@italone/solace/server` and
@@ -40,9 +40,11 @@ Work remaining, in rough priority order:
    mismatch diagnostics, document SSG shell/style placement, and keep full router-aware SSR and
    hydration deferred until separately designed.
 8. **Browser DevTools extension UI** — the first example panel is implemented under
-   `examples/devtools-extension`; continue hardening extension packaging, browser-extension manual
-   QA, richer event contracts, and future inspectors without reading private runtime state.
-9. **Production adoption guidance** — large-app patterns, performance tuning, migration notes.
+   `examples/devtools-extension`; continue hardening extension packaging, the browser extension QA
+   checklist, richer event contracts, and future inspectors without reading private runtime state.
+9. **Production adoption guidance** — large-app patterns, performance tuning, migration notes. A
+   first guide now exists in `docs/large-app.md` and `docs/large-app.zh-CN.md`; ecosystem and UI
+   library decisions are recorded in `docs/ecosystem.md`; keep evolving both from real usage.
 
 ## Out of Scope (for now)
 

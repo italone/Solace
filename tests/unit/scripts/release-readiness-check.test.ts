@@ -14,7 +14,10 @@ describe("release readiness check CLI", () => {
 
     expect(stderr).toBe("");
     expect(stdout).toContain(
-      "public API gates: pnpm release:readiness, pnpm package:smoke, pnpm test:e2e",
+      "public API gates: pnpm release:readiness, pnpm package:smoke, pnpm test:e2e, pnpm test:e2e:devtools-extension",
+    );
+    expect(stdout).toContain(
+      "benchmark history: .benchmark-history/ ignored local JSONL artifacts",
     );
   });
 
@@ -91,6 +94,7 @@ describe("release readiness check CLI", () => {
       "pnpm benchmark",
       "pnpm benchmark:browser",
       "pnpm test:e2e",
+      "pnpm test:e2e:devtools-extension",
     ]);
   });
 

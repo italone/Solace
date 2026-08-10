@@ -12,6 +12,8 @@ import type {
   RouteProps,
   RouteRecord,
   RouteRecordName,
+  RouterScrollBehavior,
+  RouterScrollPosition,
   RouterOptions,
 } from "../../../src";
 
@@ -21,6 +23,14 @@ const routeName: RouteRecordName = "user";
 const routeParamValue: RouteParamInputValue = 42;
 const routeParams: RouteParamsInput = { id: routeParamValue };
 const routeProps: RouteProps = (route) => ({ id: route.params.id });
+const scrollPosition: RouterScrollPosition = { left: 0, top: 100, behavior: "smooth" };
+const scrollBehavior: RouterScrollBehavior = (to, from) => {
+  if (to.fullPath === from.fullPath) {
+    return false;
+  }
+
+  return scrollPosition;
+};
 const guarded: NavigationGuard = (to, from) => {
   if (to.fullPath === from.fullPath) {
     return false;
@@ -71,6 +81,13 @@ acceptRouteRecord({
   component: null,
   children: [{ path: "child", component: Home }],
 });
+
+// @ts-expect-error route record auth integration is not part of the router beta contract
+acceptRouteRecord({ path: "/admin", component: Home, auth: () => true });
+
+// @ts-expect-error route record permissions integration is not part of the router beta contract
+acceptRouteRecord({ path: "/admin", component: Home, permissions: ["admin"] });
+
 acceptRouteLocationRaw("/");
 acceptRouteLocationRaw({ path: "/", query: { tab: "profile" } });
 acceptRouteLocationRaw({ name: "user", params: routeParams, query: { tab: "profile" } });
@@ -90,9 +107,18 @@ const router = createRouter({
 const pushed = router.push("/");
 pushed.then((route) => route.fullPath);
 acceptRouterHistory(createMemoryHistory());
+acceptRouterOptions({ history, routes: [], scrollBehavior });
+acceptRouterOptions({ history, routes: [], scrollBehavior: async () => scrollPosition });
+acceptRouterOptions({ history, routes: [], scrollBehavior: () => false });
 
-// @ts-expect-error scroll behavior is not part of the router beta contract
-acceptRouterOptions({ history, routes: [], scrollBehavior: () => undefined });
+// @ts-expect-error auth integration is not part of the router beta contract
+acceptRouterOptions({ history, routes: [], auth: () => true });
+
+// @ts-expect-error permissions integration is not part of the router beta contract
+acceptRouterOptions({ history, routes: [], permissions: ["admin"] });
+
+// @ts-expect-error router-aware SSR integration is not part of the router beta contract
+acceptRouterOptions({ history, routes: [], ssr: true });
 
 // @ts-expect-error hash locations are not part of the router beta contract
 acceptRouteLocationRaw({ path: "/", hash: "#section" });

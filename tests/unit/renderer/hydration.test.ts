@@ -123,6 +123,16 @@ describe("hydrate", () => {
     const container = document.createElement("div");
     container.innerHTML = "<button>server</button>";
 
+    for (const options of [null, [], "options"]) {
+      expect(() => hydrate(h("button", null, "server"), container, null, options as never)).toThrow(
+        TypeError("Hydration options must be an object"),
+      );
+    }
+
+    expect(() =>
+      hydrate(h("button", null, "server"), container, null, { recover: "yes" } as never),
+    ).toThrow(TypeError("Hydration recover option must be a boolean"));
+
     expect(() =>
       hydrate(h("button", null, "server"), container, null, { manifest: {} } as never),
     ).toThrow(/Hydration manifest integration is deferred/);
@@ -136,6 +146,36 @@ describe("hydrate", () => {
     expect(() =>
       hydrate(h("button", null, "server"), container, null, { router: {} } as never),
     ).toThrow(/Router-aware hydration integration is deferred/);
+
+    expect(() =>
+      hydrate(h("button", null, "server"), container, null, { stream: true } as never),
+    ).toThrow(/Hydration streaming integration is deferred/);
+  });
+
+  it("rejects async hydration sources instead of entering the hydration pipeline", () => {
+    const container = document.createElement("div");
+    container.innerHTML = "<button>server</button>";
+
+    expect(() => hydrate(Promise.resolve(h("button", null, "server")) as never, container)).toThrow(
+      /Async hydration is deferred/,
+    );
+    expect((container as { _solaceRenderEffect?: unknown })._solaceRenderEffect).toBeUndefined();
+  });
+
+  it("rejects async hydration component trees instead of claiming server DOM", () => {
+    const asyncSources = [
+      async () => h("button", null, "client"),
+      () => async () => h("button", null, "client"),
+    ];
+
+    for (const AsyncApp of asyncSources) {
+      const container = document.createElement("div");
+      container.innerHTML = "<button>server</button>";
+
+      expect(() => hydrate(AsyncApp as never, container)).toThrow(/Async hydration is deferred/);
+      expect((container as { _solaceRenderEffect?: unknown })._solaceRenderEffect).toBeUndefined();
+      expect(container.innerHTML).toBe("<button>server</button>");
+    }
   });
 
   it("reports nested mismatch paths during hydration", () => {

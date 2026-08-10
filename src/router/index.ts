@@ -18,4 +18,7 @@ export type {
   Router,
   RouterHistory,
   RouterOptions,
+  RouterScrollBehavior,
+  RouterScrollBehaviorResult,
+  RouterScrollPosition,
 } from "./types";

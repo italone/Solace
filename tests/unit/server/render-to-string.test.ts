@@ -84,9 +84,15 @@ describe("renderToString", () => {
   it("rejects async component SSR instead of rendering an empty subtree", () => {
     const AsyncApp = async () => h("p", null, "async");
     const AsyncSetupApp = () => async () => h("p", null, "async setup");
+    const asyncSource = Promise.resolve(h("p", null, "async source"));
+    const asyncChild = Promise.resolve(h("span", null, "async child"));
 
+    expect(() => renderToString(asyncSource as never)).toThrow(/Async SSR is deferred/);
     expect(() => renderToString(AsyncApp as never)).toThrow(/Async SSR is deferred/);
     expect(() => renderToString(h(AsyncSetupApp as never))).toThrow(/Async SSR is deferred/);
+    expect(() => renderToString(h("p", null, asyncChild as never))).toThrow(
+      /Async SSR is deferred/,
+    );
   });
 
   it("preserves component provide chains and app-level provides", () => {
@@ -117,6 +123,14 @@ describe("renderToString", () => {
     );
   });
 
+  it("rejects non-object render context values", () => {
+    for (const context of [null, [], new Date()]) {
+      expect(() => renderToString(h("p", null, "server"), { context: context as never })).toThrow(
+        TypeError("SSR context must be a plain object"),
+      );
+    }
+  });
+
   it("rejects deferred manifest and router integration options", () => {
     expect(() => renderToString(h("p", null, "server"), { manifest: {} } as never)).toThrow(
       /SSR manifest integration is deferred/,
@@ -128,6 +142,9 @@ describe("renderToString", () => {
 
     expect(() => renderToString(h("p", null, "server"), { router: {} } as never)).toThrow(
       /Router-aware SSR integration is deferred/,
+    );
+    expect(() => renderToString(h("p", null, "server"), { stream: true } as never)).toThrow(
+      /Streaming SSR is deferred/,
     );
   });
 });

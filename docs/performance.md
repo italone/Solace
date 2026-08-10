@@ -135,6 +135,8 @@ one Playwright run. Each sample runs both `large-list` and `keyed-reorder`, and 
 Set `SOLACE_BROWSER_BENCHMARK_HISTORY_PATH=.benchmark-history/browser.jsonl pnpm benchmark:browser`
 to append one JSONL record after each successful Chromium production benchmark sample. Browser history
 records persist the existing summary object; they do not add timing thresholds or statistical aggregation.
+`.benchmark-history/` is a local ignored artifact directory and must stay out of commits and release
+packages.
 
 The keyed reorder browser result also includes `domMutationCounts`, measured only during the reorder update window.
 These counters are diagnostic context for choosing the next renderer performance slice. They are not timing thresholds.
@@ -168,7 +170,28 @@ claims that reference both browser and jsdom behavior.
 Use `pnpm benchmark:history -- --latest-browser-count 5` to summarize only the latest five browser
 records per scenario while leaving jsdom record counts in the summary. This is useful when older
 slow samples dominate full-history p95 and the next runtime hotspot needs a fresher trend window.
+When browser history records include `metadata.runAt`, the latest-window selection uses that ISO
+timestamp per scenario instead of relying on JSONL file order.
 Run `pnpm benchmark:history -- --help` to list the supported summary options.
+
+## Benchmark History Decision Rules
+
+Use benchmark history as an adoption and release signal only when the sample window matches the
+claim:
+
+- For a browser-only claim, require at least five latest browser records per scenario with
+  `--latest-browser-count 5 --min-browser-count 5`.
+- For a claim that mentions both runtime internals and browser behavior, also require
+  `--min-jsdom-count 5`.
+- Treat `metadata.runAt` as the browser latest-window ordering field when history files have been
+  merged or reordered.
+- Keep `.benchmark-history/` ignored; copy summarized numbers into docs or release notes, not the
+  local JSONL files.
+- Keep timing values out of release notes unless the command, sample count, environment metadata,
+  and scenario names are stated together.
+- Treat `domMutationCounts` and `movePathCounts` as diagnostic context, not pass/fail thresholds.
+- Re-run the history summary after benchmark fixture, browser, Node, OS, or hardware changes before
+  comparing a new runtime slice with older local history.
 
 ### Latest Local Browser History Summary
 

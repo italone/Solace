@@ -69,3 +69,6 @@ jobs:
 
       - name: E2E
         run: pnpm test:e2e
+
+      - name: DevTools extension E2E
+        run: pnpm test:e2e:devtools-extension

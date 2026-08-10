@@ -39,7 +39,16 @@ See [docs/project-status.md](./docs/project-status.md) for the current completio
 
 ## Current Scope
 
-Solace is suitable today for studying a compact JSX/TSX-first frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current beta line keeps optional experimental SFC support, Router, and SSR/hydration on explicit scope boundaries: function components and JSX/TSX are the primary authoring model, while the narrow `.solace` compiler surface and `@italone/solace/vite` plugin remain auxiliary. The beta first-party router slice, SSG core through `generateStaticSite()`, production asset tag resolution and explicit-path router-aware SSG helpers through `@italone/solace/server`, a minimum SSR/hydration loop through `@italone/solace/server` plus `createApp(App).hydrate(container)`, and an example browser DevTools timeline panel are all usable today, while full production SSR pipeline automation, streaming SSR, async SSR, first-party UI components, production-grade DevTools distribution, and compatibility guarantees for internal modules remain outside the frozen production contract.
+Solace is suitable today for studying a compact JSX/TSX-first frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current beta line keeps optional experimental SFC support, Router, and SSR/hydration on explicit scope boundaries: function components and JSX/TSX are the primary authoring model, while the narrow `.solace` compiler surface and `@italone/solace/vite` plugin remain auxiliary. The beta first-party router slice, SSG core through `generateStaticSite()`, production asset tag resolution and explicit-path router-aware SSG helpers through `@italone/solace/server`, a minimum SSR/hydration loop through `@italone/solace/server` plus `createApp(App).hydrate(container)`, and an example browser DevTools timeline panel are all usable today, while full production SSR pipeline automation, streaming SSR, async SSR, async hydration, first-party UI components, production-grade DevTools distribution, and compatibility guarantees for internal modules remain outside the frozen production contract.
+
+## Public Contract Gate
+
+Public API changes should keep README, project-status, API, package-usage, package exports, and
+consumer smoke coverage aligned before release. The beta contract still defers auth, permissions,
+router-aware SSR, router-aware hydration, streaming SSR, async component SSR, and async hydration.
+Those capabilities should stay documented as unsupported until a separate design widens the public
+API and the release gate covers the new behavior. Router `auth` and `permissions` options or route
+record fields are explicitly rejected instead of being treated as implicit client authorization.
 
 ## Quick Start
 
@@ -66,6 +75,9 @@ Run the full release check before publishing decisions:
 ```bash
 pnpm release:check
 ```
+
+The full release check includes `pnpm test:e2e` and `pnpm test:e2e:devtools-extension` so regular
+browser examples and the DevTools extension smoke stay aligned before release notes or publishing.
 
 ## Minimal Example
 
@@ -341,6 +353,7 @@ Solace includes Vite examples that exercise different runtime paths:
 | DevTools panel | `pnpm dev:devtools-extension` | browser DevTools extension timeline example                                           |
 
 The `examples/sfc-counter` app demonstrates the optional experimental `.solace` helper and Vite plugin. Solace's primary example path remains JSX/TSX function components.
+Before using the DevTools panel in a release note or demo, follow the browser extension QA checklist in [docs/devtools.md](./docs/devtools.md).
 
 Run browser e2e coverage:
 
@@ -360,6 +373,7 @@ The public package shape is:
 - `@italone/solace/devtools`: low-level DevTools listener and recorder APIs used by the extension example.
 - `@italone/solace/sfc`: TypeScript type shim for `.solace` imports.
 - `@italone/solace/vite`: Vite plugin for optional experimental `.solace` single-file components.
+- `docs/large-app.md`: large-app structure, routing, state, SSR, performance, and release notes.
 
 Install the npm `latest` dist-tag with:
 
@@ -406,6 +420,8 @@ Current validation includes:
 - Coverage thresholds.
 - Tinybench jsdom benchmark smoke tests.
 - Chromium production browser benchmark for large-list and keyed-reorder scenarios.
+- Browser e2e and DevTools extension e2e smoke through `pnpm test:e2e` and
+  `pnpm test:e2e:devtools-extension`.
 
 Run benchmark smoke checks:
 
@@ -414,7 +430,7 @@ pnpm benchmark
 pnpm benchmark:browser
 ```
 
-See [docs/performance.md](./docs/performance.md) for methodology, current local trend notes, and benchmark principles.
+Use `pnpm benchmark:history` when a performance claim needs a trend window. Keep the latest browser sample count, jsdom sample count, and scenario names together with any release note or README claim. For the current threshold rules, see [docs/performance.md](./docs/performance.md) and [docs/release.md](./docs/release.md).
 
 ## Development
 
@@ -452,6 +468,7 @@ See [docs/release.md](./docs/release.md) for release gates and publishing requir
 - [Package usage](./docs/package-usage.md)
 - [Project status](./docs/project-status.md)
 - [Performance](./docs/performance.md)
+- [Large app guide](./docs/large-app.md)
 - [Release](./docs/release.md)
 - [DevTools](./docs/devtools.md)
 - [Roadmap](./docs/roadmap.md)

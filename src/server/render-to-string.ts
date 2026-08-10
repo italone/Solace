@@ -27,6 +27,7 @@ export function renderToString(
   options: RenderToStringOptions = {},
 ): RenderToStringResult {
   assertNoDeferredIntegrationOptions(options);
+  assertNoAsyncSSRSource(source);
   const vnode = normalizeSource(source);
   const sink = createServerStyleSink();
   const html = withStyleSink(sink, () =>
@@ -105,6 +106,8 @@ function renderChildrenToString(
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
 ): string {
+  assertNoAsyncSSRSource(children);
+
   if (children === null) {
     return "";
   }
@@ -188,6 +191,10 @@ function assertNoDeferredIntegrationOptions(options: RenderToStringOptions): voi
     throw new TypeError("SSR options must be an object");
   }
 
+  if (options.context !== undefined && !isPlainObject(options.context)) {
+    throw new TypeError("SSR context must be a plain object");
+  }
+
   if (options.provides !== undefined && !(options.provides instanceof Map)) {
     throw new TypeError("SSR provides must be a Map");
   }
@@ -203,8 +210,23 @@ function assertNoDeferredIntegrationOptions(options: RenderToStringOptions): voi
       "Router-aware SSR integration is deferred; pass explicit render sources instead.",
     );
   }
+
+  if (hasOwn(options, "stream")) {
+    throw new TypeError(
+      "Streaming SSR is deferred; renderToString() currently returns a complete string result.",
+    );
+  }
 }
 
 function hasOwn(value: object, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(value, key);
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
 }

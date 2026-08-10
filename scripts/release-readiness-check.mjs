@@ -12,6 +12,7 @@ const options = parseArgs(process.argv.slice(2));
 
 const packageJson = await readJson("package.json");
 const changesetConfig = await readJson(".changeset/config.json");
+const gitignore = await readText(".gitignore");
 
 if (options.help) {
   printHelp();
@@ -36,7 +37,9 @@ requireScript("release:publish");
 requireReleaseCheckCommand("pnpm release:readiness");
 requireReleaseCheckCommand("pnpm package:smoke");
 requireReleaseCheckCommand("pnpm test:e2e");
+requireReleaseCheckCommand("pnpm test:e2e:devtools-extension");
 requireReleaseCheckCommand("pnpm benchmark:browser");
+requireGitignorePattern(".benchmark-history/");
 
 if (changesetConfig.access !== "public") {
   failures.push('.changeset/config.json access must be "public" before public publishing.');
@@ -92,7 +95,10 @@ if (failures.length > 0) {
   console.log(`package: ${packageJson.name}@${packageJson.version}`);
   console.log(`changeset access: ${changesetConfig.access}`);
   console.log(`mode: ${options.publishable ? "publishable" : "default"}`);
-  console.log("public API gates: pnpm release:readiness, pnpm package:smoke, pnpm test:e2e");
+  console.log(
+    "public API gates: pnpm release:readiness, pnpm package:smoke, pnpm test:e2e, pnpm test:e2e:devtools-extension",
+  );
+  console.log("benchmark history: .benchmark-history/ ignored local JSONL artifacts");
   if (options.publishable) {
     console.log(`git synchronization: ${gitSynchronization}`);
   }
@@ -181,8 +187,12 @@ function requireArgValue(value, optionName) {
 }
 
 async function readJson(relativePath) {
-  const raw = await readFile(resolve(root, relativePath), "utf8");
+  const raw = await readText(relativePath);
   return JSON.parse(raw);
+}
+
+async function readText(relativePath) {
+  return readFile(resolve(root, relativePath), "utf8");
 }
 
 async function readGitStatus(gitStatusFile) {
@@ -260,6 +270,17 @@ function requireReleaseCheckCommand(command) {
 
   if (typeof releaseCheck !== "string" || !releaseCheck.includes(command)) {
     failures.push(`package.json release:check must include "${command}".`);
+  }
+}
+
+function requireGitignorePattern(pattern) {
+  const ignoredPatterns = gitignore
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && !line.startsWith("#"));
+
+  if (!ignoredPatterns.includes(pattern)) {
+    failures.push(`.gitignore must include "${pattern}" for local benchmark history artifacts.`);
   }
 }
 

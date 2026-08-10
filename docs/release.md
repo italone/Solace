@@ -17,16 +17,18 @@ pnpm release:check
 
 This runs release readiness, format check, typecheck, JSX dev typecheck, lint, default tests,
 package exports tests, coverage thresholds, package consumer smoke, jsdom benchmark smoke, Chromium
-production browser benchmark, and browser e2e tests. The package consumer smoke includes packed
-ESM/CJS import checks, TypeScript consumer checks, router public API checks, and a Vite production
-build that transforms a `.solace` single-file component through the packed `@italone/solace/vite`
-plugin.
+production browser benchmark, browser e2e tests, and DevTools extension e2e smoke. The package
+consumer smoke includes packed ESM/CJS import checks, TypeScript consumer checks, router public API
+checks, and a Vite production build that transforms a `.solace` single-file component through the
+packed `@italone/solace/vite` plugin.
 
-For public API changes, `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e` are
-mandatory gates. `pnpm release:check` includes them so release preparation and package-boundary
-drift are checked together.
+For public API changes, `pnpm release:readiness`, `pnpm package:smoke`, `pnpm test:e2e`, and
+`pnpm test:e2e:devtools-extension` are mandatory gates. `pnpm release:check` includes them so
+release preparation, package-boundary drift, and browser extension drift are checked together.
 
-The GitHub Actions CI workflow keeps these checks split into named steps and also runs both benchmark commands: `pnpm benchmark` and `pnpm benchmark:browser`.
+The GitHub Actions CI workflow keeps these checks split into named steps and also runs both
+benchmark commands, ordinary browser e2e, and DevTools extension e2e smoke: `pnpm benchmark`,
+`pnpm benchmark:browser`, `pnpm test:e2e`, and `pnpm test:e2e:devtools-extension`.
 
 CI also runs `pnpm release:readiness` before the longer checks so package metadata and release script drift fail early.
 
@@ -51,6 +53,26 @@ Publishable mode also checks the local Git state. It fails when the branch is ah
 its upstream, when no upstream is configured, or when the working tree is dirty. Use
 `pnpm release:readiness -- --publishable --skip-git-check` only for metadata-only audits where a
 maintainer has explicitly decided not to publish from the current checkout.
+
+## Performance Claims
+
+Use `pnpm benchmark:history` before writing release notes or README copy that mentions
+performance. When a claim references browser behavior, require at least five latest browser
+records per scenario. When it also references runtime internals or smoke benchmark history, require
+both browser and jsdom minimum counts. Keep the command, sample window, and scenario names together
+with the claim. Browser latest-window summaries use `metadata.runAt` when it is present, so merged
+history files do not have to rely on JSONL file order. Keep `.benchmark-history/` ignored and copy
+only summarized results into release notes; local JSONL history must not be committed or packed.
+
+## DevTools Extension Notes
+
+Before release notes or demos mention the browser DevTools extension example, run the browser
+extension QA checklist in `docs/devtools.md`. Release notes must review and narrow extension permissions.
+Narrow the permissions before producing a production browser-store package or a demo with fixed
+inspected origins. The note should describe the panel as an example-grade timeline inspector that
+consumes public `DevtoolsEvent` summaries. Do not describe it as a
+production browser-store distribution, persisted capture workflow, telemetry workflow, component
+tree inspector, dependency graph, flame chart, or SSR/SSG/hydration inspector.
 
 ## Prepare A Version
 

@@ -215,8 +215,11 @@ Hydration reuses existing `style[data-s-id]` tags for matching `useStyle()` regi
 on structural mismatches by default. Pass `{ recover: true }` to explicitly replace mismatched
 server DOM with the client VNode tree while keeping later reactive updates on the normal renderer
 path. Without `{ recover: true }`, failed hydration cleans up the root hydration effect before
-rethrowing the mismatch. Passing deferred integration options such as `manifest`, `clientEntry`, or `router` to
-`renderToString()` throws a `TypeError`, and `hydrate()` rejects the same fields at runtime.
+rethrowing the mismatch. Passing deferred integration options such as `manifest`, `clientEntry`,
+`router`, or `stream` to `renderToString()` throws a `TypeError`, and `hydrate()` rejects matching
+manifest/router/streaming integration fields at runtime.
+Hydration options must be a non-array object, and `recover` must be boolean when provided.
+`renderToString()` context, when provided, must be a plain object.
 Hydration mismatch errors expose stable path information plus `kind`, `expected`, and `actual`
 fields so missing nodes, extra nodes, element tag mismatches, and text mismatches can be diagnosed
 without guessing from a single message string.
@@ -224,9 +227,12 @@ without guessing from a single message string.
 This minimum loop includes synchronous `renderToString()`, in-memory SSG through
 `generateStaticSite()`, server-side style collection, hydration-safe style dedupe, production asset
 tag resolution through `resolveStaticAssets()`, and an explicit-path router-to-SSG adapter through
-`createStaticRoutesFromRouter()`. It does not include streaming SSR, async component SSR, filesystem
-SSG output, route crawling, router-aware SSR, router-aware hydration, or automatic hydration
-mismatch recovery beyond the explicit `recover` deopt.
+`createStaticRoutesFromRouter()`. It rejects async or thenable render trees, including direct
+sources, SSG route sources, and async child values. Hydration also rejects async or thenable direct
+sources and component trees instead of claiming server DOM with an unresolved tree. It does not
+include streaming SSR, async component SSR, async hydration, filesystem SSG output, route crawling,
+router-aware SSR, router-aware hydration, or automatic hydration mismatch recovery beyond the
+explicit `recover` deopt.
 Async or thenable SSR render trees are explicitly rejected with a `TypeError` instead of being
 rendered as an empty subtree.
 
@@ -346,11 +352,16 @@ createApp(App)
 The current beta router supports path matching, dynamic params, query parsing, browser history
 adapters, nested route records, redirects, global `beforeEach` guards, route-level `beforeEnter`
 guards, route `meta`, route names, aliases, route props, named locations, `createMemoryHistory()`,
-`lazyRoute()` route components, `RouterLink`, and `RouterView`. Scroll behavior, auth, permissions,
-SSR, SSG, and hydration router integration remain deferred. `props: true` passes route params,
-plain object props are used as-is, and function props are evaluated from the matched route. Named
-locations preserve canonical path generation, and alias URLs preserve canonical matched/name
-behavior.
+`lazyRoute()` route components, `RouterLink`, `RouterView`, and `scrollBehavior` after successful
+navigations. The beta router still defers these public features: auth, permissions,
+router-aware SSR, router-aware hydration, streaming SSR, and async component SSR. `props: true`
+passes route params, plain object props are used as-is, and function props are evaluated from the
+matched route. Named locations preserve canonical path generation, and alias URLs preserve canonical
+matched/name behavior.
+Do not treat route `meta` as authentication or permission enforcement. Use it as application-owned
+metadata for examples or local UX decisions only, and keep backend authorization as the enforcement
+boundary in real applications. Router-level `auth` and `permissions` options and route record fields
+are rejected until Solace designs a first-party integration surface.
 Object route locations support `{ path, query }` and `{ name, params, query }`; hash fragments in
 string or object-path locations, and params objects on path-based locations, are rejected. Object
 location `path` values must not include query strings; use the separate `query` field instead. Route
@@ -392,6 +403,13 @@ pnpm build:devtools-extension
 pnpm test:e2e:devtools-extension
 ```
 
+Before using the extension example in a release note or demo, follow the browser extension QA
+checklist in [docs/devtools.md](./devtools.md). The QA pass should confirm relayed public event
+summaries, bounded captures, reconnect behavior, stale-port handling, and the absence of raw runtime
+payloads. The example manifest uses example-grade broad inspected-page access for local demos;
+release notes and production browser-store packaging must review and narrow extension permissions
+for the intended inspected origins.
+
 The example panel is not a stable browser-store distribution contract. It does not persist captures,
 send events over the network, inspect private runtime objects, or include SSR/SSG/hydration-specific
 views.
@@ -429,9 +447,10 @@ pnpm release:check
 ```
 
 That command runs release readiness, quality checks, coverage thresholds, package consumer smoke,
-jsdom benchmark smoke, Chromium production browser benchmark, and browser e2e tests. For public API
-changes, treat `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e` as mandatory
-gates even when you do not run the full release check.
+jsdom benchmark smoke, Chromium production browser benchmark, browser e2e tests, and DevTools
+extension e2e smoke. For public API changes, treat `pnpm release:readiness`, `pnpm package:smoke`,
+`pnpm test:e2e`, and `pnpm test:e2e:devtools-extension` as mandatory gates even when you do not run
+the full release check.
 
 See `docs/release.md` for versioning and publish steps.
 

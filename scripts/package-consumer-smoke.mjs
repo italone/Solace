@@ -245,10 +245,10 @@ await router.push("/child");
   );
   await writeFile(
     join(consumerDir, "src", "public-contract-types.ts"),
-    `import { createMemoryHistory, createRouter, h, lazyRoute } from "@italone/solace";
+    `import { createApp, createMemoryHistory, createRouter, h, lazyRoute } from "@italone/solace";
 import { jsx } from "@italone/solace/jsx-runtime";
 import { jsxDEV } from "@italone/solace/jsx-dev-runtime";
-import type { HydrationOptions, NavigationGuard, RouteComponent, RouteLocationRaw, RouteRecord, RouterOptions } from "@italone/solace";
+import type { HydrationOptions, NavigationGuard, RouteComponent, RouteLocationRaw, RouteRecord, RouterOptions, RouterScrollBehavior, RouterScrollPosition } from "@italone/solace";
 import type { GenerateStaticSiteOptions, RenderToStringOptions } from "@italone/solace/server";
 import { solacePlugin } from "@italone/solace/vite";
 
@@ -256,6 +256,8 @@ const Home = () => h("p", null, "home");
 const ConsumerButton = (props: { label: string }) => h("button", null, props.label);
 const guard: NavigationGuard = () => true;
 const lazyComponent: RouteComponent = lazyRoute(() => Promise.resolve(Home));
+const scrollPosition: RouterScrollPosition = { left: 0, top: 20, behavior: "smooth" };
+const scrollBehavior: RouterScrollBehavior = () => scrollPosition;
 
 function acceptRouteRecord(record: RouteRecord): RouteRecord {
   return record;
@@ -298,6 +300,7 @@ acceptRouteRecord({ path: "/legacy", redirect: "/dashboard/settings" });
 acceptRouterOptions({
   history: createMemoryHistory(),
   routes: [{ path: "/", component: Home }],
+  scrollBehavior,
 });
 acceptRouteLocationRaw("/");
 acceptRouteLocationRaw({ path: "/", query: { tab: "profile" } });
@@ -326,8 +329,20 @@ acceptHydrationOptions({ recover: "yes" });
 // @ts-expect-error production manifest integration is not part of the hydration public contract
 acceptHydrationOptions({ manifest: {} });
 
-// @ts-expect-error scroll behavior is deferred
-acceptRouterOptions({ history: {} as never, routes: [], scrollBehavior: () => undefined });
+// @ts-expect-error streaming hydration integration is deferred
+acceptHydrationOptions({ stream: true });
+
+// @ts-expect-error async root components are not part of the hydration public contract
+createApp(async () => h("p", null, "async")).hydrate(document.createElement("main"));
+
+// @ts-expect-error auth integration is not part of the router beta contract
+acceptRouterOptions({ history: {} as never, routes: [], auth: () => true });
+
+// @ts-expect-error route record auth integration is not part of the router beta contract
+acceptRouteRecord({ path: "/admin", auth: () => true });
+
+// @ts-expect-error route record permissions integration is not part of the router beta contract
+acceptRouteRecord({ path: "/admin", permissions: ["admin"] });
 
 // @ts-expect-error named locations must include a string name
 acceptRouteLocationRaw({ name: 42 });
@@ -352,6 +367,9 @@ acceptRenderOptions({ clientEntry: "/src/main.ts" });
 
 // @ts-expect-error router-aware SSR integration is deferred
 acceptRenderOptions({ router: {} });
+
+// @ts-expect-error streaming SSR integration is deferred
+acceptRenderOptions({ stream: true });
 
 createRouter({
   history: {
@@ -460,7 +478,9 @@ if (contractRouter.resolve({ name: "user", params: { id: 42 } }).fullPath !== "/
 }
 expectThrows("router invalid route path", () => api.createRouter({ history, routes: [{ path: 42, component: Home }] }), /Router route record path must be a string/);
 expectThrows("router invalid routes list", () => api.createRouter({ history, routes: null }), /Router routes must be an array/);
-expectThrows("router deferred options", () => api.createRouter({ history, routes: [{ path: "/", component: Home }], scrollBehavior: () => ({ left: 0, top: 0 }) }), /Deferred router option/);
+api.createRouter({ history, routes: [{ path: "/", component: Home }], scrollBehavior: () => ({ left: 0, top: 0 }) });
+expectThrows("router deferred auth option", () => api.createRouter({ history, routes: [{ path: "/", component: Home }], auth: () => true }), /Router auth integration is not part of the beta contract/);
+expectThrows("router deferred permissions route field", () => api.createRouter({ history, routes: [{ path: "/", component: Home, permissions: ["admin"] }] }), /Router route record permissions integration is not part of the beta contract/);
 expectThrows("router deferred path syntax", () => api.createRouter({ history, routes: [{ path: "/users/:id?", component: Home }] }), /Deferred router path syntax/);
 const router = api.createRouter({ history, routes: [{ path: "/", component: Home }] });
 expectThrows("router missing location path", () => router.resolve({ query: { tab: "profile" } }), /Router location path must be a string/);
@@ -470,7 +490,12 @@ await expectRejects("router deferred push location fields", router.push({ path: 
 await expectRejects("router deferred replace location fields", router.replace({ path: "/users/1", params: { id: "1" } }), /Deferred router location field/);
 expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest integration is deferred/);
 expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
+expectThrows("SSR stream option", () => server.renderToString(api.h("p", null, "server"), { stream: true }), /Streaming SSR is deferred/);
+expectThrows("SSR invalid context", () => server.renderToString(api.h("p", null, "server"), { context: [] }), /SSR context must be a plain object/);
+expectThrows("async SSR source", () => server.renderToString(Promise.resolve(api.h("p", null, "async"))), /Async SSR is deferred/);
 expectThrows("async SSR", () => server.renderToString(api.h(AsyncPage)), /Async SSR is deferred/);
+expectThrows("async SSR child", () => server.renderToString(api.h("p", null, Promise.resolve(api.h("span", null, "async")))), /Async SSR is deferred/);
+expectThrows("async SSG source", () => server.generateStaticSite({ routes: [{ path: "/", source: Promise.resolve(api.h("p", null, "async")) }] }), /Async SSR is deferred/);
 expectThrows("SSG invalid route path", () => server.generateStaticSite({ routes: [{ path: 42, source: api.h("p", null, "home") }] }), /SSG route path must be a string/);
 expectThrows("SSG partial manifest option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], manifest: {} }), /SSG manifest integration requires both manifest and clientEntry/);
 expectThrows("SSG router option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], router: {} }), /Router-aware SSG integration is deferred/);
@@ -534,7 +559,9 @@ if (contractRouter.resolve({ name: "user", params: { id: 42 } }).fullPath !== "/
 }
 expectThrows("router invalid route path", () => api.createRouter({ history, routes: [{ path: 42, component: Home }] }), /Router route record path must be a string/);
 expectThrows("router invalid routes list", () => api.createRouter({ history, routes: null }), /Router routes must be an array/);
-expectThrows("router deferred options", () => api.createRouter({ history, routes: [{ path: "/", component: Home }], scrollBehavior: () => ({ left: 0, top: 0 }) }), /Deferred router option/);
+api.createRouter({ history, routes: [{ path: "/", component: Home }], scrollBehavior: () => ({ left: 0, top: 0 }) });
+expectThrows("router deferred auth option", () => api.createRouter({ history, routes: [{ path: "/", component: Home }], auth: () => true }), /Router auth integration is not part of the beta contract/);
+expectThrows("router deferred permissions route field", () => api.createRouter({ history, routes: [{ path: "/", component: Home, permissions: ["admin"] }] }), /Router route record permissions integration is not part of the beta contract/);
 expectThrows("router deferred path syntax", () => api.createRouter({ history, routes: [{ path: "/users/:id?", component: Home }] }), /Deferred router path syntax/);
 const router = api.createRouter({ history, routes: [{ path: "/", component: Home }] });
 expectThrows("router missing location path", () => router.resolve({ query: { tab: "profile" } }), /Router location path must be a string/);
@@ -549,7 +576,12 @@ Promise.all([
 });
 expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest integration is deferred/);
 expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
+expectThrows("SSR stream option", () => server.renderToString(api.h("p", null, "server"), { stream: true }), /Streaming SSR is deferred/);
+expectThrows("SSR invalid context", () => server.renderToString(api.h("p", null, "server"), { context: [] }), /SSR context must be a plain object/);
+expectThrows("async SSR source", () => server.renderToString(Promise.resolve(api.h("p", null, "async"))), /Async SSR is deferred/);
 expectThrows("async SSR", () => server.renderToString(api.h(AsyncPage)), /Async SSR is deferred/);
+expectThrows("async SSR child", () => server.renderToString(api.h("p", null, Promise.resolve(api.h("span", null, "async")))), /Async SSR is deferred/);
+expectThrows("async SSG source", () => server.generateStaticSite({ routes: [{ path: "/", source: Promise.resolve(api.h("p", null, "async")) }] }), /Async SSR is deferred/);
 expectThrows("SSG invalid route path", () => server.generateStaticSite({ routes: [{ path: 42, source: api.h("p", null, "home") }] }), /SSG route path must be a string/);
 expectThrows("SSG partial manifest option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], manifest: {} }), /SSG manifest integration requires both manifest and clientEntry/);
 expectThrows("SSG router option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], router: {} }), /Router-aware SSG integration is deferred/);

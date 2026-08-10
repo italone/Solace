@@ -34,7 +34,13 @@ Solace 当前处于 `0.1.0` beta 线。本 package build 是 `0.1.0-beta.2`。�
 
 ## 当前范围
 
-Solace 当前适合用于学习 JSX/TSX-first 的小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 beta 线把可选实验性 SFC、Router 和 SSR/hydration 保持在显式范围边界内：函数组件和 JSX/TSX 是主要编写模型，窄 `.solace` compiler surface 与 `@italone/solace/vite` plugin 只是辅助入口。beta 一方 router slice、通过 `generateStaticSite()` 暴露的 SSG core、通过 `@italone/solace/server` 暴露的 production asset tag resolution 和 explicit-path router-aware SSG helpers、通过 `@italone/solace/server` 和 `createApp(App).hydrate(container)` 暴露的 minimum SSR/hydration loop，以及示例级浏览器 DevTools timeline panel 都已经可用；完整 production SSR pipeline automation、streaming SSR、async SSR、一方 UI 组件、生产级 DevTools 发布形态和内部模块兼容性承诺仍然不在冻结后的生产契约内。
+Solace 当前适合用于学习 JSX/TSX-first 的小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 beta 线把可选实验性 SFC、Router 和 SSR/hydration 保持在显式范围边界内：函数组件和 JSX/TSX 是主要编写模型，窄 `.solace` compiler surface 与 `@italone/solace/vite` plugin 只是辅助入口。beta 一方 router slice、通过 `generateStaticSite()` 暴露的 SSG core、通过 `@italone/solace/server` 暴露的 production asset tag resolution 和 explicit-path router-aware SSG helpers、通过 `@italone/solace/server` 和 `createApp(App).hydrate(container)` 暴露的 minimum SSR/hydration loop，以及示例级浏览器 DevTools timeline panel 都已经可用；完整 production SSR pipeline automation、streaming SSR、async SSR、async hydration、一方 UI 组件、生产级 DevTools 发布形态和内部模块兼容性承诺仍然不在冻结后的生产契约内。
+
+## 公开契约门禁
+
+公共 API 变更在发布前需要保持 README、project-status、API、package-usage、package exports
+和 consumer smoke 覆盖同步。当前 beta 契约仍推迟 auth、permissions、router-aware SSR、
+router-aware hydration、streaming SSR、async component SSR 和 async hydration。除非后续通过单独设计扩大公共 API，并把新行为纳入发布门禁，否则这些能力应继续保持为文档化的不支持范围。Router `auth` 和 `permissions` options 或 route record fields 会被明确拒绝，不会被当作隐式客户端授权能力。
 
 ## 快速开始
 
@@ -61,6 +67,9 @@ pnpm quality
 ```bash
 pnpm release:check
 ```
+
+完整发布检查包含 `pnpm test:e2e` 和 `pnpm test:e2e:devtools-extension`，确保普通浏览器示例与
+DevTools extension 冒烟在 release notes 或发布前保持一致。
 
 ## 最小示例
 
@@ -329,6 +338,7 @@ Solace 包含多个 Vite 示例，用于覆盖不同运行时路径：
 | DevTools panel | `pnpm dev:devtools-extension` | 浏览器 DevTools extension timeline 示例                                             |
 
 `examples/sfc-counter` 应用演示可选实验性 `.solace` 辅助能力和 Vite plugin。Solace 的主要示例路径仍是 JSX/TSX 函数组件。
+在 release note 或 demo 中使用 DevTools panel 前，请先查看 [docs/devtools.md](./docs/devtools.md) 里的 browser extension QA checklist。
 
 运行浏览器 e2e 覆盖：
 
@@ -348,6 +358,7 @@ pnpm test:e2e
 - `@italone/solace/devtools`：扩展示例消费的底层 DevTools listener 和 recorder API。
 - `@italone/solace/sfc`：`.solace` imports 的 TypeScript 类型声明入口。
 - `@italone/solace/vite`：可选实验性 `.solace` 单文件组件的 Vite plugin。
+- `docs/large-app.zh-CN.md`：大型应用的结构、路由、状态、SSR、性能和发布说明。
 
 安装 npm `latest` dist-tag：
 
@@ -394,6 +405,8 @@ Solace 通过冒烟 benchmark 和浏览器生产构建 benchmark 跟踪性能。
 - 覆盖率阈值。
 - Tinybench jsdom benchmark 冒烟测试。
 - 面向 large-list 和 keyed-reorder 场景的 Chromium 生产构建浏览器 benchmark。
+- 通过 `pnpm test:e2e` 和 `pnpm test:e2e:devtools-extension` 覆盖浏览器 e2e 与 DevTools
+  extension e2e 冒烟。
 
 运行 benchmark 冒烟检查：
 
@@ -402,7 +415,7 @@ pnpm benchmark
 pnpm benchmark:browser
 ```
 
-方法论、当前本地趋势记录和 benchmark 原则见 [docs/performance.md](./docs/performance.md)。
+当性能宣称需要趋势窗口时，使用 `pnpm benchmark:history`。发布说明或 README 中的性能说法要把最新 browser 样本数、jsdom 样本数和场景名一起写清。当前阈值规则见 [docs/performance.md](./docs/performance.md) 和 [docs/release.md](./docs/release.md)。
 
 ## 开发
 
@@ -440,6 +453,7 @@ pnpm release:readiness
 - [Package usage](./docs/package-usage.md)
 - [Project status](./docs/project-status.zh-CN.md)
 - [Performance](./docs/performance.md)
+- [大型应用指南](./docs/large-app.zh-CN.md)
 - [Release](./docs/release.md)
 - [DevTools](./docs/devtools.md)
 - [Roadmap](./docs/roadmap.md)

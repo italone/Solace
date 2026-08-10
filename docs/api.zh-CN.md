@@ -31,7 +31,7 @@ JSX/TSX 和明确的运行时 API。运行时能力从包根入口导入，serve
 - 异步组件：`AsyncComponentLoader`、`AsyncComponentOptions`、`AsyncComponentSource`
 - 组件 setup：`ComponentSetupContext`、`EmitFn`、`Slot`、`SlotProps`、`Slots`
 - Store：`Store`、`StoreActionsInput`、`StoreContext`、`StoreGetterContext`、`StoreGetters`、`StoreOptions`
-- Router：`LazyRouteComponent`、`NavigationGuard`、`NavigationGuardResult`、`RouteComponent`、`RouteLocationNormalized`、`RouteLocationRaw`、`RouteRecord`、`Router`、`RouterHistory`、`RouterLinkProps`、`RouterOptions`
+- Router：`LazyRouteComponent`、`NavigationGuard`、`NavigationGuardResult`、`RouteComponent`、`RouteLocationNormalized`、`RouteLocationRaw`、`RouteRecord`、`Router`、`RouterHistory`、`RouterLinkProps`、`RouterOptions`、`RouterScrollBehavior`、`RouterScrollBehaviorResult`、`RouterScrollPosition`
 - VNode：`ComponentProps`、`ComponentRender`、`ComponentType`、`ComponentVNodeChildren`、`FragmentType`、`VNode`、`VNodeChild`、`VNodeChildren`、`VNodeProps`、`VNodeSlots`、`VNodeType`
 
 ## API 分层与稳定性
@@ -53,11 +53,17 @@ beta 线兼容性契约仍有意保持较窄。文档化公开入口应在 patch
 
 `.solace` compiler 契约是可选、窄、实验性的辅助能力。它当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口，不是 Solace 的主要组件模型。parser、生成 JavaScript 形状和内部 compiler modules 仍属于辅助编译器表面背后的实现细节。scoped style 会通过公开的 `useStyle()` runtime helper 注册，但生成模块形状和 compiler 内部实现不属于兼容性目标。Vite plugin 还没有公开 options；传入 options 会抛出 `TypeError`，避免暗示语法扩展。SFC block attributes 和自定义顶层 blocks 会被拒绝；文档化 block model 仍是一个 `<template>`、可选 `<script>` 和可选 `<style>`。无效 `.solace` 文件的公开 diagnostics surface 是 Vite transform failure，当前 transform policy 会有意返回 `map: null`，不发布 source maps。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
 
-包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。当前支持 nested route records、redirects、全局 `beforeEach` guards、route-level `beforeEnter` guards、route `meta`、route names、aliases、route props、named locations、`createMemoryHistory()`，以及通过 `lazyRoute()` 声明的 route lazy components。scroll behavior、auth、permissions、SSR/SSG/hydration router integration 和长期 router 兼容策略仍被推迟。传入仍 deferred 的 router options 会抛出 `TypeError`，而不是静默扩大 beta contract。
+包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。当前支持 nested route records、redirects、全局 `beforeEach` guards、route-level `beforeEnter` guards、route `meta`、route names、aliases、route props、named locations、`createMemoryHistory()`，通过 `lazyRoute()` 声明的 route lazy components，以及成功导航后的 `scrollBehavior`。auth、permissions、SSR/SSG/hydration router integration 和长期 router 兼容策略仍被推迟。传入仍 deferred 的 router options 会抛出 `TypeError`，而不是静默扩大 beta contract。
 
 大多数应用应从包根入口导入。`@italone/solace/server` 只应在 server-side 代码中使用。JSX
 子路径通常只通过 `jsxImportSource` 或 bundler 生成导入使用。只有在构建 instrumentation 或需要
 event snapshots 的示例，或运行 `examples/devtools-extension` 浏览器 DevTools 扩展示例时，才直接使用 DevTools 子路径。
+
+## Deferred Beta 边界
+
+当前公共契约会主动拒绝仍处于 deferred 状态的集成入口，而不是静默接受 Solace 尚未实现的
+options。Router auth、permissions、router-aware SSR、router-aware hydration、streaming SSR
+和 async component SSR 仍不属于 beta 契约。Route `meta` 是给应用代码和示例使用的开发者自定义数据，不是认证或权限执行机制。使用 `auth` 或 `permissions` 字段的 router options 或 route records 会被明确的 deferred-boundary 错误拒绝；本地 UX routing 应使用应用自己的 guards，真正的 enforcement 应由后端授权承担。任何扩大这些边界的公共 API 工作，都需要在同一变更中同步 README、project-status、package-usage、package boundary tests、consumer smoke 覆盖和发布门禁。
 
 ## App
 
@@ -154,16 +160,21 @@ const result = renderToString(h("p", null, "server"));
 `createApp(App).hydrate(container, { recover: true })` 会捕获 `SolaceHydrationError`，
 用 client VNode tree 替换不匹配的容器内容，并让后续响应式更新继续走普通 renderer path。未传
 `recover: true` 时，失败的 hydration 会在重新抛出 mismatch 前清理 root hydration effect。
-向 `renderToString()` 传入 `manifest`、`clientEntry` 或 `router` 这类 deferred integration
-options 会抛出 `TypeError`。
-async 或 thenable render tree 也会抛出 `TypeError`，因为 async SSR 仍处于 deferred 状态。
-向 `hydrate()` 传入同样的 deferred 字段也会在运行时直接拒绝。
+向 `renderToString()` 传入 `manifest`、`clientEntry`、`router` 或 `stream` 这类 deferred
+integration options 会抛出 `TypeError`。
+Hydration options 必须是非数组对象；提供 `recover` 时，它必须是 boolean。
+`renderToString()` 的 `context` 如果提供，必须是 plain object。
+async 或 thenable render tree，包括 direct sources、SSG route sources 和 async child values，
+也会抛出 `TypeError`，因为 async SSR 仍处于 deferred 状态。
+Hydration 也会拒绝 async 或 thenable direct sources 和 component trees，避免用尚未解析的
+tree 占用 server DOM。
+向 `hydrate()` 传入 deferred `manifest`、`clientEntry`、`router` 或 `stream` 字段也会在运行时直接拒绝。
 Hydration mismatch 错误会带结构化的 `kind`、`path`、`expected` 和 `actual` 字段，便于
 区分 missing node、extra node、元素标签不一致和文本不一致。
 
-Streaming SSR、async component SSR、SSG CLI、filesystem output、route crawling、hydration
-mismatch 的自动恢复（显式 `recover` deopt 之外）、router-aware SSR 和 router-aware
-hydration 仍保持 deferred。
+Streaming SSR、async component SSR、async hydration、SSG CLI、filesystem output、route
+crawling、hydration mismatch 的自动恢复（显式 `recover` deopt 之外）、router-aware SSR 和
+router-aware hydration 仍保持 deferred。
 
 ### `generateStaticSite(options)`
 
@@ -675,10 +686,10 @@ href。带 modifier、已被阻止、非 `_self` target 或 `download` attribute
 
 当前 beta router 限制：
 
-- 不包含 scroll behavior、auth、permissions、SSR、SSG 或 hydration router integration。
+- 不包含 auth、permissions、SSR、SSG 或 hydration router integration。
 - dynamic params 仅限简单 `:name` segments 和文档化的 wildcard `/:pathMatch(.*)*`；optional
   params、repeat params 和 custom regex params 会抛出 `TypeError`。
-- 传入 `scrollBehavior` 等 deferred options，会抛出 `TypeError`。
+- 传入 `auth` 或 `permissions` 等仍 deferred 的 options 或 route record fields，会抛出 `TypeError`。
 - 直接 URL 访问的 fallback 仍依赖部署宿主配置。
 - unknown route 行为应通过显式 wildcard route 处理。
 

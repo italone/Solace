@@ -24,6 +24,19 @@ export type RouteParamsInput = Record<string, RouteParamInputValue>;
 export type RouteProps =
   boolean | Record<string, unknown> | ((route: RouteLocationNormalized) => Record<string, unknown>);
 
+export interface RouterScrollPosition {
+  left?: number;
+  top?: number;
+  behavior?: ScrollBehavior;
+}
+
+export type RouterScrollBehaviorResult = void | false | RouterScrollPosition;
+
+export type RouterScrollBehavior = (
+  to: RouteLocationNormalized,
+  from: RouteLocationNormalized,
+) => RouterScrollBehaviorResult | Promise<RouterScrollBehaviorResult>;
+
 export interface RouteRecord {
   path: string;
   name?: RouteRecordName;
@@ -63,6 +76,7 @@ export interface RouterHistory {
 export interface RouterOptions {
   history: RouterHistory;
   routes: RouteRecord[];
+  scrollBehavior?: RouterScrollBehavior;
 }
 
 export interface Router {

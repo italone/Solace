@@ -130,7 +130,10 @@ function registerPort(
   ports.add(port);
   portsByTab.set(tabId, ports);
   port.onDisconnect.addListener(() => {
-    ports.delete(port);
+    if (!ports.delete(port)) {
+      return;
+    }
+
     if (ports.size === 0) {
       portsByTab.delete(tabId);
       onEmpty?.(tabId);

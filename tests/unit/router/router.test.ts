@@ -396,14 +396,157 @@ describe("createRouter", () => {
     );
   });
 
+  it("calls scrollBehavior after successful navigations", async () => {
+    const scrollTo = vi.fn();
+    vi.stubGlobal("scrollTo", scrollTo);
+    const scrollBehavior = vi.fn(() => ({ left: 0, top: 120, behavior: "smooth" }) as const);
+    const router = createRouter({
+      history: createMemoryLikeHistory(),
+      routes: [
+        { path: "/", component: Home },
+        { path: "/users/:id", component: User },
+      ],
+      scrollBehavior,
+    });
+
+    const route = await router.push("/users/42?tab=profile");
+
+    expect(route.fullPath).toBe("/users/42?tab=profile");
+    expect(scrollBehavior).toHaveBeenCalledWith(
+      expect.objectContaining({ fullPath: "/users/42?tab=profile" }),
+      expect.objectContaining({ fullPath: "/" }),
+    );
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 120, behavior: "smooth" });
+    vi.unstubAllGlobals();
+  });
+
+  it("does not scroll after duplicate or rejected navigations", async () => {
+    const scrollTo = vi.fn();
+    vi.stubGlobal("scrollTo", scrollTo);
+    const scrollBehavior = vi.fn(() => ({ left: 0, top: 120 }) as const);
+    const router = createRouter({
+      history: createMemoryLikeHistory(),
+      routes: [
+        { path: "/", component: Home },
+        { path: "/blocked", component: User, beforeEnter: () => false },
+      ],
+      scrollBehavior,
+    });
+
+    await router.push("/");
+    await router.push("/blocked");
+
+    expect(scrollBehavior).not.toHaveBeenCalled();
+    expect(scrollTo).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+
+  it("runs async scrollBehavior after history listener settlement", async () => {
+    const scrollTo = vi.fn();
+    vi.stubGlobal("scrollTo", scrollTo);
+    const history = createMemoryLikeHistory("/");
+    const scrollBehavior = vi.fn(async () => ({ top: 40 }) as const);
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/profile", component: User },
+      ],
+      scrollBehavior,
+    });
+    const app = { provide: vi.fn(), use: vi.fn(), mount: vi.fn() };
+
+    router.install(app as never);
+    await settleNavigationPipeline();
+    history.push("/profile");
+    history.emit();
+    await settleNavigationPipeline();
+
+    expect(scrollBehavior).toHaveBeenCalledWith(
+      expect.objectContaining({ fullPath: "/profile" }),
+      expect.objectContaining({ fullPath: "/" }),
+    );
+    expect(scrollTo).toHaveBeenCalledWith({ top: 40 });
+    vi.unstubAllGlobals();
+  });
+
+  it("ignores stale async scrollBehavior results after a newer navigation", async () => {
+    const scrollTo = vi.fn();
+    vi.stubGlobal("scrollTo", scrollTo);
+    let resolveSlowScroll!: (position: { top: number }) => void;
+    const scrollBehavior = vi.fn((to) => {
+      if (to.fullPath === "/slow") {
+        return new Promise<{ top: number }>((resolve) => {
+          resolveSlowScroll = resolve;
+        });
+      }
+
+      return { top: 90 };
+    });
+    const router = createRouter({
+      history: createMemoryLikeHistory("/"),
+      routes: [
+        { path: "/", component: Home },
+        { path: "/slow", component: User },
+        { path: "/fast", component: NotFound },
+      ],
+      scrollBehavior,
+    });
+
+    const slowNavigation = router.push("/slow");
+    await settleNavigationPipeline();
+    await router.push("/fast");
+
+    resolveSlowScroll({ top: 10 });
+    await slowNavigation;
+
+    expect(scrollTo).toHaveBeenCalledTimes(1);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 90 });
+    expect(router.currentRoute.value.fullPath).toBe("/fast");
+    vi.unstubAllGlobals();
+  });
+
   it("rejects deferred router options instead of widening the beta contract", () => {
-    expect(() =>
-      createRouter({
-        history: createMemoryLikeHistory(),
-        routes: [{ path: "/", component: Home }],
-        scrollBehavior: () => ({ left: 0, top: 0 }),
-      } as never),
-    ).toThrow(/Deferred router option/);
+    for (const deferredOption of [{ auth: () => true }, { permissions: ["admin"] }]) {
+      const [key] = Object.keys(deferredOption);
+
+      expect(() =>
+        createRouter({
+          history: createMemoryLikeHistory(),
+          routes: [{ path: "/", component: Home }],
+          ...deferredOption,
+        } as never),
+      ).toThrow(
+        `Router ${key} integration is not part of the beta contract; use application guards and backend authorization instead: ${key}`,
+      );
+    }
+
+    for (const deferredOption of [{ ssr: true }, { hydration: true }]) {
+      const [key] = Object.keys(deferredOption);
+
+      expect(() =>
+        createRouter({
+          history: createMemoryLikeHistory(),
+          routes: [{ path: "/", component: Home }],
+          ...deferredOption,
+        } as never),
+      ).toThrow(`Deferred router option is not part of the beta contract: ${key}`);
+    }
+  });
+
+  it("rejects auth and permissions route record fields as deferred integrations", () => {
+    for (const deferredRouteField of [{ auth: () => true }, { permissions: ["admin"] }]) {
+      const [key] = Object.keys(deferredRouteField);
+
+      expect(() =>
+        createRouter({
+          history: createMemoryLikeHistory(),
+          routes: [{ path: "/", component: Home, ...deferredRouteField }],
+        } as never),
+      ).toThrow(
+        `Router route record ${key} integration is not part of the beta contract; use route meta as developer-owned data and backend authorization for enforcement instead: ${key}`,
+      );
+    }
   });
 
   it("rejects invalid global beforeEach guards at registration time", () => {

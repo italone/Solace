@@ -84,7 +84,7 @@
     "changeset": "changeset",
     "release:readiness": "node scripts/release-readiness-check.mjs",
     "release:version": "changeset version",
-    "release:check": "pnpm release:readiness && pnpm quality && pnpm test:coverage && pnpm package:smoke && pnpm benchmark && pnpm benchmark:browser && pnpm test:e2e",
+    "release:check": "pnpm release:readiness && pnpm quality && pnpm test:coverage && pnpm package:smoke && pnpm benchmark && pnpm benchmark:browser && pnpm test:e2e && pnpm test:e2e:devtools-extension",
     "release:publish:beta": "pnpm release:check && changeset publish --tag beta",
     "release:publish": "pnpm release:check && changeset publish",
     "quality": "pnpm format:check && pnpm build && pnpm typecheck && pnpm typecheck:jsxdev && pnpm lint && pnpm test && pnpm test:package"

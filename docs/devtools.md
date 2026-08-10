@@ -131,6 +131,17 @@ VNodes, props, store state, reactive targets, user content, stack traces, action
 results. It does not persist captured events, send them over the network, install analytics, or model
 SSR/SSG/hydration state.
 
+The example manifest currently uses example-grade broad inspected-page access with `<all_urls>` for
+the content script, `host_permissions`, and the bridge web-accessible resource so local demos can
+attach to any inspected Solace app. Treat that as a demo convenience, not a production browser-store
+package policy.
+
+Keep the example manifest local-only. Do not add `permissions`, `optional_permissions`,
+`externally_connectable`, `oauth2`, or custom `content_security_policy` entries without a separate
+production extension policy review. In particular, the example should not request `storage`, `tabs`,
+`scripting`, or `webRequest`; the current panel keeps captures in memory and relays only through the
+inspected-tab extension ports.
+
 Run the example locally with:
 
 ```bash
@@ -143,6 +154,25 @@ Validate the extension build and browser smoke with:
 pnpm build:devtools-extension
 pnpm test:e2e:devtools-extension
 ```
+
+## Browser Extension QA Checklist
+
+Before treating the extension example as ready for a release note or demo, verify the bounded
+workflow rather than private runtime state:
+
+- `pnpm build:devtools-extension` produces classic extension scripts without module imports.
+- `pnpm test:e2e:devtools-extension` captures relayed public `DevtoolsEvent` summaries in the panel.
+- Review and narrow `matches`, `host_permissions`, and `web_accessible_resources.matches` before
+  producing a production browser-store package or demo build with a fixed inspected-origin policy.
+- Confirm the manifest still has no storage, tabs, scripting, webRequest, externally connectable,
+  OAuth, or custom CSP powers unless a separate production extension policy has approved them.
+- Pause, resume, clear, family filters, selected-event details, and capture limits work without
+  persisting events.
+- Disconnecting or reconnecting the panel does not require the inspected app to reload.
+- Failed page `postMessage`, stale runtime ports, or panel disconnects do not crash the inspected
+  Solace app.
+- Captured payloads remain serialized summaries and do not include raw props, state, DOM nodes,
+  VNodes, reactive targets, action arguments, action results, stack traces, or user content.
 
 ## Privacy And Safety
 

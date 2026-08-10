@@ -56,6 +56,8 @@ export function hydrateVNode(
   context: HydrationContext | null = null,
   path = "root",
 ): Node | null {
+  assertNoAsyncHydrationTree(vnode);
+
   if (node === null) {
     throwHydrationMismatch({
       kind: "missing-node",
@@ -147,6 +149,7 @@ function hydrateComponent(
   setupComponent(instance);
 
   const subTree = instance.render();
+  assertNoAsyncHydrationTree(subTree);
   instance.subTree = subTree;
   const next = hydrateVNode(subTree, node, instance, instance.appProvides, context, path);
   vnode.el = subTree.el;
@@ -182,13 +185,14 @@ function setupHydratedComponentUpdate(
       }
 
       if (!hasCollectedHydrationDependencies) {
-        instance.render();
+        assertNoAsyncHydrationTree(instance.render());
         hasCollectedHydrationDependencies = true;
         return;
       }
 
       const previousTree = instance.subTree;
       const nextTree = instance.render();
+      assertNoAsyncHydrationTree(nextTree);
 
       if (previousTree !== null && updateContainer !== null) {
         patch(previousTree, nextTree, updateContainer, null, instance, instance.appProvides);
@@ -314,4 +318,21 @@ export function assertNoExtraDomNode(node: Node | null, path: string): void {
 
 function throwHydrationMismatch(details: HydrationMismatchDetails): never {
   throw new SolaceHydrationError(details);
+}
+
+function assertNoAsyncHydrationTree(value: unknown): void {
+  if (isThenable(value)) {
+    throw new TypeError(
+      "Async hydration is deferred; hydrate() currently accepts synchronous hydration trees only.",
+    );
+  }
+}
+
+function isThenable(value: unknown): value is PromiseLike<unknown> {
+  return (
+    (typeof value === "object" || typeof value === "function") &&
+    value !== null &&
+    "then" in value &&
+    typeof (value as { then?: unknown }).then === "function"
+  );
 }

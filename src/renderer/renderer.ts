@@ -47,6 +47,7 @@ export function hydrate(
   options: HydrationOptions = {},
 ): void {
   assertNoDeferredIntegrationOptions(options);
+  assertNoAsyncHydrationSource(source);
   const renderContainer = container as RenderContainer;
   const styleSink = createDocumentStyleSink(container.ownerDocument);
   const getVNode = (): VNode => normalizeHydrationSource(source);
@@ -124,6 +125,14 @@ function shouldRecoverHydrationMismatch(
 }
 
 function assertNoDeferredIntegrationOptions(options: HydrationOptions): void {
+  if (options === null || typeof options !== "object" || Array.isArray(options)) {
+    throw new TypeError("Hydration options must be an object");
+  }
+
+  if (options.recover !== undefined && typeof options.recover !== "boolean") {
+    throw new TypeError("Hydration recover option must be a boolean");
+  }
+
   if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
     throw new TypeError(
       "Hydration manifest integration is deferred; compose assets in an app-local shell or adapter.",
@@ -133,6 +142,12 @@ function assertNoDeferredIntegrationOptions(options: HydrationOptions): void {
   if (hasOwn(options, "router")) {
     throw new TypeError(
       "Router-aware hydration integration is deferred; pass explicit render sources instead.",
+    );
+  }
+
+  if (hasOwn(options, "stream")) {
+    throw new TypeError(
+      "Hydration streaming integration is deferred; hydrate() currently accepts synchronous hydration trees only.",
     );
   }
 }
@@ -174,6 +189,23 @@ function renderVNode(vnode: VNode, container: RenderContainer, appProvides: Prov
 
 function normalizeHydrationSource(source: HydrationSource): VNode {
   return typeof source === "function" ? h(source) : source;
+}
+
+function assertNoAsyncHydrationSource(source: HydrationSource): void {
+  if (isThenable(source)) {
+    throw new TypeError(
+      "Async hydration is deferred; hydrate() currently accepts synchronous hydration sources only.",
+    );
+  }
+}
+
+function isThenable(value: unknown): value is PromiseLike<unknown> {
+  return (
+    (typeof value === "object" || typeof value === "function") &&
+    value !== null &&
+    "then" in value &&
+    typeof (value as { then?: unknown }).then === "function"
+  );
 }
 
 function hasOwn(value: object, key: string): boolean {

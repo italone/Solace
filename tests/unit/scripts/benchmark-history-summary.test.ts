@@ -412,6 +412,63 @@ describe("benchmark history summary CLI", () => {
     });
   });
 
+  test("uses browser runAt metadata when selecting the latest browser record window", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "solace-history-summary-latest-run-at-"));
+    const historyPath = join(tempDir, "history.jsonl");
+    await writeFile(
+      historyPath,
+      [
+        JSON.stringify(
+          createBrowserRecord({
+            initialRenderMs: 10,
+            updateMs: 4,
+            unmountMs: 1,
+            runAt: "2026-07-03T00:00:00.000Z",
+          }),
+        ),
+        JSON.stringify(
+          createBrowserRecord({
+            initialRenderMs: 100,
+            updateMs: 20,
+            unmountMs: 8,
+            runAt: "2026-07-01T00:00:00.000Z",
+          }),
+        ),
+        JSON.stringify(
+          createBrowserRecord({
+            initialRenderMs: 12,
+            updateMs: 6,
+            unmountMs: 3,
+            runAt: "2026-07-02T00:00:00.000Z",
+          }),
+        ),
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const { stdout } = await execFileAsync("node", [
+      "scripts/summarize-benchmark-history.mjs",
+      "--json",
+      "--latest-browser-count",
+      "2",
+      historyPath,
+    ]);
+    const summary = JSON.parse(stdout) as BenchmarkHistorySummary;
+    const browserGroup = summary.groups.find((group) => group.kind === "browser-benchmark");
+
+    expect(browserGroup).toMatchObject({
+      scenario: "large-list",
+      recordCount: 2,
+    });
+    expect(browserGroup?.metrics.initialRenderMs).toEqual({
+      count: 2,
+      median: 11,
+      p95: 12,
+      variance: 1,
+    });
+  });
+
   test("fails when browser benchmark groups are below the configured minimum record count", async () => {
     const tempDir = await mkdtemp(join(tmpdir(), "solace-history-summary-low-"));
     const historyPath = join(tempDir, "history.jsonl");
@@ -516,6 +573,7 @@ type BrowserRecordOptions =
       initialRenderMs: number;
       updateMs: number;
       unmountMs: number;
+      runAt?: string;
     }
   | {
       scenario: "keyed-reorder";
@@ -526,6 +584,7 @@ type BrowserRecordOptions =
       firstRowText?: string;
       middleRowText?: string;
       lastRowText?: string;
+      runAt?: string;
     };
 
 function createBrowserRecord(options: BrowserRecordOptions) {
@@ -545,6 +604,7 @@ function createBrowserRecord(options: BrowserRecordOptions) {
         metadata: {
           browserName: "chromium",
           sampleSize: 1,
+          ...(options.runAt === undefined ? {} : { runAt: options.runAt }),
         },
       },
     };
@@ -563,6 +623,7 @@ function createBrowserRecord(options: BrowserRecordOptions) {
       metadata: {
         browserName: "chromium",
         sampleSize: 1,
+        ...(options.runAt === undefined ? {} : { runAt: options.runAt }),
       },
     },
   };

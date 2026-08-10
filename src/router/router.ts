@@ -18,6 +18,7 @@ import type {
   RouteRecord,
   Router,
   RouterOptions,
+  RouterScrollPosition,
 } from "./types";
 
 export const routerKey = Symbol("Solace.router");
@@ -55,6 +56,7 @@ const requiredHistoryMethods = [
   "back",
   "forward",
 ] as const;
+const deferredAuthPermissionFields = new Set(["auth", "permissions"]);
 
 export function createRouter(options: RouterOptions): Router {
   assertRouterOptionsContract(options);
@@ -155,6 +157,7 @@ export function createRouter(options: RouterOptions): Router {
     });
 
     currentRoute.value = finalRoute;
+    await applyScrollBehavior(finalRoute, from, activeNavigationId);
     return finalRoute;
   }
 
@@ -248,6 +251,32 @@ export function createRouter(options: RouterOptions): Router {
     }
 
     currentRoute.value = finalRoute;
+    await applyScrollBehavior(finalRoute, from, activeNavigationId);
+  }
+
+  async function applyScrollBehavior(
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized,
+    activeNavigationId: number,
+  ): Promise<void> {
+    if (options.scrollBehavior === undefined) {
+      return;
+    }
+
+    const position = await options.scrollBehavior(to, from);
+    if (activeNavigationId !== navigationId) {
+      return;
+    }
+
+    if (position === undefined || position === false) {
+      return;
+    }
+
+    const scrollTo = (globalThis as { scrollTo?: (options: RouterScrollPosition) => void })
+      .scrollTo;
+    if (typeof scrollTo === "function") {
+      scrollTo(position);
+    }
   }
 
   function writeHistory(write: () => void): void {
@@ -437,12 +466,19 @@ function assertRouterOptionsContract(options: RouterOptions): void {
   }
 
   for (const key of Object.keys(options)) {
-    if (key !== "history" && key !== "routes") {
+    if (deferredAuthPermissionFields.has(key)) {
+      throw new TypeError(
+        `Router ${key} integration is not part of the beta contract; use application guards and backend authorization instead: ${key}`,
+      );
+    }
+
+    if (key !== "history" && key !== "routes" && key !== "scrollBehavior") {
       throw new TypeError(`Deferred router option is not part of the beta contract: ${key}`);
     }
   }
 
   assertRouterHistoryContract(options.history);
+  assertRouterScrollBehaviorContract(options.scrollBehavior);
 
   if (!Array.isArray(options.routes)) {
     throw new TypeError("Router routes must be an array");
@@ -451,6 +487,14 @@ function assertRouterOptionsContract(options: RouterOptions): void {
   for (const route of options.routes) {
     assertRouteRecordContract(route);
   }
+}
+
+function assertRouterScrollBehaviorContract(scrollBehavior: RouterOptions["scrollBehavior"]): void {
+  if (scrollBehavior === undefined || typeof scrollBehavior === "function") {
+    return;
+  }
+
+  throw new TypeError("Router scrollBehavior must be a function");
 }
 
 function assertRouterHistoryContract(history: unknown): void {
@@ -471,6 +515,12 @@ function assertRouteRecordContract(route: RouteRecord): void {
   }
 
   for (const key of Object.keys(route)) {
+    if (deferredAuthPermissionFields.has(key)) {
+      throw new TypeError(
+        `Router route record ${key} integration is not part of the beta contract; use route meta as developer-owned data and backend authorization for enforcement instead: ${key}`,
+      );
+    }
+
     if (!allowedRouteRecordFields.has(key)) {
       throw new TypeError(
         `Deferred router route record field is not part of the beta contract: ${key}`,

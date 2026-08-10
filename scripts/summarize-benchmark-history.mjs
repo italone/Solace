@@ -190,20 +190,36 @@ function filterLatestBrowserRecords(records, latestBrowserCount) {
       return;
     }
 
-    const indexes = browserRecordIndexes.get(groupKey.key) ?? [];
-    indexes.push(index);
-    browserRecordIndexes.set(groupKey.key, indexes);
+    const entries = browserRecordIndexes.get(groupKey.key) ?? [];
+    entries.push({ index, runAtMs: getBrowserRunAtMs(record) });
+    browserRecordIndexes.set(groupKey.key, entries);
   });
 
   const keptBrowserIndexes = new Set();
-  for (const indexes of browserRecordIndexes.values()) {
-    indexes.slice(-latestBrowserCount).forEach((index) => keptBrowserIndexes.add(index));
+  for (const entries of browserRecordIndexes.values()) {
+    const orderedEntries = entries.every((entry) => entry.runAtMs !== undefined)
+      ? [...entries].sort((left, right) => left.runAtMs - right.runAtMs || left.index - right.index)
+      : entries;
+
+    orderedEntries
+      .slice(-latestBrowserCount)
+      .forEach((entry) => keptBrowserIndexes.add(entry.index));
   }
 
   return records.filter((record, index) => {
     const groupKey = getGroupKey(record);
     return groupKey?.kind !== "browser-benchmark" || keptBrowserIndexes.has(index);
   });
+}
+
+function getBrowserRunAtMs(record) {
+  const runAt = record?.summary?.metadata?.runAt;
+  if (typeof runAt !== "string") {
+    return undefined;
+  }
+
+  const runAtMs = Date.parse(runAt);
+  return Number.isFinite(runAtMs) ? runAtMs : undefined;
 }
 
 async function readHistoryRecords(paths) {

@@ -57,6 +57,9 @@ export type {
   Router,
   RouterHistory,
   RouterOptions,
+  RouterScrollBehavior,
+  RouterScrollBehaviorResult,
+  RouterScrollPosition,
   RouterLinkProps,
 } from "./router";
 export type {

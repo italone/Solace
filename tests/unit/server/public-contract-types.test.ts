@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { h } from "../../../src";
+import { createApp, h } from "../../../src";
 import type { App, HydrationOptions, RouteLocationNormalized } from "../../../src";
 import { createStaticRoutesFromRouter, resolveStaticAssets } from "../../../src/server";
 import type {
@@ -115,6 +115,14 @@ acceptHydrationOptions({ recover: "yes" });
 // @ts-expect-error production manifest integration is not part of the hydration public contract
 acceptHydrationOptions({ manifest: {} });
 
+// @ts-expect-error streaming hydration integration is deferred
+acceptHydrationOptions({ stream: true });
+
+function rejectAsyncHydrationRootComponent(): void {
+  // @ts-expect-error async root components are not part of the hydration public contract
+  createApp(async () => h("p", null, "async")).hydrate(document.createElement("main"));
+}
+
 // @ts-expect-error direct GenerateStaticSiteOptions.router is unsupported; router-aware SSG adapters are exposed as createStaticRoutesFromRouter()
 acceptSSGOptions({ routes: [{ path: "/", source: h("p") }], router: {} });
 
@@ -126,6 +134,9 @@ acceptRenderOptions({ clientEntry: "/src/main.ts" });
 
 // @ts-expect-error router-aware SSR integration is deferred
 acceptRenderOptions({ router: {} });
+
+// @ts-expect-error streaming SSR integration is deferred
+acceptRenderOptions({ stream: true });
 
 acceptShell(({ path, body, styles, context, assets }) => {
   return `${path}:${body}:${styles.join("")}:${assets.modulePreloads.join("")}:${assets.stylesheets.join("")}:${assets.scripts.join("")}:${String(context.title ?? "")}`;
@@ -146,6 +157,7 @@ acceptShell(({ context }) => {
 describe("server public contract types", () => {
   it("keeps manifest assets in SSG and deferred integration out of SSR", () => {
     expect(acceptAppHydrate).toEqual(expect.any(Function));
+    expect(rejectAsyncHydrationRootComponent).toEqual(expect.any(Function));
     expect(assetTags).toEqual(
       expect.objectContaining({
         modulePreloads: expect.any(Array),

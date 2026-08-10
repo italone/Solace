@@ -650,6 +650,45 @@ describe("devtools extension bridge", () => {
     ]);
   });
 
+  it("does not send duplicate disconnects to a panel's previous tab after tab switching", async () => {
+    const { createDevtoolsBackgroundRelay } =
+      await import("../../examples/devtools-extension/src/background");
+    const runtimeListeners = new Set<(port: BackgroundRuntimePort) => void>();
+    const runtime = {
+      onConnect: {
+        addListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.add(listener);
+        },
+        removeListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.delete(listener);
+        },
+      },
+    } satisfies BackgroundRuntime;
+    const firstContentPort = createRuntimePort("solace-devtools-content", 7);
+    const secondContentPort = createRuntimePort("solace-devtools-content", 8);
+    const panelPort = createRuntimePort("solace-devtools-panel");
+
+    createDevtoolsBackgroundRelay(runtime);
+    for (const listener of runtimeListeners) {
+      listener(firstContentPort);
+      listener(secondContentPort);
+      listener(panelPort);
+    }
+
+    panelPort.emit({ type: "devtools:panel:connect", tabId: 7 });
+    panelPort.emit({ type: "devtools:panel:connect", tabId: 8 });
+    panelPort.disconnect();
+
+    expect(firstContentPort.messages).toEqual([
+      { type: "devtools:content:connect" },
+      { type: "devtools:content:disconnect" },
+    ]);
+    expect(secondContentPort.messages).toEqual([
+      { type: "devtools:content:connect" },
+      { type: "devtools:content:disconnect" },
+    ]);
+  });
+
   it("ignores duplicate panel connections for the same tab", async () => {
     const { createDevtoolsBackgroundRelay } =
       await import("../../examples/devtools-extension/src/background");

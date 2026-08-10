@@ -34,7 +34,8 @@ Public TypeScript helper types include:
 - Store: `Store`, `StoreActionsInput`, `StoreContext`, `StoreGetterContext`, `StoreGetters`, `StoreOptions`
 - Router: `LazyRouteComponent`, `NavigationGuard`, `NavigationGuardResult`, `RouteComponent`,
   `RouteLocationNormalized`, `RouteLocationRaw`, `RouteRecord`, `Router`, `RouterHistory`,
-  `RouterLinkProps`, `RouterOptions`
+  `RouterLinkProps`, `RouterOptions`, `RouterScrollBehavior`, `RouterScrollBehaviorResult`,
+  `RouterScrollPosition`
 - VNodes: `ComponentProps`, `ComponentRender`, `ComponentType`, `ComponentVNodeChildren`,
   `FragmentType`, `VNode`, `VNodeChild`, `VNodeChildren`, `VNodeProps`, `VNodeSlots`, `VNodeType`
 
@@ -73,14 +74,27 @@ maps. Do not import compiler or router deep subpaths such as `@italone/solace/co
 The router exports in the package root are beta APIs for small SPA examples. Nested route records,
 redirects, global `beforeEach` guards, route-level `beforeEnter` guards, route `meta`, route names,
 aliases, route props, named locations, memory history, and explicit route lazy components through
-`lazyRoute()` are supported. Scroll behavior, auth, permissions, SSR/SSG/hydration router
-integration, and a long-term router compatibility policy remain deferred. Passing still-deferred
-router options throws a `TypeError` instead of silently widening the beta contract.
+`lazyRoute()` are supported. Router scroll behavior through the `scrollBehavior` option is supported
+after successful navigations. Auth, permissions, SSR/SSG/hydration router integration, and a
+long-term router compatibility policy remain deferred. Passing still-deferred router options throws
+a `TypeError` instead of silently widening the beta contract.
 
 Most applications should import from the root package. Use `@italone/solace/server` only from
 server-side code. Use JSX subpaths only through `jsxImportSource` or bundler-generated imports. Use
 the DevTools subpath only when building instrumentation, examples that need event snapshots, or the
 browser DevTools extension example under `examples/devtools-extension`.
+
+## Deferred Beta Boundaries
+
+The current public contract intentionally rejects still-deferred integration surfaces instead of
+silently accepting options that Solace does not implement. Router auth, permissions,
+router-aware SSR, router-aware hydration, streaming SSR, and async component SSR remain outside the
+beta contract. Route `meta` is developer-authored data for application code and examples; it is not
+an authentication or permission enforcement mechanism. Router options or route records that use
+`auth` or `permissions` fields are rejected with explicit deferred-boundary errors; use application
+guards for local UX routing and backend authorization for enforcement. Public API work that widens
+any of these boundaries must update README, project-status, package-usage, package boundary tests,
+consumer smoke coverage, and the release gate in the same change.
 
 ## App
 
@@ -137,6 +151,8 @@ import { createApp } from "@italone/solace";
 createApp(App).hydrate(document.querySelector("#app") as Element, { recover: true });
 ```
 
+Hydration options must be a non-array object. `recover`, when provided, must be a boolean.
+
 `use()` installs a plugin once per app instance. A plugin can be a function or an object with an
 `install()` method. Options are forwarded after the app argument, and the method returns the app for
 chaining.
@@ -180,16 +196,21 @@ mismatches by default. `createApp(App).hydrate(container, { recover: true })` ca
 `SolaceHydrationError`, replaces the mismatched container contents with the client VNode tree, and
 keeps later reactive updates on the normal renderer path. Without `recover: true`, failed hydration
 cleans up the root hydration effect before rethrowing the mismatch. Passing deferred integration
-options such as `manifest`, `clientEntry`, or `router` to `renderToString()` throws a `TypeError`.
-Async or thenable render trees are also rejected with a `TypeError` because async SSR remains
-deferred.
-Passing the same deferred integration fields to `hydrate()` is also rejected at runtime.
+options such as `manifest`, `clientEntry`, `router`, or `stream` to `renderToString()` throws a
+`TypeError`.
+Hydration options must be a non-array object, and `recover` must be boolean when provided.
+`renderToString()` context, when provided, must be a plain object.
+Async or thenable render trees, including direct sources, SSG route sources, and async child values,
+are also rejected with a `TypeError` because async SSR remains deferred.
+Hydration also rejects async or thenable direct sources and component trees instead of claiming
+server DOM with an unresolved tree. Passing deferred `manifest`, `clientEntry`, `router`, or
+`stream` fields to `hydrate()` is also rejected at runtime.
 Hydration mismatch errors include structured `kind`, `path`, `expected`, and `actual` fields so
 callers can distinguish missing nodes, extra nodes, element tag mismatches, and text mismatches.
 
-Streaming SSR, async component SSR, SSG CLI, filesystem output, route crawling, hydration mismatch
-auto-recovery beyond the explicit `recover` deopt, router-aware SSR, and router-aware hydration
-remain deferred.
+Streaming SSR, async component SSR, async hydration, SSG CLI, filesystem output, route crawling,
+hydration mismatch auto-recovery beyond the explicit `recover` deopt, router-aware SSR, and
+router-aware hydration remain deferred.
 
 ### `generateStaticSite(options)`
 
@@ -745,10 +766,11 @@ location is the route whose redirect failed.
 
 Current beta router limitations:
 
-- No scroll behavior, auth, permissions, SSR, SSG, or hydration router integration.
+- No auth, permissions, SSR, SSG, or hydration router integration.
 - Dynamic params are limited to simple `:name` segments plus the documented wildcard
   `/:pathMatch(.*)*`; optional params, repeat params, and custom regex params throw a `TypeError`.
-- Passing deferred options such as `scrollBehavior` throws a TypeError.
+- Passing still-deferred options or route record fields such as `auth` or `permissions` throws a
+  TypeError.
 - Direct URL fallback still depends on the hosting configuration.
 - Unknown-route behavior should be handled by an explicit wildcard route.
 

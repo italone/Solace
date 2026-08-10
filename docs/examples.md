@@ -101,6 +101,18 @@ Coverage:
 The SFC example is an auxiliary compiler/Vite plugin smoke path. The primary example path remains
 JSX/TSX function components.
 
+## Large App Guide
+
+For routing structure, state ownership, SSR boundaries, performance, and release discipline in
+larger apps, see [docs/large-app.md](./large-app.md).
+
+## DevTools Panel
+
+The `examples/devtools-extension` panel is example-grade. Before using it in a release note or
+demo, follow the browser extension QA checklist in [docs/devtools.md](./devtools.md). The checklist
+keeps the workflow on public `DevtoolsEvent` summaries, bounded captures, and stale-port handling
+instead of private runtime state.
+
 ## E2E Validation
 
 Run all browser examples through Playwright:
@@ -118,4 +130,6 @@ The Playwright config starts each example on a fixed localhost port:
 | Large list    | `6176` |
 | Router basic  | `6178` |
 
-`pnpm release:check` also runs these e2e tests after quality checks, coverage, package smoke, jsdom benchmark smoke, and the Chromium production browser benchmark.
+`pnpm release:check` also runs these e2e tests plus the DevTools extension e2e smoke after quality
+checks, coverage, package smoke, jsdom benchmark smoke, and the Chromium production browser
+benchmark.

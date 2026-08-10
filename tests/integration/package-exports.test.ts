@@ -268,6 +268,13 @@ describe("package exports", () => {
     expect(() =>
       api.createRouter({
         history,
+        routes: [{ path: "/", component: Home }],
+        scrollBehavior: () => ({ left: 0, top: 0 }),
+      } as never),
+    ).not.toThrow();
+    expect(() =>
+      api.createRouter({
+        history,
         routes: [{ path: 42, component: Home }],
       } as never),
     ).toThrow(/Router route record path must be a string/);
@@ -277,13 +284,42 @@ describe("package exports", () => {
         routes: null,
       } as never),
     ).toThrow(/Router routes must be an array/);
-    expect(() =>
-      api.createRouter({
-        history,
-        routes: [{ path: "/", component: Home }],
-        scrollBehavior: () => ({ left: 0, top: 0 }),
-      } as never),
-    ).toThrow(/Deferred router option/);
+    for (const deferredOption of [{ auth: () => true }, { permissions: ["admin"] }]) {
+      const [key] = Object.keys(deferredOption);
+
+      expect(() =>
+        api.createRouter({
+          history,
+          routes: [{ path: "/", component: Home }],
+          ...deferredOption,
+        } as never),
+      ).toThrow(
+        `Router ${key} integration is not part of the beta contract; use application guards and backend authorization instead: ${key}`,
+      );
+    }
+    for (const deferredRouteField of [{ auth: () => true }, { permissions: ["admin"] }]) {
+      const [key] = Object.keys(deferredRouteField);
+
+      expect(() =>
+        api.createRouter({
+          history,
+          routes: [{ path: "/", component: Home, ...deferredRouteField }],
+        } as never),
+      ).toThrow(
+        `Router route record ${key} integration is not part of the beta contract; use route meta as developer-owned data and backend authorization for enforcement instead: ${key}`,
+      );
+    }
+    for (const deferredOption of [{ ssr: true }, { hydration: true }]) {
+      const [key] = Object.keys(deferredOption);
+
+      expect(() =>
+        api.createRouter({
+          history,
+          routes: [{ path: "/", component: Home }],
+          ...deferredOption,
+        } as never),
+      ).toThrow(`Deferred router option is not part of the beta contract: ${key}`);
+    }
     expect(() =>
       api.createRouter({
         history,
@@ -306,6 +342,16 @@ describe("package exports", () => {
     expect(() => server.renderToString(source, { router: {} } as never)).toThrow(
       /Router-aware SSR integration is deferred/,
     );
+
+    const hydrationContainer = document.createElement("main");
+    hydrationContainer.innerHTML = "<p>home</p>";
+    expect(() =>
+      api
+        .createApp(() => api.h("p", null, "home"))
+        .hydrate(hydrationContainer, {
+          stream: true,
+        } as never),
+    ).toThrow(/Hydration streaming integration is deferred/);
 
     const site = server.generateStaticSite({
       routes: [{ path: "/", source }],
