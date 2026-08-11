@@ -20,6 +20,16 @@ afterEach(() => {
 });
 
 describe("component emit and lifecycle", () => {
+  it("ignores lifecycle registration outside component setup", () => {
+    const hook = vi.fn();
+
+    onMounted(hook);
+    onUpdated(hook);
+    onUnmounted(hook);
+
+    expect(hook).not.toHaveBeenCalled();
+  });
+
   it("emits component events to parent listeners", () => {
     const container = document.createElement("div");
     const onChange = vi.fn();

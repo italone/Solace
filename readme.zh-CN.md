@@ -23,7 +23,9 @@ Solace 当前处于 `0.1.0` beta 线。本 package build 是 `0.1.0-beta.2`。�
 
 当前完成度摘要：
 
-- App、响应式、渲染、函数组件、上下文、生命周期、调度器、store、JSX/TSX、SSR/hydration minimum loop、SSG core、runtime style registration 和 DevTools 集成已经通过文档化公开入口暴露。
+- App、响应式、渲染、函数组件、上下文、生命周期、调度器、store、JSX/TSX、buffered async
+  initial SSR/hydration、sequential async SSG、runtime style registration 和 DevTools 集成已经通过
+  文档化公开入口暴露。
 - 包产物包含 ESM、CJS、TypeScript declarations、JSX runtime 子路径、`@italone/solace/server`，以及 `@italone/solace/devtools` 子路径。
 - `.solace` SFC 支持仍通过 `@italone/solace/vite` 和 `@italone/solace/sfc` 提供，但它是可选、窄、实验性的辅助能力，不是 Solace 的主要组件编写模型。
 - 仓库包含一个示例级浏览器 DevTools timeline panel，它只消费公开 DevTools 子路径，不改变 runtime payload。
@@ -34,13 +36,26 @@ Solace 当前处于 `0.1.0` beta 线。本 package build 是 `0.1.0-beta.2`。�
 
 ## 当前范围
 
-Solace 当前适合用于学习 JSX/TSX-first 的小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 beta 线把可选实验性 SFC、Router 和 SSR/hydration 保持在显式范围边界内：函数组件和 JSX/TSX 是主要编写模型，窄 `.solace` compiler surface 与 `@italone/solace/vite` plugin 只是辅助入口。beta 一方 router slice、通过 `generateStaticSite()` 暴露的 SSG core、通过 `@italone/solace/server` 暴露的 production asset tag resolution 和 explicit-path router-aware SSG helpers、通过 `@italone/solace/server` 和 `createApp(App).hydrate(container)` 暴露的 minimum SSR/hydration loop，以及示例级浏览器 DevTools timeline panel 都已经可用；完整 production SSR pipeline automation、streaming SSR、async SSR、async hydration、一方 UI 组件、生产级 DevTools 发布形态和内部模块兼容性承诺仍然不在冻结后的生产契约内。
+Solace 当前适合用于学习 JSX/TSX-first 的小型前端运行时、实验响应式渲染，以及在小示例中
+验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。beta 线已经
+提供 `renderToStringAsync()` 的 buffered async initial rendering、`generateStaticSiteAsync()` 的
+sequential in-memory SSG，以及 `hydrateAsync()` 的 prepare-then-commit 浏览器 hydration。
+Streaming SSR、router-aware SSR/hydration、initial hydration 之后的 async update scheduling、
+一方 UI 组件、生产级 DevTools 发布形态和内部模块兼容性承诺仍不在冻结后的生产契约内。
 
 ## 公开契约门禁
 
 公共 API 变更在发布前需要保持 README、project-status、API、package-usage、package exports
 和 consumer smoke 覆盖同步。当前 beta 契约仍推迟 auth、permissions、router-aware SSR、
-router-aware hydration、streaming SSR、async component SSR 和 async hydration。除非后续通过单独设计扩大公共 API，并把新行为纳入发布门禁，否则这些能力应继续保持为文档化的不支持范围。Router `auth` 和 `permissions` options 或 route record fields 会被明确拒绝，不会被当作隐式客户端授权能力。
+router-aware hydration、streaming SSR、Suspense/selective hydration，以及 initial hydration
+之后的 async update scheduling。除非后续通过单独设计扩大公共 API，并把新行为纳入发布门禁，
+否则这些能力应继续保持为文档化的不支持范围。Router `auth` 和 `permissions` options 或 route
+record fields 会被明确拒绝，不会被当作隐式客户端授权能力。
+SSR、hydration 和 SSG option objects 也会通过包含字段名的 `TypeError` 拒绝未知自有字段，
+避免静默接受拼写错误的配置。
+
+关于 `0.1.x` 兼容性主线，在依赖包入口、规划迁移或编写 release note 前请先阅读[兼容性与弃用策略](./docs/compatibility.zh-CN.md)。
+该策略保护八个已发布的 export path，同时将 router 和 async 行为标记为 beta，将 SFC/Vite 行为标记为 experimental。
 
 ## 快速开始
 
@@ -134,6 +149,7 @@ Solace 保持较小的公共 API 面。包根入口是稳定的运行时入口�
 - `createApp(rootComponent)`
 - `app.mount(container)`
 - `app.hydrate(container, options?)`
+- `app.hydrateAsync(container, options?)`
 - `app.use(plugin, ...options)`
 - `app.provide(key, value)`
 
@@ -141,6 +157,10 @@ Solace 保持较小的公共 API 面。包根入口是稳定的运行时入口�
 server-rendered DOM。Hydration 默认在 mismatch 时抛错；传入 `{ recover: true }` 可显式用
 client tree 替换不匹配的 server DOM。它返回可链式调用的 app 实例。`app.use()` 可以安装函数插件，也可以安装带
 `install()` 方法的对象插件，同一个插件在每个 app 实例中只会安装一次。`app.provide()` 注册应用级值，后代组件可以通过 `inject()` 读取。
+
+Promised root、async component 和 promised child VNode 应使用 `@italone/solace/server` 的
+`renderToStringAsync()` 与 `generateStaticSiteAsync()`。现有同步 API 保持同步返回类型，并拒绝
+尚未解析的 async values。
 
 ```tsx
 import { createApp } from "@italone/solace";
@@ -455,6 +475,7 @@ pnpm release:readiness
 - [Performance](./docs/performance.md)
 - [大型应用指南](./docs/large-app.zh-CN.md)
 - [Release](./docs/release.md)
+- [兼容性与弃用策略](./docs/compatibility.zh-CN.md)
 - [DevTools](./docs/devtools.md)
 - [Roadmap](./docs/roadmap.md)
 - [Contributing](./CONTRIBUTING.md)

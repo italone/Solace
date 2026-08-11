@@ -8,6 +8,7 @@ import { isEventProp } from "../event/event";
 import { ReactiveEffect } from "../reactivity/effect";
 import { queueJob } from "../scheduler/scheduler";
 import { ShapeFlags } from "../shared/flags";
+import type { PreparedVNode } from "../shared/async-tree";
 import type { VNode, VNodeProps } from "../vnode/vnode";
 import { patch } from "./diff";
 import { patchProp } from "./dom";
@@ -81,6 +82,171 @@ export function hydrateVNode(
   }
 
   return node.nextSibling;
+}
+
+export function hydratePreparedVNode(
+  prepared: PreparedVNode,
+  node: Node | null,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+  context: HydrationContext | null = null,
+  path = "root",
+): Node | null {
+  const { vnode } = prepared;
+  if (node === null) {
+    throwHydrationMismatch({
+      kind: "missing-node",
+      path,
+      expected: describeVNode(vnode),
+      actual: "null",
+      message: `Hydration mismatch at path ${path}: missing DOM node for ${describeVNode(vnode)}`,
+    });
+  }
+
+  if (prepared.component !== null) {
+    return hydratePreparedComponent(prepared, node, parentComponent, appProvides, context, path);
+  }
+
+  if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
+    return hydratePreparedElement(prepared, node, parentComponent, appProvides, context, path);
+  }
+
+  if (vnode.shapeFlag & ShapeFlags.FRAGMENT) {
+    return hydratePreparedFragment(prepared, node, parentComponent, appProvides, context, path);
+  }
+
+  return node.nextSibling;
+}
+
+function hydratePreparedElement(
+  prepared: PreparedVNode,
+  node: Node,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+  context: HydrationContext | null,
+  path: string,
+): Node | null {
+  const { vnode, children } = prepared;
+  if (!(node instanceof Element) || node.tagName.toLowerCase() !== String(vnode.type)) {
+    throwHydrationMismatch({
+      kind: "element-tag-mismatch",
+      path,
+      expected: `<${String(vnode.type)}>`,
+      actual: describeDomNode(node),
+      message: `Hydration mismatch at path ${path}: expected <${String(vnode.type)}> but found ${describeDomNode(node)}`,
+    });
+  }
+
+  vnode.el = node;
+  hydrateProps(node, vnode.props);
+
+  if (typeof children === "string") {
+    if (node.textContent !== children) {
+      const textPath = describeElementTextPath(path, vnode);
+      throwHydrationMismatch({
+        kind: "text-mismatch",
+        path: textPath,
+        expected: `text "${children}"`,
+        actual: `text "${node.textContent ?? ""}"`,
+        message: `Hydration mismatch at path ${textPath}: expected text "${children}" but found "${node.textContent ?? ""}"`,
+      });
+    }
+    return node.nextSibling;
+  }
+
+  if (Array.isArray(children)) {
+    const childPath = describeElementTextPath(path, vnode);
+    const next = hydratePreparedChildren(
+      children,
+      node.firstChild,
+      parentComponent,
+      appProvides,
+      context,
+      childPath,
+    );
+    assertNoExtraDomNode(next, `${childPath}[${children.length}]`);
+  }
+
+  return node.nextSibling;
+}
+
+function hydratePreparedComponent(
+  prepared: PreparedVNode,
+  node: Node,
+  _parentComponent: ComponentInstance | null,
+  _appProvides: Provides | null,
+  context: HydrationContext | null,
+  path: string,
+): Node | null {
+  const component = prepared.component;
+  if (component === null) {
+    return node;
+  }
+
+  const { instance, subtree } = component;
+  const updateContainer = node.parentNode;
+  prepared.vnode.component = instance;
+  const next = hydratePreparedVNode(subtree, node, instance, instance.appProvides, context, path);
+  prepared.vnode.el = subtree.vnode.el;
+  instance.subTree = subtree.vnode;
+  instance.isMounted = true;
+  instance.isUnmounted = false;
+  clearLifecycleHooks(instance);
+  setupHydratedComponentUpdate(instance, updateContainer);
+  context?.hydratedInstances.push(instance);
+
+  return next;
+}
+
+function hydratePreparedFragment(
+  prepared: PreparedVNode,
+  node: Node,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+  context: HydrationContext | null,
+  path: string,
+): Node | null {
+  if (!Array.isArray(prepared.children)) {
+    return node;
+  }
+
+  let current: Node | null = node;
+  for (const [index, child] of prepared.children.entries()) {
+    current = hydratePreparedVNode(
+      child,
+      current,
+      parentComponent,
+      appProvides,
+      context,
+      `${path}[${index}]`,
+    );
+  }
+  prepared.vnode.el = prepared.children[0]?.vnode.el ?? null;
+
+  return current;
+}
+
+function hydratePreparedChildren(
+  children: PreparedVNode[],
+  firstNode: ChildNode | null,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+  context: HydrationContext | null,
+  parentPath: string,
+): Node | null {
+  let current: Node | null = firstNode;
+  for (const [index, child] of children.entries()) {
+    current = hydratePreparedVNode(
+      child,
+      current,
+      parentComponent,
+      appProvides,
+      context,
+      `${parentPath}[${index}]`,
+    );
+  }
+
+  return current;
 }
 
 function hydrateElement(

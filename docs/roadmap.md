@@ -7,6 +7,8 @@ line:
 
 - Reactive core, scheduler, renderer, function components, events, store, JSX/TSX runtime, DevTools API, examples, and release gates.
 - All tests passing, coverage above thresholds, package exports validated.
+- Completed stable prerequisites: medium-app validation and the compatibility and deprecation policy.
+- Router-aware SSR/hydration and production DevTools remain deferred.
 
 ## Next Phase: Beta
 
@@ -26,7 +28,7 @@ Work remaining, in rough priority order:
    `lazyRoute()` components, `RouterLink`, `RouterView`, `useRoute`, `useRouter`, and scroll
    behavior; keep SSR/SSG/hydration integration, auth, and permissions deferred until separately
    designed.
-4. **Mandatory public API gates** — keep package export tests, packed-consumer smoke, browser e2e, and release readiness required for public API changes.
+4. **Mandatory public API gates** — keep package export tests, packed-consumer smoke, browser e2e, and release readiness required for public API changes; these are completed stable prerequisites.
 5. **SSR / hydration minimum loop** — implemented through `@italone/solace/server` and
    `createApp(App).hydrate(container)` for synchronous VNode/component trees, including
    server-side style collection and hydration-safe style dedupe; continue hardening mismatch policy,
@@ -53,7 +55,7 @@ Work remaining, in rough priority order:
 - React compatibility mode or React API cloning.
 - SFC syntax expansion without a separate design.
 - Production-grade DevTools extension distribution and advanced inspectors.
-- Long-term compatibility policy for internal modules.
+- Long-term compatibility guarantees for private internal modules.
 
 ## How to Propose Changes
 

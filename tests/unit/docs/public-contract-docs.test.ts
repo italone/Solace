@@ -8,19 +8,32 @@ async function readDoc(path: string): Promise<string> {
 
 describe("public contract documentation", () => {
   it("keeps release gates and deferred beta boundaries aligned", async () => {
-    const [readme, readmeZh, api, apiZh, packageUsage, projectStatus, projectStatusZh] =
-      await Promise.all([
-        readDoc("readme.md"),
-        readDoc("readme.zh-CN.md"),
-        readDoc("docs/api.md"),
-        readDoc("docs/api.zh-CN.md"),
-        readDoc("docs/package-usage.md"),
-        readDoc("docs/project-status.md"),
-        readDoc("docs/project-status.zh-CN.md"),
-      ]);
+    const [
+      readme,
+      readmeZh,
+      api,
+      apiZh,
+      packageUsage,
+      projectStatus,
+      projectStatusZh,
+      compatibility,
+      compatibilityZh,
+    ] = await Promise.all([
+      readDoc("readme.md"),
+      readDoc("readme.zh-CN.md"),
+      readDoc("docs/api.md"),
+      readDoc("docs/api.zh-CN.md"),
+      readDoc("docs/package-usage.md"),
+      readDoc("docs/project-status.md"),
+      readDoc("docs/project-status.zh-CN.md"),
+      readDoc("docs/compatibility.md"),
+      readDoc("docs/compatibility.zh-CN.md"),
+    ]);
 
     expect(readme).toContain("## Public Contract Gate");
     expect(readmeZh).toContain("## 公开契约门禁");
+    expect(readme).toContain("[Compatibility and deprecation policy](./docs/compatibility.md)");
+    expect(readmeZh).toContain("[兼容性与弃用策略](./docs/compatibility.zh-CN.md)");
     expect(api).toContain("## Deferred Beta Boundaries");
     expect(apiZh).toContain("## Deferred Beta 边界");
     expect(packageUsage).toContain(
@@ -52,6 +65,8 @@ describe("public contract documentation", () => {
     expect(api).toContain("Hydration options must be a non-array object");
     expect(packageUsage).toContain("Hydration options must be a non-array object");
     expect(api).toContain("`renderToString()` context, when provided, must be a plain object");
+    expect(api).toContain("unknown own option fields throw a `TypeError` naming the field");
+    expect(apiZh).toContain("未知的自有 option 字段会抛出包含字段名的 `TypeError`");
     expect(api).toContain("`router`, or `stream` to `renderToString()`");
     expect(packageUsage).toContain(
       "`renderToString()` context, when provided, must be a plain object",
@@ -59,37 +74,74 @@ describe("public contract documentation", () => {
     expect(packageUsage).toContain("`router`, or `stream` to `renderToString()`");
     expect(api).toContain("including direct sources, SSG route sources, and async child values");
     expect(apiZh).toContain("包括 direct sources、SSG route sources 和 async child values");
-    expect(api).toContain("Hydration also rejects async or thenable direct sources");
-    expect(apiZh).toContain("Hydration 也会拒绝 async 或 thenable direct sources");
-    expect(api).toContain("deferred `manifest`, `clientEntry`, `router`, or");
+    expect(api).toContain("are rejected by the synchronous `renderToString()`");
+    expect(apiZh).toContain("同步 `renderToString()`、`generateStaticSite()`、`hydrate()`");
+    expect(api).toMatch(/deferred `manifest`, `clientEntry`,\s+`router`, or `stream` fields/);
     expect(api).toContain("`stream` fields to `hydrate()`");
     expect(apiZh).toContain("`manifest`、`clientEntry`、`router` 或 `stream`");
     expect(packageUsage).toContain("manifest/router/streaming integration fields");
+    expect(packageUsage).toMatch(/Unknown own option or route\s+fields throw a `TypeError`/);
+    expect(readme).toContain("reject unknown own fields with a field-specific");
+    expect(readmeZh).toContain("拒绝未知自有字段");
+    expect(projectStatus).toContain("reject unknown own fields with field-specific `TypeError`");
+    expect(projectStatusZh).toContain("拒绝未知自有字段");
+    expect(packageUsage).toContain("The buffered async server entries");
     expect(packageUsage).toMatch(
-      /including direct\s+sources, SSG route sources, and async child values/,
+      /accept promised roots, async components, and VNodes with\s+promised children/,
     );
-    expect(packageUsage).toMatch(/Hydration also rejects async or thenable direct\s+sources/);
-    expect(projectStatus).toContain("validates hydration options");
-    expect(projectStatus).toContain("async/thenable hydration direct sources");
-    expect(projectStatusZh).toContain("async/thenable hydration direct sources");
-    expect(projectStatus).toContain("async/thenable SSR direct sources, SSG route sources");
-    expect(projectStatusZh).toContain("async/thenable SSR direct sources、SSG route sources");
+    expect(packageUsage).toMatch(
+      /`hydrateAsync\(\)` supports async\s+components and VNodes with\s+promised children/,
+    );
+    expect(packageUsage).toMatch(/not a\s+promised root/);
+    expect(packageUsage).toContain("@italone/solace/package.json");
+    expect(packageUsage).toContain("`pnpm stable:app` as a mandatory gate");
+    expect(packageUsage).toContain("Existing synchronous APIs retain synchronous return types");
+    expect(projectStatus).toContain("prepares before touching server DOM");
+    expect(projectStatus).toContain("reject unresolved async values");
+    expect(projectStatusZh).toContain("拒绝未解析 async values");
+    expect(projectStatus).toContain("buffered HTML/styles");
+    expect(projectStatusZh).toContain("buffered HTML/styles");
     expect(projectStatus).toContain("Public contract gates remain the first release line");
     expect(projectStatusZh).toContain("公开契约门禁仍是发布前的第一条防线");
     expect(projectStatus).toContain("browser extension QA checklist");
     expect(projectStatusZh).toContain("browser extension QA checklist");
     expect(projectStatus).toContain("2026-08-11 full local `pnpm release:check` passed");
-    expect(projectStatus).toContain("67 Vitest files / 556 tests");
-    expect(projectStatus).toContain("95.29% statements");
-    expect(projectStatus).toContain("90.54% branches");
-    expect(projectStatus).toContain("95.3% lines");
-    expect(projectStatus).toContain("DevTools extension e2e 2 tests");
+    expect(projectStatus).toContain("71 Vitest files / 625 tests");
+    expect(projectStatus).toContain("94.28% statements");
+    expect(projectStatus).toContain("89.18% branches");
+    expect(projectStatus).toMatch(/96\.28%\s+functions/);
+    expect(projectStatus).toContain("94.32% lines");
+    expect(projectStatus).toMatch(/24 browser e2e\s+tests across Chromium, Firefox, and WebKit/);
+    expect(projectStatus).toMatch(/2\s+Chromium-only\s+DevTools\s+extension\s+e2e\s+tests/);
     expect(projectStatusZh).toContain("2026-08-11 的完整本地 `pnpm release:check` 已通过");
-    expect(projectStatusZh).toContain("67 个 Vitest 文件 / 556 个测试");
-    expect(projectStatusZh).toContain("95.29% statements");
-    expect(projectStatusZh).toContain("90.54% branches");
-    expect(projectStatusZh).toContain("95.3% lines");
-    expect(projectStatusZh).toContain("DevTools extension e2e 2 个测试");
+    expect(projectStatusZh).toMatch(/71 个 Vitest\s+文件 \/ 625 个测试/);
+    expect(projectStatusZh).toContain("94.28% statements");
+    expect(projectStatusZh).toContain("89.18% branches");
+    expect(projectStatusZh).toMatch(/96\.28%\s+functions/);
+    expect(projectStatusZh).toContain("94.32% lines");
+    expect(projectStatusZh).toMatch(/Chromium、Firefox、WebKit 共 24 个\s+browser e2e 测试/);
+    expect(projectStatusZh).toMatch(/2\s+个仅\s+Chromium\s+的\s+DevTools\s+extension\s+e2e\s+测试/);
+
+    for (const doc of [readme, api, packageUsage, projectStatus]) {
+      expect(doc).toContain("renderToStringAsync()");
+      expect(doc).toContain("generateStaticSiteAsync()");
+      expect(doc).toContain("hydrateAsync()");
+    }
+    for (const doc of [readmeZh, apiZh, projectStatusZh]) {
+      expect(doc).toContain("renderToStringAsync()");
+      expect(doc).toContain("generateStaticSiteAsync()");
+      expect(doc).toContain("hydrateAsync()");
+    }
+    expect(api).toContain("setup-once");
+    expect(apiZh).toContain("setup-once");
+    expect(api).toContain("after `await`");
+    expect(apiZh).toContain("`await` 之后");
+    expect(api).toContain("synchronous render function");
+    expect(apiZh).toContain("同步 render function");
+    expect(api).toContain("async update scheduling remains deferred");
+    expect(apiZh).toContain("async update scheduling 仍保持 deferred");
+    expect(api).toContain("[Compatibility and deprecation policy](./compatibility.md)");
+    expect(apiZh).toContain("[兼容性与弃用策略](./compatibility.zh-CN.md)");
 
     expect(api).toContain("scroll behavior");
     expect(packageUsage).toContain("scrollBehavior");
@@ -101,8 +153,10 @@ describe("public contract documentation", () => {
       expect(doc).toContain("router-aware SSR");
       expect(doc).toContain("router-aware hydration");
       expect(doc).toContain("streaming SSR");
-      expect(doc).toContain("async component SSR");
-      expect(doc).toContain("async hydration");
     }
+    expect(packageUsage).toContain("[Compatibility and deprecation policy](./compatibility.md)");
+    expect(packageUsage).toContain("[兼容性与弃用策略](./compatibility.zh-CN.md)");
+    expect(compatibility).toContain("0.1.x");
+    expect(compatibilityZh).toContain("0.1.x");
   });
 });

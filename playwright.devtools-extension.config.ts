@@ -9,20 +9,20 @@ export default defineConfig({
   testMatch: "devtools-extension.spec.ts",
   webServer: [
     {
-      command: "pnpm exec vite examples/basic-counter --host 127.0.0.1 --port 5174",
+      command: "pnpm exec vite examples/basic-counter --host 127.0.0.1 --port 6174",
       env: createPlaywrightWebServerEnv(),
-      url: "http://127.0.0.1:5174",
+      url: "http://127.0.0.1:6174",
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: "pnpm exec vite preview examples/devtools-extension --host 127.0.0.1 --port 5177",
+      command: "pnpm exec vite preview examples/devtools-extension --host 127.0.0.1 --port 6177",
       env: createPlaywrightWebServerEnv(),
-      url: "http://127.0.0.1:5177/panel.html",
+      url: "http://127.0.0.1:6177/panel.html",
       reuseExistingServer: !process.env.CI,
     },
   ],
   use: {
-    baseURL: "http://127.0.0.1:5174",
+    baseURL: "http://127.0.0.1:6174",
     trace: "on-first-retry",
   },
   projects: [

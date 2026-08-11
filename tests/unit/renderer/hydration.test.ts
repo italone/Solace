@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   Fragment,
+  defineAsyncComponent,
   h,
   nextTick,
   onMounted,
@@ -10,8 +11,10 @@ import {
   reactive,
   ref,
   render,
+  useStyle,
 } from "../../../src";
-import { hydrate, SolaceHydrationError } from "../../../src/renderer/renderer";
+import type { AsyncComponentType } from "../../../src";
+import { hydrate, hydrateAsync, SolaceHydrationError } from "../../../src/renderer/renderer";
 
 describe("hydrate", () => {
   function captureHydrationError(fn: () => void): SolaceHydrationError {
@@ -119,6 +122,20 @@ describe("hydrate", () => {
     expect(container.innerHTML).toBe("<span>server</span>");
   });
 
+  it("stops hydrated child updates when a later root mismatch fails", async () => {
+    const count = ref(0);
+    const container = document.createElement("div");
+    container.innerHTML = "<button>count: 0</button><p>extra</p>";
+    const App = () => h("button", null, `count: ${count.value}`);
+
+    expect(() => hydrate(App, container)).toThrow(SolaceHydrationError);
+
+    count.value = 1;
+    await nextTick();
+
+    expect(container.innerHTML).toBe("<button>count: 0</button><p>extra</p>");
+  });
+
   it("rejects deferred hydration integration options at runtime", () => {
     const container = document.createElement("div");
     container.innerHTML = "<button>server</button>";
@@ -150,6 +167,15 @@ describe("hydrate", () => {
     expect(() =>
       hydrate(h("button", null, "server"), container, null, { stream: true } as never),
     ).toThrow(/Hydration streaming integration is deferred/);
+  });
+
+  it("rejects unknown hydration options at runtime", () => {
+    const container = document.createElement("div");
+    container.innerHTML = "<button>server</button>";
+
+    expect(() =>
+      hydrate(h("button", null, "server"), container, null, { recvoer: true } as never),
+    ).toThrow(TypeError("Unknown hydration option: recvoer"));
   });
 
   it("rejects async hydration sources instead of entering the hydration pipeline", () => {
@@ -322,5 +348,79 @@ describe("hydrate", () => {
     expect(view).toHaveBeenCalledTimes(2);
     expect(container.querySelector("button")).toBe(button);
     expect(container.innerHTML).toBe("<button>count: 1</button>");
+  });
+});
+
+describe("hydrateAsync", () => {
+  it("validates the container before evaluating the async source", async () => {
+    let setupCalls = 0;
+    const sourceFailure = new Error("source should not run");
+    const AsyncApp: AsyncComponentType = async () => {
+      setupCalls += 1;
+      throw sourceFailure;
+    };
+
+    await expect(hydrateAsync(h(AsyncApp), {} as Element)).rejects.toThrow(
+      TypeError("Hydration container must be an Element"),
+    );
+    expect(setupCalls).toBe(0);
+  });
+
+  it("keeps a nested async component mounted across parent updates", async () => {
+    const parentVersion = ref(0);
+    let loadedSetups = 0;
+    const Loaded = () => {
+      loadedSetups += 1;
+      return () => h("button", null, "loaded");
+    };
+    const AsyncChild = defineAsyncComponent(() => Promise.resolve(Loaded));
+    const Parent = () => () =>
+      h("section", null, [h("span", null, `parent: ${parentVersion.value}`), h(AsyncChild)]);
+    const container = document.createElement("div");
+    container.innerHTML = "<section><span>parent: 0</span><button>loaded</button></section>";
+
+    await hydrateAsync(h(Parent), container);
+    const button = container.querySelector("button");
+    expect(loadedSetups).toBe(1);
+
+    parentVersion.value += 1;
+    await nextTick();
+
+    expect(container.querySelector("span")?.textContent).toBe("parent: 1");
+    expect(container.querySelector("button")).toBe(button);
+    expect(loadedSetups).toBe(1);
+  });
+
+  it("recovers a prepared async tree and keeps reactive updates working", async () => {
+    const count = ref(0);
+    const AsyncApp: AsyncComponentType = async () => () =>
+      h("button", { onClick: () => count.value++ }, `count: ${count.value}`);
+    const container = document.createElement("div");
+    container.innerHTML = "<span>server mismatch</span>";
+
+    await hydrateAsync(h(AsyncApp), container, null, { recover: true });
+    container.querySelector("button")?.click();
+    await nextTick();
+
+    expect(container.innerHTML).toBe("<button>count: 1</button>");
+  });
+
+  it("commits prepared styles through the document style sink", async () => {
+    const isolatedDocument = document.implementation.createHTMLDocument("async hydration");
+    const container = isolatedDocument.createElement("div");
+    container.innerHTML = '<p class="async-style">styled</p>';
+    isolatedDocument.body.appendChild(container);
+    const AsyncApp: AsyncComponentType = async () => {
+      useStyle("async-style", ".async-style { color: blue; }");
+      await Promise.resolve();
+      return () => h("p", { class: "async-style" }, "styled");
+    };
+
+    await hydrateAsync(h(AsyncApp), container);
+
+    expect(isolatedDocument.head.querySelectorAll('style[data-s-id="async-style"]')).toHaveLength(
+      1,
+    );
+    expect(isolatedDocument.head.textContent).toContain(".async-style { color: blue; }");
   });
 });

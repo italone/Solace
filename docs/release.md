@@ -16,21 +16,49 @@ pnpm release:check
 ```
 
 This runs release readiness, format check, typecheck, JSX dev typecheck, lint, default tests,
-package exports tests, coverage thresholds, package consumer smoke, jsdom benchmark smoke, Chromium
-production browser benchmark, browser e2e tests, and DevTools extension e2e smoke. The package
-consumer smoke includes packed ESM/CJS import checks, TypeScript consumer checks, router public API
-checks, and a Vite production build that transforms a `.solace` single-file component through the
-packed `@italone/solace/vite` plugin.
+package exports tests, coverage thresholds, package consumer smoke, stable application smoke
+(`pnpm stable:app`), jsdom benchmark smoke, Chromium production browser benchmark, browser e2e tests,
+and DevTools extension e2e smoke. The package consumer smoke includes packed ESM/CJS import checks,
+TypeScript consumer checks, router public API checks, and a Vite production build that transforms a
+`.solace` single-file component through the packed `@italone/solace/vite` plugin.
 
 For public API changes, `pnpm release:readiness`, `pnpm package:smoke`, `pnpm test:e2e`, and
 `pnpm test:e2e:devtools-extension` are mandatory gates. `pnpm release:check` includes them so
-release preparation, package-boundary drift, and browser extension drift are checked together.
+release preparation, package-boundary drift, and browser extension drift are checked together. Treat
+`pnpm stable:app` as a mandatory gate as well.
 
-The GitHub Actions CI workflow keeps these checks split into named steps and also runs both
-benchmark commands, ordinary browser e2e, and DevTools extension e2e smoke: `pnpm benchmark`,
-`pnpm benchmark:browser`, `pnpm test:e2e`, and `pnpm test:e2e:devtools-extension`.
+The GitHub Actions CI workflow runs the quality job on both Node 20 and Node 22. It keeps the checks
+split into named steps and runs `pnpm release:readiness` before the longer checks so package metadata
+and release script drift fail early.
 
-CI also runs `pnpm release:readiness` before the longer checks so package metadata and release script drift fail early.
+After both quality matrix jobs pass, the Node 22 browser job runs ordinary application e2e on
+Chromium, Firefox, and WebKit. The production browser benchmark and DevTools extension e2e smoke
+remain Chromium-only. Together, CI runs `pnpm benchmark`, `pnpm benchmark:browser`, `pnpm test:e2e`,
+and `pnpm test:e2e:devtools-extension` without implying cross-browser support for the extension.
+
+## Stable Compatibility Checklist
+
+Before treating a stable upgrade candidate as ready, run `pnpm stable:app:upgrade` against the exact
+baseline `@italone/solace@0.1.0-beta.2`, then run `pnpm release:check`. The stable app upgrade is a
+local candidate check; routine CI is a local candidate check only and is not a substitute for the
+maintainer's release decision. Keep types, docs, changeset, and tests together for every public
+compatibility change. Confirm that protected export paths remain available, and apply the
+[compatibility and deprecation policy](./compatibility.md) before announcing a removal or signature
+change. A severe security/correctness exception requires prominent risk and migration guidance.
+
+## Async Rendering Compatibility
+
+`renderToStringAsync()`, `generateStaticSiteAsync()`, and `hydrateAsync()` are additive documented public entries.
+They are separate entries, while existing synchronous APIs retain their return types and reject
+unresolved async values, so this beta.4 slice does not silently widen synchronous call sites to
+promises.
+
+Release notes must describe these APIs as buffered async initial rendering, sequential async SSG,
+and prepare-then-commit async hydration. They must not imply streaming SSR, router-aware
+SSR/hydration, Suspense/selective hydration, or async update scheduling after initial hydration.
+Changing or removing any documented async entry requires the compatibility and deprecation policy
+that must be finalized before `0.1` stable; a beta release must not remove one without an explicit
+migration path.
 
 ## Release Readiness
 

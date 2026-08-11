@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { createApp, h } from "../../../src";
 import type { App, HydrationOptions, RouteLocationNormalized } from "../../../src";
+import type { AsyncComponentType, AsyncVNodeChild, AsyncVNodeChildren } from "../../../src";
 import { createStaticRoutesFromRouter, resolveStaticAssets } from "../../../src/server";
 import type {
   GenerateStaticSiteOptions,
@@ -20,6 +21,17 @@ function acceptAppHydrate(app: App, container: Element): App {
   app.hydrate(container, { recover: true });
   return app;
 }
+
+function acceptAppHydrateAsync(app: App, container: Element): Promise<void> {
+  return app.hydrateAsync(container);
+}
+
+const AsyncRoot: AsyncComponentType = async () => () => h("p", null, "async");
+const asyncChild: AsyncVNodeChild = Promise.resolve(h("span", null, "child"));
+const asyncChildren: AsyncVNodeChildren = [h("span", null, "sync"), asyncChild];
+
+createApp(AsyncRoot);
+h("div", null, asyncChildren);
 
 function acceptSSGOptions(options: GenerateStaticSiteOptions): GenerateStaticSiteOptions {
   return options;
@@ -118,8 +130,7 @@ acceptHydrationOptions({ manifest: {} });
 // @ts-expect-error streaming hydration integration is deferred
 acceptHydrationOptions({ stream: true });
 
-function rejectAsyncHydrationRootComponent(): void {
-  // @ts-expect-error async root components are not part of the hydration public contract
+function acceptAsyncHydrationRootComponent(): void {
   createApp(async () => h("p", null, "async")).hydrate(document.createElement("main"));
 }
 
@@ -157,7 +168,8 @@ acceptShell(({ context }) => {
 describe("server public contract types", () => {
   it("keeps manifest assets in SSG and deferred integration out of SSR", () => {
     expect(acceptAppHydrate).toEqual(expect.any(Function));
-    expect(rejectAsyncHydrationRootComponent).toEqual(expect.any(Function));
+    expect(acceptAppHydrateAsync).toEqual(expect.any(Function));
+    expect(acceptAsyncHydrationRootComponent).toEqual(expect.any(Function));
     expect(assetTags).toEqual(
       expect.objectContaining({
         modulePreloads: expect.any(Array),

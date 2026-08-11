@@ -1,5 +1,6 @@
 import {
   createVNode,
+  type AsyncComponentVNodeChildren,
   type ComponentVNodeChildren,
   Fragment,
   type VNode,
@@ -7,7 +8,7 @@ import {
   type VNodeProps,
   type VNodeType,
 } from "./vnode";
-import type { ComponentType } from "./vnode";
+import type { AsyncComponentType, ComponentType } from "./vnode";
 
 export function h(type: string, props?: VNodeProps | null, children?: VNodeChildren): VNode;
 export function h(
@@ -20,15 +21,20 @@ export function h<Props extends object>(
   props?: Props | null,
   children?: ComponentVNodeChildren,
 ): VNode;
+export function h<Props extends object>(
+  type: AsyncComponentType<Props>,
+  props?: Props | null,
+  children?: AsyncComponentVNodeChildren,
+): VNode;
 export function h(
   type: VNodeType,
   props?: VNodeProps | null,
-  children?: ComponentVNodeChildren,
+  children?: AsyncComponentVNodeChildren,
 ): VNode;
 export function h(
   type: VNodeType,
   props: VNodeProps | null = null,
-  children: ComponentVNodeChildren = null,
+  children: AsyncComponentVNodeChildren = null,
 ): VNode {
   return createVNode(type, props, children);
 }

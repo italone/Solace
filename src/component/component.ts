@@ -2,7 +2,7 @@ import type {
   ComponentProps,
   ComponentRender,
   ComponentType,
-  ComponentVNodeChildren,
+  AsyncComponentVNodeChildren,
   VNode,
   VNodeChildren,
   VNodeSlots,
@@ -151,7 +151,7 @@ function runComponentSetup(
   }
 }
 
-function initSlots(instance: ComponentInstance, children: ComponentVNodeChildren): void {
+function initSlots(instance: ComponentInstance, children: AsyncComponentVNodeChildren): void {
   for (const key of Object.keys(instance.slots)) {
     delete instance.slots[key];
   }
@@ -169,7 +169,7 @@ function initSlots(instance: ComponentInstance, children: ComponentVNodeChildren
     return;
   }
 
-  instance.slots.default = () => children;
+  instance.slots.default = () => children as VNodeChildren;
 }
 
 function emit(instance: ComponentInstance, event: string, ...args: unknown[]): void {
@@ -236,11 +236,12 @@ function camelize(value: string): string {
   return value.replace(/-(\w)/g, (_, character: string) => character.toUpperCase());
 }
 
-function isVNodeSlots(children: ComponentVNodeChildren): children is VNodeSlots {
+function isVNodeSlots(children: AsyncComponentVNodeChildren): children is VNodeSlots {
   return (
     children !== null &&
     typeof children === "object" &&
     !Array.isArray(children) &&
-    !("type" in children)
+    !("type" in children) &&
+    !("then" in children)
   );
 }

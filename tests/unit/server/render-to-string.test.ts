@@ -1,7 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { Fragment, h, inject, onMounted, onUnmounted, onUpdated, provide } from "../../../src";
-import { renderToString } from "../../../src/server";
+import {
+  Fragment,
+  defineAsyncComponent,
+  h,
+  inject,
+  onMounted,
+  onUnmounted,
+  onUpdated,
+  provide,
+  useStyle,
+} from "../../../src";
+import type { AsyncComponentType } from "../../../src";
+import { renderToString, renderToStringAsync } from "../../../src/server";
 
 describe("renderToString", () => {
   it("serializes elements, text, fragments, and synchronous components", () => {
@@ -146,5 +157,76 @@ describe("renderToString", () => {
     expect(() => renderToString(h("p", null, "server"), { stream: true } as never)).toThrow(
       /Streaming SSR is deferred/,
     );
+  });
+
+  it("rejects unknown SSR options", () => {
+    expect(() => renderToString(h("p", null, "server"), { contex: {} } as never)).toThrow(
+      TypeError("Unknown SSR option: contex"),
+    );
+  });
+});
+
+describe("renderToStringAsync", () => {
+  it("serializes promised roots, async components, and promised children", async () => {
+    const AsyncChild: AsyncComponentType = async () => () => h("strong", null, "ready");
+
+    const result = await renderToStringAsync(
+      Promise.resolve(h("section", null, [h(AsyncChild), Promise.resolve(h("i", null, "child"))])),
+    );
+
+    expect(result).toEqual({
+      html: "<section><strong>ready</strong><i>child</i></section>",
+      styles: [],
+    });
+  });
+
+  it("preserves provides and styles across async setup", async () => {
+    const Child = () => {
+      useStyle("async-child", ".async-child { color: blue; }");
+      return h("span", { class: "async-child" }, String(inject("message", "missing")));
+    };
+    const AsyncParent: AsyncComponentType = async () => {
+      provide("message", "provided");
+      await Promise.resolve();
+      return () => h(Child);
+    };
+
+    await expect(renderToStringAsync(h(AsyncParent))).resolves.toEqual({
+      html: '<span class="async-child">provided</span>',
+      styles: ['<style data-s-id="async-child">.async-child { color: blue; }</style>'],
+    });
+  });
+
+  it("validates options before touching an async source", async () => {
+    let touched = false;
+    const source = {
+      then() {
+        touched = true;
+        return Promise.resolve(h("p", null, "late"));
+      },
+    };
+
+    await expect(renderToStringAsync(source as never, { stream: true } as never)).rejects.toThrow(
+      /Streaming SSR is deferred/,
+    );
+    expect(touched).toBe(false);
+  });
+
+  it("awaits defineAsyncComponent loaders without serializing loading UI", async () => {
+    const loader = vi
+      .fn<() => Promise<() => ReturnType<typeof h>>>()
+      .mockRejectedValueOnce(new Error("retry"))
+      .mockResolvedValueOnce(() => h("p", null, "loaded"));
+    const AsyncComponent = defineAsyncComponent({
+      loader,
+      loadingComponent: () => h("p", null, "loading"),
+      retry: 1,
+    });
+
+    await expect(renderToStringAsync(h(AsyncComponent))).resolves.toEqual({
+      html: "<p>loaded</p>",
+      styles: [],
+    });
+    expect(loader).toHaveBeenCalledTimes(2);
   });
 });

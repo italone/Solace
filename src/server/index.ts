@@ -1,5 +1,8 @@
 export {
   generateStaticSite,
+  generateStaticSiteAsync,
+  type AsyncStaticRoute,
+  type GenerateStaticSiteAsyncOptions,
   type GenerateStaticSiteOptions,
   type GenerateStaticSiteResult,
   type StaticPage,
@@ -19,7 +22,9 @@ export {
 } from "./static-assets";
 export {
   renderToString,
+  renderToStringAsync,
   type RenderToStringOptions,
   type RenderToStringResult,
+  type RenderToStringAsyncSource,
   type RenderToStringSource,
 } from "./render-to-string";

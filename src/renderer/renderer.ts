@@ -1,12 +1,14 @@
 import { ReactiveEffect } from "../reactivity/effect";
 import { queueJob } from "../scheduler/scheduler";
 import type { Provides } from "../component/provide";
+import { prepareAsyncSource, type PreparedVNode } from "../shared/async-tree";
 import { createDocumentStyleSink, withStyleSink, type StyleSink } from "../component/style";
 import { h } from "../vnode/h";
-import type { ComponentType, VNode } from "../vnode/vnode";
+import type { AsyncComponentType, ComponentType, VNode } from "../vnode/vnode";
 import { patch } from "./diff";
 import {
   assertNoExtraDomNode,
+  hydratePreparedVNode,
   hydrateVNode,
   SolaceHydrationError,
   stopHydratedComponentUpdates,
@@ -15,6 +17,7 @@ import {
 
 export type RenderSource = VNode | (() => VNode);
 export type HydrationSource = VNode | ComponentType;
+export type AsyncHydrationSource = HydrationSource | AsyncComponentType;
 export interface HydrationOptions {
   recover?: boolean;
 }
@@ -90,6 +93,114 @@ export function hydrate(
   }
 }
 
+export async function hydrateAsync(
+  source: AsyncHydrationSource,
+  container: Element,
+  appProvides: Provides | null = null,
+  options: HydrationOptions = {},
+): Promise<void> {
+  assertHydrationContainer(container);
+  assertNoDeferredIntegrationOptions(options);
+  const prepared = await prepareAsyncSource(source, {
+    appProvides,
+    collectStyles: true,
+  });
+  const renderContainer = container as RenderContainer;
+  const context: HydrationContext = { hydratedInstances: [] };
+  const styleSink = createDocumentStyleSink(container.ownerDocument);
+
+  stopReactiveRender(renderContainer);
+  for (const registration of prepared.registrations) {
+    styleSink.register(registration.scopeId, registration.css);
+  }
+
+  try {
+    const next = hydratePreparedVNode(
+      prepared.root,
+      renderContainer.firstChild,
+      null,
+      appProvides,
+      context,
+    );
+    assertNoExtraDomNode(next, "root[1]");
+    renderContainer._solaceVNode = prepared.root.vnode;
+  } catch (error) {
+    stopHydratedComponentUpdates(context);
+
+    if (shouldRecoverHydrationMismatch(error, options)) {
+      recoverPreparedHydration(prepared.root, renderContainer, appProvides);
+      return;
+    }
+
+    throw error;
+  }
+}
+
+function recoverPreparedHydration(
+  prepared: PreparedVNode,
+  container: RenderContainer,
+  appProvides: Provides | null,
+): void {
+  container.textContent = "";
+  container._solaceVNode = null;
+  const materialized = materializePreparedVNode(prepared);
+  renderVNode(materialized, container, appProvides);
+  resetPreparedHydrationState(prepared);
+
+  const context: HydrationContext = { hydratedInstances: [] };
+  try {
+    const next = hydratePreparedVNode(prepared, container.firstChild, null, appProvides, context);
+    assertNoExtraDomNode(next, "root[1]");
+    container._solaceVNode = prepared.vnode;
+  } catch (error) {
+    stopHydratedComponentUpdates(context);
+    throw error;
+  }
+}
+
+function materializePreparedVNode(prepared: PreparedVNode): VNode {
+  if (prepared.component !== null) {
+    return materializePreparedVNode(prepared.component.subtree);
+  }
+
+  const vnode: VNode = {
+    ...prepared.vnode,
+    props: prepared.vnode.props === null ? null : { ...prepared.vnode.props },
+    el: null,
+    component: null,
+  };
+
+  if (typeof prepared.children === "string" || prepared.children === null) {
+    vnode.children = prepared.children;
+  } else {
+    vnode.children = prepared.children.map(materializePreparedVNode);
+  }
+
+  return vnode;
+}
+
+function resetPreparedHydrationState(prepared: PreparedVNode): void {
+  prepared.vnode.el = null;
+
+  if (prepared.component !== null) {
+    const { instance, subtree } = prepared.component;
+    instance.effect?.stop();
+    instance.effect = null;
+    instance.update = null;
+    instance.isMounted = false;
+    instance.isUnmounted = false;
+    instance.isUpdateQueued = false;
+    resetPreparedHydrationState(subtree);
+    return;
+  }
+
+  if (Array.isArray(prepared.children)) {
+    for (const child of prepared.children) {
+      resetPreparedHydrationState(child);
+    }
+  }
+}
+
 export { SolaceHydrationError };
 
 function hydrateInitialTree(
@@ -149,6 +260,17 @@ function assertNoDeferredIntegrationOptions(options: HydrationOptions): void {
     throw new TypeError(
       "Hydration streaming integration is deferred; hydrate() currently accepts synchronous hydration trees only.",
     );
+  }
+
+  const unknownKey = Reflect.ownKeys(options).find((key) => key !== "recover");
+  if (unknownKey !== undefined) {
+    throw new TypeError(`Unknown hydration option: ${String(unknownKey)}`);
+  }
+}
+
+function assertHydrationContainer(container: Element): void {
+  if (!(container instanceof Element)) {
+    throw new TypeError("Hydration container must be an Element");
   }
 }
 

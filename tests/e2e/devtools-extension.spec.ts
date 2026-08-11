@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 
 test("builds extension classic scripts without module imports", async ({ request }) => {
-  const bridgeScript = await (await request.get("http://127.0.0.1:5177/bridge.js")).text();
-  const contentScript = await (await request.get("http://127.0.0.1:5177/content-script.js")).text();
+  const bridgeScript = await (await request.get("http://127.0.0.1:6177/bridge.js")).text();
+  const contentScript = await (await request.get("http://127.0.0.1:6177/content-script.js")).text();
 
   expect(bridgeScript).not.toMatch(/^import/m);
   expect(contentScript).not.toMatch(/^import/m);
@@ -14,13 +14,13 @@ test("captures relayed DevTools events in the extension panel workflow", async (
 }) => {
   const appPage = await browser.newPage();
 
-  await page.goto("http://127.0.0.1:5177/panel.html", { waitUntil: "commit" });
+  await page.goto("http://127.0.0.1:6177/panel.html", { waitUntil: "commit" });
   await page.waitForFunction(
     () => Boolean(document.querySelector('[data-testid="timeline-list"]')),
     undefined,
     { timeout: 20000 },
   );
-  await appPage.goto("http://127.0.0.1:5174/", { waitUntil: "domcontentloaded" });
+  await appPage.goto("http://127.0.0.1:6174/", { waitUntil: "domcontentloaded" });
 
   const counter = appPage.locator("#counter");
   await expect(counter).toHaveText("count: 0");

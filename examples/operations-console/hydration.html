@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>Operations Console Hydration</title>
+    <!-- prettier-ignore -->
+    <style data-s-id="operations-console-incident-summary">
+.operations-summary {
+  max-width: 28rem;
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  color: #20252c;
+  background: #ffffff;
+  border: 1px solid #d7dce1;
+  border-radius: 6px;
+}
+.operations-summary__label {
+  margin: 0;
+  color: #646d78;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.operations-summary__count {
+  grid-row: span 2;
+  font-size: 1.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.operations-summary__button {
+  width: fit-content;
+  min-height: 2.25rem;
+  padding: 0.45rem 0.75rem;
+  color: #ffffff;
+  background: #185b43;
+  border: 1px solid #124632;
+  border-radius: 4px;
+  cursor: pointer;
+}
+</style>
+  </head>
+  <body>
+    <main class="console-main">
+      <div class="page-stack">
+        <h1>Operations Console Hydration</h1>
+
+        <section aria-labelledby="matching-heading">
+          <h2 id="matching-heading">Matching summary</h2>
+          <!-- prettier-ignore -->
+          <div id="matching-root"><section data-operations-summary="" class="operations-summary"><p class="operations-summary__label">Open incidents</p><strong class="operations-summary__count">3</strong><button type="button" class="operations-summary__button">Increment open incidents</button></section></div>
+          <output id="matching-result" role="status" aria-live="polite"></output>
+        </section>
+
+        <section aria-labelledby="recovery-heading">
+          <h2 id="recovery-heading">Recovered summary</h2>
+          <div id="recovery-root"><p>Stale operations summary</p></div>
+          <output id="recovery-result" role="status" aria-live="polite"></output>
+        </section>
+      </div>
+    </main>
+    <script type="module" src="/src/entries/hydration.tsx"></script>
+  </body>
+</html>

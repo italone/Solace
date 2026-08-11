@@ -6,6 +6,12 @@ export interface StyleSink {
 
 export interface ServerStyleSink extends StyleSink {
   styles: string[];
+  registrations: StyleRegistration[];
+}
+
+export interface StyleRegistration {
+  scopeId: string;
+  css: string;
 }
 
 const sinkStack: StyleSink[] = [];
@@ -34,12 +40,15 @@ export function getActiveStyleSink(): StyleSink | undefined {
 
 export function createServerStyleSink(): ServerStyleSink {
   const styles: string[] = [];
+  const registrations: StyleRegistration[] = [];
   const registry = new Map<string, string>();
 
   return {
     styles,
+    registrations,
     register(scopeId, css) {
       registerStyle(registry, scopeId, css, (serializedTag) => {
+        registrations.push({ scopeId, css });
         styles.push(serializedTag);
       });
     },

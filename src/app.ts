@@ -1,8 +1,8 @@
 import { h } from "./vnode/h";
-import { hydrate, render } from "./renderer/renderer";
+import { hydrate, hydrateAsync, render } from "./renderer/renderer";
 import type { HydrationOptions } from "./renderer/renderer";
 import type { ProvideKey, Provides } from "./component/provide";
-import type { ComponentType, VNode } from "./vnode/vnode";
+import type { AsyncComponentType, ComponentType, VNode } from "./vnode/vnode";
 
 export type PluginInstall = (app: App, ...options: unknown[]) => void;
 
@@ -15,11 +15,12 @@ export type Plugin = PluginInstall | PluginObject;
 export interface App {
   mount(container: Element): void;
   hydrate(container: Element, options?: HydrationOptions): void;
+  hydrateAsync(container: Element, options?: HydrationOptions): Promise<void>;
   provide<T>(key: ProvideKey, value: T): App;
   use(plugin: Plugin, ...options: unknown[]): App;
 }
 
-export function createApp(rootComponent: ComponentType | VNode): App {
+export function createApp(rootComponent: ComponentType | AsyncComponentType | VNode): App {
   const installedPlugins = new Set<Plugin>();
   const appProvides: Provides = new Map();
   const app: App = {
@@ -30,6 +31,10 @@ export function createApp(rootComponent: ComponentType | VNode): App {
     hydrate(container: Element, options?: HydrationOptions): void {
       const vnode = typeof rootComponent === "function" ? h(rootComponent) : rootComponent;
       hydrate(vnode, container, appProvides, options);
+    },
+    hydrateAsync(container: Element, options?: HydrationOptions): Promise<void> {
+      const vnode = typeof rootComponent === "function" ? h(rootComponent) : rootComponent;
+      return hydrateAsync(vnode, container, appProvides, options);
     },
     provide<T>(key: ProvideKey, value: T): App {
       appProvides.set(key, value);

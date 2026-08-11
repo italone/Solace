@@ -136,6 +136,31 @@ describe("router history", () => {
     stop();
   });
 
+  it("keeps memory history at stack bounds without notifying listeners", () => {
+    const history = createMemoryHistory("/only");
+    const listener = vi.fn();
+    history.listen(listener);
+
+    history.back();
+    history.forward();
+
+    expect(history.location()).toBe("/only");
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it("delegates web and hash back and forward navigation", () => {
+    const back = vi.spyOn(window.history, "back").mockImplementation(() => undefined);
+    const forward = vi.spyOn(window.history, "forward").mockImplementation(() => undefined);
+
+    createWebHistory().back();
+    createWebHistory().forward();
+    createWebHashHistory().back();
+    createWebHashHistory().forward();
+
+    expect(back).toHaveBeenCalledTimes(2);
+    expect(forward).toHaveBeenCalledTimes(2);
+  });
+
   it("rejects web history write targets with hash fragments", () => {
     const history = createWebHistory();
 

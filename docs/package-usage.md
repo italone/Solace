@@ -196,7 +196,9 @@ import { h, useStyle } from "@italone/solace";
 import {
   createStaticRoutesFromRouter,
   generateStaticSite,
+  generateStaticSiteAsync,
   renderToString,
+  renderToStringAsync,
   resolveStaticAssets,
 } from "@italone/solace/server";
 
@@ -220,21 +222,66 @@ rethrowing the mismatch. Passing deferred integration options such as `manifest`
 manifest/router/streaming integration fields at runtime.
 Hydration options must be a non-array object, and `recover` must be boolean when provided.
 `renderToString()` context, when provided, must be a plain object.
+Hydration options accept only `recover`, and `renderToString()` options accept only `context` and
+`provides`; unknown own option fields throw a `TypeError` naming the field.
 Hydration mismatch errors expose stable path information plus `kind`, `expected`, and `actual`
 fields so missing nodes, extra nodes, element tag mismatches, and text mismatches can be diagnosed
 without guessing from a single message string.
 
-This minimum loop includes synchronous `renderToString()`, in-memory SSG through
-`generateStaticSite()`, server-side style collection, hydration-safe style dedupe, production asset
-tag resolution through `resolveStaticAssets()`, and an explicit-path router-to-SSG adapter through
-`createStaticRoutesFromRouter()`. It rejects async or thenable render trees, including direct
-sources, SSG route sources, and async child values. Hydration also rejects async or thenable direct
-sources and component trees instead of claiming server DOM with an unresolved tree. It does not
-include streaming SSR, async component SSR, async hydration, filesystem SSG output, route crawling,
-router-aware SSR, router-aware hydration, or automatic hydration mismatch recovery beyond the
-explicit `recover` deopt.
-Async or thenable SSR render trees are explicitly rejected with a `TypeError` instead of being
-rendered as an empty subtree.
+The buffered async server entries are `renderToStringAsync()` and `generateStaticSiteAsync()`. They
+accept promised roots, async components, and VNodes with promised children. The buffered browser
+hydration entry is `createApp(source).hydrateAsync(container)`. `hydrateAsync()` supports async
+components and VNodes with promised children; `createApp()` accepts the source directly, not a
+promised root. Async SSG routes run sequentially in declaration order. Async hydration prepares the
+full tree before touching server DOM, then preserves node identity when the markup matches.
+Preparation rejection leaves the container untouched.
+
+```tsx
+import { createApp, h, reactive } from "@italone/solace";
+import type { AsyncComponentType } from "@italone/solace";
+import { generateStaticSiteAsync, renderToStringAsync } from "@italone/solace/server";
+
+const state = reactive({ count: 0 });
+const AsyncCounter: AsyncComponentType = async () => {
+  await Promise.resolve();
+  return () => h("button", { onClick: () => (state.count += 1) }, `count: ${state.count}`);
+};
+
+const rendered = await renderToStringAsync(AsyncCounter);
+const site = await generateStaticSiteAsync({
+  routes: [{ path: "/", source: Promise.resolve(h("h1", null, "Home")) }],
+});
+await createApp(AsyncCounter).hydrateAsync(document.querySelector("#app") as Element);
+```
+
+CommonJS consumers can await the server entries in an async IIFE:
+
+```js
+const { h } = require("@italone/solace");
+const { generateStaticSiteAsync, renderToStringAsync } = require("@italone/solace/server");
+
+(async () => {
+  const rendered = await renderToStringAsync(Promise.resolve(h("p", null, "ready")));
+  const site = await generateStaticSiteAsync({
+    routes: [{ path: "/", source: Promise.resolve(h("h1", null, "Home")) }],
+  });
+  console.log(rendered.html, site.pages[0].html);
+})().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+```
+
+Existing synchronous APIs retain synchronous return types and explicitly reject unresolved async
+values with `TypeError`; they do not render them as empty subtrees. Async setup is setup-once for
+initial preparation. A setup promise that resolves to a synchronous render function supports later
+reactive updates after `hydrateAsync()`; one that resolves directly to a VNode is fixed after initial
+preparation, and promise children are one-shot. Ambient instance APIs after `await` and async update
+scheduling remain deferred.
+
+The public loop does not include streaming SSR, filesystem SSG output, route crawling,
+router-aware SSR, router-aware hydration, Suspense/selective hydration, or automatic hydration
+mismatch recovery beyond the explicit `recover` deopt.
 
 Passing only one of `manifest` or `clientEntry` to `generateStaticSite()` throws a `TypeError`; pass
 both to make the shell receive resolved production asset tags. Route-level `manifest`,
@@ -242,6 +289,9 @@ both to make the shell receive resolved production asset tags. Route-level `mani
 beta router records with `createStaticRoutesFromRouter()` and pass the returned explicit routes.
 Route paths must be strings before rendering starts, so malformed SSG route inputs fail with a stable
 `TypeError`.
+`generateStaticSite()` options accept only `routes`, `shell`, `manifest`, `clientEntry`, and `base`;
+route entries accept only `path`, `source`, `context`, and `provides`. Unknown own option or route
+fields throw a `TypeError` naming the field.
 
 `generateStaticSite()` renders explicit route sources in memory and preserves collected
 `renderToString()` styles for custom shells. Place `styles.join("")` in `<head>` when composing a
@@ -354,7 +404,7 @@ adapters, nested route records, redirects, global `beforeEach` guards, route-lev
 guards, route `meta`, route names, aliases, route props, named locations, `createMemoryHistory()`,
 `lazyRoute()` route components, `RouterLink`, `RouterView`, and `scrollBehavior` after successful
 navigations. The beta router still defers these public features: auth, permissions,
-router-aware SSR, router-aware hydration, streaming SSR, and async component SSR. `props: true`
+router-aware SSR, router-aware hydration, streaming SSR, and Suspense/selective hydration. `props: true`
 passes route params, plain object props are used as-is, and function props are evaluated from the
 matched route. Named locations preserve canonical path generation, and alias URLs preserve canonical
 matched/name behavior.
@@ -417,6 +467,7 @@ views.
 ## Public Entry Points
 
 - `@italone/solace`: core runtime APIs.
+- `@italone/solace/package.json`: package metadata for consumers that explicitly need it.
 - `@italone/solace/jsx-runtime`: TypeScript automatic JSX runtime.
 - `@italone/solace/jsx-dev-runtime`: development JSX runtime used by Vite.
 - `@italone/solace/devtools`: low-level DevTools listener and recorder APIs consumed by the
@@ -426,6 +477,10 @@ views.
 - `@italone/solace/vite`: Vite plugin for optional experimental `.solace` single-file components.
 
 Do not import from `src/**`, `dist/**`, or internal runtime modules directly. Those paths are implementation details and are not part of the package compatibility contract.
+
+See the [Compatibility and deprecation policy](./compatibility.md) and [兼容性与弃用策略](./compatibility.zh-CN.md)
+for the eight protected import paths, the `0.1.x` patch boundary, beta router/async maturity,
+experimental SFC/Vite maturity, and the required migration evidence for deprecations.
 
 ## Verify A Packed Consumer
 
@@ -447,10 +502,11 @@ pnpm release:check
 ```
 
 That command runs release readiness, quality checks, coverage thresholds, package consumer smoke,
-jsdom benchmark smoke, Chromium production browser benchmark, browser e2e tests, and DevTools
-extension e2e smoke. For public API changes, treat `pnpm release:readiness`, `pnpm package:smoke`,
-`pnpm test:e2e`, and `pnpm test:e2e:devtools-extension` as mandatory gates even when you do not run
-the full release check.
+stable application smoke (`pnpm stable:app`), jsdom benchmark smoke, Chromium production browser
+benchmark, browser e2e tests, and DevTools extension e2e smoke. For public API changes, treat
+`pnpm release:readiness`, `pnpm package:smoke`, `pnpm test:e2e`, and
+`pnpm test:e2e:devtools-extension` as mandatory gates even when you do not run the full release
+check. Treat `pnpm stable:app` as a mandatory gate as well.
 
 See `docs/release.md` for versioning and publish steps.
 

@@ -6,9 +6,10 @@ import {
 import type { Provides } from "../component/provide";
 import { createServerStyleSink, withStyleSink } from "../component/style";
 import { ShapeFlags } from "../shared/flags";
+import { prepareAsyncSource, type PreparedVNode } from "../shared/async-tree";
 import { escapeAttribute, escapeHtml } from "../shared/html";
 import { h } from "../vnode/h";
-import type { ComponentType, VNode, VNodeProps } from "../vnode/vnode";
+import type { AsyncComponentType, ComponentType, VNode, VNodeProps } from "../vnode/vnode";
 
 export interface RenderToStringOptions {
   context?: Record<string, unknown>;
@@ -21,6 +22,10 @@ export interface RenderToStringResult {
 }
 
 export type RenderToStringSource = VNode | ComponentType | (() => VNode);
+export type RenderToStringAsyncSource =
+  | RenderToStringSource
+  | AsyncComponentType
+  | PromiseLike<RenderToStringSource | AsyncComponentType>;
 
 export function renderToString(
   source: RenderToStringSource,
@@ -37,6 +42,22 @@ export function renderToString(
   return {
     html,
     styles: sink.styles,
+  };
+}
+
+export async function renderToStringAsync(
+  source: RenderToStringAsyncSource,
+  options: RenderToStringOptions = {},
+): Promise<RenderToStringResult> {
+  assertNoDeferredIntegrationOptions(options);
+  const prepared = await prepareAsyncSource(source, {
+    appProvides: options.provides ?? null,
+    collectStyles: true,
+  });
+
+  return {
+    html: renderPreparedVNodeToString(prepared.root),
+    styles: prepared.styles,
   };
 }
 
@@ -72,6 +93,37 @@ function renderVNodeToString(
   }
 
   return "";
+}
+
+function renderPreparedVNodeToString(prepared: PreparedVNode): string {
+  if (prepared.component !== null) {
+    return renderPreparedVNodeToString(prepared.component.subtree);
+  }
+
+  const { vnode } = prepared;
+  if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
+    const tag = String(vnode.type);
+    assertSafeHtmlName(tag, "element");
+    return `<${tag}${renderAttributes(vnode.props)}>${renderPreparedChildrenToString(prepared.children)}</${tag}>`;
+  }
+
+  if (vnode.shapeFlag & ShapeFlags.FRAGMENT) {
+    return renderPreparedChildrenToString(prepared.children);
+  }
+
+  return "";
+}
+
+function renderPreparedChildrenToString(children: PreparedVNode["children"]): string {
+  if (children === null) {
+    return "";
+  }
+
+  if (typeof children === "string") {
+    return escapeHtml(children);
+  }
+
+  return children.map(renderPreparedVNodeToString).join("");
 }
 
 function renderElementToString(
@@ -215,6 +267,13 @@ function assertNoDeferredIntegrationOptions(options: RenderToStringOptions): voi
     throw new TypeError(
       "Streaming SSR is deferred; renderToString() currently returns a complete string result.",
     );
+  }
+
+  const unknownKey = Reflect.ownKeys(options).find(
+    (key) => key !== "context" && key !== "provides",
+  );
+  if (unknownKey !== undefined) {
+    throw new TypeError(`Unknown SSR option: ${String(unknownKey)}`);
   }
 }
 

@@ -30,4 +30,34 @@ describe("release documentation", () => {
     expect(release).toContain("production browser-store distribution");
     expect(release).toContain("SSR/SSG/hydration inspector");
   });
+
+  it("records additive async rendering compatibility", async () => {
+    const release = await readFile("docs/release.md", "utf8");
+
+    expect(release).toContain("renderToStringAsync()");
+    expect(release).toContain("generateStaticSiteAsync()");
+    expect(release).toContain("hydrateAsync()");
+    expect(release).toContain("additive documented public entries");
+    expect(release).toContain("existing synchronous APIs retain their return types");
+    expect(release).toContain("compatibility and deprecation policy");
+  });
+
+  it("defines the stable compatibility checklist", async () => {
+    const release = await readFile("docs/release.md", "utf8");
+
+    expect(release).toContain("## Stable Compatibility Checklist");
+    expect(release).toContain("pnpm stable:app:upgrade");
+    expect(release).toContain("pnpm release:check");
+    expect(release).toContain("@italone/solace@0.1.0-beta.2");
+    expect(release).toContain("routine CI is a local candidate check only");
+    expect(release).toContain("types, docs, changeset, and tests together");
+    expect(release).toContain("severe security/correctness exception");
+  });
+
+  it("includes the stable app smoke in full and mandatory release gates", async () => {
+    const release = await readFile("docs/release.md", "utf8");
+
+    expect(release).toContain("stable application smoke");
+    expect(release).toContain("`pnpm stable:app` as a mandatory gate");
+  });
 });

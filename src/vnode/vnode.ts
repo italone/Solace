@@ -1,4 +1,5 @@
 import { ShapeFlags } from "../shared/flags";
+import { isThenable } from "../shared/utils";
 import type { ComponentSetupContext, Slot } from "../component/component";
 
 export type ComponentProps = Record<string, unknown>;
@@ -7,20 +8,29 @@ export type ComponentType<Props extends object = ComponentProps> = (
   props: Props,
   context: ComponentSetupContext,
 ) => ComponentRender | VNode;
+export type AsyncComponentSetupResult = PromiseLike<ComponentRender | VNode>;
+export type AsyncComponentType<Props extends object = ComponentProps> = (
+  props: Props,
+  context: ComponentSetupContext,
+) => AsyncComponentSetupResult;
 export const Fragment = Symbol("Solace.Fragment");
 export type FragmentType = typeof Fragment;
-export type VNodeType = string | ComponentType<never> | FragmentType;
+export type VNodeType = string | ComponentType<never> | AsyncComponentType<never> | FragmentType;
 export type VNodeProps = Record<string, unknown>;
 export type VNodeChild = string | VNode;
+export type AsyncVNodeChild = PromiseLike<VNodeChild>;
 export type VNodeChildren = string | VNode | VNode[] | null;
+export type AsyncVNodeChildren =
+  VNodeChild | AsyncVNodeChild | readonly (VNodeChild | AsyncVNodeChild)[] | null;
 export type VNodeSlots = Record<string, Slot>;
 export type ComponentVNodeChildren = VNodeChildren | VNodeSlots;
+export type AsyncComponentVNodeChildren = ComponentVNodeChildren | AsyncVNodeChildren;
 
 export interface VNode {
   type: VNodeType;
   props: VNodeProps | null;
   key: string | number | null;
-  children: ComponentVNodeChildren;
+  children: AsyncComponentVNodeChildren;
   shapeFlag: ShapeFlags;
   el: Element | Text | null;
   component: unknown;
@@ -41,15 +51,20 @@ export function createVNode<Props extends object>(
   props?: Props | null,
   children?: ComponentVNodeChildren,
 ): VNode;
+export function createVNode<Props extends object>(
+  type: AsyncComponentType<Props>,
+  props?: Props | null,
+  children?: AsyncComponentVNodeChildren,
+): VNode;
 export function createVNode(
   type: VNodeType,
   props?: VNodeProps | null,
-  children?: ComponentVNodeChildren,
+  children?: AsyncComponentVNodeChildren,
 ): VNode;
 export function createVNode(
   type: VNodeType,
   props: VNodeProps | null = null,
-  children: ComponentVNodeChildren = null,
+  children: AsyncComponentVNodeChildren = null,
 ): VNode {
   let shapeFlag = getShapeFlag(type);
 
@@ -58,7 +73,7 @@ export function createVNode(
   } else if (Array.isArray(children)) {
     shapeFlag |= ShapeFlags.ARRAY_CHILDREN;
   } else if (children !== null && !isVNodeSlots(children)) {
-    children = [children];
+    children = [children as VNodeChild | AsyncVNodeChild];
     shapeFlag |= ShapeFlags.ARRAY_CHILDREN;
   }
 
@@ -85,11 +100,12 @@ function normalizeKey(key: unknown): string | number | null {
   return typeof key === "string" || typeof key === "number" ? key : null;
 }
 
-function isVNodeSlots(children: ComponentVNodeChildren): children is VNodeSlots {
+function isVNodeSlots(children: AsyncComponentVNodeChildren): children is VNodeSlots {
   return (
     children !== null &&
     typeof children === "object" &&
     !Array.isArray(children) &&
-    !("type" in children)
+    !("type" in children) &&
+    !isThenable(children)
   );
 }

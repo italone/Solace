@@ -4,22 +4,37 @@ import { defineConfig } from "vitest/config";
 
 import { solacePlugin } from "./src/vite/index";
 
-function resolveSolaceAlias(): Record<string, string> {
+interface SolaceAlias {
+  find: string | RegExp;
+  replacement: string;
+}
+
+function resolveSolaceAlias(): SolaceAlias[] {
   try {
-    return {
-      "@italone/solace/devtools": fileURLToPath(
-        new URL("./src/devtools/index.ts", import.meta.url),
-      ),
-      "@italone/solace/jsx-dev-runtime": fileURLToPath(
-        new URL("./src/jsx-dev-runtime.ts", import.meta.url),
-      ),
-      "@italone/solace/jsx-runtime": fileURLToPath(
-        new URL("./src/jsx-runtime.ts", import.meta.url),
-      ),
-      "@italone/solace": fileURLToPath(new URL("./src/index.ts", import.meta.url)),
-    };
+    return [
+      {
+        find: "@italone/solace/devtools",
+        replacement: fileURLToPath(new URL("./src/devtools/index.ts", import.meta.url)),
+      },
+      {
+        find: "@italone/solace/jsx-dev-runtime",
+        replacement: fileURLToPath(new URL("./src/jsx-dev-runtime.ts", import.meta.url)),
+      },
+      {
+        find: "@italone/solace/jsx-runtime",
+        replacement: fileURLToPath(new URL("./src/jsx-runtime.ts", import.meta.url)),
+      },
+      {
+        find: "@italone/solace/server",
+        replacement: fileURLToPath(new URL("./src/server/index.ts", import.meta.url)),
+      },
+      {
+        find: /^@italone\/solace$/,
+        replacement: fileURLToPath(new URL("./src/index.ts", import.meta.url)),
+      },
+    ];
   } catch {
-    return {};
+    return [];
   }
 }
 
@@ -40,12 +55,12 @@ export default defineConfig({
     ],
     coverage: {
       provider: "v8",
-      exclude: ["examples/**"],
+      exclude: ["examples/**", "scripts/operations-console-smoke.mjs"],
       thresholds: {
         statements: 90,
         lines: 90,
-        branches: 75,
-        functions: 70,
+        branches: 85,
+        functions: 90,
       },
     },
   },

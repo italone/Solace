@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import { hasReleaseCheckCommand } from "./release-readiness-check-commands.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const execFileAsync = promisify(execFile);
@@ -30,12 +31,14 @@ requireObject(packageJson.scripts, "package.json scripts");
 
 requireScript("quality");
 requireScript("package:smoke");
+requireScript("stable:app");
 requireScript("release:check");
 requireScript("release:version");
 requireScript("release:publish:beta");
 requireScript("release:publish");
 requireReleaseCheckCommand("pnpm release:readiness");
 requireReleaseCheckCommand("pnpm package:smoke");
+requireReleaseCheckCommand("pnpm stable:app");
 requireReleaseCheckCommand("pnpm test:e2e");
 requireReleaseCheckCommand("pnpm test:e2e:devtools-extension");
 requireReleaseCheckCommand("pnpm benchmark:browser");
@@ -96,7 +99,7 @@ if (failures.length > 0) {
   console.log(`changeset access: ${changesetConfig.access}`);
   console.log(`mode: ${options.publishable ? "publishable" : "default"}`);
   console.log(
-    "public API gates: pnpm release:readiness, pnpm package:smoke, pnpm test:e2e, pnpm test:e2e:devtools-extension",
+    "public API gates: pnpm release:readiness, pnpm package:smoke, pnpm stable:app, pnpm test:e2e, pnpm test:e2e:devtools-extension",
   );
   console.log("benchmark history: .benchmark-history/ ignored local JSONL artifacts");
   if (options.publishable) {
@@ -268,7 +271,7 @@ function requireScript(name) {
 function requireReleaseCheckCommand(command) {
   const releaseCheck = packageJson.scripts?.["release:check"];
 
-  if (typeof releaseCheck !== "string" || !releaseCheck.includes(command)) {
+  if (!hasReleaseCheckCommand(releaseCheck, command)) {
     failures.push(`package.json release:check must include "${command}".`);
   }
 }

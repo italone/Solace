@@ -27,7 +27,9 @@ use the repository directly when you need unreleased documentation or runtime ch
 
 Current completion highlights:
 
-- Runtime APIs for apps, reactivity, rendering, function components, context, lifecycle, scheduler, store, JSX/TSX, SSR/hydration minimum loop, SSG core, runtime style registration, and DevTools integration are implemented behind documented public entry points.
+- Runtime APIs for apps, reactivity, rendering, function components, context, lifecycle, scheduler,
+  store, JSX/TSX, buffered async initial SSR/hydration, sequential async SSG, runtime style
+  registration, and DevTools integration are implemented behind documented public entry points.
 - Package outputs include ESM, CJS, TypeScript declarations, JSX runtime subpaths, `@italone/solace/server`, and the `@italone/solace/devtools` subpath.
 - `.solace` SFC support remains available as an optional, narrow, experimental helper through `@italone/solace/vite` and `@italone/solace/sfc`; it is not the primary Solace authoring model.
 - The repository includes an example browser DevTools timeline panel that consumes the public DevTools subpath without changing runtime payloads.
@@ -39,16 +41,31 @@ See [docs/project-status.md](./docs/project-status.md) for the current completio
 
 ## Current Scope
 
-Solace is suitable today for studying a compact JSX/TSX-first frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current beta line keeps optional experimental SFC support, Router, and SSR/hydration on explicit scope boundaries: function components and JSX/TSX are the primary authoring model, while the narrow `.solace` compiler surface and `@italone/solace/vite` plugin remain auxiliary. The beta first-party router slice, SSG core through `generateStaticSite()`, production asset tag resolution and explicit-path router-aware SSG helpers through `@italone/solace/server`, a minimum SSR/hydration loop through `@italone/solace/server` plus `createApp(App).hydrate(container)`, and an example browser DevTools timeline panel are all usable today, while full production SSR pipeline automation, streaming SSR, async SSR, async hydration, first-party UI components, production-grade DevTools distribution, and compatibility guarantees for internal modules remain outside the frozen production contract.
+Solace is suitable today for studying a compact JSX/TSX-first frontend runtime, experimenting with
+reactive rendering, and validating framework implementation ideas in small examples. It is not yet
+positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The
+beta line includes buffered async initial rendering through `renderToStringAsync()`, sequential
+in-memory SSG through `generateStaticSiteAsync()`, and prepare-then-commit browser hydration through
+`hydrateAsync()`. Streaming SSR, router-aware SSR/hydration, async update scheduling after initial
+hydration, first-party UI components, production DevTools distribution, and compatibility guarantees
+for internal modules remain outside the frozen production contract.
 
 ## Public Contract Gate
 
 Public API changes should keep README, project-status, API, package-usage, package exports, and
 consumer smoke coverage aligned before release. The beta contract still defers auth, permissions,
-router-aware SSR, router-aware hydration, streaming SSR, async component SSR, and async hydration.
-Those capabilities should stay documented as unsupported until a separate design widens the public
-API and the release gate covers the new behavior. Router `auth` and `permissions` options or route
-record fields are explicitly rejected instead of being treated as implicit client authorization.
+router-aware SSR, router-aware hydration, streaming SSR, Suspense/selective hydration, and async
+update scheduling after initial hydration. Those capabilities should stay documented as unsupported
+until a separate design widens the public API and the release gate covers the new behavior.
+Router `auth` and `permissions` options or route record fields are explicitly rejected instead of
+being treated as implicit client authorization.
+SSR, hydration, and SSG option objects also reject unknown own fields with a field-specific
+`TypeError` instead of silently accepting misspelled configuration.
+
+For the `0.1.x` compatibility line, see the [Compatibility and deprecation policy](./docs/compatibility.md)
+before relying on a package entry, planning a migration, or documenting a release. It protects the
+eight published export paths while keeping router and async behavior beta and SFC/Vite behavior
+experimental.
 
 ## Quick Start
 
@@ -142,6 +159,7 @@ modules under `src/**` and generated files under `dist/**` are implementation de
 - `createApp(rootComponent)`
 - `app.mount(container)`
 - `app.hydrate(container, options?)`
+- `app.hydrateAsync(container, options?)`
 - `app.use(plugin, ...options)`
 - `app.provide(key, value)`
 
@@ -151,6 +169,10 @@ hydrates matching server-rendered DOM. Hydration throws on mismatches by default
 chainable app instance. `app.use()` installs function plugins or object plugins with an `install()`
 method once per app instance. `app.provide()` registers app-level values that descendants can read
 with `inject()`.
+
+Use `renderToStringAsync()` and `generateStaticSiteAsync()` from `@italone/solace/server` for
+promised roots, async components, and promised child VNodes. Existing synchronous APIs keep their
+synchronous return types and reject unresolved async values.
 
 ```tsx
 import { createApp } from "@italone/solace";
@@ -470,6 +492,7 @@ See [docs/release.md](./docs/release.md) for release gates and publishing requir
 - [Performance](./docs/performance.md)
 - [Large app guide](./docs/large-app.md)
 - [Release](./docs/release.md)
+- [Compatibility and deprecation policy](./docs/compatibility.md)
 - [DevTools](./docs/devtools.md)
 - [Roadmap](./docs/roadmap.md)
 - [Contributing](./CONTRIBUTING.md)

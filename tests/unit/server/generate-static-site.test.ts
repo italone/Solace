@@ -8,16 +8,60 @@ const renderToStringMock = vi.hoisted(() =>
     styles: ["scoped.css"],
   })),
 );
+const renderToStringAsyncMock = vi.hoisted(() =>
+  vi.fn(async () => ({
+    html: "<p>async rendered</p>",
+    styles: ["async.css"],
+  })),
+);
 
 vi.mock("../../../src/server/render-to-string", () => ({
   renderToString: renderToStringMock,
+  renderToStringAsync: renderToStringAsyncMock,
 }));
 
-import { generateStaticSite } from "../../../src/server";
+import { generateStaticSite, generateStaticSiteAsync } from "../../../src/server";
 
 describe("generateStaticSite", () => {
   beforeEach(() => {
     renderToStringMock.mockClear();
+    renderToStringAsyncMock.mockClear();
+  });
+
+  it("renders async routes through buffered SSR and preserves shell inputs", async () => {
+    const shell = vi.fn(({ path, body, styles }) => `${path}:${body}:${styles.join(",")}`);
+
+    const result = await generateStaticSiteAsync({
+      routes: [
+        { path: "/first", source: Promise.resolve(h("p", null, "first")) },
+        { path: "/second", source: async () => () => h("p", null, "second") },
+      ],
+      shell,
+    });
+
+    expect(renderToStringAsyncMock).toHaveBeenCalledTimes(2);
+    expect(shell).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        path: "/first",
+        body: "<p>async rendered</p>",
+        styles: ["async.css"],
+      }),
+    );
+    expect(result.pages).toEqual([
+      {
+        path: "/first",
+        html: "/first:<p>async rendered</p>:async.css",
+        body: "<p>async rendered</p>",
+        styles: ["async.css"],
+      },
+      {
+        path: "/second",
+        html: "/second:<p>async rendered</p>:async.css",
+        body: "<p>async rendered</p>",
+        styles: ["async.css"],
+      },
+    ]);
   });
 
   it("rejects non-object options", () => {
@@ -285,6 +329,29 @@ describe("generateStaticSite", () => {
         routes: [{ path: "/", source: h("p", null, "home"), router: {} }],
       } as never),
     ).toThrow(/Router-aware SSG route integration is deferred/);
+  });
+
+  it("rejects unknown SSG options", () => {
+    expect(() =>
+      generateStaticSite({
+        routes: [{ path: "/", source: h("p", null, "home") }],
+        shel: () => "typo",
+      } as never),
+    ).toThrow(TypeError("Unknown SSG option: shel"));
+  });
+
+  it("rejects unknown SSG route fields", () => {
+    expect(() =>
+      generateStaticSite({
+        routes: [
+          {
+            path: "/",
+            source: h("p", null, "home"),
+            provdies: new Map(),
+          },
+        ],
+      } as never),
+    ).toThrow(TypeError("Unknown SSG route field: provdies"));
   });
 
   it("threads app-level provides into route rendering", () => {

@@ -29,15 +29,17 @@ The package root exposes the documented runtime surface:
 Public TypeScript helper types include:
 
 - App and plugins: `App`, `Plugin`, `PluginInstall`, `PluginObject`
-- Async components: `AsyncComponentLoader`, `AsyncComponentOptions`, `AsyncComponentSource`
+- Async components: `AsyncComponentLoader`, `AsyncComponentOptions`, `AsyncComponentSetupResult`,
+  `AsyncComponentSource`, `AsyncComponentType`
 - Component setup: `ComponentSetupContext`, `EmitFn`, `Slot`, `SlotProps`, `Slots`
 - Store: `Store`, `StoreActionsInput`, `StoreContext`, `StoreGetterContext`, `StoreGetters`, `StoreOptions`
 - Router: `LazyRouteComponent`, `NavigationGuard`, `NavigationGuardResult`, `RouteComponent`,
   `RouteLocationNormalized`, `RouteLocationRaw`, `RouteRecord`, `Router`, `RouterHistory`,
   `RouterLinkProps`, `RouterOptions`, `RouterScrollBehavior`, `RouterScrollBehaviorResult`,
   `RouterScrollPosition`
-- VNodes: `ComponentProps`, `ComponentRender`, `ComponentType`, `ComponentVNodeChildren`,
-  `FragmentType`, `VNode`, `VNodeChild`, `VNodeChildren`, `VNodeProps`, `VNodeSlots`, `VNodeType`
+- VNodes: `AsyncComponentVNodeChildren`, `AsyncVNodeChild`, `AsyncVNodeChildren`, `ComponentProps`,
+  `ComponentRender`, `ComponentType`, `ComponentVNodeChildren`, `FragmentType`, `VNode`,
+  `VNodeChild`, `VNodeChildren`, `VNodeProps`, `VNodeSlots`, `VNodeType`
 
 ## API Layers And Stability
 
@@ -84,17 +86,22 @@ server-side code. Use JSX subpaths only through `jsxImportSource` or bundler-gen
 the DevTools subpath only when building instrumentation, examples that need event snapshots, or the
 browser DevTools extension example under `examples/devtools-extension`.
 
+For the protected entries, patch-release rules, maturity labels, and migration requirements, see the
+[Compatibility and deprecation policy](./compatibility.md). The policy keeps router and async APIs
+beta and SFC/Vite APIs experimental without silently removing their documented entry paths.
+
 ## Deferred Beta Boundaries
 
 The current public contract intentionally rejects still-deferred integration surfaces instead of
 silently accepting options that Solace does not implement. Router auth, permissions,
-router-aware SSR, router-aware hydration, streaming SSR, and async component SSR remain outside the
-beta contract. Route `meta` is developer-authored data for application code and examples; it is not
-an authentication or permission enforcement mechanism. Router options or route records that use
-`auth` or `permissions` fields are rejected with explicit deferred-boundary errors; use application
-guards for local UX routing and backend authorization for enforcement. Public API work that widens
-any of these boundaries must update README, project-status, package-usage, package boundary tests,
-consumer smoke coverage, and the release gate in the same change.
+router-aware SSR, router-aware hydration, streaming SSR, Suspense/selective hydration, and async
+update scheduling remain outside the beta contract. Route `meta` is developer-authored data for
+application code and examples; it is not an authentication or permission enforcement mechanism.
+Router options or route records that use `auth` or `permissions` fields are rejected with explicit
+deferred-boundary errors; use application guards for local UX routing and backend authorization for
+enforcement. Public API work that widens any of these boundaries must update README, project-status,
+package-usage, package boundary tests, consumer smoke coverage, and the release gate in the same
+change.
 
 ## App
 
@@ -114,6 +121,7 @@ Returns:
 
 - `mount(container: Element): void`
 - `hydrate(container: Element, options?: HydrationOptions): void`
+- `hydrateAsync(container: Element, options?: HydrationOptions): Promise<void>`
 - `provide(key, value): App`
 - `use(plugin, ...options): App`
 
@@ -153,6 +161,24 @@ createApp(App).hydrate(document.querySelector("#app") as Element, { recover: tru
 
 Hydration options must be a non-array object. `recover`, when provided, must be a boolean.
 
+`hydrateAsync()` prepares a complete async initial tree before claiming server DOM. Preparation
+failure leaves the container untouched. It supports the same mismatch behavior and `{ recover:
+true }` deopt as `hydrate()`, then installs normal synchronous component effects for resolved
+synchronous render functions.
+
+```tsx
+import { createApp, reactive } from "@italone/solace";
+import type { AsyncComponentType } from "@italone/solace";
+
+const state = reactive({ count: 0 });
+const AsyncCounter: AsyncComponentType = async () => {
+  await Promise.resolve();
+  return () => <button onClick={() => (state.count += 1)}>count: {state.count}</button>;
+};
+
+await createApp(AsyncCounter).hydrateAsync(document.querySelector("#app") as Element);
+```
+
 `use()` installs a plugin once per app instance. A plugin can be a function or an object with an
 `install()` method. Options are forwarded after the app argument, and the method returns the app for
 chaining.
@@ -179,7 +205,9 @@ import { h } from "@italone/solace";
 import {
   createStaticRoutesFromRouter,
   generateStaticSite,
+  generateStaticSiteAsync,
   renderToString,
+  renderToStringAsync,
   resolveStaticAssets,
 } from "@italone/solace/server";
 
@@ -200,17 +228,40 @@ options such as `manifest`, `clientEntry`, `router`, or `stream` to `renderToStr
 `TypeError`.
 Hydration options must be a non-array object, and `recover` must be boolean when provided.
 `renderToString()` context, when provided, must be a plain object.
+Hydration options accept only `recover`, and `renderToString()` options accept only `context` and
+`provides`; unknown own option fields throw a `TypeError` naming the field.
 Async or thenable render trees, including direct sources, SSG route sources, and async child values,
-are also rejected with a `TypeError` because async SSR remains deferred.
-Hydration also rejects async or thenable direct sources and component trees instead of claiming
-server DOM with an unresolved tree. Passing deferred `manifest`, `clientEntry`, `router`, or
-`stream` fields to `hydrate()` is also rejected at runtime.
+are rejected by the synchronous `renderToString()`, `generateStaticSite()`, `hydrate()`, `render()`,
+and `mount()` APIs. Existing synchronous APIs retain their return types; use the explicit async
+entries instead of relying on implicit promise widening. Passing deferred `manifest`, `clientEntry`,
+`router`, or `stream` fields to `hydrate()` or `hydrateAsync()` is also rejected at runtime.
 Hydration mismatch errors include structured `kind`, `path`, `expected`, and `actual` fields so
 callers can distinguish missing nodes, extra nodes, element tag mismatches, and text mismatches.
 
-Streaming SSR, async component SSR, async hydration, SSG CLI, filesystem output, route crawling,
-hydration mismatch auto-recovery beyond the explicit `recover` deopt, router-aware SSR, and
-router-aware hydration remain deferred.
+### `renderToStringAsync(source, options?)`
+
+`renderToStringAsync()` buffers the complete initial tree before returning `{ html, styles }`. It
+accepts promised roots, async components, promised child VNodes, and the same `context` and
+`provides` options as `renderToString()`. Rejections propagate without exposing partial HTML.
+
+```tsx
+import { h } from "@italone/solace";
+import type { AsyncComponentType } from "@italone/solace";
+import { renderToStringAsync } from "@italone/solace/server";
+
+const AsyncMessage: AsyncComponentType = async () => () => <strong>ready</strong>;
+const result = await renderToStringAsync(
+  Promise.resolve(h("section", null, [h(AsyncMessage), Promise.resolve(h("i", null, "child"))])),
+);
+```
+
+Async setup has setup-once semantics during initial preparation. Resolving to a synchronous render
+function enables later reactive updates after `hydrateAsync()`; resolving directly to a VNode is a
+fixed initial result, and promised children are one-shot values. `provide()`, `inject()`, lifecycle
+registration, and `useStyle()` are supported before the first suspension and inside the resolved
+synchronous render function. Ambient component-instance APIs in continuation code after `await` are
+outside the beta.4 contract. Streaming SSR, router-aware SSR, router-aware hydration, and
+Suspense/selective hydration remain deferred; async update scheduling remains deferred.
 
 ### `generateStaticSite(options)`
 
@@ -228,6 +279,9 @@ only `manifest` or only `clientEntry` throws a `TypeError`. Route-level `manifes
 fields remain rejected.
 Passing deferred `manifest`, `clientEntry`, or `router` fields on a route entry is rejected at
 runtime to keep the SSG contract narrow.
+`generateStaticSite()` options accept only `routes`, `shell`, `manifest`, `clientEntry`, and `base`;
+route entries accept only `path`, `source`, `context`, and `provides`. Unknown own option or route
+fields throw a `TypeError` naming the field.
 
 ```ts
 const site = generateStaticSite({
@@ -237,6 +291,22 @@ const site = generateStaticSite({
 });
 
 site.pages[0].html;
+```
+
+### `generateStaticSiteAsync(options)`
+
+`generateStaticSiteAsync()` accepts the same validated SSG options with async route sources. Routes
+are awaited sequentially in declaration order, and the complete `{ pages }` result is returned only
+after every route and shell call succeeds.
+
+```ts
+const site = await generateStaticSiteAsync({
+  routes: [
+    { path: "/", source: Promise.resolve(h("h1", null, "Home")) },
+    { path: "/about", source: async () => () => h("p", null, "About") },
+  ],
+  shell: ({ body }) => `<!doctype html><body>${body}</body>`,
+});
 ```
 
 Place `styles.join("")` in the document `<head>` when composing a full shell. The first SSG core is

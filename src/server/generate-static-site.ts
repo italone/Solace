@@ -1,6 +1,6 @@
 import type { Provides } from "../component/provide";
-import type { RenderToStringSource } from "./render-to-string";
-import { renderToString } from "./render-to-string";
+import type { RenderToStringAsyncSource, RenderToStringSource } from "./render-to-string";
+import { renderToString, renderToStringAsync } from "./render-to-string";
 import {
   resolveStaticAssets,
   type StaticAssetManifest,
@@ -12,6 +12,10 @@ export interface StaticRoute {
   source: RenderToStringSource;
   context?: Record<string, unknown>;
   provides?: Provides;
+}
+
+export interface AsyncStaticRoute extends Omit<StaticRoute, "source"> {
+  source: RenderToStringAsyncSource;
 }
 
 export interface StaticPage {
@@ -37,6 +41,10 @@ export interface GenerateStaticSiteOptions {
   base?: string;
 }
 
+export interface GenerateStaticSiteAsyncOptions extends Omit<GenerateStaticSiteOptions, "routes"> {
+  routes: readonly AsyncStaticRoute[];
+}
+
 export interface GenerateStaticSiteResult {
   pages: StaticPage[];
 }
@@ -51,20 +59,7 @@ export function generateStaticSite(options: GenerateStaticSiteOptions): Generate
     assertNoDeferredRouteIntegrationOptions(route);
     assertStaticRouteContext(route.context);
     assertStaticRouteProvides(route.provides);
-
-    if (typeof route.path !== "string") {
-      throw new TypeError("SSG route path must be a string");
-    }
-
-    if (!route.path.startsWith("/")) {
-      throw new TypeError(`SSG route path must start with "/": ${route.path}`);
-    }
-
-    if (seenPaths.has(route.path)) {
-      throw new TypeError(`Duplicate SSG route path: ${route.path}`);
-    }
-
-    seenPaths.add(route.path);
+    assertStaticRoutePath(route.path, seenPaths);
 
     const context = { ...(route.context ?? {}) };
     const rendered = renderToString(route.source, {
@@ -98,7 +93,50 @@ export function generateStaticSite(options: GenerateStaticSiteOptions): Generate
   return { pages };
 }
 
-function assertValidRoutes(routes: StaticRoute[]): void {
+export async function generateStaticSiteAsync(
+  options: GenerateStaticSiteAsyncOptions,
+): Promise<GenerateStaticSiteResult> {
+  assertNoDeferredIntegrationOptions(options);
+  assertValidRoutes(options.routes);
+
+  const assets = resolveStaticSiteAssets(options);
+  const seenPaths = new Set<string>();
+  const pages: StaticPage[] = [];
+
+  for (const route of options.routes) {
+    assertNoDeferredRouteIntegrationOptions(route);
+    assertStaticRouteContext(route.context);
+    assertStaticRouteProvides(route.provides);
+    assertStaticRoutePath(route.path, seenPaths);
+
+    const context = { ...(route.context ?? {}) };
+    const rendered = await renderToStringAsync(route.source, {
+      context: { ...context },
+      provides: route.provides,
+    });
+    const body = rendered.html;
+    const styles = [...rendered.styles];
+    const html = options.shell
+      ? options.shell({
+          path: route.path,
+          body,
+          styles: [...styles],
+          assets: cloneStaticAssetTags(assets),
+          context: { ...context },
+        })
+      : body;
+
+    if (typeof html !== "string") {
+      throw new TypeError("SSG shell must return a string");
+    }
+
+    pages.push({ path: route.path, html, body, styles });
+  }
+
+  return { pages };
+}
+
+function assertValidRoutes(routes: readonly (StaticRoute | AsyncStaticRoute)[]): void {
   if (!Array.isArray(routes) || routes.length === 0) {
     throw new TypeError("SSG routes must be a non-empty array");
   }
@@ -112,13 +150,15 @@ function assertValidRoutes(routes: StaticRoute[]): void {
   }
 }
 
-function assertStaticRouteRecord(route: unknown): asserts route is StaticRoute {
+function assertStaticRouteRecord(route: unknown): asserts route is StaticRoute | AsyncStaticRoute {
   if (route === null || typeof route !== "object" || Array.isArray(route)) {
     throw new TypeError("SSG route must be an object");
   }
 }
 
-function assertNoDeferredIntegrationOptions(options: GenerateStaticSiteOptions): void {
+function assertNoDeferredIntegrationOptions(
+  options: GenerateStaticSiteOptions | GenerateStaticSiteAsyncOptions,
+): void {
   if (options === null || typeof options !== "object" || Array.isArray(options)) {
     throw new TypeError("SSG options must be an object");
   }
@@ -136,9 +176,23 @@ function assertNoDeferredIntegrationOptions(options: GenerateStaticSiteOptions):
       "Router-aware SSG integration is deferred; pass explicit route sources instead.",
     );
   }
+
+  const unknownKey = Reflect.ownKeys(options).find(
+    (key) =>
+      key !== "routes" &&
+      key !== "shell" &&
+      key !== "manifest" &&
+      key !== "clientEntry" &&
+      key !== "base",
+  );
+  if (unknownKey !== undefined) {
+    throw new TypeError(`Unknown SSG option: ${String(unknownKey)}`);
+  }
 }
 
-function resolveStaticSiteAssets(options: GenerateStaticSiteOptions): StaticAssetTags {
+function resolveStaticSiteAssets(
+  options: GenerateStaticSiteOptions | GenerateStaticSiteAsyncOptions,
+): StaticAssetTags {
   if (options.manifest === undefined || options.clientEntry === undefined) {
     return createEmptyStaticAssetTags();
   }
@@ -166,7 +220,7 @@ function hasOwn(value: object, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(value, key);
 }
 
-function assertNoDeferredRouteIntegrationOptions(route: StaticRoute): void {
+function assertNoDeferredRouteIntegrationOptions(route: StaticRoute | AsyncStaticRoute): void {
   if (hasOwn(route, "manifest") || hasOwn(route, "clientEntry")) {
     throw new TypeError(
       "SSG route manifest integration is deferred; compose assets in an app-local shell or adapter.",
@@ -177,6 +231,13 @@ function assertNoDeferredRouteIntegrationOptions(route: StaticRoute): void {
     throw new TypeError(
       "Router-aware SSG route integration is deferred; pass explicit route sources instead.",
     );
+  }
+
+  const unknownKey = Reflect.ownKeys(route).find(
+    (key) => key !== "path" && key !== "source" && key !== "context" && key !== "provides",
+  );
+  if (unknownKey !== undefined) {
+    throw new TypeError(`Unknown SSG route field: ${String(unknownKey)}`);
   }
 }
 
@@ -201,4 +262,20 @@ function assertStaticRouteProvides(provides: unknown): asserts provides is Provi
   if (provides !== undefined && !(provides instanceof Map)) {
     throw new TypeError("SSG route provides must be a Map");
   }
+}
+
+function assertStaticRoutePath(path: unknown, seenPaths: Set<string>): asserts path is string {
+  if (typeof path !== "string") {
+    throw new TypeError("SSG route path must be a string");
+  }
+
+  if (!path.startsWith("/")) {
+    throw new TypeError(`SSG route path must start with "/": ${path}`);
+  }
+
+  if (seenPaths.has(path)) {
+    throw new TypeError(`Duplicate SSG route path: ${path}`);
+  }
+
+  seenPaths.add(path);
 }

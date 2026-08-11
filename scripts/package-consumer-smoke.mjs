@@ -248,11 +248,12 @@ await router.push("/child");
     `import { createApp, createMemoryHistory, createRouter, h, lazyRoute } from "@italone/solace";
 import { jsx } from "@italone/solace/jsx-runtime";
 import { jsxDEV } from "@italone/solace/jsx-dev-runtime";
-import type { HydrationOptions, NavigationGuard, RouteComponent, RouteLocationRaw, RouteRecord, RouterOptions, RouterScrollBehavior, RouterScrollPosition } from "@italone/solace";
+import type { AsyncComponentType, HydrationOptions, NavigationGuard, RouteComponent, RouteLocationRaw, RouteRecord, RouterOptions, RouterScrollBehavior, RouterScrollPosition } from "@italone/solace";
 import type { GenerateStaticSiteOptions, RenderToStringOptions } from "@italone/solace/server";
 import { solacePlugin } from "@italone/solace/vite";
 
 const Home = () => h("p", null, "home");
+const AsyncRoot: AsyncComponentType = async () => () => h("p", null, "async");
 const ConsumerButton = (props: { label: string }) => h("button", null, props.label);
 const guard: NavigationGuard = () => true;
 const lazyComponent: RouteComponent = lazyRoute(() => Promise.resolve(Home));
@@ -313,6 +314,7 @@ acceptSSGOptions({
 });
 acceptRenderOptions({ context: { title: "Home" } });
 acceptHydrationOptions({ recover: true });
+void createApp(AsyncRoot).hydrateAsync(document.createElement("main"));
 
 // @ts-expect-error packaged direct jsx component props reject non-function handlers
 jsx(ConsumerButton, { label: "ok", onChange: "change" });
@@ -331,9 +333,6 @@ acceptHydrationOptions({ manifest: {} });
 
 // @ts-expect-error streaming hydration integration is deferred
 acceptHydrationOptions({ stream: true });
-
-// @ts-expect-error async root components are not part of the hydration public contract
-createApp(async () => h("p", null, "async")).hydrate(document.createElement("main"));
 
 // @ts-expect-error auth integration is not part of the router beta contract
 acceptRouterOptions({ history: {} as never, routes: [], auth: () => true });
@@ -492,6 +491,8 @@ expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null,
 expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
 expectThrows("SSR stream option", () => server.renderToString(api.h("p", null, "server"), { stream: true }), /Streaming SSR is deferred/);
 expectThrows("SSR invalid context", () => server.renderToString(api.h("p", null, "server"), { context: [] }), /SSR context must be a plain object/);
+expectThrows("SSR unknown option", () => server.renderToString(api.h("p", null, "server"), { contex: {} }), /Unknown SSR option: contex/);
+expectThrows("hydration unknown option", () => api.createApp(Home).hydrate({}, { recvoer: true }), /Unknown hydration option: recvoer/);
 expectThrows("async SSR source", () => server.renderToString(Promise.resolve(api.h("p", null, "async"))), /Async SSR is deferred/);
 expectThrows("async SSR", () => server.renderToString(api.h(AsyncPage)), /Async SSR is deferred/);
 expectThrows("async SSR child", () => server.renderToString(api.h("p", null, Promise.resolve(api.h("span", null, "async")))), /Async SSR is deferred/);
@@ -499,6 +500,16 @@ expectThrows("async SSG source", () => server.generateStaticSite({ routes: [{ pa
 expectThrows("SSG invalid route path", () => server.generateStaticSite({ routes: [{ path: 42, source: api.h("p", null, "home") }] }), /SSG route path must be a string/);
 expectThrows("SSG partial manifest option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], manifest: {} }), /SSG manifest integration requires both manifest and clientEntry/);
 expectThrows("SSG router option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], router: {} }), /Router-aware SSG integration is deferred/);
+expectThrows("SSG unknown option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], shel: () => "typo" }), /Unknown SSG option: shel/);
+expectThrows("SSG unknown route field", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home"), provdies: new Map() }] }), /Unknown SSG route field: provdies/);
+const asyncRendered = await server.renderToStringAsync(Promise.resolve(api.h("p", null, "packed async")));
+if (asyncRendered.html !== "<p>packed async</p>" || asyncRendered.styles.length !== 0) {
+  throw new Error("async SSR package contract mismatch");
+}
+const asyncSite = await server.generateStaticSiteAsync({ routes: [{ path: "/async", source: Promise.resolve(api.h("p", null, "packed SSG")) }] });
+if (asyncSite.pages.length !== 1 || asyncSite.pages[0].body !== "<p>packed SSG</p>") {
+  throw new Error("async SSG package contract mismatch");
+}
 `,
   );
   await writeFile(
@@ -570,6 +581,16 @@ expectThrows("router deferred location fields", () => router.resolve({ path: "/u
 Promise.all([
   expectRejects("router deferred push location fields", router.push({ path: "/users/1", name: "user" }), /Deferred router location field/),
   expectRejects("router deferred replace location fields", router.replace({ path: "/users/1", params: { id: "1" } }), /Deferred router location field/),
+  server.renderToStringAsync(Promise.resolve(api.h("p", null, "packed async"))).then((rendered) => {
+    if (rendered.html !== "<p>packed async</p>" || rendered.styles.length !== 0) {
+      throw new Error("async SSR package contract mismatch");
+    }
+  }),
+  server.generateStaticSiteAsync({ routes: [{ path: "/async", source: Promise.resolve(api.h("p", null, "packed SSG")) }] }).then((site) => {
+    if (site.pages.length !== 1 || site.pages[0].body !== "<p>packed SSG</p>") {
+      throw new Error("async SSG package contract mismatch");
+    }
+  }),
 ]).catch((error) => {
   console.error(error);
   process.exitCode = 1;
@@ -578,6 +599,8 @@ expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null,
 expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
 expectThrows("SSR stream option", () => server.renderToString(api.h("p", null, "server"), { stream: true }), /Streaming SSR is deferred/);
 expectThrows("SSR invalid context", () => server.renderToString(api.h("p", null, "server"), { context: [] }), /SSR context must be a plain object/);
+expectThrows("SSR unknown option", () => server.renderToString(api.h("p", null, "server"), { contex: {} }), /Unknown SSR option: contex/);
+expectThrows("hydration unknown option", () => api.createApp(Home).hydrate({}, { recvoer: true }), /Unknown hydration option: recvoer/);
 expectThrows("async SSR source", () => server.renderToString(Promise.resolve(api.h("p", null, "async"))), /Async SSR is deferred/);
 expectThrows("async SSR", () => server.renderToString(api.h(AsyncPage)), /Async SSR is deferred/);
 expectThrows("async SSR child", () => server.renderToString(api.h("p", null, Promise.resolve(api.h("span", null, "async")))), /Async SSR is deferred/);
@@ -585,6 +608,8 @@ expectThrows("async SSG source", () => server.generateStaticSite({ routes: [{ pa
 expectThrows("SSG invalid route path", () => server.generateStaticSite({ routes: [{ path: 42, source: api.h("p", null, "home") }] }), /SSG route path must be a string/);
 expectThrows("SSG partial manifest option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], manifest: {} }), /SSG manifest integration requires both manifest and clientEntry/);
 expectThrows("SSG router option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], router: {} }), /Router-aware SSG integration is deferred/);
+expectThrows("SSG unknown option", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home") }], shel: () => "typo" }), /Unknown SSG option: shel/);
+expectThrows("SSG unknown route field", () => server.generateStaticSite({ routes: [{ path: "/", source: api.h("p", null, "home"), provdies: new Map() }] }), /Unknown SSG route field: provdies/);
 `,
   );
 

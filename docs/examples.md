@@ -82,6 +82,31 @@ Coverage:
 The Playwright test `tests/e2e/router-basic.spec.ts` verifies home, user, redirect, guarded
 dashboard, nested settings, lazy report, and not-found navigation.
 
+## Operations Console
+
+Run:
+
+```bash
+pnpm dev:operations
+```
+
+Location: `examples/operations-console`
+
+Coverage:
+
+- Real-app SPA routes for an overview, searchable incident queue, incident detail, releases,
+  redirects, and a not-found view.
+- Lazy release activity with automatic retry and an exhausted dependency error state.
+- SSR/SSG entries for synchronous and async rendering scenarios.
+- A standalone hydration fixture that verifies matching-node reuse, recoverable mismatch handling,
+  scoped-style deduplication, and reactive updates.
+
+The cross-browser Playwright workflow exercises desktop and mobile operations, while the SSR/SSG
+integration coverage keeps the server entries aligned with the browser fixture. Together they
+provide packed validation that the published package can support a production-shaped application
+across routing, shared state, async components, server rendering, hydration, and responsive browser
+workflows.
+
 ## SFC Counter
 
 Run:
@@ -123,12 +148,14 @@ pnpm test:e2e
 
 The Playwright config starts each example on a fixed localhost port:
 
-| Example       | Port   |
-| ------------- | ------ |
-| Basic counter | `6174` |
-| Todo app      | `6175` |
-| Large list    | `6176` |
-| Router basic  | `6178` |
+| Example            | Port   |
+| ------------------ | ------ |
+| Basic counter      | `6174` |
+| Todo app           | `6175` |
+| Large list         | `6176` |
+| Router basic       | `6178` |
+| Async Hydration    | `6179` |
+| Operations Console | `6180` |
 
 `pnpm release:check` also runs these e2e tests plus the DevTools extension e2e smoke after quality
 checks, coverage, package smoke, jsdom benchmark smoke, and the Chromium production browser

@@ -17,6 +17,17 @@ export interface AsyncComponentOptions<Props extends object> {
 export type AsyncComponentSource<Props extends object> =
   AsyncComponentLoader<Props> | AsyncComponentOptions<Props>;
 
+export interface AsyncComponentMetadata {
+  load(): Promise<ComponentType<never>>;
+  peek(): ComponentType<never> | null;
+}
+
+const asyncComponentMetadata = new WeakMap<object, AsyncComponentMetadata>();
+
+export function getAsyncComponentMetadata(component: unknown): AsyncComponentMetadata | undefined {
+  return typeof component === "function" ? asyncComponentMetadata.get(component) : undefined;
+}
+
 export function defineAsyncComponent<Props extends object>(
   source: AsyncComponentSource<Props>,
 ): ComponentType<Props> {
@@ -30,8 +41,9 @@ export function defineAsyncComponent<Props extends object>(
   let delayTimer: ReturnType<typeof setTimeout> | null = null;
   let timeoutTimer: ReturnType<typeof setTimeout> | null = null;
   let retryTimer: ReturnType<typeof setTimeout> | null = null;
+  let preparationRequest: Promise<ComponentType<Props>> | null = null;
 
-  return (props, { slots }) => {
+  const component: ComponentType<Props> = (props, { slots }) => {
     const instance = getCurrentInstance();
     const update = instance?.update ?? null;
 
@@ -57,6 +69,80 @@ export function defineAsyncComponent<Props extends object>(
         : h(Fragment, null, []);
     };
   };
+
+  asyncComponentMetadata.set(component, {
+    load: loadForPreparation as () => Promise<ComponentType<never>>,
+    peek: () => resolvedComponent as ComponentType<never> | null,
+  });
+
+  return component;
+
+  function loadForPreparation(): Promise<ComponentType<Props>> {
+    if (resolvedComponent !== null) {
+      return Promise.resolve(resolvedComponent);
+    }
+
+    if (preparationRequest !== null) {
+      return preparationRequest;
+    }
+
+    preparationRequest = loadWithRetry().finally(() => {
+      preparationRequest = null;
+    });
+    return preparationRequest;
+  }
+
+  async function loadWithRetry(): Promise<ComponentType<Props>> {
+    let failures = 0;
+
+    while (true) {
+      try {
+        const loaded = await loadPreparationAttempt();
+        if (typeof loaded !== "function") {
+          throw new TypeError("Async component loader must resolve to a component function");
+        }
+
+        resolvedComponent = loaded;
+        loadError = null;
+        clearAsyncTimers();
+        return loaded;
+      } catch (error) {
+        failures += 1;
+        if (failures > getRetry(options)) {
+          throw error;
+        }
+
+        const retryDelay = getRetryDelay(options);
+        if (retryDelay > 0) {
+          await wait(retryDelay);
+        }
+      }
+    }
+  }
+
+  function loadPreparationAttempt(): Promise<ComponentType<Props>> {
+    const request = options.loader();
+    if (options.timeout === undefined) {
+      return request;
+    }
+
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(
+        () => reject(new Error("Async component timed out")),
+        options.timeout,
+      );
+      request.then(
+        (loaded) => {
+          clearTimeout(timer);
+          resolve(loaded);
+        },
+        (error: unknown) => {
+          clearTimeout(timer);
+          reject(error);
+        },
+      );
+    });
+  }
 
   function startLoad(update: (() => void) | null): void {
     const attemptId = activeAttemptId + 1;
@@ -196,4 +282,8 @@ function getRetry<Props extends object>(options: AsyncComponentOptions<Props>): 
 
 function getRetryDelay<Props extends object>(options: AsyncComponentOptions<Props>): number {
   return options.retryDelay ?? 0;
+}
+
+function wait(delay: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, delay));
 }

@@ -12,6 +12,7 @@ import { isEventProp } from "../event/event";
 import { ReactiveEffect } from "../reactivity/effect";
 import { queueJob } from "../scheduler/scheduler";
 import { ShapeFlags } from "../shared/flags";
+import { isThenable } from "../shared/utils";
 import type { VNode, VNodeProps } from "../vnode/vnode";
 import { createElement, insert, patchProp, remove, setText } from "./dom";
 import {
@@ -34,6 +35,12 @@ export function patch(
   parentComponent: ComponentInstance | null = null,
   appProvides: Provides | null = parentComponent?.appProvides ?? null,
 ): void {
+  if (isThenable(n2)) {
+    throw new TypeError(
+      "Async client rendering is deferred; render() and mount() require synchronous trees.",
+    );
+  }
+
   if (n1 !== null && !isSameVNodeType(n1, n2)) {
     const nextAnchor = n1.el?.nextSibling ?? anchor;
     unmount(n1);

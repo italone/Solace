@@ -6,6 +6,16 @@ import { describe, expect, it } from "vitest";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const require = createRequire(import.meta.url);
+const expectedExportKeys = [
+  ".",
+  "./devtools",
+  "./jsx-dev-runtime",
+  "./jsx-runtime",
+  "./package.json",
+  "./server",
+  "./sfc",
+  "./vite",
+];
 
 describe("package exports", () => {
   it("builds root, JSX runtime, DevTools, and Vite artifacts", () => {
@@ -32,16 +42,7 @@ describe("package exports", () => {
       exports: Record<string, unknown>;
     };
 
-    expect(Object.keys(packageJson.exports).sort()).toEqual([
-      ".",
-      "./devtools",
-      "./jsx-dev-runtime",
-      "./jsx-runtime",
-      "./package.json",
-      "./server",
-      "./sfc",
-      "./vite",
-    ]);
+    expect(Object.keys(packageJson.exports).sort()).toEqual(expectedExportKeys);
   });
 
   it("does not publish production sourcemaps", () => {
@@ -209,15 +210,25 @@ describe("package exports", () => {
     expect(Object.keys(server).sort()).toEqual([
       "createStaticRoutesFromRouter",
       "generateStaticSite",
+      "generateStaticSiteAsync",
       "renderToString",
+      "renderToStringAsync",
       "resolveStaticAssets",
     ]);
     expect(server.createStaticRoutesFromRouter).toEqual(expect.any(Function));
     expect(server.generateStaticSite).toEqual(expect.any(Function));
+    expect(server.generateStaticSiteAsync).toEqual(expect.any(Function));
     expect(server.renderToString).toEqual(expect.any(Function));
+    expect(server.renderToStringAsync).toEqual(expect.any(Function));
     expect(server.resolveStaticAssets).toEqual(expect.any(Function));
     expect(server).not.toHaveProperty("hydrate");
     expect(server).not.toHaveProperty("patch");
+
+    await expect(
+      server.renderToStringAsync(
+        Promise.resolve((await import("@italone/solace")).h("p", null, "async package")),
+      ),
+    ).resolves.toEqual({ html: "<p>async package</p>", styles: [] });
   });
 
   it("enforces router beta boundaries from the package root", async () => {
@@ -342,6 +353,9 @@ describe("package exports", () => {
     expect(() => server.renderToString(source, { router: {} } as never)).toThrow(
       /Router-aware SSR integration is deferred/,
     );
+    expect(() => server.renderToString(source, { contex: {} } as never)).toThrow(
+      TypeError("Unknown SSR option: contex"),
+    );
 
     const hydrationContainer = document.createElement("main");
     hydrationContainer.innerHTML = "<p>home</p>";
@@ -352,6 +366,11 @@ describe("package exports", () => {
           stream: true,
         } as never),
     ).toThrow(/Hydration streaming integration is deferred/);
+    expect(() =>
+      api
+        .createApp(() => api.h("p", null, "home"))
+        .hydrate(hydrationContainer, { recvoer: true } as never),
+    ).toThrow(TypeError("Unknown hydration option: recvoer"));
 
     const site = server.generateStaticSite({
       routes: [{ path: "/", source }],
@@ -387,6 +406,17 @@ describe("package exports", () => {
         router: {},
       } as never),
     ).toThrow(/Router-aware SSG integration is deferred/);
+    expect(() =>
+      server.generateStaticSite({
+        routes: [{ path: "/", source }],
+        shel: () => "typo",
+      } as never),
+    ).toThrow(TypeError("Unknown SSG option: shel"));
+    expect(() =>
+      server.generateStaticSite({
+        routes: [{ path: "/", source, provdies: new Map() }],
+      } as never),
+    ).toThrow(TypeError("Unknown SSG route field: provdies"));
 
     expect(() =>
       server.generateStaticSite({
@@ -421,6 +451,10 @@ describe("package exports", () => {
     const server = require("@italone/solace/server") as Record<string, unknown>;
 
     expect(api.createApp).toEqual(expect.any(Function));
+    const app = (api.createApp as (source: unknown) => { hydrateAsync?: unknown })(
+      (api.h as (...args: unknown[]) => unknown)("p", null, "async"),
+    );
+    expect(app.hydrateAsync).toEqual(expect.any(Function));
     expect(api.createRouter).toEqual(expect.any(Function));
     expect(api.createWebHashHistory).toEqual(expect.any(Function));
     expect(api.createWebHistory).toEqual(expect.any(Function));
@@ -452,12 +486,16 @@ describe("package exports", () => {
     expect(Object.keys(server).sort()).toEqual([
       "createStaticRoutesFromRouter",
       "generateStaticSite",
+      "generateStaticSiteAsync",
       "renderToString",
+      "renderToStringAsync",
       "resolveStaticAssets",
     ]);
     expect(server.createStaticRoutesFromRouter).toEqual(expect.any(Function));
     expect(server.generateStaticSite).toEqual(expect.any(Function));
+    expect(server.generateStaticSiteAsync).toEqual(expect.any(Function));
     expect(server.renderToString).toEqual(expect.any(Function));
+    expect(server.renderToStringAsync).toEqual(expect.any(Function));
     expect(server.resolveStaticAssets).toEqual(expect.any(Function));
   });
 

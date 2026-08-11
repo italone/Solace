@@ -28,11 +28,14 @@ JSX/TSX 和明确的运行时 API。运行时能力从包根入口导入，serve
 公共 TypeScript 辅助类型包括：
 
 - App 和插件：`App`、`Plugin`、`PluginInstall`、`PluginObject`
-- 异步组件：`AsyncComponentLoader`、`AsyncComponentOptions`、`AsyncComponentSource`
+- 异步组件：`AsyncComponentLoader`、`AsyncComponentOptions`、`AsyncComponentSetupResult`、
+  `AsyncComponentSource`、`AsyncComponentType`
 - 组件 setup：`ComponentSetupContext`、`EmitFn`、`Slot`、`SlotProps`、`Slots`
 - Store：`Store`、`StoreActionsInput`、`StoreContext`、`StoreGetterContext`、`StoreGetters`、`StoreOptions`
 - Router：`LazyRouteComponent`、`NavigationGuard`、`NavigationGuardResult`、`RouteComponent`、`RouteLocationNormalized`、`RouteLocationRaw`、`RouteRecord`、`Router`、`RouterHistory`、`RouterLinkProps`、`RouterOptions`、`RouterScrollBehavior`、`RouterScrollBehaviorResult`、`RouterScrollPosition`
-- VNode：`ComponentProps`、`ComponentRender`、`ComponentType`、`ComponentVNodeChildren`、`FragmentType`、`VNode`、`VNodeChild`、`VNodeChildren`、`VNodeProps`、`VNodeSlots`、`VNodeType`
+- VNode：`AsyncComponentVNodeChildren`、`AsyncVNodeChild`、`AsyncVNodeChildren`、
+  `ComponentProps`、`ComponentRender`、`ComponentType`、`ComponentVNodeChildren`、`FragmentType`、
+  `VNode`、`VNodeChild`、`VNodeChildren`、`VNodeProps`、`VNodeSlots`、`VNodeType`
 
 ## API 分层与稳定性
 
@@ -59,11 +62,19 @@ beta 线兼容性契约仍有意保持较窄。文档化公开入口应在 patch
 子路径通常只通过 `jsxImportSource` 或 bundler 生成导入使用。只有在构建 instrumentation 或需要
 event snapshots 的示例，或运行 `examples/devtools-extension` 浏览器 DevTools 扩展示例时，才直接使用 DevTools 子路径。
 
+关于受保护入口、patch release 规则、maturity label 和迁移要求，请阅读[兼容性与弃用策略](./compatibility.zh-CN.md)。
+该策略在不静默移除文档化入口的前提下，将 router 和 async API 标记为 beta，将 SFC/Vite API 标记为 experimental。
+
 ## Deferred Beta 边界
 
 当前公共契约会主动拒绝仍处于 deferred 状态的集成入口，而不是静默接受 Solace 尚未实现的
-options。Router auth、permissions、router-aware SSR、router-aware hydration、streaming SSR
-和 async component SSR 仍不属于 beta 契约。Route `meta` 是给应用代码和示例使用的开发者自定义数据，不是认证或权限执行机制。使用 `auth` 或 `permissions` 字段的 router options 或 route records 会被明确的 deferred-boundary 错误拒绝；本地 UX routing 应使用应用自己的 guards，真正的 enforcement 应由后端授权承担。任何扩大这些边界的公共 API 工作，都需要在同一变更中同步 README、project-status、package-usage、package boundary tests、consumer smoke 覆盖和发布门禁。
+options。Router auth、permissions、router-aware SSR、router-aware hydration、streaming SSR、
+Suspense/selective hydration 和 async update scheduling 仍不属于 beta 契约。Route `meta` 是给
+应用代码和示例使用的开发者自定义数据，不是认证或权限执行机制。使用 `auth` 或 `permissions`
+字段的 router options 或 route records 会被明确的 deferred-boundary 错误拒绝；本地 UX routing
+应使用应用自己的 guards，真正的 enforcement 应由后端授权承担。任何扩大这些边界的公共 API
+工作，都需要在同一变更中同步 README、project-status、package-usage、package boundary tests、
+consumer smoke 覆盖和发布门禁。
 
 ## App
 
@@ -83,6 +94,7 @@ createApp(App).mount(document.querySelector("#app") as Element);
 
 - `mount(container: Element): void`
 - `hydrate(container: Element, options?: HydrationOptions): void`
+- `hydrateAsync(container: Element, options?: HydrationOptions): Promise<void>`
 - `provide(key, value): App`
 - `use(plugin, ...options): App`
 
@@ -119,6 +131,23 @@ import { createApp } from "@italone/solace";
 createApp(App).hydrate(document.querySelector("#app") as Element, { recover: true });
 ```
 
+`hydrateAsync()` 会在认领 server DOM 前准备完整 async initial tree。准备失败时容器保持不变。
+它沿用 `hydrate()` 的 mismatch 行为和 `{ recover: true }` deopt；准备完成后，解析得到的同步
+render function 会安装普通同步组件 effects。
+
+```tsx
+import { createApp, reactive } from "@italone/solace";
+import type { AsyncComponentType } from "@italone/solace";
+
+const state = reactive({ count: 0 });
+const AsyncCounter: AsyncComponentType = async () => {
+  await Promise.resolve();
+  return () => <button onClick={() => (state.count += 1)}>count: {state.count}</button>;
+};
+
+await createApp(AsyncCounter).hydrateAsync(document.querySelector("#app") as Element);
+```
+
 `use()` 会在每个 app 实例中安装一次插件。插件可以是函数，也可以是带 `install()` 方法的对象。
 options 会在 app 参数之后继续传入，方法返回 app 以支持链式调用。
 
@@ -144,7 +173,9 @@ import { h } from "@italone/solace";
 import {
   createStaticRoutesFromRouter,
   generateStaticSite,
+  generateStaticSiteAsync,
   renderToString,
+  renderToStringAsync,
   resolveStaticAssets,
 } from "@italone/solace/server";
 
@@ -164,17 +195,40 @@ const result = renderToString(h("p", null, "server"));
 integration options 会抛出 `TypeError`。
 Hydration options 必须是非数组对象；提供 `recover` 时，它必须是 boolean。
 `renderToString()` 的 `context` 如果提供，必须是 plain object。
-async 或 thenable render tree，包括 direct sources、SSG route sources 和 async child values，
-也会抛出 `TypeError`，因为 async SSR 仍处于 deferred 状态。
-Hydration 也会拒绝 async 或 thenable direct sources 和 component trees，避免用尚未解析的
-tree 占用 server DOM。
-向 `hydrate()` 传入 deferred `manifest`、`clientEntry`、`router` 或 `stream` 字段也会在运行时直接拒绝。
+Hydration options 只接受 `recover`，`renderToString()` options 只接受 `context` 和 `provides`；
+未知的自有 option 字段会抛出包含字段名的 `TypeError`。
+同步 `renderToString()`、`generateStaticSite()`、`hydrate()`、`render()` 和 `mount()` 会拒绝
+async 或 thenable render tree，包括 direct sources、SSG route sources 和 async child values。
+这些现有同步 API 保持原有同步返回类型；需要 async tree 时应使用显式 async 入口。向
+`hydrate()` 或 `hydrateAsync()` 传入 deferred `manifest`、`clientEntry`、`router` 或 `stream`
+字段也会在运行时直接拒绝。
 Hydration mismatch 错误会带结构化的 `kind`、`path`、`expected` 和 `actual` 字段，便于
 区分 missing node、extra node、元素标签不一致和文本不一致。
 
-Streaming SSR、async component SSR、async hydration、SSG CLI、filesystem output、route
-crawling、hydration mismatch 的自动恢复（显式 `recover` deopt 之外）、router-aware SSR 和
-router-aware hydration 仍保持 deferred。
+### `renderToStringAsync(source, options?)`
+
+`renderToStringAsync()` 会先缓冲完整 initial tree，再返回 `{ html, styles }`。它接受 promised
+root、async components、promised child VNodes，以及与 `renderToString()` 相同的 `context` 和
+`provides` options。发生 rejection 时不会暴露部分 HTML。
+
+```tsx
+import { h } from "@italone/solace";
+import type { AsyncComponentType } from "@italone/solace";
+import { renderToStringAsync } from "@italone/solace/server";
+
+const AsyncMessage: AsyncComponentType = async () => () => <strong>ready</strong>;
+const result = await renderToStringAsync(
+  Promise.resolve(h("section", null, [h(AsyncMessage), Promise.resolve(h("i", null, "child"))])),
+);
+```
+
+Async setup 在 initial preparation 中采用 setup-once 语义。解析为同步 render function 时，
+`hydrateAsync()` 之后仍支持后续响应式更新；直接解析为 VNode 时，它是固定 initial result；
+promised children 是 one-shot values。`provide()`、`inject()`、lifecycle registration 和
+`useStyle()` 可在第一次 suspension 前，以及解析后的同步 render function 内使用；它们不属于
+`await` 之后 continuation code 的 ambient component-instance API 契约。Streaming SSR、
+router-aware SSR、router-aware hydration、Suspense/selective hydration 仍保持 deferred；
+async update scheduling 仍保持 deferred。
 
 ### `generateStaticSite(options)`
 
@@ -189,6 +243,9 @@ production asset tags，并在每次 shell 调用里通过 `assets` 传入。she
 `assets.modulePreloads`、`assets.stylesheets`、收集到的 `styles` 和 `assets.scripts`。只传
 `manifest` 或只传 `clientEntry` 会抛出 `TypeError`。route-level `manifest`、`clientEntry`
 和 `router` 字段仍会被拒绝。
+`generateStaticSite()` options 只接受 `routes`、`shell`、`manifest`、`clientEntry` 和 `base`；
+route entries 只接受 `path`、`source`、`context` 和 `provides`。未知的自有 option 或 route
+字段会抛出包含字段名的 `TypeError`。
 
 ```ts
 const site = generateStaticSite({
@@ -198,6 +255,21 @@ const site = generateStaticSite({
 });
 
 site.pages[0].html;
+```
+
+### `generateStaticSiteAsync(options)`
+
+`generateStaticSiteAsync()` 接受相同的已校验 SSG options 和 async route sources。Routes 会按声明
+顺序逐个 await；只有全部 route 与 shell 调用成功后，才返回完整 `{ pages }`。
+
+```ts
+const site = await generateStaticSiteAsync({
+  routes: [
+    { path: "/", source: Promise.resolve(h("h1", null, "Home")) },
+    { path: "/about", source: async () => () => h("p", null, "About") },
+  ],
+  shell: ({ body }) => `<!doctype html><body>${body}</body>`,
+});
 ```
 
 组合完整 shell 时，把 `styles.join("")` 放入文档 `<head>`。首个 SSG core 仅为内存 API。
