@@ -18,8 +18,8 @@ Current repository state:
 - Package name: `@italone/solace`
 - Repository package version: `0.1.0-beta.2`
 - Published npm `latest`: `0.0.5`
-- Published npm `beta`: `0.1.0-beta.1`
-- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.1`
+- Published npm `beta`: `0.1.0-beta.2`
+- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.2`
 - Public package metadata: `"private": false`
 - Current branch: `main`
 - Remote state: recheck with `git fetch origin main`, `git status --short --branch`, and
@@ -116,8 +116,8 @@ The 2026-08-11 full local `pnpm release:check` passed for the current `0.1.0-bet
 state after DevTools extension e2e entered the gate. It covered release readiness, quality, coverage
 with 95.29% statements / 90.54% branches / 96.7% functions / 95.3% lines and 67 Vitest files / 556 tests.
 It also covered package exports, packed package consumer smoke, jsdom benchmark, Chromium browser
-benchmark, browser e2e 4 tests, and DevTools extension e2e 2 tests. This is local validation evidence
-only; it does not mean `0.1.0-beta.2` has been published.
+benchmark, browser e2e 4 tests, and DevTools extension e2e 2 tests. The subsequent registry smoke
+confirmed that `0.1.0-beta.2` was published to npm under the `beta` dist-tag.
 
 The 2026-08-03 router stabilization work refreshed the router-focused checks and `pnpm quality`
 after adding the initial history navigation pipeline, stale async navigation result protection,
@@ -148,6 +148,14 @@ Post-publish registry checks confirmed npm reports `latest -> 0.0.5` and
 `beta -> 0.1.0-beta.1`. A registry beta smoke imported the root, server, Vite, and DevTools public
 entries from `@italone/solace@beta`, and the published beta.1 tarball README/docs were checked for
 the updated beta install-line wording.
+
+The 2026-08-11 beta.2 publish for `@italone/solace@0.1.0-beta.2` used
+`pnpm release:publish:beta`, rerunning `pnpm release:check` before `changeset publish --tag beta`.
+Post-publish registry checks confirmed npm reports `latest -> 0.0.5` and
+`beta -> 0.1.0-beta.2`. A registry beta smoke imported the root, server, Vite, and DevTools public
+entries and rendered a server-side paragraph; the published beta.2 tarball contained 48 files.
+The local `v0.1.0-beta.2` tag was created, but pushing that tag to GitHub failed because of a transient
+connection error and must be retried separately.
 
 ## Public API Boundary
 
@@ -206,11 +214,11 @@ These gaps should stay visible in promotional material so the project is positio
 ## Release Coordination State
 
 `@italone/solace@0.0.5` has been published to npm with the `latest` dist-tag.
-`@italone/solace@0.1.0-beta.1` has been published to npm with the `beta` dist-tag. The repository is
-prepared for `0.1.0-beta.2`, but that version is not published until the beta publish workflow
-completes. Post-publish registry checks for beta.1 confirmed npm reports `latest -> 0.0.5` and
-`beta -> 0.1.0-beta.1`, and the matching Git tag is `v0.1.0-beta.1`. Recheck Git state and the
-published registry before any future publish or synchronization claim.
+`@italone/solace@0.1.0-beta.2` has been published to npm with the `beta` dist-tag. Post-publish
+registry checks confirm npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.2`, and the local
+release tag is `v0.1.0-beta.2`. The remote tag push should be retried after the transient GitHub
+connection failure; recheck Git state, the remote tag, and the published registry before any future
+publish or synchronization claim.
 
 Before publishing any future version, follow the same checklist:
 

@@ -218,6 +218,12 @@
 | 002  | 准备 beta package 文档刷新   | package metadata、tarball docs、项目日志            | `package.json`, `CHANGELOG.md`, `readme*.md`, `docs/package-usage.md`, `docs/project-status*.md`, `solace-project-log/**`                    | [查看](./solace-entries/2026-08-05-002-beta-package-doc-refresh.md) |
 | 003  | 发布 beta.1 package 文档刷新 | npm release、registry smoke、tarball docs、项目日志 | `docs/project-status*.md`, `solace-project-log/**`                                                                                           | [查看](./solace-entries/2026-08-05-003-beta-1-npm-publication.md)   |
 
+## 2026-08-11
+
+| 编号 | 变动                | 影响范围                                                   | 涉及文件                                                           | 日志                                                              |
+| ---- | ------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| 001  | 发布 beta.2 package | npm release、registry smoke、tarball docs、Git release tag | `CHANGELOG.md`, `docs/project-status*.md`, `solace-project-log/**` | [查看](./solace-entries/2026-08-11-001-beta-2-npm-publication.md) |
+
 ## 维护说明
 
 后续每次变更完成后，应执行以下动作：

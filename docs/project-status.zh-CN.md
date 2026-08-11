@@ -16,8 +16,8 @@ React、Vue、Svelte 或同类生态的成熟生产替代品。
 - 包名：`@italone/solace`
 - 仓库 package 版本：`0.1.0-beta.2`
 - npm `latest` 已发布版本：`0.0.5`
-- npm `beta` 已发布版本：`0.1.0-beta.1`
-- npm dist-tags：`latest` 指向 `0.0.5`；`beta` 指向 `0.1.0-beta.1`
+- npm `beta` 已发布版本：`0.1.0-beta.2`
+- npm dist-tags：`latest` 指向 `0.0.5`；`beta` 指向 `0.1.0-beta.2`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
 - 本地分支状态：后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
@@ -94,7 +94,8 @@ SFC 仍是可选、窄、实验性的编译器表面，而不是主要框架方�
 DevTools extension e2e 门禁。本次覆盖 release readiness、quality、coverage（95.29% statements /
 90.54% branches / 96.7% functions / 95.3% lines）、67 个 Vitest 文件 / 556 个测试、package
 exports、packed package consumer smoke、jsdom benchmark、Chromium browser benchmark、browser e2e 4 个测试和
-DevTools extension e2e 2 个测试。这只是本地验证证据，不表示 `0.1.0-beta.2` 已发布。
+DevTools extension e2e 2 个测试。后续 registry smoke 已确认 `0.1.0-beta.2` 已发布到 npm 的
+`beta` dist-tag。
 
 2026-08-03 的 router 稳定化工作在加入 initial history navigation pipeline、stale async
 navigation result protection、rejected-guard history recovery、invalid history location recovery、
@@ -120,6 +121,13 @@ jsdom benchmark、Chromium browser benchmark 和 browser e2e。`pnpm release:rea
 发布后 registry 检查确认 npm registry 返回 `latest -> 0.0.5` 和 `beta -> 0.1.0-beta.1`。
 registry beta smoke 从 `@italone/solace@beta` 导入 root、server、Vite 和 DevTools 公开入口；
 已发布 beta.1 tarball 的 README/docs 也已检查，确认包含更新后的 beta 安装线文案。
+
+2026-08-11 发布 `@italone/solace@0.1.0-beta.2` 到 npm beta 线时，使用了
+`pnpm release:publish:beta`，并在 `changeset publish --tag beta` 前重新运行 `pnpm release:check`。
+发布后 registry 检查确认 npm registry 返回 `latest -> 0.0.5` 和 `beta -> 0.1.0-beta.2`。
+registry beta smoke 导入了 root、server、Vite 和 DevTools 公开入口，并验证了服务端渲染输出；
+已发布 beta.2 tarball 包含 48 个文件。本地已创建 `v0.1.0-beta.2` tag，但 push 到 GitHub 时发生
+临时连接失败，仍需单独重试。
 
 ## 公共 API 边界
 
@@ -166,11 +174,11 @@ Solace 当前有意不包含：
 ## 发布协调状态
 
 发布独立于仓库就绪度。`@italone/solace@0.0.5` 已发布到 npm，并且 `latest`
-dist-tag 指向 `0.0.5`。`@italone/solace@0.1.0-beta.1` 已发布到 npm，并且
-`beta` dist-tag 指向 `0.1.0-beta.1`。仓库已准备 `0.1.0-beta.2`，但该版本要等 beta 发布流程
-完成后才算已发布。beta.1 发布后 registry 检查确认 npm registry 返回 `latest -> 0.0.5` 和
-`beta -> 0.1.0-beta.1`，匹配的 Git tag 是 `v0.1.0-beta.1`。后续任何发布或同步声明前都应重新
-核对 Git 状态和 npm registry。
+dist-tag 指向 `0.0.5`。`@italone/solace@0.1.0-beta.2` 已发布到 npm，并且
+`beta` dist-tag 已指向 `0.1.0-beta.2`。发布后 registry 检查确认 npm registry 返回
+`latest -> 0.0.5` 和 `beta -> 0.1.0-beta.2`，本地 release tag 是 `v0.1.0-beta.2`。远端 tag
+push 因 GitHub 临时连接失败仍需重试；后续任何发布或同步声明前都应重新核对 Git 状态、远端
+tag 和 npm registry。
 
 未来发布任何后续版本前：
 
