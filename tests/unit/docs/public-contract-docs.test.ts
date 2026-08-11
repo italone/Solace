@@ -78,13 +78,13 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toContain("公开契约门禁仍是发布前的第一条防线");
     expect(projectStatus).toContain("browser extension QA checklist");
     expect(projectStatusZh).toContain("browser extension QA checklist");
-    expect(projectStatus).toContain("2026-08-10 full local `pnpm release:check` passed");
+    expect(projectStatus).toContain("2026-08-11 full local `pnpm release:check` passed");
     expect(projectStatus).toContain("67 Vitest files / 556 tests");
     expect(projectStatus).toContain("95.29% statements");
     expect(projectStatus).toContain("90.54% branches");
     expect(projectStatus).toContain("95.3% lines");
     expect(projectStatus).toContain("DevTools extension e2e 2 tests");
-    expect(projectStatusZh).toContain("2026-08-10 的完整本地 `pnpm release:check` 已通过");
+    expect(projectStatusZh).toContain("2026-08-11 的完整本地 `pnpm release:check` 已通过");
     expect(projectStatusZh).toContain("67 个 Vitest 文件 / 556 个测试");
     expect(projectStatusZh).toContain("95.29% statements");
     expect(projectStatusZh).toContain("90.54% branches");

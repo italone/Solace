@@ -90,7 +90,7 @@ SFC 仍是可选、窄、实验性的编译器表面，而不是主要框架方�
 
 2026-07-30 的本地 release check 覆盖了当时 `0.0.5` 的完整门禁，包括 release readiness、quality、coverage、package smoke、jsdom benchmark、Chromium 生产构建 browser benchmark 和 browser e2e。DevTools extension e2e 后续已加入当前 `release:check` 门禁；后续发布声明前需重新运行完整门禁。
 
-2026-08-10 的完整本地 `pnpm release:check` 已通过，覆盖当前 `0.1.0-beta.2` 仓库状态，并且已包含
+2026-08-11 的完整本地 `pnpm release:check` 已通过，覆盖当前 `0.1.0-beta.2` 仓库状态，并且已包含
 DevTools extension e2e 门禁。本次覆盖 release readiness、quality、coverage（95.29% statements /
 90.54% branches / 96.7% functions / 95.3% lines）、67 个 Vitest 文件 / 556 个测试、package
 exports、packed package consumer smoke、jsdom benchmark、Chromium browser benchmark、browser e2e 4 个测试和

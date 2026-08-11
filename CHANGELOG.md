@@ -7,6 +7,12 @@
 - Stabilize the beta router contract for route names, aliases, route props, named locations, and
   `createMemoryHistory()` while keeping scroll behavior, auth, permissions, and router-aware
   SSR/SSG/hydration deferred.
+- Define the JSX/TSX-first public runtime contract with automatic JSX runtime type guards and packed
+  consumer coverage for the root, JSX runtime, server, Vite, SFC, and DevTools public entries.
+- Harden the synchronous SSR and hydration boundary by explicitly rejecting deferred streaming
+  hydration options and documenting the unsupported async and router-aware integrations.
+- Add browser DevTools extension E2E coverage for the public event relay, timeline filtering,
+  pause/resume behavior, and clear controls.
 
 ## 0.1.0-beta.1
 

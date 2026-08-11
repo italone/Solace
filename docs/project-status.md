@@ -112,7 +112,7 @@ release readiness, quality, coverage, package smoke, jsdom benchmark, Chromium p
 benchmark, and browser e2e. DevTools extension e2e was later added to the current `release:check`
 gate, so rerun the gate before making fresh release claims.
 
-The 2026-08-10 full local `pnpm release:check` passed for the current `0.1.0-beta.2` repository
+The 2026-08-11 full local `pnpm release:check` passed for the current `0.1.0-beta.2` repository
 state after DevTools extension e2e entered the gate. It covered release readiness, quality, coverage
 with 95.29% statements / 90.54% branches / 96.7% functions / 95.3% lines and 67 Vitest files / 556 tests.
 It also covered package exports, packed package consumer smoke, jsdom benchmark, Chromium browser
