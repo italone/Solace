@@ -47,6 +47,25 @@ compatibility change. Confirm that protected export paths remain available, and 
 [compatibility and deprecation policy](./compatibility.md) before announcing a removal or signature
 change. A severe security/correctness exception requires prominent risk and migration guidance.
 
+## Post-Publish Registry Verification
+
+After npm reports the published version, validate the exact registry artifact with:
+
+```bash
+pnpm registry:smoke -- <version-or-dist-tag>
+```
+
+Prefer the exact published version in release evidence. A dist-tag such as `beta` or `latest` is
+accepted for a manual current-line audit, and the command reports the resolved package version. This
+is an explicit network-backed audit and is not part of routine pull-request CI. It does not replace the local candidate gates:
+use `pnpm package:smoke` for the local tarball and
+`pnpm stable:app:upgrade` for the pinned real-application compatibility comparison.
+
+The registry smoke installs only `@italone/solace` with lifecycle scripts disabled, verifies all
+eight protected public entries, checks one server-rendered paragraph, and confirms a private
+`dist/**` deep path remains blocked. Install-stage DNS, authentication, timeout, and package-not-found
+errors must be reported separately from package contract failures.
+
 ## Async Rendering Compatibility
 
 `renderToStringAsync()`, `generateStaticSiteAsync()`, and `hydrateAsync()` are additive documented public entries.

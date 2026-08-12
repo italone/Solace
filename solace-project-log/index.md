@@ -226,9 +226,10 @@
 
 ## 2026-08-12
 
-| 编号 | 变动                | 影响范围                                                   | 涉及文件                                                         | 日志                                                              |
-| ---- | ------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------- |
-| 001  | 发布 beta.4 package | npm release、registry smoke、契约状态文档、Git release tag | `readme*.md`, `docs/project-status*.md`, `solace-project-log/**` | [查看](./solace-entries/2026-08-12-001-beta-4-npm-publication.md) |
+| 编号 | 变动                         | 影响范围                                                   | 涉及文件                                                                  | 日志                                                               |
+| ---- | ---------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 001  | 发布 beta.4 package          | npm release、registry smoke、契约状态文档、Git release tag | `readme*.md`, `docs/project-status*.md`, `solace-project-log/**`          | [查看](./solace-entries/2026-08-12-001-beta-4-npm-publication.md)  |
+| 002  | 固化 registry contract smoke | 手动 registry 契约审计、release tooling、测试、文档        | `scripts/**`, `tests/unit/**`, `docs/release.md`, `solace-project-log/**` | [查看](./solace-entries/2026-08-12-002-registry-contract-smoke.md) |
 
 ## 维护说明
 

@@ -61,4 +61,16 @@ describe("release documentation", () => {
     expect(release).toContain("stable application smoke");
     expect(release).toContain("`pnpm stable:app` as a mandatory gate");
   });
+
+  it("separates local, upgrade, and published package smoke checks", async () => {
+    const release = await readFile("docs/release.md", "utf8");
+
+    expect(release).toContain("## Post-Publish Registry Verification");
+    expect(release).toContain("pnpm package:smoke");
+    expect(release).toContain("pnpm stable:app:upgrade");
+    expect(release).toContain("pnpm registry:smoke -- <version-or-dist-tag>");
+    expect(release).toContain("explicit network-backed audit");
+    expect(release).toContain("not part of routine pull-request CI");
+    expect(release).toContain("does not replace the local candidate gates");
+  });
 });
