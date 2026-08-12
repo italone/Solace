@@ -1,5 +1,10 @@
+import { access, mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
+import { runRegistryContractSmoke } from "../../../scripts/registry-contract-smoke.mjs";
 import {
   createRegistryConsumerPackageJson,
   createRegistryInstallArguments,
@@ -80,6 +85,87 @@ describe("registry contract smoke", () => {
       "registry smoke private entry failed",
     ]) {
       expect(source).toContain(stage);
+    }
+  });
+
+  it("writes the consumer, runs the probe, and cleans up", async () => {
+    const temporaryRoot = await mkdtemp(join(tmpdir(), "solace-registry-test-"));
+    let workspace = "";
+    const calls: string[] = [];
+
+    try {
+      const result = await runRegistryContractSmoke("0.1.0-beta.4", {
+        exactVersion: "0.1.0-beta.4",
+        temporaryRoot,
+        install: async (cwd, packageJsonPath) => {
+          workspace = cwd;
+          calls.push(`install:${cwd}`);
+          const packageJson = JSON.parse(await readFile(packageJsonPath, "utf8"));
+          expect(packageJson.dependencies).toEqual({ "@italone/solace": "0.1.0-beta.4" });
+        },
+        executeProbe: async (probePath) => {
+          calls.push(`probe:${probePath}`);
+          const probe = await readFile(probePath, "utf8");
+          expect(probe).toContain("registry contract smoke");
+          return { checkedEntries: 8, version: "0.1.0-beta.4" };
+        },
+        log: () => undefined,
+      });
+
+      expect(result).toEqual({ checkedEntries: 8, version: "0.1.0-beta.4" });
+      expect(calls).toHaveLength(2);
+      await expect(access(workspace)).rejects.toThrow();
+    } finally {
+      await rm(temporaryRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("prefixes install failures and still cleans up", async () => {
+    const temporaryRoot = await mkdtemp(join(tmpdir(), "solace-registry-test-"));
+    let workspace = "";
+
+    try {
+      await expect(
+        runRegistryContractSmoke("beta", {
+          exactVersion: undefined,
+          temporaryRoot,
+          install: async (cwd) => {
+            workspace = cwd;
+            throw new Error("registry unavailable");
+          },
+          executeProbe: async () => {
+            throw new Error("probe must not run");
+          },
+          log: () => undefined,
+        }),
+      ).rejects.toThrow("registry smoke install failed: registry unavailable");
+      await expect(access(workspace)).rejects.toThrow();
+    } finally {
+      await rm(temporaryRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("preserves probe stage failures and still cleans up", async () => {
+    const temporaryRoot = await mkdtemp(join(tmpdir(), "solace-registry-test-"));
+    let workspace = "";
+
+    try {
+      await expect(
+        runRegistryContractSmoke("beta", {
+          exactVersion: undefined,
+          temporaryRoot,
+          install: async (cwd) => {
+            workspace = cwd;
+          },
+          executeProbe: async () => {
+            throw new Error("registry smoke server render failed: output mismatch");
+          },
+          log: () => undefined,
+        }),
+      ).rejects.toThrow("registry smoke server render failed: output mismatch");
+      await expect(access(workspace)).rejects.toThrow();
+    } finally {
+      await rm(temporaryRoot, { recursive: true, force: true });
     }
   });
 });
