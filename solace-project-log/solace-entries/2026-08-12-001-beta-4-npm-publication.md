@@ -4,7 +4,7 @@
 
 - 日期：2026-08-12
 - 类型：发布 / registry smoke / 契约冻结 / 文档 / project log
-- 状态：npm 发布完成，远端 tag 待重试
+- 状态：npm 发布、registry smoke 和远端 tag 同步均已完成
 - 关联提交：`fbe6984`；本地发布 tag：`v0.1.0-beta.4`
 
 ## 变动摘要
@@ -36,16 +36,16 @@ prepare-then-commit async hydration、八入口兼容性策略，以及 Operatio
 | Registry contract smoke    | 从 `@italone/solace@beta` 安装并导入公开入口 | 通过；八个公开入口可导入，SSR 输出正确，私有 `dist/index.js` 深路径被阻断         |
 | Published tarball          | publish gate 的 pack 输出                    | 通过；50 个文件，154,815 bytes                                                    |
 | Local release tag          | `git rev-parse v0.1.0-beta.4^{}`             | 通过；annotated tag 解引用到 `fbe69842b13a1be6d2207976cb1f43e21ae369ef`           |
-| Git tag push               | `git push origin v0.1.0-beta.4`              | 待完成；GitHub 443/DNS 网络失败，需重试并用 `git ls-remote` 核验                  |
+| Git tag push               | `git push origin v0.1.0-beta.4`              | 通过；首次网络等待无结果后，显式 ref push 成功                                    |
+| Remote tag verification    | `git ls-remote --tags origin v0.1.0-beta.4`  | 通过；annotated ref 为 `2c1e0f3a...`，peeled ref 指向 `fbe69842...`               |
 
 ## 已知残余
 
 - npm tarball 一经发布不可覆盖。beta.4 tarball 中 README/status 仍包含发布前的 candidate / beta.2
   published 措辞；仓库文档已在发布后纠正，此问题留待后续版本自然更新，不发布 beta.5 规避。
-- 本地 tag 已由 Changesets 创建且指向正确发布提交；只有远端 tag 同步仍待 GitHub 网络恢复。
+- 本地 tag 已由 Changesets 创建，远端 annotated tag 已同步，二者均解引用到正确发布提交。
 
 ## 后续动作
 
-- 重试 `git push origin main` 和 `git push origin v0.1.0-beta.4`。
-- 用 `git ls-remote --tags origin v0.1.0-beta.4` 核对远端 tag 解引用后指向 `fbe6984`。
+- 后续发布前重新核对 `main`、远端 tag 和 npm dist-tags，避免复用过期状态。
 - 下一轮迭代继续遵守冻结边界；任何扩大公共契约的工作应另行设计，不在 beta.4 上追加。

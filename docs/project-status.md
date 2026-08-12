@@ -177,8 +177,8 @@ Registry checks confirm `latest -> 0.0.5` and `beta -> 0.1.0-beta.4`. The regist
 all eight protected public entries, rendered `<p>beta.4 registry smoke</p>`, and confirmed that the
 private `@italone/solace/dist/index.js` deep path remains blocked. The published tarball contains 50
 files and is immutable; its README/status files retain the prepublish candidate wording. The local
-annotated `v0.1.0-beta.4` tag resolves to release commit `fbe6984`; pushing and verifying the remote
-tag remains pending after GitHub network timeouts.
+and remote annotated `v0.1.0-beta.4` tags are present, and the remote peeled ref resolves to release
+commit `fbe6984`.
 
 ## Public API Boundary
 
@@ -240,10 +240,10 @@ These gaps should stay visible in promotional material so the project is positio
 
 `@italone/solace@0.0.5` has been published to npm with the `latest` dist-tag.
 `@italone/solace@0.1.0-beta.4` has been published to npm with the `beta` dist-tag. Post-publish
-registry checks confirm npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.4`. The local
-`v0.1.0-beta.4` tag points to release commit `fbe6984`; the matching remote tag still requires a
-successful GitHub push and `git ls-remote` verification. Recheck Git state, the remote tag, and the
-published registry before any future publish or synchronization claim.
+registry checks confirm npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.4`. The local tag
+points to release commit `fbe6984`, and the remote `v0.1.0-beta.4` tag is present with the same peeled
+target. Recheck Git state, the remote tag, and the published registry before any future publish or
+synchronization claim.
 
 Before publishing any future version, follow the same checklist:
 

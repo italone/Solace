@@ -127,8 +127,10 @@ describe("public contract documentation", () => {
     expect(readmeZh).toContain("npm `beta` 是 `0.1.0-beta.4`");
     expect(projectStatus).toContain("Repository package version: `0.1.0-beta.4`");
     expect(projectStatus).toContain("Published npm `beta`: `0.1.0-beta.4`");
+    expect(projectStatus).toContain("remote `v0.1.0-beta.4` tag is present");
     expect(projectStatusZh).toContain("仓库 package 版本：`0.1.0-beta.4`");
     expect(projectStatusZh).toContain("npm `beta` 已发布版本：`0.1.0-beta.4`");
+    expect(projectStatusZh).toContain("远端 `v0.1.0-beta.4` tag 已存在");
 
     for (const doc of [readme, api, packageUsage, projectStatus]) {
       expect(doc).toContain("renderToStringAsync()");

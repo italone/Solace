@@ -148,8 +148,8 @@ release commit。
 registry 检查确认 `latest -> 0.0.5` 和 `beta -> 0.1.0-beta.4`。registry smoke 导入八个受保护的
 公开入口，验证服务端输出 `<p>beta.4 registry smoke</p>`，并确认私有深路径
 `@italone/solace/dist/index.js` 仍被阻断。已发布 tarball 包含 50 个文件且不可变，其中的
-README/status 仍保留发布前候选措辞。本地 annotated tag `v0.1.0-beta.4` 解引用到发布提交
-`fbe6984`；GitHub 网络超时后，远端 tag 的 push 与 `git ls-remote` 核验仍待完成。
+README/status 仍保留发布前候选措辞。本地和远端 annotated tag `v0.1.0-beta.4` 均已存在，远端
+peeled ref 解引用到发布提交 `fbe6984`。
 
 ## 公共 API 边界
 
@@ -198,9 +198,9 @@ Solace 当前有意不包含：
 
 发布独立于仓库就绪度。`@italone/solace@0.0.5` 已发布到 npm，并且 `latest`
 dist-tag 指向 `0.0.5`。`@italone/solace@0.1.0-beta.4` 已发布到 npm，并且
-`beta` dist-tag 已指向 `0.1.0-beta.4`。本地 `v0.1.0-beta.4` tag 指向发布提交 `fbe6984`；
-匹配的远端 tag 仍需成功 push 并通过 `git ls-remote` 核验。后续任何发布或同步声明前仍应
-重新核对 Git 状态、远端 tag 和 npm registry。
+`beta` dist-tag 已指向 `0.1.0-beta.4`。本地 tag 指向发布提交 `fbe6984`，远端 `v0.1.0-beta.4` tag 已存在
+且 peeled target 相同。后续任何发布或同步声明前仍应重新核对 Git
+状态、远端 tag 和 npm registry。
 
 未来发布任何后续版本前：
 
