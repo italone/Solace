@@ -89,11 +89,16 @@ The root package will export these additive types through the existing `.` entry
 ```ts
 export type ComponentEventMap = Record<string, readonly unknown[]>;
 
+type EventArgs<
+  Events extends ComponentEventMap,
+  Event extends keyof Events,
+> = Events[Event] extends readonly [...infer Args] ? Args : never;
+
 export type EmitFn<Events extends ComponentEventMap = ComponentEventMap> = <
   Event extends keyof Events & string,
 >(
   event: Event,
-  ...args: Events[Event]
+  ...args: EventArgs<Events, Event>
 ) => void;
 
 export interface ComponentSetupContext<Events extends ComponentEventMap = ComponentEventMap> {
@@ -102,8 +107,8 @@ export interface ComponentSetupContext<Events extends ComponentEventMap = Compon
 }
 ```
 
-The exact implementation may use a mapped callable union or an equivalent generic function if
-TypeScript requires it to preserve tuple correlation. The observable contract is fixed:
+`EventArgs` converts a readonly tuple into callable rest parameters without widening its element
+types. The observable contract is fixed:
 
 - event keys are strings;
 - each event value is a readonly tuple or readonly array of arguments;
