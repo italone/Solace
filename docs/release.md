@@ -38,10 +38,11 @@ and `pnpm test:e2e:devtools-extension` without implying cross-browser support fo
 
 ## Stable Compatibility Checklist
 
-Before treating a stable upgrade candidate as ready, run `pnpm stable:app:upgrade` against the exact
-baseline `@italone/solace@0.1.0-beta.2`, then run `pnpm release:check`. The stable app upgrade is a
-local candidate check; routine CI is a local candidate check only and is not a substitute for the
-maintainer's release decision. Keep types, docs, changeset, and tests together for every public
+Before treating a stable upgrade candidate as ready, run `pnpm release:candidate:check`. It first
+verifies publishable Git/metadata readiness, runs `pnpm stable:app:upgrade` against the exact
+baseline `@italone/solace@0.1.0-beta.2`, and then runs `pnpm release:check`. This network-backed
+candidate command remains separate from routine pull-request CI and is not a substitute for the
+maintainer's release decision. Keep types, docs, changelog, and tests together for every public
 compatibility change. Confirm that protected export paths remain available, and apply the
 [compatibility and deprecation policy](./compatibility.md) before announcing a removal or signature
 change. A severe security/correctness exception requires prominent risk and migration guidance.

@@ -118,6 +118,18 @@ describe("release readiness check CLI", () => {
     ]);
   });
 
+  test("runs the published baseline before the full candidate release gate", async () => {
+    const packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
+      scripts?: Record<string, string>;
+    };
+
+    expect(packageJson.scripts?.["release:candidate:check"]?.split(" && ")).toEqual([
+      "pnpm release:readiness -- --publishable",
+      "pnpm stable:app:upgrade",
+      "pnpm release:check",
+    ]);
+  });
+
   test("keeps beta releases off the latest npm dist-tag", async () => {
     const packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
       scripts?: Record<string, string>;
