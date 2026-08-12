@@ -507,10 +507,10 @@ h(Fragment, null, [h("span", null, "A"), h("span", null, "B")]);
 Solace components are functions with this shape:
 
 ```ts
-type ComponentType<Props extends object = Record<string, unknown>> = (
-  props: Props,
-  context: ComponentSetupContext,
-) => VNode | (() => VNode);
+type ComponentType<
+  Props extends object = ComponentProps,
+  Events extends ComponentEventMap = ComponentEventMap,
+> = (props: Props, context: ComponentSetupContext<Events>) => VNode | (() => VNode);
 ```
 
 The setup context exposes:
@@ -542,6 +542,28 @@ const Panel =
 
 Component event names resolve to `onXxx` handlers. Kebab-case event names are camelized before the
 handler lookup, so `emit("item-change")` can resolve `onItemChange`.
+
+Event typing is opt-in through `ComponentEventMap` and `defineComponent<Props, Events>`. Each event
+maps to its argument tuple:
+
+```tsx
+import { defineComponent } from "@italone/solace";
+import type { ComponentEventMap } from "@italone/solace";
+
+type CounterEvents = {
+  increment: [count: number];
+  reset: [];
+};
+
+const Counter = defineComponent<{ count: number }, CounterEvents>((props, { emit }) => (
+  <button onClick={() => emit("increment", props.count)}>{props.count}</button>
+));
+```
+
+Components without an explicit event map remain permissive by default. This contract types the event
+producer at compile time and does not add runtime validation.
+This slice does not infer precise `onXxx` listener payloads; component listeners retain the existing
+function-or-function-array JSX contract.
 
 ### `defineComponent(component)`
 

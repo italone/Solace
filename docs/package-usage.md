@@ -118,18 +118,28 @@ const App = () => (
 
 Component events use `emit()` with `onXxx` JSX handlers:
 
-```tsx
-import type { ComponentSetupContext } from "@italone/solace";
+Declare typed event producers with `defineComponent<Props, Events>`:
 
-const CounterButton = (props: { count: number }, { emit }: ComponentSetupContext) => (
+```tsx
+import { defineComponent } from "@italone/solace";
+import type { ComponentEventMap } from "@italone/solace";
+
+type CounterEvents = {
+  increment: [count: number];
+  reset: [];
+};
+
+const CounterButton = defineComponent<{ count: number }, CounterEvents>((props, { emit }) => (
   <button onClick={() => emit("increment", props.count)}>count: {props.count}</button>
-);
+));
 
 const App = () => <CounterButton count={1} onIncrement={(count: number) => console.log(count)} />;
 ```
 
-`onXxx` component handlers are typed as a function or an array of functions, matching what
-`emit()` invokes at runtime.
+`ComponentEventMap` is opt-in: components with no explicit event map remain permissive by default.
+It constrains the component's `emit()` calls at compile time and does not add runtime validation.
+It does not infer precise `onXxx` listener payloads in this slice; component handlers remain a
+function or an array of functions, matching runtime dispatch.
 
 DOM `onXxx` handlers accept functions only.
 

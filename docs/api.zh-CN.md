@@ -456,10 +456,10 @@ h(Fragment, null, [h("span", null, "A"), h("span", null, "B")]);
 Solace 组件是下面这种函数形态：
 
 ```ts
-type ComponentType<Props extends object = Record<string, unknown>> = (
-  props: Props,
-  context: ComponentSetupContext,
-) => VNode | (() => VNode);
+type ComponentType<
+  Props extends object = ComponentProps,
+  Events extends ComponentEventMap = ComponentEventMap,
+> = (props: Props, context: ComponentSetupContext<Events>) => VNode | (() => VNode);
 ```
 
 setup context 暴露：
@@ -487,6 +487,27 @@ const Panel =
 ```
 
 组件事件名会解析到 `onXxx` handler。kebab-case 事件名会先 camelize 再查找 handler，所以 `emit("item-change")` 可以匹配 `onItemChange`。
+
+事件类型可以通过 `ComponentEventMap` 和 `defineComponent<Props, Events>` 显式启用。每个事件
+映射到自己的参数 tuple：
+
+```tsx
+import { defineComponent } from "@italone/solace";
+import type { ComponentEventMap } from "@italone/solace";
+
+type CounterEvents = {
+  increment: [count: number];
+  reset: [];
+};
+
+const Counter = defineComponent<{ count: number }, CounterEvents>((props, { emit }) => (
+  <button onClick={() => emit("increment", props.count)}>{props.count}</button>
+));
+```
+
+未显式声明事件映射的组件默认保持宽松。这个契约只在编译期约束事件生产者，不增加运行时
+校验。本切片不会推导精确的 `onXxx` listener payload；组件 listener 继续使用现有的函数或
+函数数组 JSX 契约。
 
 ### `defineComponent(component)`
 

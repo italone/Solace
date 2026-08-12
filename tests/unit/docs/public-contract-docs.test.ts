@@ -164,6 +164,28 @@ describe("public contract documentation", () => {
       expect(doc).toContain("router-aware hydration");
       expect(doc).toContain("streaming SSR");
     }
+
+    for (const doc of [api, packageUsage]) {
+      expect(doc).toContain("ComponentEventMap");
+      expect(doc).toContain("defineComponent<Props, Events>");
+      expect(doc).toContain("permissive by default");
+      expect(doc).toContain("at compile time");
+      expect(doc).toContain("does not add runtime validation");
+      expect(doc).toContain("does not infer precise `onXxx` listener payloads");
+    }
+
+    expect(apiZh).toContain("ComponentEventMap");
+    expect(apiZh).toContain("defineComponent<Props, Events>");
+    expect(apiZh).toContain("默认保持宽松");
+    expect(apiZh).toContain("编译期");
+    expect(apiZh).toMatch(/不增加运行时\s+校验/);
+    expect(apiZh).toContain("不会推导精确的 `onXxx` listener payload");
+
+    for (const doc of [api, apiZh]) {
+      expect(doc).toContain("ComponentType<");
+      expect(doc).toContain("ComponentSetupContext<Events>");
+    }
+
     expect(packageUsage).toContain("[Compatibility and deprecation policy](./compatibility.md)");
     expect(packageUsage).toContain("[兼容性与弃用策略](./compatibility.zh-CN.md)");
     expect(compatibility).toContain("0.1.x");
