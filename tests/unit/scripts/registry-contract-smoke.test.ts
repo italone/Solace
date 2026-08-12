@@ -29,6 +29,10 @@ describe("registry contract smoke", () => {
       exactVersion: "0.1.0-beta.4",
       target: "0.1.0-beta.4",
     });
+    expect(parseRegistrySmokeArguments(["--", "0.1.0-beta.4"])).toEqual({
+      exactVersion: "0.1.0-beta.4",
+      target: "0.1.0-beta.4",
+    });
     expect(parseRegistrySmokeArguments(["beta"])).toEqual({
       exactVersion: undefined,
       target: "beta",

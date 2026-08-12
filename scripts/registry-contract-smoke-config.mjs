@@ -4,14 +4,20 @@ const EXACT_VERSION =
 const DIST_TAG = /^[A-Za-z][A-Za-z0-9._-]*$/;
 
 export function parseRegistrySmokeArguments(args) {
-  if (args.length === 1 && args[0] === "--help") {
+  const normalizedArgs = args[0] === "--" ? args.slice(1) : args;
+
+  if (normalizedArgs.length === 1 && normalizedArgs[0] === "--help") {
     return { help: true };
   }
-  if (args.length !== 1 || typeof args[0] !== "string" || args[0].length === 0) {
+  if (
+    normalizedArgs.length !== 1 ||
+    typeof normalizedArgs[0] !== "string" ||
+    normalizedArgs[0].length === 0
+  ) {
     throw usageError();
   }
 
-  const target = args[0];
+  const target = normalizedArgs[0];
   const exactVersion = EXACT_VERSION.test(target) ? target : undefined;
   if (exactVersion === undefined && !DIST_TAG.test(target)) {
     throw usageError(`Unsafe or unsupported target: ${JSON.stringify(target)}`);
