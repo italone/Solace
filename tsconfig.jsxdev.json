@@ -3,5 +3,8 @@
   "compilerOptions": {
     "jsx": "react-jsxdev"
   },
-  "include": ["examples/basic-counter/src/main.tsx"]
+  "include": [
+    "examples/basic-counter/src/main.tsx",
+    "tests/unit/renderer/jsx-runtime-public-contract-types.test.tsx"
+  ]
 }

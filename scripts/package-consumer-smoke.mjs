@@ -69,6 +69,7 @@ import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtool
 import type { DevtoolsEvent } from "@italone/solace/devtools";
 import { generateStaticSite, renderToString } from "@italone/solace/server";
 import solacePlugin, { solacePlugin as namedSolacePlugin } from "@italone/solace/vite";
+import { jsx as packedJsx } from "@italone/solace/jsx-runtime";
 
 const state = reactive({ count: 0 });
 const hydrationOptions: HydrationOptions = { recover: true };
@@ -153,14 +154,22 @@ const Button = defineComponent((props: { label: string }, { emit }: ComponentSet
 type ButtonEvents = {
   change: [value: number];
   reset: [];
+  "value-change": [value: number];
+};
+
+type TypedButtonProps = {
+  value: number;
+  onChange?: (value: string) => unknown;
+  onFocus?: (reason: string) => unknown;
 };
 
 const buttonEventMap: ComponentEventMap = {} as ButtonEvents;
 void buttonEventMap;
 
-const TypedButton = defineComponent<{ value: number }, ButtonEvents>((props, { emit }) => {
+const TypedButton = defineComponent<TypedButtonProps, ButtonEvents>((props, { emit }) => {
   emit("change", props.value);
   emit("reset");
+  emit("value-change", props.value);
 
   // @ts-expect-error packaged typed emit rejects unknown events
   emit("missing");
@@ -195,7 +204,27 @@ const FrameworkList = () => (
   </>
 );
 
-<TypedButton value={1} onChange={(value: number) => String(value)} />;
+<TypedButton
+  value={1}
+  onChange={(value: number) => String(value)}
+  onValueChange={(value: number) => String(value)}
+  onFocus={(reason: string) => reason}
+/>;
+<TypedButton value={1} onChange={[(value: number) => String(value)]} />;
+
+// @ts-expect-error packaged typed listeners receive the declared number payload
+<TypedButton value={1} onChange={(value: string) => value} />;
+
+// @ts-expect-error packaged typed listener arrays reject incompatible item payloads
+<TypedButton value={1} onChange={[(value: string) => value]} />;
+
+// @ts-expect-error packaged typed components reject listeners for unknown events
+<TypedButton value={1} onMissing={(value: unknown) => value} />;
+
+// @ts-expect-error packaged typed kebab-case events only accept canonical camelized listeners
+packedJsx(TypedButton, { value: 1, "onValue-change": (value: number) => value });
+
+<Button label="legacy" onLegacyEvent={(value: symbol) => value} />;
 
 // @ts-expect-error packaged TSX onXxx handlers must reject non-function values
 <Button label="invalid" onChange="change" />;

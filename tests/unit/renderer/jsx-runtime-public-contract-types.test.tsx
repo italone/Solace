@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { defineComponent, render } from "../../../src";
 import { jsxDEV } from "../../../src/jsx-dev-runtime";
-import { jsx } from "../../../src/jsx-runtime";
+import { jsx, jsxs } from "../../../src/jsx-runtime";
 import type { ComponentEventMap, ComponentSetupContext } from "../../../src";
 
 const incrementCalls: number[] = [];
@@ -11,17 +11,25 @@ type CounterEvents = {
   reset: [];
   rename: [name: string, source?: "user" | "sync"];
   collect: [label: string, ...values: number[]];
+  "value-change": [value: number];
+};
+
+type TypedEmitterProps = {
+  count: number;
+  onIncrement?: (count: string) => unknown;
+  onFocus?: (reason: string) => unknown;
 };
 
 const eventMap: ComponentEventMap = {} as CounterEvents;
 void eventMap;
 
-const TypedEmitter = defineComponent<{ count: number }, CounterEvents>((props, { emit }) => {
+const TypedEmitter = defineComponent<TypedEmitterProps, CounterEvents>((props, { emit }) => {
   emit("increment", props.count);
   emit("reset");
   emit("rename", "Ada");
   emit("rename", "Ada", "user");
   emit("collect", "values", 1, 2, 3);
+  emit("value-change", props.count);
 
   // @ts-expect-error typed emit rejects unknown event names
   emit("missing");
@@ -94,8 +102,27 @@ const FragmentList = () => (
   click me
 </CounterButton>;
 <FragmentList />;
-<TypedEmitter count={1} onIncrement={(count: number) => incrementCalls.push(count)} />;
-<UntypedEmitter onLegacyEvent={() => undefined} />;
+<TypedEmitter
+  count={1}
+  onIncrement={(count: number) => incrementCalls.push(count)}
+  onReset={() => undefined}
+  onRename={(name: string, source?: "user" | "sync") => [name, source]}
+  onCollect={(label: string, ...values: number[]) => [label, values]}
+  onValueChange={(value: number) => value}
+  onFocus={(reason: string) => reason}
+/>;
+<TypedEmitter
+  count={1}
+  onIncrement={[
+    (count: number) => incrementCalls.push(count),
+    (count: number) => incrementCalls.push(count + 1),
+  ]}
+/>;
+<UntypedEmitter
+  onLegacyEvent={(payload: symbol) => payload}
+  onOtherEvent={[(value: Date) => value]}
+/>;
+<Row label="permissive" onAnything={(value: Date) => value} />;
 
 <button onClick={(event: MouseEvent) => event.preventDefault()}>click</button>;
 
@@ -110,6 +137,27 @@ const FragmentList = () => (
   click me
 </CounterButton>;
 
+// @ts-expect-error typed increment listeners receive the declared number payload
+<TypedEmitter count={1} onIncrement={(count: string) => count} />;
+
+// @ts-expect-error typed listener arrays reject incompatible item payloads
+<TypedEmitter count={1} onIncrement={[(count: string) => count]} />;
+
+// @ts-expect-error typed components reject listeners for unknown events
+<TypedEmitter count={1} onMissing={(value: unknown) => value} />;
+
+// @ts-expect-error typed reset listeners cannot require a payload
+<TypedEmitter count={1} onReset={(value: number) => value} />;
+
+// @ts-expect-error typed rename listeners retain the declared optional source union
+<TypedEmitter count={1} onRename={(name: string, source?: "external") => [name, source]} />;
+
+// @ts-expect-error typed collect listeners retain the declared numeric rest payload
+<TypedEmitter count={1} onCollect={(label: string, ...values: string[]) => [label, values]} />;
+
+// @ts-expect-error typed value-change listeners receive the declared number payload
+<TypedEmitter count={1} onValueChange={(value: string) => value} />;
+
 // @ts-expect-error DOM event handlers must be functions
 <button onClick="click">click</button>;
 
@@ -121,6 +169,29 @@ jsx("button", { onClick: "click" });
 
 // @ts-expect-error direct jsx component props reject non-function handlers
 jsx(CounterButton, { count: 1, onIncrement: "increment" });
+
+// @ts-expect-error typed kebab-case events only accept canonical camelized listeners
+jsx(TypedEmitter, { count: 1, "onValue-change": (value: number) => value });
+
+jsx(TypedEmitter, { count: 1, onIncrement: (count: number) => count });
+jsxs(TypedEmitter, {
+  count: 1,
+  onIncrement: [(count: number) => count],
+  children: ["typed"],
+});
+jsxDEV(TypedEmitter, { count: 1, onValueChange: (value: number) => value });
+
+// @ts-expect-error direct jsx typed listeners receive the declared number payload
+jsx(TypedEmitter, { count: 1, onIncrement: (count: string) => count });
+
+// @ts-expect-error direct jsxs typed components reject listeners for unknown events
+jsxs(TypedEmitter, { count: 1, onMissing: (value: unknown) => value });
+
+// @ts-expect-error direct jsxs typed listener arrays reject incompatible item payloads
+jsxs(TypedEmitter, { count: 1, onIncrement: [(count: string) => count] });
+
+// @ts-expect-error direct jsxDEV typed listeners receive the declared number payload
+jsxDEV(TypedEmitter, { count: 1, onValueChange: (value: string) => value });
 
 // @ts-expect-error direct jsxDEV DOM props reject non-function handlers
 jsxDEV("button", { onClick: "click" });
