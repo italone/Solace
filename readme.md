@@ -17,9 +17,9 @@ Solace focuses on a small runtime core: reactive state, scheduled rendering, VNo
 
 ## Project Status
 
-Solace is currently on the `0.1.0` beta line. This package build is `0.1.0-beta.2`. The repository
-is functional, validated locally, and configured as a public npm package. npm `latest` remains the
-stable `0.0.5` line; npm `beta` is the beta install line.
+Solace is currently on the `0.1.0` beta line. This package build is `0.1.0-beta.4`. The repository
+contains the beta.4 release candidate and is configured as a public npm package. Until publication
+completes, npm `latest` remains `0.0.5` and npm `beta` remains `0.1.0-beta.2`.
 
 Use the local development workflow below to explore the framework. Install the default npm package
 when you want the latest stable line, install `@italone/solace@beta` when you want the beta line, and
