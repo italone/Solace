@@ -105,16 +105,16 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toContain("公开契约门禁仍是发布前的第一条防线");
     expect(projectStatus).toContain("browser extension QA checklist");
     expect(projectStatusZh).toContain("browser extension QA checklist");
-    expect(projectStatus).toContain("2026-08-11 full local `pnpm release:check` passed");
-    expect(projectStatus).toContain("71 Vitest files / 625 tests");
+    expect(projectStatus).toContain("2026-08-12 full local `pnpm release:check` passed");
+    expect(projectStatus).toContain("71 Vitest files / 626 tests");
     expect(projectStatus).toContain("94.28% statements");
     expect(projectStatus).toContain("89.18% branches");
     expect(projectStatus).toMatch(/96\.28%\s+functions/);
     expect(projectStatus).toContain("94.32% lines");
     expect(projectStatus).toMatch(/24 browser e2e\s+tests across Chromium, Firefox, and WebKit/);
     expect(projectStatus).toMatch(/2\s+Chromium-only\s+DevTools\s+extension\s+e2e\s+tests/);
-    expect(projectStatusZh).toContain("2026-08-11 的完整本地 `pnpm release:check` 已通过");
-    expect(projectStatusZh).toMatch(/71 个 Vitest\s+文件 \/ 625 个测试/);
+    expect(projectStatusZh).toContain("2026-08-12 的完整本地 `pnpm release:check` 已通过");
+    expect(projectStatusZh).toMatch(/71 个 Vitest\s+文件 \/ 626 个测试/);
     expect(projectStatusZh).toContain("94.28% statements");
     expect(projectStatusZh).toContain("89.18% branches");
     expect(projectStatusZh).toMatch(/96\.28%\s+functions/);
@@ -122,11 +122,13 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toMatch(/Chromium、Firefox、WebKit 共 24 个\s+browser e2e 测试/);
     expect(projectStatusZh).toMatch(/2\s+个仅\s+Chromium\s+的\s+DevTools\s+extension\s+e2e\s+测试/);
     expect(readme).toContain("This package build is `0.1.0-beta.4`");
+    expect(readme).toContain("npm `beta` is `0.1.0-beta.4`");
     expect(readmeZh).toContain("本 package build 是 `0.1.0-beta.4`");
+    expect(readmeZh).toContain("npm `beta` 是 `0.1.0-beta.4`");
     expect(projectStatus).toContain("Repository package version: `0.1.0-beta.4`");
-    expect(projectStatus).toContain("Published npm `beta`: `0.1.0-beta.2`");
+    expect(projectStatus).toContain("Published npm `beta`: `0.1.0-beta.4`");
     expect(projectStatusZh).toContain("仓库 package 版本：`0.1.0-beta.4`");
-    expect(projectStatusZh).toContain("npm `beta` 已发布版本：`0.1.0-beta.2`");
+    expect(projectStatusZh).toContain("npm `beta` 已发布版本：`0.1.0-beta.4`");
 
     for (const doc of [readme, api, packageUsage, projectStatus]) {
       expect(doc).toContain("renderToStringAsync()");

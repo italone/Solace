@@ -7,8 +7,8 @@ This document summarizes the current completion level of Solace as an open-sourc
 ## Summary
 
 Solace is now on the `0.1.0` beta line whose repository package version is `0.1.0-beta.4`. npm
-`latest` remains the stable `@italone/solace@0.0.5` line, while published npm `beta` remains
-`0.1.0-beta.2` until the beta.4 candidate completes its release process.
+`latest` remains the stable `@italone/solace@0.0.5` line, while published npm `beta` is
+`0.1.0-beta.4`.
 It provides a working public API, package exports, examples, tests, benchmarks, and release checks.
 Its primary authoring path is JSX/TSX-first function components backed by explicit runtime APIs. It
 is suitable as a compact educational and experimental frontend framework, but it should not be
@@ -19,14 +19,14 @@ Current repository state:
 - Package name: `@italone/solace`
 - Repository package version: `0.1.0-beta.4`
 - Published npm `latest`: `0.0.5`
-- Published npm `beta`: `0.1.0-beta.2`
-- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.2`
+- Published npm `beta`: `0.1.0-beta.4`
+- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.4`
 - Public package metadata: `"private": false`
 - Current branch: `main`
 - Remote state: recheck with `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
   synchronization claim.
-- Phase: published beta line with an unreleased beta.4 candidate in the repository. The Router stable slice,
+- Phase: published beta.4 contract-stable release. The Router stable slice,
   buffered async initial SSR/hydration, sequential async SSG, and the first browser DevTools
   extension timeline panel are implemented, but the project is not a full production contract.
 
@@ -124,16 +124,15 @@ release readiness, quality, coverage, package smoke, jsdom benchmark, Chromium p
 benchmark, and browser e2e. DevTools extension e2e was later added to the current `release:check`
 gate, so rerun the gate before making fresh release claims.
 
-The 2026-08-11 full local `pnpm release:check` passed for the current repository state. A final
-quality follow-up recorded 71 Vitest files / 625 tests and fresh coverage of 94.28% statements /
+The 2026-08-12 full local `pnpm release:check` passed for the beta.4 release state. It recorded
+71 Vitest files / 626 tests and fresh coverage of 94.28% statements /
 89.18% branches / 96.28% functions / 94.32% lines. The Operations Console packed candidate and
 pinned baseline upgrade smokes passed, and the ordinary
 browser inventory and run covered 24 browser e2e tests across Chromium, Firefox, and WebKit; the
 separate DevTools extension inventory and gate contain 2 Chromium-only DevTools extension e2e
 tests. The separately required pinned upgrade smoke installed exact npm baseline
 `@italone/solace@0.1.0-beta.2` and passed the Operations Console comparison against the local packed
-candidate. The repository package version stayed `0.1.0-beta.2`, and this evidence refresh did not
-publish a package. The final quality follow-up did not rerun the full `pnpm release:check`.
+beta.4 candidate. The guarded publish command reran this complete gate before publishing.
 
 The 2026-08-03 router stabilization work refreshed the router-focused checks and `pnpm quality`
 after adding the initial history navigation pipeline, stale async navigation result protection,
@@ -171,6 +170,15 @@ Post-publish registry checks confirmed npm reports `latest -> 0.0.5` and
 `beta -> 0.1.0-beta.2`. A registry beta smoke imported the root, server, Vite, and DevTools public
 entries and rendered a server-side paragraph; the published beta.2 tarball contained 48 files.
 The local and remote `v0.1.0-beta.2` tags are present and point to the beta.2 release commit.
+
+The 2026-08-12 beta.4 publish for `@italone/solace@0.1.0-beta.4` used
+`pnpm release:publish:beta`, rerunning the full release gate before `changeset publish --tag beta`.
+Registry checks confirm `latest -> 0.0.5` and `beta -> 0.1.0-beta.4`. The registry smoke imported
+all eight protected public entries, rendered `<p>beta.4 registry smoke</p>`, and confirmed that the
+private `@italone/solace/dist/index.js` deep path remains blocked. The published tarball contains 50
+files and is immutable; its README/status files retain the prepublish candidate wording. The local
+annotated `v0.1.0-beta.4` tag resolves to release commit `fbe6984`; pushing and verifying the remote
+tag remains pending after GitHub network timeouts.
 
 ## Public API Boundary
 
@@ -231,12 +239,11 @@ These gaps should stay visible in promotional material so the project is positio
 ## Release Coordination State
 
 `@italone/solace@0.0.5` has been published to npm with the `latest` dist-tag.
-`@italone/solace@0.1.0-beta.2` has been published to npm with the `beta` dist-tag. Post-publish
-registry checks confirm npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.2`, and the local
-release tag is `v0.1.0-beta.2`; the matching remote tag is also present. Recheck Git state, the remote
-tag, and the published registry before any future publish or synchronization claim. The repository
-package is prepared as the unpublished `0.1.0-beta.4` candidate; this statement must not be changed
-to published until the registry and tag checks pass.
+`@italone/solace@0.1.0-beta.4` has been published to npm with the `beta` dist-tag. Post-publish
+registry checks confirm npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.4`. The local
+`v0.1.0-beta.4` tag points to release commit `fbe6984`; the matching remote tag still requires a
+successful GitHub push and `git ls-remote` verification. Recheck Git state, the remote tag, and the
+published registry before any future publish or synchronization claim.
 
 Before publishing any future version, follow the same checklist:
 

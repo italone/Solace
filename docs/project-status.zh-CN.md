@@ -7,8 +7,8 @@
 ## 总览
 
 Solace 当前已经进入 `0.1.0` beta 线，仓库 package 版本是 `0.1.0-beta.4`。npm
-`latest` 仍是稳定 `@italone/solace@0.0.5` 线；在 beta.4 候选完成发布前，npm `beta` 已发布版本仍是
-`0.1.0-beta.2`。它已经具备可运行的公共
+`latest` 仍是稳定 `@italone/solace@0.0.5` 线，npm `beta` 已发布版本是
+`0.1.0-beta.4`。它已经具备可运行的公共
 API、包导出、示例、测试、benchmark 和发布检查。它的主要编写路径是 JSX/TSX-first 函数组件，并由明确的运行时 API 支撑。Solace 适合作为一个小型、可阅读、可实验的前端框架进行推广，但不应被描述为
 React、Vue、Svelte 或同类生态的成熟生产替代品。
 
@@ -17,12 +17,12 @@ React、Vue、Svelte 或同类生态的成熟生产替代品。
 - 包名：`@italone/solace`
 - 仓库 package 版本：`0.1.0-beta.4`
 - npm `latest` 已发布版本：`0.0.5`
-- npm `beta` 已发布版本：`0.1.0-beta.2`
-- npm dist-tags：`latest` 指向 `0.0.5`；`beta` 指向 `0.1.0-beta.2`
+- npm `beta` 已发布版本：`0.1.0-beta.4`
+- npm dist-tags：`latest` 指向 `0.0.5`；`beta` 指向 `0.1.0-beta.4`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
 - 本地分支状态：后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
-- 发布阶段：已发布 beta 线，仓库中存在尚未发布的 beta.4 候选；初始运行时范围已完成，Router 的稳定切片已落地，但整体仍不是完整生产契约；SSR/hydration minimum loop，以及首个浏览器
+- 发布阶段：已发布 beta.4 契约稳定版；初始运行时范围已完成，Router 的稳定切片已落地，但整体仍不是完整生产契约；SSR/hydration minimum loop，以及首个浏览器
   DevTools 扩展 timeline panel 已在仓库中实现
 
 ## 完成度映射
@@ -103,14 +103,13 @@ integration 仍是显式的 beta 范围边界；SSR/hydration 已覆盖 buffered
 
 2026-07-30 的本地 release check 覆盖了当时 `0.0.5` 的完整门禁，包括 release readiness、quality、coverage、package smoke、jsdom benchmark、Chromium 生产构建 browser benchmark 和 browser e2e。DevTools extension e2e 后续已加入当前 `release:check` 门禁；后续发布声明前需重新运行完整门禁。
 
-2026-08-11 的完整本地 `pnpm release:check` 已通过，覆盖当前仓库状态。最终质量复核记录了 71 个 Vitest
-文件 / 625 个测试，以及最新覆盖率：94.28% statements / 89.18% branches / 96.28% functions /
+2026-08-12 的完整本地 `pnpm release:check` 已通过，覆盖 beta.4 发布状态，共记录 71 个 Vitest
+文件 / 626 个测试，以及最新覆盖率：94.28% statements / 89.18% branches / 96.28% functions /
 94.32% lines。Operations Console packed candidate 和 pinned baseline upgrade smoke 均已通过；常规 browser inventory 和执行覆盖
 Chromium、Firefox、WebKit 共 24 个 browser e2e 测试，独立 DevTools extension inventory 和门禁
 包含 2 个仅 Chromium 的 DevTools extension e2e 测试。另行要求的 pinned upgrade smoke 安装了
 精确 npm baseline `@italone/solace@0.1.0-beta.2`，并通过 Operations Console 与本地 packed
-candidate 的对比。仓库 package 版本保持 `0.1.0-beta.2`，本次证据刷新没有发布 package。
-最终质量复核没有重新运行完整 `pnpm release:check`。
+beta.4 candidate 的对比。受保护的发布命令在发布前重新运行了这套完整门禁。
 
 2026-08-03 的 router 稳定化工作在加入 initial history navigation pipeline、stale async
 navigation result protection、rejected-guard history recovery、invalid history location recovery、
@@ -143,6 +142,14 @@ registry beta smoke 从 `@italone/solace@beta` 导入 root、server、Vite 和 D
 registry beta smoke 导入了 root、server、Vite 和 DevTools 公开入口，并验证了服务端渲染输出；
 已发布 beta.2 tarball 包含 48 个文件。本地和远端均已存在 `v0.1.0-beta.2` tag，并指向 beta.2
 release commit。
+
+2026-08-12 发布 `@italone/solace@0.1.0-beta.4` 到 npm beta 线时，使用了
+`pnpm release:publish:beta`，并在 `changeset publish --tag beta` 前重新运行完整发布门禁。
+registry 检查确认 `latest -> 0.0.5` 和 `beta -> 0.1.0-beta.4`。registry smoke 导入八个受保护的
+公开入口，验证服务端输出 `<p>beta.4 registry smoke</p>`，并确认私有深路径
+`@italone/solace/dist/index.js` 仍被阻断。已发布 tarball 包含 50 个文件且不可变，其中的
+README/status 仍保留发布前候选措辞。本地 annotated tag `v0.1.0-beta.4` 解引用到发布提交
+`fbe6984`；GitHub 网络超时后，远端 tag 的 push 与 `git ls-remote` 核验仍待完成。
 
 ## 公共 API 边界
 
@@ -190,11 +197,10 @@ Solace 当前有意不包含：
 ## 发布协调状态
 
 发布独立于仓库就绪度。`@italone/solace@0.0.5` 已发布到 npm，并且 `latest`
-dist-tag 指向 `0.0.5`。`@italone/solace@0.1.0-beta.2` 已发布到 npm，并且
-`beta` dist-tag 已指向 `0.1.0-beta.2`。发布后 registry 检查确认 npm registry 返回
-`latest -> 0.0.5` 和 `beta -> 0.1.0-beta.2`，本地 release tag 是 `v0.1.0-beta.2`。远端 tag
-也已存在。仓库 package 已准备为尚未发布的 `0.1.0-beta.4` 候选；只有 registry 与 tag 检查通过后，
-才能把这条状态改为已发布。后续任何发布或同步声明前仍应重新核对 Git 状态、远端 tag 和 npm registry。
+dist-tag 指向 `0.0.5`。`@italone/solace@0.1.0-beta.4` 已发布到 npm，并且
+`beta` dist-tag 已指向 `0.1.0-beta.4`。本地 `v0.1.0-beta.4` tag 指向发布提交 `fbe6984`；
+匹配的远端 tag 仍需成功 push 并通过 `git ls-remote` 核验。后续任何发布或同步声明前仍应
+重新核对 Git 状态、远端 tag 和 npm registry。
 
 未来发布任何后续版本前：
 
