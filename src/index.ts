@@ -31,7 +31,14 @@ export type {
   AsyncComponentOptions,
   AsyncComponentSource,
 } from "./component/async-component";
-export type { ComponentSetupContext, EmitFn, Slot, SlotProps, Slots } from "./component/component";
+export type {
+  ComponentEventMap,
+  ComponentSetupContext,
+  EmitFn,
+  Slot,
+  SlotProps,
+  Slots,
+} from "./component/component";
 export type { App, Plugin, PluginInstall, PluginObject } from "./app";
 export type { HydrationOptions } from "./renderer/renderer";
 export type {

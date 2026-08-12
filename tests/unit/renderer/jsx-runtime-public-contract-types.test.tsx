@@ -1,11 +1,61 @@
 import { describe, expect, it } from "vitest";
 
-import { render } from "../../../src";
+import { defineComponent, render } from "../../../src";
 import { jsxDEV } from "../../../src/jsx-dev-runtime";
 import { jsx } from "../../../src/jsx-runtime";
-import type { ComponentSetupContext } from "../../../src";
+import type { ComponentEventMap, ComponentSetupContext } from "../../../src";
 
 const incrementCalls: number[] = [];
+type CounterEvents = {
+  increment: [count: number];
+  reset: [];
+  rename: [name: string, source?: "user" | "sync"];
+  collect: [label: string, ...values: number[]];
+};
+
+const eventMap: ComponentEventMap = {} as CounterEvents;
+void eventMap;
+
+const TypedEmitter = defineComponent<{ count: number }, CounterEvents>((props, { emit }) => {
+  emit("increment", props.count);
+  emit("reset");
+  emit("rename", "Ada");
+  emit("rename", "Ada", "user");
+  emit("collect", "values", 1, 2, 3);
+
+  // @ts-expect-error typed emit rejects unknown event names
+  emit("missing");
+  // @ts-expect-error typed emit requires the declared payload
+  emit("increment");
+  // @ts-expect-error typed emit rejects incompatible payloads
+  emit("increment", "1");
+  // @ts-expect-error typed emit rejects payloads for zero-argument events
+  emit("reset", 1);
+  // @ts-expect-error typed emit rejects incompatible optional tuple values
+  emit("rename", "Ada", "external");
+  // @ts-expect-error typed emit rejects incompatible rest tuple values
+  emit("collect", "values", "1");
+
+  return <button>{props.count}</button>;
+});
+
+function acceptTypedContext({ emit }: ComponentSetupContext<CounterEvents>): void {
+  emit("increment", 1);
+  // @ts-expect-error direct setup contexts retain the event map
+  emit("increment", "1");
+}
+
+acceptTypedContext({ emit: (() => undefined) as never, slots: {} });
+
+const UntypedEmitter = defineComponent((_props: object, { emit }) => {
+  emit("legacy-event", Symbol("payload"), 1);
+  return <span>legacy</span>;
+});
+
+const ExactRenderComponent = defineComponent(() => () => <span>exact</span>);
+const exactRender = ExactRenderComponent({}, { emit: () => undefined, slots: {} });
+exactRender();
+
 const Row = (props: { label: string }) => <li>{props.label}</li>;
 const CounterButton = (props: { count: number }, { emit, slots }: ComponentSetupContext) => (
   <button onClick={() => emit("increment", props.count)}>
@@ -44,6 +94,8 @@ const FragmentList = () => (
   click me
 </CounterButton>;
 <FragmentList />;
+<TypedEmitter count={1} onIncrement={(count: number) => incrementCalls.push(count)} />;
+<UntypedEmitter onLegacyEvent={() => undefined} />;
 
 <button onClick={(event: MouseEvent) => event.preventDefault()}>click</button>;
 

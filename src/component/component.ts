@@ -14,7 +14,19 @@ import { initProps, updateProps } from "./props";
 import type { Provides } from "./provide";
 import { getActiveStyleSink, withStyleSink } from "./style";
 
-export type EmitFn = (event: string, ...args: unknown[]) => void;
+export type ComponentEventMap = Record<string, readonly unknown[]>;
+
+type EventArgs<
+  Events extends ComponentEventMap,
+  Event extends keyof Events,
+> = Events[Event] extends readonly [...infer Args] ? Args : never;
+
+export type EmitFn<Events extends ComponentEventMap = ComponentEventMap> = <
+  Event extends keyof Events & string,
+>(
+  event: Event,
+  ...args: EventArgs<Events, Event>
+) => void;
 export type SlotProps = Record<string, unknown>;
 export type Slot = (props?: SlotProps) => VNodeChildren;
 
@@ -23,8 +35,8 @@ export interface Slots {
   [name: string]: Slot | undefined;
 }
 
-export interface ComponentSetupContext {
-  emit: EmitFn;
+export interface ComponentSetupContext<Events extends ComponentEventMap = ComponentEventMap> {
+  emit: EmitFn<Events>;
   slots: Slots;
 }
 

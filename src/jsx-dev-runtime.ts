@@ -1,4 +1,5 @@
 import { jsx } from "./jsx-runtime";
+import type { ComponentEventMap } from "./component/component";
 import {
   Fragment,
   type ComponentType,
@@ -31,8 +32,8 @@ type JSXComponentProps<Props extends object> = Props & {
 type JSXProps = JSXElementProps | JSXComponentProps<object> | { children?: JSXChildren };
 
 export function jsxDEV(type: string, props?: JSXElementProps | null, key?: JSXKey): VNode;
-export function jsxDEV<Props extends object>(
-  type: ComponentType<Props>,
+export function jsxDEV<Props extends object, Events extends ComponentEventMap>(
+  type: ComponentType<Props, Events>,
   props?: JSXComponentProps<Props> | null,
   key?: JSXKey,
 ): VNode;

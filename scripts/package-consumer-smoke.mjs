@@ -64,7 +64,7 @@ try {
   await writeFile(
     join(consumerDir, "src", "main.tsx"),
     `import { RouterLink, RouterView, createApp, createMemoryHistory, createRouter, createStore, createWebHashHistory, createWebHistory, defineAsyncComponent, defineComponent, h, inject, lazyRoute, reactive, useRoute, useRouter, watchEffect } from "@italone/solace";
-import type { AsyncComponentOptions, ComponentSetupContext, HydrationOptions, NavigationGuard, Plugin, RouteComponent, RouteLocationRaw, RouterHistory, StoreContext, StoreGetterContext } from "@italone/solace";
+import type { AsyncComponentOptions, ComponentEventMap, ComponentSetupContext, HydrationOptions, NavigationGuard, Plugin, RouteComponent, RouteLocationRaw, RouterHistory, StoreContext, StoreGetterContext } from "@italone/solace";
 import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtools";
 import type { DevtoolsEvent } from "@italone/solace/devtools";
 import { generateStaticSite, renderToString } from "@italone/solace/server";
@@ -150,6 +150,30 @@ const Button = defineComponent((props: { label: string }, { emit }: ComponentSet
   <button onClick={() => emit("change")}>{props.label}</button>
 ));
 
+type ButtonEvents = {
+  change: [value: number];
+  reset: [];
+};
+
+const buttonEventMap: ComponentEventMap = {} as ButtonEvents;
+void buttonEventMap;
+
+const TypedButton = defineComponent<{ value: number }, ButtonEvents>((props, { emit }) => {
+  emit("change", props.value);
+  emit("reset");
+
+  // @ts-expect-error packaged typed emit rejects unknown events
+  emit("missing");
+  // @ts-expect-error packaged typed emit rejects incompatible payloads
+  emit("change", "1");
+
+  return <button onClick={() => emit("change", props.value)}>{props.value}</button>;
+});
+
+const ExactRenderComponent = defineComponent(() => () => <span>exact</span>);
+const exactRender = ExactRenderComponent({}, { emit: () => undefined, slots: {} });
+exactRender();
+
 const ThemeLabel = () => {
   const theme = inject(ThemeKey, "light");
 
@@ -170,6 +194,8 @@ const FrameworkList = () => (
     ))}
   </>
 );
+
+<TypedButton value={1} onChange={(value: number) => String(value)} />;
 
 // @ts-expect-error packaged TSX onXxx handlers must reject non-function values
 <Button label="invalid" onChange="change" />;

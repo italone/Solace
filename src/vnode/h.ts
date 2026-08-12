@@ -9,6 +9,7 @@ import {
   type VNodeType,
 } from "./vnode";
 import type { AsyncComponentType, ComponentType } from "./vnode";
+import type { ComponentEventMap } from "../component/component";
 
 export function h(type: string, props?: VNodeProps | null, children?: VNodeChildren): VNode;
 export function h(
@@ -16,8 +17,8 @@ export function h(
   props?: VNodeProps | null,
   children?: VNodeChildren,
 ): VNode;
-export function h<Props extends object>(
-  type: ComponentType<Props>,
+export function h<Props extends object, Events extends ComponentEventMap>(
+  type: ComponentType<Props, Events>,
   props?: Props | null,
   children?: ComponentVNodeChildren,
 ): VNode;
