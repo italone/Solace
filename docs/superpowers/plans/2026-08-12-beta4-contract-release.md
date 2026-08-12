@@ -13,6 +13,7 @@
 ### Task 1: Establish the beta.4 release baseline
 
 **Files:**
+
 - Modify: `package.json:3`
 - Modify: `CHANGELOG.md:1`
 - Inspect: `.changeset/config.json`, `git status --short --branch`, `git rev-list --left-right --count origin/main...HEAD`
@@ -55,6 +56,7 @@ git commit -m "chore: prepare beta.4 release metadata"
 ### Task 2: Harden the release-candidate compatibility gate
 
 **Files:**
+
 - Modify: `package.json:84-94` if the candidate-only upgrade command needs a stable script alias
 - Modify: `scripts/operations-console-smoke.mjs` only if an existing failure in exact beta.2 comparison requires a release-process fix
 - Modify: `tests/unit/scripts/operations-console-smoke.test.ts` for any changed command contract
@@ -105,6 +107,7 @@ Only stage files actually modified in this task.
 ### Task 3: Apply the beta.4 version and synchronize public documentation
 
 **Files:**
+
 - Modify: `package.json:3`
 - Modify: `docs/project-status.md`
 - Modify: `docs/project-status.zh-CN.md`
@@ -170,6 +173,7 @@ Expected: the release-design, plan, candidate-gate, version, CHANGELOG, and sync
 ### Task 4: Run the complete prepublish evidence set
 
 **Files:**
+
 - No source edits expected
 - Inspect generated outputs with `git status --short` after each build-heavy command
 
@@ -215,6 +219,7 @@ Save command output or a concise release log under the repository's existing rel
 ### Task 5: Publish beta.4 and verify the registry contract
 
 **Files:**
+
 - Modify: `solace-project-log/index.md` and add a dated entry under `solace-project-log/solace-entries/` after successful publication
 - No runtime source edits
 

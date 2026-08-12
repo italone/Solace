@@ -17,7 +17,9 @@ Solace 聚焦于小型运行时核心：响应式状态、调度渲染、VNode d
 
 ## 项目状态
 
-Solace 当前处于 `0.1.0` beta 线。本 package build 是 `0.1.0-beta.2`。仓库功能可运行，并已经通过本地验证；当前 package metadata 已配置为公开 npm package。npm `latest` 仍是稳定 `0.0.5` 线，npm `beta` 是 beta 安装线。
+Solace 当前处于 `0.1.0` beta 线。本 package build 是 `0.1.0-beta.4`。仓库包含 beta.4 发布候选，
+并已配置为公开 npm package。在发布完成前，npm `latest` 仍是 `0.0.5`，npm `beta` 仍是
+`0.1.0-beta.2`。
 
 目前可以通过下面的本地开发流程体验框架。需要使用最新稳定线时，可以安装默认 npm package；需要使用 beta 线时，可以安装 `@italone/solace@beta`；需要查看 `main` 上尚未发布的文档或运行时变更时，应直接使用仓库。
 

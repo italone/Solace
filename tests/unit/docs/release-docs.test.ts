@@ -46,11 +46,12 @@ describe("release documentation", () => {
     const release = await readFile("docs/release.md", "utf8");
 
     expect(release).toContain("## Stable Compatibility Checklist");
+    expect(release).toContain("pnpm release:candidate:check");
     expect(release).toContain("pnpm stable:app:upgrade");
     expect(release).toContain("pnpm release:check");
     expect(release).toContain("@italone/solace@0.1.0-beta.2");
-    expect(release).toContain("routine CI is a local candidate check only");
-    expect(release).toContain("types, docs, changeset, and tests together");
+    expect(release).toContain("separate from routine pull-request CI");
+    expect(release).toContain("types, docs, changelog, and tests together");
     expect(release).toContain("severe security/correctness exception");
   });
 

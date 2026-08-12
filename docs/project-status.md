@@ -6,8 +6,9 @@ This document summarizes the current completion level of Solace as an open-sourc
 
 ## Summary
 
-Solace is now on the `0.1.0` beta line whose repository package version is `0.1.0-beta.2`. npm
-`latest` remains the stable `@italone/solace@0.0.5` line, while npm `beta` is the beta install line.
+Solace is now on the `0.1.0` beta line whose repository package version is `0.1.0-beta.4`. npm
+`latest` remains the stable `@italone/solace@0.0.5` line, while published npm `beta` remains
+`0.1.0-beta.2` until the beta.4 candidate completes its release process.
 It provides a working public API, package exports, examples, tests, benchmarks, and release checks.
 Its primary authoring path is JSX/TSX-first function components backed by explicit runtime APIs. It
 is suitable as a compact educational and experimental frontend framework, but it should not be
@@ -16,7 +17,7 @@ described as a mature production replacement for React, Vue, Svelte, or similar 
 Current repository state:
 
 - Package name: `@italone/solace`
-- Repository package version: `0.1.0-beta.2`
+- Repository package version: `0.1.0-beta.4`
 - Published npm `latest`: `0.0.5`
 - Published npm `beta`: `0.1.0-beta.2`
 - npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.2`
@@ -25,7 +26,7 @@ Current repository state:
 - Remote state: recheck with `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
   synchronization claim.
-- Phase: published beta line with unreleased beta.4 work in the repository. The Router stable slice,
+- Phase: published beta line with an unreleased beta.4 candidate in the repository. The Router stable slice,
   buffered async initial SSR/hydration, sequential async SSG, and the first browser DevTools
   extension timeline panel are implemented, but the project is not a full production contract.
 
@@ -233,14 +234,16 @@ These gaps should stay visible in promotional material so the project is positio
 `@italone/solace@0.1.0-beta.2` has been published to npm with the `beta` dist-tag. Post-publish
 registry checks confirm npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.2`, and the local
 release tag is `v0.1.0-beta.2`; the matching remote tag is also present. Recheck Git state, the remote
-tag, and the published registry before any future publish or synchronization claim.
+tag, and the published registry before any future publish or synchronization claim. The repository
+package is prepared as the unpublished `0.1.0-beta.4` candidate; this statement must not be changed
+to published until the registry and tag checks pass.
 
 Before publishing any future version, follow the same checklist:
 
 1. Confirm `origin/main` is in sync with the local release branch.
 2. Confirm the target version is not already published.
-3. Run `pnpm release:readiness -- --publishable`. This stricter mode fails when the local branch is ahead, behind, missing an upstream, or has a dirty worktree.
-4. Run `pnpm release:check`.
+3. Run `pnpm release:candidate:check`, which performs publishable readiness, the exact beta.2 upgrade smoke, and the full local release gate.
+4. Confirm `pnpm release:readiness -- --publishable` reports a synchronized, clean branch.
 5. Run `npm pack --dry-run --json` or `npm publish --dry-run --access public` to inspect the tarball.
 6. Publish only after npm authentication, organization access, public access, and any one-time password requirement are ready, and only after a maintainer explicitly confirms npm publishing.
 

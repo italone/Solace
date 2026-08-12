@@ -6,22 +6,23 @@
 
 ## 总览
 
-Solace 当前已经进入 `0.1.0` beta 线，仓库 package 版本是 `0.1.0-beta.2`。npm
-`latest` 仍是稳定 `@italone/solace@0.0.5` 线，npm `beta` 是 beta 安装线。它已经具备可运行的公共
+Solace 当前已经进入 `0.1.0` beta 线，仓库 package 版本是 `0.1.0-beta.4`。npm
+`latest` 仍是稳定 `@italone/solace@0.0.5` 线；在 beta.4 候选完成发布前，npm `beta` 已发布版本仍是
+`0.1.0-beta.2`。它已经具备可运行的公共
 API、包导出、示例、测试、benchmark 和发布检查。它的主要编写路径是 JSX/TSX-first 函数组件，并由明确的运行时 API 支撑。Solace 适合作为一个小型、可阅读、可实验的前端框架进行推广，但不应被描述为
 React、Vue、Svelte 或同类生态的成熟生产替代品。
 
 当前本地仓库状态：
 
 - 包名：`@italone/solace`
-- 仓库 package 版本：`0.1.0-beta.2`
+- 仓库 package 版本：`0.1.0-beta.4`
 - npm `latest` 已发布版本：`0.0.5`
 - npm `beta` 已发布版本：`0.1.0-beta.2`
 - npm dist-tags：`latest` 指向 `0.0.5`；`beta` 指向 `0.1.0-beta.2`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
 - 本地分支状态：后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
-- 发布阶段：已发布 beta 线；初始运行时范围已完成，Router 的稳定切片已落地，但整体仍不是完整生产契约；SSR/hydration minimum loop，以及首个浏览器
+- 发布阶段：已发布 beta 线，仓库中存在尚未发布的 beta.4 候选；初始运行时范围已完成，Router 的稳定切片已落地，但整体仍不是完整生产契约；SSR/hydration minimum loop，以及首个浏览器
   DevTools 扩展 timeline panel 已在仓库中实现
 
 ## 完成度映射
@@ -192,14 +193,15 @@ Solace 当前有意不包含：
 dist-tag 指向 `0.0.5`。`@italone/solace@0.1.0-beta.2` 已发布到 npm，并且
 `beta` dist-tag 已指向 `0.1.0-beta.2`。发布后 registry 检查确认 npm registry 返回
 `latest -> 0.0.5` 和 `beta -> 0.1.0-beta.2`，本地 release tag 是 `v0.1.0-beta.2`。远端 tag
-也已存在；后续任何发布或同步声明前仍应重新核对 Git 状态、远端 tag 和 npm registry。
+也已存在。仓库 package 已准备为尚未发布的 `0.1.0-beta.4` 候选；只有 registry 与 tag 检查通过后，
+才能把这条状态改为已发布。后续任何发布或同步声明前仍应重新核对 Git 状态、远端 tag 和 npm registry。
 
 未来发布任何后续版本前：
 
 1. 确认本地分支已经 push，或明确接受从本地状态发布。
 2. 确认 package version 尚未发布。
-3. 运行 `pnpm release:readiness -- --publishable`。该严格模式会在本地分支 ahead、behind、没有 upstream 或工作树不干净时失败。
-4. 运行 `pnpm release:check`。
+3. 运行 `pnpm release:candidate:check`，依次执行 publishable readiness、精确 beta.2 升级 smoke 和完整本地发布门禁。
+4. 确认 `pnpm release:readiness -- --publishable` 返回分支同步且工作树干净。
 5. 运行 `npm pack --dry-run --json` 或 `npm publish --dry-run --access public` 检查 tarball。
 6. 只有在 npm authentication、organization access、public access 和 one-time password 都准备好，并且维护者明确确认 npm 发布后，才执行发布。
 

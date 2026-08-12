@@ -121,6 +121,12 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toContain("94.32% lines");
     expect(projectStatusZh).toMatch(/Chromium、Firefox、WebKit 共 24 个\s+browser e2e 测试/);
     expect(projectStatusZh).toMatch(/2\s+个仅\s+Chromium\s+的\s+DevTools\s+extension\s+e2e\s+测试/);
+    expect(readme).toContain("This package build is `0.1.0-beta.4`");
+    expect(readmeZh).toContain("本 package build 是 `0.1.0-beta.4`");
+    expect(projectStatus).toContain("Repository package version: `0.1.0-beta.4`");
+    expect(projectStatus).toContain("Published npm `beta`: `0.1.0-beta.2`");
+    expect(projectStatusZh).toContain("仓库 package 版本：`0.1.0-beta.4`");
+    expect(projectStatusZh).toContain("npm `beta` 已发布版本：`0.1.0-beta.2`");
 
     for (const doc of [readme, api, packageUsage, projectStatus]) {
       expect(doc).toContain("renderToStringAsync()");

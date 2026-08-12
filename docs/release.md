@@ -105,7 +105,7 @@ tree inspector, dependency graph, flame chart, or SSR/SSG/hydration inspector.
 
 ## Prepare A Version
 
-Create a changeset for user-visible changes:
+For ordinary stable version changes, create and apply a changeset:
 
 ```bash
 pnpm changeset
@@ -117,6 +117,12 @@ Apply pending changesets to `package.json` and changelog files:
 pnpm release:version
 ```
 
+For an explicitly selected beta prerelease number such as `0.1.0-beta.4`, first confirm whether
+`.changeset/pre.json` exists. Without active Changesets prerelease state, follow the established
+repository beta workflow: set the exact package version and add the matching top-level CHANGELOG
+entry directly. Do not run `pnpm release:version` when it would replace the approved prerelease
+number with a stable semver increment.
+
 ## Publish
 
 Before publishing, explicitly confirm:
@@ -124,11 +130,13 @@ Before publishing, explicitly confirm:
 - the npm package name `@italone/solace` is available or controlled by the maintainer,
 - npm authentication and organization access are configured,
 - public access is intended,
-- `pnpm release:readiness -- --publishable` passes,
+- `pnpm release:candidate:check` passes,
+- `pnpm release:readiness -- --publishable` confirms the final synchronized Git state,
 - the local branch is synchronized with its upstream and the worktree is clean,
 - `pnpm release:check` passes,
 - `pnpm package:smoke` passes after the final version update,
-- Changesets versioning has been run for user-visible changes.
+- the package version and CHANGELOG follow either the active Changesets prerelease state or the
+  explicit prerelease workflow documented above.
 
 For beta prereleases, publish with the `beta` npm dist-tag so `latest` continues to point at the
 latest stable public release:
