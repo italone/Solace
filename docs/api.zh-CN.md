@@ -497,17 +497,25 @@ import type { ComponentEventMap } from "@italone/solace";
 
 type CounterEvents = {
   increment: [count: number];
+  "value-change": [value: number];
   reset: [];
 };
 
 const Counter = defineComponent<{ count: number }, CounterEvents>((props, { emit }) => (
   <button onClick={() => emit("increment", props.count)}>{props.count}</button>
 ));
+
+const App = () => (
+  <Counter
+    count={1}
+    onIncrement={(count: number) => console.log(count)}
+    onValueChange={(value: number) => console.log(value)}
+  />
+);
 ```
 
-未显式声明事件映射的组件默认保持宽松。这个契约只在编译期约束事件生产者，不增加运行时
-校验。本切片不会推导精确的 `onXxx` listener payload；组件 listener 继续使用现有的函数或
-函数数组 JSX 契约。
+未显式声明事件映射的组件默认保持宽松。这个契约只在编译期约束事件，不增加运行时
+校验。显式事件映射会推导精确的 `onXxx` listener payload：listener 可以是函数或函数数组，参数与事件 tuple 一致。kebab-case 事件只暴露规范的 camelized listener，因此 `value-change` 映射到 `onValueChange`。这个 JSX 推导不会改变 `h()` 现有的宽松 props 契约。
 
 ### `defineComponent(component)`
 

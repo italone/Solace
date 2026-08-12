@@ -552,18 +552,24 @@ import type { ComponentEventMap } from "@italone/solace";
 
 type CounterEvents = {
   increment: [count: number];
+  "value-change": [value: number];
   reset: [];
 };
 
 const Counter = defineComponent<{ count: number }, CounterEvents>((props, { emit }) => (
   <button onClick={() => emit("increment", props.count)}>{props.count}</button>
 ));
+
+const App = () => (
+  <Counter
+    count={1}
+    onIncrement={(count: number) => console.log(count)}
+    onValueChange={(value: number) => console.log(value)}
+  />
+);
 ```
 
-Components without an explicit event map remain permissive by default. This contract types the event
-producer at compile time and does not add runtime validation.
-This slice does not infer precise `onXxx` listener payloads; component listeners retain the existing
-function-or-function-array JSX contract.
+Components without an explicit event map remain permissive by default. This contract types events at compile time and does not add runtime validation. Explicit event maps infer precise `onXxx` listener payloads in JSX: listeners accept a function or an array of functions whose arguments match the event tuple. Kebab-case events expose only their canonical camelized listener, so `value-change` maps to `onValueChange`. This JSX inference does not change the existing broad `h()` props contract.
 
 ### `defineComponent(component)`
 

@@ -171,7 +171,9 @@ describe("public contract documentation", () => {
       expect(doc).toContain("permissive by default");
       expect(doc).toContain("at compile time");
       expect(doc).toContain("does not add runtime validation");
-      expect(doc).toContain("does not infer precise `onXxx` listener payloads");
+      expect(doc).toContain("Explicit event maps infer precise `onXxx` listener payloads");
+      expect(doc).toContain("canonical camelized listener");
+      expect(doc).toContain("function or an array of functions");
     }
 
     expect(apiZh).toContain("ComponentEventMap");
@@ -179,7 +181,9 @@ describe("public contract documentation", () => {
     expect(apiZh).toContain("默认保持宽松");
     expect(apiZh).toContain("编译期");
     expect(apiZh).toMatch(/不增加运行时\s+校验/);
-    expect(apiZh).toContain("不会推导精确的 `onXxx` listener payload");
+    expect(apiZh).toContain("显式事件映射会推导精确的 `onXxx` listener payload");
+    expect(apiZh).toContain("规范的 camelized listener");
+    expect(apiZh).toContain("函数或函数数组");
 
     for (const doc of [api, apiZh]) {
       expect(doc).toContain("ComponentType<");
