@@ -130,6 +130,20 @@ describe("release readiness check CLI", () => {
     ]);
   });
 
+  test("keeps registry smoke explicit and outside ordinary release gates", async () => {
+    const packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
+      scripts?: Record<string, string>;
+    };
+
+    expect(packageJson.scripts?.["registry:smoke"]).toBe(
+      "node scripts/registry-contract-smoke.mjs",
+    );
+    expect(packageJson.scripts?.quality).not.toContain("registry:smoke");
+    expect(packageJson.scripts?.["release:check"]).not.toContain("registry:smoke");
+    expect(packageJson.scripts?.["release:candidate:check"]).not.toContain("registry:smoke");
+    expect(packageJson.scripts?.["release:publish:beta"]).not.toContain("registry:smoke");
+  });
+
   test("keeps beta releases off the latest npm dist-tag", async () => {
     const packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
       scripts?: Record<string, string>;

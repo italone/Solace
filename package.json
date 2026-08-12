@@ -82,6 +82,7 @@
     "build:benchmark:browser": "vite build examples/performance-benchmark",
     "benchmark:browser": "playwright test --config playwright.benchmark.config.ts",
     "package:smoke": "node scripts/package-consumer-smoke.mjs",
+    "registry:smoke": "node scripts/registry-contract-smoke.mjs",
     "stable:app": "node scripts/operations-console-smoke.mjs",
     "stable:app:upgrade": "node scripts/operations-console-smoke.mjs --baseline 0.1.0-beta.2",
     "smoke:devtools-extension": "pnpm test:e2e:devtools-extension",
