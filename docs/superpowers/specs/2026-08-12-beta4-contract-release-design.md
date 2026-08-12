@@ -18,8 +18,10 @@ documented beta or experimental labels for router, async rendering, SFC/Vite, an
 
 ## Release Flow
 
-1. Normalize all version references to the beta.4 release target and record one Changeset describing
-   the additive async rendering/hydration contract and compatibility boundary.
+1. Normalize all version references to the beta.4 release target and add the beta.4 CHANGELOG entry
+   describing the additive async rendering/hydration contract and compatibility boundary. Follow the
+   repository's established explicit prerelease-version workflow because it has no active Changesets
+   prerelease state and `changeset version` would not preserve the requested `0.1.0-beta.4` number.
 2. Add a release-candidate upgrade gate that installs exact npm `beta.2`, builds the Operations
    Console against it, then compares the same consumer against the locally packed beta.4 candidate.
    Keep the network-backed check separate from ordinary PR quality checks.
@@ -37,7 +39,7 @@ environmental failures and must be retried, never bypassed by weakening the pinn
 ## Acceptance Criteria
 
 - npm `beta` resolves to `0.1.0-beta.4`; npm `latest` remains `0.0.5`.
-- The package version, Changeset, release notes, README, API docs, and English/Chinese project
+- The package version, CHANGELOG, release notes, README, API docs, and English/Chinese project
   status all agree on the beta.4 scope and known gaps.
 - `pnpm release:readiness -- --publishable`, the full `pnpm release:check`, the exact beta.2 upgrade
   smoke, tarball inspection, and post-publish registry smoke pass.
