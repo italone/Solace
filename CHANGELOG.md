@@ -1,5 +1,16 @@
 # @italone/solace
 
+## 0.1.0-beta.4
+
+### Patch Changes
+
+- Freeze the additive buffered async SSR, sequential async SSG, and prepare-then-commit async
+  hydration contract while preserving synchronous API return types and explicit deferred boundaries
+  for streaming and router-aware SSR/hydration.
+- Protect the eight documented package entries through the `0.1.x` compatibility and deprecation
+  policy, and validate the packed candidate against the exact published `0.1.0-beta.2` Operations
+  Console baseline.
+
 ## 0.1.0-beta.2
 
 ### Patch Changes
