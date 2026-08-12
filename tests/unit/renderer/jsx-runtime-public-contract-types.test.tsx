@@ -65,6 +65,9 @@ const exactRender = ExactRenderComponent({}, { emit: () => undefined, slots: {} 
 exactRender();
 
 const Row = (props: { label: string }) => <li>{props.label}</li>;
+const GenericRow = <Value,>(props: { value: Value; formatValue: (value: Value) => string }) => (
+  <li>{props.formatValue(props.value)}</li>
+);
 const CounterButton = (props: { count: number }, { emit, slots }: ComponentSetupContext) => (
   <button onClick={() => emit("increment", props.count)}>
     <span>count: {props.count}</span>
@@ -86,6 +89,7 @@ const FragmentList = () => (
 
 <Row key="stable-row" label="Ada" />;
 <Row key={1} label="Grace" />;
+<GenericRow value="Ada" formatValue={(value) => value.toUpperCase()} />;
 <Panel title="Profile">
   <span>Ada</span>
 </Panel>;

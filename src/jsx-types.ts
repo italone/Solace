@@ -85,12 +85,11 @@ export type JSXComponentProps<
   children?: JSXChildren;
 };
 
-export type JSXManagedComponentProps<Component, Props> =
-  Component extends ComponentType<infer OwnProps, infer Events>
-    ? JSXComponentProps<OwnProps, Events>
-    : Props extends object
-      ? JSXComponentProps<Props, ComponentEventMap>
-      : Props;
+export type JSXManagedComponentProps<Component, Props> = Props extends object
+  ? Component extends ComponentType<never, infer Events>
+    ? JSXComponentProps<Props, Events>
+    : JSXComponentProps<Props, ComponentEventMap>
+  : Props;
 
 export type JSXProps =
   JSXElementProps | JSXComponentProps<object, ComponentEventMap> | { children?: JSXChildren };

@@ -204,6 +204,11 @@ const FrameworkList = () => (
   </>
 );
 
+const GenericLabel = <Value,>(props: {
+  value: Value;
+  formatValue: (value: Value) => string;
+}) => <span>{props.formatValue(props.value)}</span>;
+
 <TypedButton
   value={1}
   onChange={(value: number) => String(value)}
@@ -225,6 +230,7 @@ const FrameworkList = () => (
 packedJsx(TypedButton, { value: 1, "onValue-change": (value: number) => value });
 
 <Button label="legacy" onLegacyEvent={(value: symbol) => value} />;
+<GenericLabel value="packed" formatValue={(value) => value.toUpperCase()} />;
 
 // @ts-expect-error packaged TSX onXxx handlers must reject non-function values
 <Button label="invalid" onChange="change" />;
