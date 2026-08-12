@@ -171,7 +171,7 @@ describe("public contract documentation", () => {
       expect(doc).toContain("permissive by default");
       expect(doc).toContain("at compile time");
       expect(doc).toContain("does not add runtime validation");
-      expect(doc).toContain("Explicit event maps infer precise `onXxx` listener payloads");
+      expect(doc).toContain("explicit event maps infer precise `onXxx` listener payloads");
       expect(doc).toContain("canonical camelized listener");
       expect(doc).toContain("function or an array of functions");
     }

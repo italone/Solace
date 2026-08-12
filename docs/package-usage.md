@@ -143,7 +143,7 @@ const App = () => (
 );
 ```
 
-`ComponentEventMap` is opt-in: components with no explicit event map remain permissive by default. It constrains the component's `emit()` calls at compile time and does not add runtime validation. Explicit event maps infer precise `onXxx` listener payloads in JSX. Each listener accepts a function or an array of functions whose arguments match the event tuple; kebab-case events expose only their canonical camelized listener. This inference does not change the existing broad `h()` props contract.
+`ComponentEventMap` is opt-in: components with no explicit event map remain permissive by default. It constrains the component's `emit()` calls at compile time and does not add runtime validation; explicit event maps infer precise `onXxx` listener payloads in JSX. Each listener accepts a function or an array of functions whose arguments match the event tuple; kebab-case events expose only their canonical camelized listener. This inference does not change the existing broad `h()` props contract.
 
 DOM `onXxx` handlers accept functions only.
 

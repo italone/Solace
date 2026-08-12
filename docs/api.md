@@ -569,7 +569,7 @@ const App = () => (
 );
 ```
 
-Components without an explicit event map remain permissive by default. This contract types events at compile time and does not add runtime validation. Explicit event maps infer precise `onXxx` listener payloads in JSX: listeners accept a function or an array of functions whose arguments match the event tuple. Kebab-case events expose only their canonical camelized listener, so `value-change` maps to `onValueChange`. This JSX inference does not change the existing broad `h()` props contract.
+Components without an explicit event map remain permissive by default. This contract types events at compile time and does not add runtime validation; explicit event maps infer precise `onXxx` listener payloads in JSX. Listeners accept a function or an array of functions whose arguments match the event tuple. Kebab-case events expose only their canonical camelized listener, so `value-change` maps to `onValueChange`. This JSX inference does not change the existing broad `h()` props contract.
 
 ### `defineComponent(component)`
 
