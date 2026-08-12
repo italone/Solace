@@ -215,10 +215,14 @@ Run `pnpm test:package` and `pnpm package:smoke` after the source typecheck is g
 
 ## Documentation
 
-Update both English and Chinese copies of:
+Update the existing component API and package-usage documents:
 
 - `docs/api.md` and `docs/api.zh-CN.md`;
-- `docs/package-usage.md` and `docs/package-usage.zh-CN.md`.
+- `docs/package-usage.md`.
+
+The repository does not currently have a `docs/package-usage.zh-CN.md`; this slice must not create a
+partial new guide solely for typed emit. The Chinese API guide owns the matching Chinese usage
+example.
 
 Documentation must:
 
@@ -264,7 +268,7 @@ Expected implementation files:
 - modify `src/index.ts`;
 - modify `tests/unit/renderer/jsx-runtime-public-contract-types.test.tsx`;
 - modify `scripts/package-consumer-smoke.mjs`;
-- modify the four English/Chinese API and package-usage documents;
+- modify the three existing API and package-usage documents;
 - add the implementation plan and project-log evidence required by the repository workflow.
 
 Files may be narrowed during planning if TypeScript propagation does not require every expected
@@ -292,7 +296,8 @@ source file. Explicitly unchanged:
 - Generated package declarations preserve the contract in a packed consumer.
 - Runtime event dispatch, listener arrays, kebab-case resolution, and DevTools summaries do not
   change.
-- English and Chinese API/package-usage documentation describe the opt-in boundary accurately.
+- English API/package-usage documentation and the Chinese API documentation describe the opt-in
+  boundary accurately.
 - Focused validation, package validation, packed smoke, quality, formatting, and diff checks pass.
 - No version, export, release, tag, dist-tag, CI, Router, SSR, SFC, or DevTools scope expansion occurs.
 
