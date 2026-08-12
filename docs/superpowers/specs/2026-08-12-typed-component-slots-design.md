@@ -72,28 +72,56 @@ defineComponent<Props, Events, SlotMap>(component);
 that only want typed slots use `ComponentEventMap` for the event position. Reordering or overloading
 the generic positions would make the public declaration ambiguous and is outside this slice.
 
-## Slot Map Constraint
+## Slot Map Validation
 
 An explicit slot map contains only optional or required functions whose return values are
-`VNodeChildren`. Its function parameters remain exact, so zero-argument and scoped slots can coexist:
+`VNodeChildren`. Its function parameters remain exact, so zero-argument and scoped slots can coexist.
+Validation belongs on the setup context's `slots` property rather than in a generic function
+constraint:
 
 ```ts
-type SlotMapConstraint<SlotMap extends object> = {
-  [Name in keyof SlotMap]: ((...args: never[]) => VNodeChildren) | undefined;
-};
+type DefinedSlot<Value> = Value extends undefined ? never : Value;
+type InvalidSlotNames<SlotMap extends object> = {
+  [Name in keyof SlotMap]-?: DefinedSlot<SlotMap[Name]> extends (
+    ...args: infer _Args
+  ) => infer Result
+    ? [Result] extends [VNodeChildren]
+      ? never
+      : Name
+    : Name;
+}[keyof SlotMap];
+type ValidatedSlots<SlotMap extends object> = [InvalidSlotNames<SlotMap>] extends [never]
+  ? SlotMap
+  : never;
+
+type Slot = {
+  bivarianceHack(props?: SlotProps): VNodeChildren;
+}["bivarianceHack"];
+
+interface Slots {
+  default?: Slot;
+  [name: string]: Slot | undefined;
+}
 
 interface ComponentSetupContext<
   Events extends ComponentEventMap = ComponentEventMap,
-  SlotMap extends SlotMapConstraint<SlotMap> = Slots,
+  SlotMap extends object = Slots,
 > {
   emit: EmitFn<Events>;
-  slots: SlotMap;
+  slots: ValidatedSlots<SlotMap>;
 }
 ```
 
-The implementation may use an equivalent self-mapped constraint so concrete type aliases and
-interfaces do not need a string index signature. The constraint is internal and must not become a
-new package-root helper export.
+`infer _Args` validates that each declared value is a function without comparing it against one
+universal parameter list, so required scoped props retain their exact tuple. The tuple around
+`Result` prevents a union return type from distributing during the `VNodeChildren` check. Concrete
+type aliases and interfaces do not need a string index signature. Invalid maps make `slots` unusable
+as `never`; the validation helpers stay internal and must not become package-root exports.
+
+The bivariant method form preserves the existing public `Slot` call signature while allowing a
+component with narrower scoped-slot parameters to remain assignable to existing broad
+`ComponentType` transport surfaces. Calling a permissive slot still accepts only the existing
+optional `SlotProps` object. This is a type-variance adjustment, not a runtime change.
 
 The existing exported `Slot`, `SlotProps`, and `Slots` names remain unchanged. `Slots` stays the
 default open map for compatibility.
@@ -148,8 +176,9 @@ events. This must not make Router, SSR, async components, DevTools, or applicati
 slot maps.
 
 Every overload or transport union that accepts `ComponentType` must remain assignable from a
-typed-slot component. Where the signature preserves component metadata, it should infer and forward
-the third generic. Where the runtime intentionally erases metadata, it should erase the third generic
+typed-slot component. The bivariant default `Slot` keeps existing bare `ComponentType` transport
+surfaces compatible. Where a signature preserves component metadata, it should infer and forward the
+third generic. Where the runtime intentionally erases metadata, it may erase the third generic
 alongside the event map. In particular:
 
 - `createVNode()` and `h()` component overloads infer `SlotMap` only to accept the component; their
@@ -158,8 +187,8 @@ alongside the event map. In particular:
   continue to depend on `Props` and `Events`, not slots;
 - `VNodeType` and component-instance storage erase the slot map so runtime containers do not become
   generic;
-- Router, SSR, application, and async-component public signatures keep their existing broad
-  `ComponentType` surface.
+- Router, SSR, application, and async-component public signatures keep their existing bare
+  `ComponentType` surface and require no source edit.
 
 ## JSX And Listener Compatibility
 
@@ -341,6 +370,7 @@ The primary risk is accidentally treating required slots as caller-enforced when
 deferred. Tests and documentation must keep that boundary explicit. The second risk is regressing
 typed listeners or generic JSX props while adding a third `ComponentType` generic. Existing listener
 and generic-component contracts must stay in the typecheck and packed smoke. The third risk is
-forcing explicit slot maps to declare a string index signature; the constraint must validate each
-declared key without widening finite maps. The fourth risk is leaking slot metadata into runtime or
-async component transport, which would expand this type-only slice.
+forcing explicit slot maps to declare a string index signature or rejecting valid scoped parameters
+through strict function variance; property-level validation and the bivariant default `Slot` protect
+those boundaries. The fourth risk is leaking slot metadata into runtime or async component
+transport, which would expand this type-only slice.
