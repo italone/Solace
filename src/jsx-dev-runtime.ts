@@ -13,8 +13,12 @@ export { Fragment, jsx, jsxs } from "./jsx-runtime";
 export type { JSX } from "./jsx-runtime";
 
 export function jsxDEV(type: string, props?: JSXElementProps | null, key?: JSXKey): VNode;
-export function jsxDEV<Props extends object, Events extends ComponentEventMap>(
-  type: ComponentType<Props, Events>,
+export function jsxDEV<
+  Props extends object,
+  Events extends ComponentEventMap,
+  SlotMap extends object,
+>(
+  type: ComponentType<Props, Events, SlotMap>,
   props?: JSXComponentProps<Props, Events> | null,
   key?: JSXKey,
 ): VNode;

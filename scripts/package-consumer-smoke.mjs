@@ -64,7 +64,7 @@ try {
   await writeFile(
     join(consumerDir, "src", "main.tsx"),
     `import { RouterLink, RouterView, createApp, createMemoryHistory, createRouter, createStore, createWebHashHistory, createWebHistory, defineAsyncComponent, defineComponent, h, inject, lazyRoute, reactive, useRoute, useRouter, watchEffect } from "@italone/solace";
-import type { AsyncComponentOptions, ComponentEventMap, ComponentSetupContext, HydrationOptions, NavigationGuard, Plugin, RouteComponent, RouteLocationRaw, RouterHistory, StoreContext, StoreGetterContext } from "@italone/solace";
+import type { AsyncComponentOptions, ComponentEventMap, ComponentSetupContext, HydrationOptions, NavigationGuard, Plugin, RouteComponent, RouteLocationRaw, RouterHistory, StoreContext, StoreGetterContext, VNodeChildren } from "@italone/solace";
 import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtools";
 import type { DevtoolsEvent } from "@italone/solace/devtools";
 import { generateStaticSite, renderToString } from "@italone/solace/server";
@@ -157,6 +157,15 @@ type ButtonEvents = {
   "value-change": [value: number];
 };
 
+type ButtonSlots = {
+  header?: () => VNodeChildren;
+  default?: (props: { label: string; value?: number }) => VNodeChildren;
+};
+
+type RequiredButtonSlots = {
+  default: (props: { label: string }) => VNodeChildren;
+};
+
 type TypedButtonProps = {
   value: number;
   onChange?: (value: string) => unknown;
@@ -166,10 +175,19 @@ type TypedButtonProps = {
 const buttonEventMap: ComponentEventMap = {} as ButtonEvents;
 void buttonEventMap;
 
-const TypedButton = defineComponent<TypedButtonProps, ButtonEvents>((props, { emit }) => {
+const TypedButton = defineComponent<TypedButtonProps, ButtonEvents, ButtonSlots>((props, { emit, slots }) => {
   emit("change", props.value);
   emit("reset");
   emit("value-change", props.value);
+  slots.header?.();
+  slots.default?.({ label: "button", value: props.value });
+
+  // @ts-expect-error packaged typed slots reject unknown slot names
+  slots.missing?.();
+  // @ts-expect-error packaged typed default slots require their scoped props
+  slots.default?.();
+  // @ts-expect-error packaged typed default slots reject incompatible labels
+  slots.default?.({ label: 1 });
 
   // @ts-expect-error packaged typed emit rejects unknown events
   emit("missing");
@@ -179,9 +197,27 @@ const TypedButton = defineComponent<TypedButtonProps, ButtonEvents>((props, { em
   return <button onClick={() => emit("change", props.value)}>{props.value}</button>;
 });
 
+function acceptTypedButtonSlots({ emit, slots }: ComponentSetupContext<ButtonEvents, ButtonSlots>): void {
+  emit("change", 1);
+  slots.header?.();
+  slots.default?.({ label: "button" });
+  // @ts-expect-error packaged typed slots reject unknown names
+  slots.missing?.();
+  // @ts-expect-error packaged typed slots require scoped props
+  slots.default?.();
+  // @ts-expect-error packaged typed scoped props reject undeclared fields
+  slots.default?.({ label: "button", extra: true });
+}
+
+acceptTypedButtonSlots({ emit: (() => undefined) as never, slots: {} });
+
 const ExactRenderComponent = defineComponent(() => () => <span>exact</span>);
 const exactRender = ExactRenderComponent({}, { emit: () => undefined, slots: {} });
 exactRender();
+
+const RequiredPackedPanel = defineComponent<object, ComponentEventMap, RequiredButtonSlots>(
+  (_props, { slots }) => <section>{slots.default({ label: "required" })}</section>,
+);
 
 const ThemeLabel = () => {
   const theme = inject(ThemeKey, "light");
@@ -216,6 +252,11 @@ const GenericLabel = <Value,>(props: {
   onFocus={(reason: string) => reason}
 />;
 <TypedButton value={1} onChange={[(value: number) => String(value)]} />;
+<RequiredPackedPanel />;
+h(RequiredPackedPanel);
+h(RequiredPackedPanel, null, {
+  unknownProducerSlot: (props?: Record<string, unknown>) => <span>{String(props?.value)}</span>,
+});
 
 // @ts-expect-error packaged typed listeners receive the declared number payload
 <TypedButton value={1} onChange={(value: string) => value} />;

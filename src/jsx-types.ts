@@ -86,7 +86,8 @@ export type JSXComponentProps<
 };
 
 export type JSXManagedComponentProps<Component, Props> = Props extends object
-  ? Component extends ComponentType<never, infer Events>
+  ? // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    Component extends ComponentType<never, infer Events, infer _SlotMap>
     ? JSXComponentProps<Props, Events>
     : JSXComponentProps<Props, ComponentEventMap>
   : Props;

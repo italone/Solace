@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { defineComponent, render } from "../../../src";
+import { defineComponent, h, render } from "../../../src";
 import { jsxDEV } from "../../../src/jsx-dev-runtime";
 import { jsx, jsxs } from "../../../src/jsx-runtime";
-import type { ComponentEventMap, ComponentSetupContext } from "../../../src";
+import type { ComponentEventMap, ComponentSetupContext, VNodeChildren } from "../../../src";
 
 const incrementCalls: number[] = [];
 type CounterEvents = {
@@ -14,6 +14,22 @@ type CounterEvents = {
   "value-change": [value: number];
 };
 
+type CounterSlots = {
+  header?: () => VNodeChildren;
+  default?: (props: { label: string; count?: number }) => VNodeChildren;
+};
+
+type RequiredCounterSlots = {
+  default: (props: { label: string }) => VNodeChildren;
+};
+
+type InvalidCounterSlots = {
+  default: string;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+type EmptyCounterSlots = {};
+
 type TypedEmitterProps = {
   count: number;
   onIncrement?: (count: string) => unknown;
@@ -23,29 +39,33 @@ type TypedEmitterProps = {
 const eventMap: ComponentEventMap = {} as CounterEvents;
 void eventMap;
 
-const TypedEmitter = defineComponent<TypedEmitterProps, CounterEvents>((props, { emit }) => {
-  emit("increment", props.count);
-  emit("reset");
-  emit("rename", "Ada");
-  emit("rename", "Ada", "user");
-  emit("collect", "values", 1, 2, 3);
-  emit("value-change", props.count);
+const TypedEmitter = defineComponent<TypedEmitterProps, CounterEvents, CounterSlots>(
+  (props, { emit, slots }) => {
+    emit("increment", props.count);
+    emit("reset");
+    emit("rename", "Ada");
+    emit("rename", "Ada", "user");
+    emit("collect", "values", 1, 2, 3);
+    emit("value-change", props.count);
+    slots.header?.();
+    slots.default?.({ label: "counter", count: props.count });
 
-  // @ts-expect-error typed emit rejects unknown event names
-  emit("missing");
-  // @ts-expect-error typed emit requires the declared payload
-  emit("increment");
-  // @ts-expect-error typed emit rejects incompatible payloads
-  emit("increment", "1");
-  // @ts-expect-error typed emit rejects payloads for zero-argument events
-  emit("reset", 1);
-  // @ts-expect-error typed emit rejects incompatible optional tuple values
-  emit("rename", "Ada", "external");
-  // @ts-expect-error typed emit rejects incompatible rest tuple values
-  emit("collect", "values", "1");
+    // @ts-expect-error typed emit rejects unknown event names
+    emit("missing");
+    // @ts-expect-error typed emit requires the declared payload
+    emit("increment");
+    // @ts-expect-error typed emit rejects incompatible payloads
+    emit("increment", "1");
+    // @ts-expect-error typed emit rejects payloads for zero-argument events
+    emit("reset", 1);
+    // @ts-expect-error typed emit rejects incompatible optional tuple values
+    emit("rename", "Ada", "external");
+    // @ts-expect-error typed emit rejects incompatible rest tuple values
+    emit("collect", "values", "1");
 
-  return <button>{props.count}</button>;
-});
+    return <button>{props.count}</button>;
+  },
+);
 
 function acceptTypedContext({ emit }: ComponentSetupContext<CounterEvents>): void {
   emit("increment", 1);
@@ -55,6 +75,59 @@ function acceptTypedContext({ emit }: ComponentSetupContext<CounterEvents>): voi
 
 acceptTypedContext({ emit: (() => undefined) as never, slots: {} });
 
+function acceptTypedSlots({
+  emit,
+  slots,
+}: ComponentSetupContext<CounterEvents, CounterSlots>): void {
+  emit("increment", 1);
+  slots.header?.();
+  slots.default?.({ label: "counter" });
+  slots.default?.({ label: "counter", count: 1 });
+  // @ts-expect-error typed slots reject unknown slot names
+  slots.missing?.();
+  // @ts-expect-error typed header slots reject props
+  slots.header?.({ label: "counter" });
+  // @ts-expect-error typed default slots require their scoped props
+  slots.default?.();
+  // @ts-expect-error typed default slots reject incompatible labels
+  slots.default?.({ label: 1 });
+  // @ts-expect-error typed default slots reject incompatible optional counts
+  slots.default?.({ label: "counter", count: "1" });
+  // @ts-expect-error typed scoped props reject undeclared fields
+  slots.default?.({ label: "counter", extra: true });
+}
+
+function acceptRequiredSlots({
+  slots,
+}: ComponentSetupContext<ComponentEventMap, RequiredCounterSlots>): void {
+  slots.default({ label: "required" });
+}
+
+function acceptEmptySlots({
+  slots,
+}: ComponentSetupContext<ComponentEventMap, EmptyCounterSlots>): void {
+  // @ts-expect-error empty slot maps reject default slots
+  slots.default();
+}
+
+function acceptPermissiveSlots({ slots }: ComponentSetupContext): void {
+  slots.anything?.({ label: "permissive" });
+}
+
+type InvalidSlotContext = ComponentSetupContext<ComponentEventMap, InvalidCounterSlots>;
+
+function rejectInvalidSlots({ slots }: InvalidSlotContext): void {
+  // @ts-expect-error invalid slot maps reject non-function slots
+  slots.default?.();
+}
+
+acceptTypedSlots({ emit: (() => undefined) as never, slots: {} });
+acceptRequiredSlots({ emit: () => undefined, slots: { default: () => null } });
+void acceptEmptySlots;
+acceptPermissiveSlots({ emit: () => undefined, slots: {} });
+void (0 as unknown as InvalidSlotContext);
+void rejectInvalidSlots;
+
 const UntypedEmitter = defineComponent((_props: object, { emit }) => {
   emit("legacy-event", Symbol("payload"), 1);
   return <span>legacy</span>;
@@ -63,6 +136,10 @@ const UntypedEmitter = defineComponent((_props: object, { emit }) => {
 const ExactRenderComponent = defineComponent(() => () => <span>exact</span>);
 const exactRender = ExactRenderComponent({}, { emit: () => undefined, slots: {} });
 exactRender();
+
+const RequiredSlotPanel = defineComponent<object, ComponentEventMap, RequiredCounterSlots>(
+  (_props, { slots }) => <section>{slots.default({ label: "required" })}</section>,
+);
 
 const Row = (props: { label: string }) => <li>{props.label}</li>;
 const GenericRow = <Value,>(props: { value: Value; formatValue: (value: Value) => string }) => (
@@ -106,6 +183,11 @@ const FragmentList = () => (
   click me
 </CounterButton>;
 <FragmentList />;
+<RequiredSlotPanel />;
+h(RequiredSlotPanel);
+h(RequiredSlotPanel, null, {
+  unknownProducerSlot: (props?: Record<string, unknown>) => <span>{String(props?.value)}</span>,
+});
 <TypedEmitter
   count={1}
   onIncrement={(count: number) => incrementCalls.push(count)}

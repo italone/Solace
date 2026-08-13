@@ -28,16 +28,35 @@ export type EmitFn<Events extends ComponentEventMap = ComponentEventMap> = <
   ...args: EventArgs<Events, Event>
 ) => void;
 export type SlotProps = Record<string, unknown>;
-export type Slot = (props?: SlotProps) => VNodeChildren;
+export type Slot = {
+  bivarianceHack(props?: SlotProps): VNodeChildren;
+}["bivarianceHack"];
 
 export interface Slots {
   default?: Slot;
   [name: string]: Slot | undefined;
 }
 
-export interface ComponentSetupContext<Events extends ComponentEventMap = ComponentEventMap> {
+type DefinedSlot<Value> = Value extends undefined ? never : Value;
+type InvalidSlotNames<SlotMap extends object> = {
+  [Name in keyof SlotMap]-?: DefinedSlot<SlotMap[Name]> extends (
+    ...args: infer _Args
+  ) => infer Result
+    ? [Result] extends [VNodeChildren]
+      ? never
+      : Name
+    : Name;
+}[keyof SlotMap];
+type ValidatedSlots<SlotMap extends object> = [InvalidSlotNames<SlotMap>] extends [never]
+  ? SlotMap
+  : never;
+
+export interface ComponentSetupContext<
+  Events extends ComponentEventMap = ComponentEventMap,
+  SlotMap extends object = Slots,
+> {
   emit: EmitFn<Events>;
-  slots: Slots;
+  slots: ValidatedSlots<SlotMap>;
 }
 
 export interface ComponentInstance {

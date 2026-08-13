@@ -17,8 +17,8 @@ export function h(
   props?: VNodeProps | null,
   children?: VNodeChildren,
 ): VNode;
-export function h<Props extends object, Events extends ComponentEventMap>(
-  type: ComponentType<Props, Events>,
+export function h<Props extends object, Events extends ComponentEventMap, SlotMap extends object>(
+  type: ComponentType<Props, Events, SlotMap>,
   props?: Props | null,
   children?: ComponentVNodeChildren,
 ): VNode;

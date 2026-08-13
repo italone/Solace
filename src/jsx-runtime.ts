@@ -21,8 +21,8 @@ import {
 export { Fragment };
 
 export function jsx(type: string, props?: JSXElementProps | null, key?: JSXKey): VNode;
-export function jsx<Props extends object, Events extends ComponentEventMap>(
-  type: ComponentType<Props, Events>,
+export function jsx<Props extends object, Events extends ComponentEventMap, SlotMap extends object>(
+  type: ComponentType<Props, Events, SlotMap>,
   props?: JSXComponentProps<Props, Events> | null,
   key?: JSXKey,
 ): VNode;
@@ -36,8 +36,12 @@ export function jsx(type: VNodeType, props: JSXProps | null = null, key?: JSXKey
 }
 
 export function jsxs(type: string, props?: JSXElementProps | null, key?: JSXKey): VNode;
-export function jsxs<Props extends object, Events extends ComponentEventMap>(
-  type: ComponentType<Props, Events>,
+export function jsxs<
+  Props extends object,
+  Events extends ComponentEventMap,
+  SlotMap extends object,
+>(
+  type: ComponentType<Props, Events, SlotMap>,
   props?: JSXComponentProps<Props, Events> | null,
   key?: JSXKey,
 ): VNode;

@@ -1,13 +1,14 @@
 import { ShapeFlags } from "../shared/flags";
 import { isThenable } from "../shared/utils";
-import type { ComponentEventMap, ComponentSetupContext, Slot } from "../component/component";
+import type { ComponentEventMap, ComponentSetupContext, Slot, Slots } from "../component/component";
 
 export type ComponentProps = Record<string, unknown>;
 export type ComponentRender = () => VNode;
 export type ComponentType<
   Props extends object = ComponentProps,
   Events extends ComponentEventMap = ComponentEventMap,
-> = (props: Props, context: ComponentSetupContext<Events>) => ComponentRender | VNode;
+  SlotMap extends object = Slots,
+> = (props: Props, context: ComponentSetupContext<Events, SlotMap>) => ComponentRender | VNode;
 export type AsyncComponentSetupResult = PromiseLike<ComponentRender | VNode>;
 export type AsyncComponentType<Props extends object = ComponentProps> = (
   props: Props,
@@ -15,10 +16,10 @@ export type AsyncComponentType<Props extends object = ComponentProps> = (
 ) => AsyncComponentSetupResult;
 export const Fragment = Symbol("Solace.Fragment");
 export type FragmentType = typeof Fragment;
-// The VNode boundary intentionally erases a component's concrete event map.
+// The VNode boundary intentionally erases a component's concrete metadata maps.
 export type VNodeType =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ComponentType<never, any> | string | AsyncComponentType<never> | FragmentType;
+  ComponentType<never, any, any> | string | AsyncComponentType<never> | FragmentType;
 export type VNodeProps = Record<string, unknown>;
 export type VNodeChild = string | VNode;
 export type AsyncVNodeChild = PromiseLike<VNodeChild>;
@@ -49,8 +50,12 @@ export function createVNode(
   props?: VNodeProps | null,
   children?: VNodeChildren,
 ): VNode;
-export function createVNode<Props extends object, Events extends ComponentEventMap>(
-  type: ComponentType<Props, Events>,
+export function createVNode<
+  Props extends object,
+  Events extends ComponentEventMap,
+  SlotMap extends object,
+>(
+  type: ComponentType<Props, Events, SlotMap>,
   props?: Props | null,
   children?: ComponentVNodeChildren,
 ): VNode;
