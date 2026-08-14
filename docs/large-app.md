@@ -167,6 +167,18 @@ Before using Solace in a larger app, confirm the project can live within the cur
 - run package smoke and browser e2e checks before publishing or recommending the integration to
   another team
 
+Validate the installed artifact rather than a repository source alias:
+
+```bash
+pnpm adoption:smoke
+pnpm adoption:smoke:browsers
+pnpm adoption:smoke -- --package <exact-version>
+```
+
+The local fixture proves package-only CSR bundling plus SSR/hydration recovery. It does not count as
+an independent production adoption. Record real application ownership, exact package version,
+upgrade result, bundle result, error recovery, and browser matrix separately for 1.0 evidence.
+
 ## Ecosystem And UI Libraries
 
 Solace does not currently ship a first-party UI component library or stable plugin ecosystem. For a

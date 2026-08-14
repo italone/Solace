@@ -161,6 +161,17 @@ app 变大后，可以直接按这个规则判断：
 - 选择一个能代表核心交互的 benchmark 场景
 - 发布或推荐给其他团队前，先运行 package smoke 和 browser e2e checks
 
+验证 installed artifact，不要使用仓库 source alias：
+
+```bash
+pnpm adoption:smoke
+pnpm adoption:smoke:browsers
+pnpm adoption:smoke -- --package <exact-version>
+```
+
+本地 fixture 会验证 package-only CSR bundle、SSR/hydration 与 mismatch recovery，但不能计入独立生产采用。
+1.0 evidence 需要另外记录真实应用 owner、精确 package 版本、升级结果、bundle 结果、错误恢复与浏览器矩阵。
+
 ## 生态和 UI 库
 
 Solace 当前没有一方 UI component library，也没有稳定 plugin ecosystem。大型应用应把这些决策留在应用层，并把

@@ -1,7 +1,7 @@
 import {
   createVNode,
   type AsyncComponentVNodeChildren,
-  type ComponentVNodeChildren,
+  type ComponentSlotChildrenArguments,
   Fragment,
   type VNode,
   type VNodeChildren,
@@ -9,27 +9,30 @@ import {
   type VNodeType,
 } from "./vnode";
 import type { AsyncComponentType, ComponentType } from "./vnode";
-import type { ComponentEventMap } from "../component/component";
+import type { ComponentEventMap, Slots } from "../component/component";
 
-export function h(type: string, props?: VNodeProps | null, children?: VNodeChildren): VNode;
+export function h(
+  type: string,
+  props?: VNodeProps | null,
+  children?: AsyncComponentVNodeChildren,
+): VNode;
 export function h(
   type: typeof Fragment,
   props?: VNodeProps | null,
   children?: VNodeChildren,
 ): VNode;
-export function h<Props extends object, Events extends ComponentEventMap, SlotMap extends object>(
+export function h<
+  Props extends object,
+  Events extends ComponentEventMap = ComponentEventMap,
+  SlotMap extends object = Slots,
+>(
   type: ComponentType<Props, Events, SlotMap>,
   props?: Props | null,
-  children?: ComponentVNodeChildren,
+  ...children: ComponentSlotChildrenArguments<SlotMap>
 ): VNode;
 export function h<Props extends object>(
   type: AsyncComponentType<Props>,
   props?: Props | null,
-  children?: AsyncComponentVNodeChildren,
-): VNode;
-export function h(
-  type: VNodeType,
-  props?: VNodeProps | null,
   children?: AsyncComponentVNodeChildren,
 ): VNode;
 export function h(

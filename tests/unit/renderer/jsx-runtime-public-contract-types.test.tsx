@@ -23,6 +23,15 @@ type RequiredCounterSlots = {
   default: (props: { label: string }) => VNodeChildren;
 };
 
+type HeaderOnlySlots = {
+  header?: () => VNodeChildren;
+};
+
+type RequiredNamedCounterSlots = {
+  header: () => VNodeChildren;
+  default?: (props: { label: string }) => VNodeChildren;
+};
+
 type InvalidCounterSlots = {
   default: string;
 };
@@ -140,6 +149,19 @@ exactRender();
 const RequiredSlotPanel = defineComponent<object, ComponentEventMap, RequiredCounterSlots>(
   (_props, { slots }) => <section>{slots.default({ label: "required" })}</section>,
 );
+const HeaderOnlyPanel = defineComponent<object, ComponentEventMap, HeaderOnlySlots>(
+  (_props, { slots }) => {
+    slots.header?.();
+    return <section>header only</section>;
+  },
+);
+const RequiredNamedPanel = defineComponent<object, ComponentEventMap, RequiredNamedCounterSlots>(
+  (_props, { slots }) => {
+    slots.header();
+    slots.default?.({ label: "named" });
+    return <section>named</section>;
+  },
+);
 
 const Row = (props: { label: string }) => <li>{props.label}</li>;
 const GenericRow = <Value,>(props: { value: Value; formatValue: (value: Value) => string }) => (
@@ -183,11 +205,53 @@ const FragmentList = () => (
   click me
 </CounterButton>;
 <FragmentList />;
+<RequiredSlotPanel>required</RequiredSlotPanel>;
+<HeaderOnlyPanel />;
+h(RequiredSlotPanel, null, "required");
+h(RequiredSlotPanel, null, { default: ({ label }) => <span>{label}</span> });
+h(
+  TypedEmitter,
+  { count: 1 },
+  {
+    header: () => <strong>header</strong>,
+    default: ({ label, count }) => <span>{`${label}:${count ?? 0}`}</span>,
+  },
+);
+h(RequiredNamedPanel, null, {
+  header: () => <strong>required header</strong>,
+});
+
+// @ts-expect-error required default slots require JSX children
 <RequiredSlotPanel />;
+
+// @ts-expect-error components without a default slot reject JSX children
+<HeaderOnlyPanel>unexpected</HeaderOnlyPanel>;
+
+// @ts-expect-error required default slots require h() children
 h(RequiredSlotPanel);
+
+// @ts-expect-error required named slots require a slot object
+h(RequiredNamedPanel, null, "default only");
+
+// @ts-expect-error required named slots cannot be omitted
+h(RequiredNamedPanel, null, { default: ({ label }) => <span>{label}</span> });
+
+// @ts-expect-error typed h() slots reject unknown names
 h(RequiredSlotPanel, null, {
   unknownProducerSlot: (props?: Record<string, unknown>) => <span>{String(props?.value)}</span>,
 });
+
+// @ts-expect-error typed h() scoped slots retain their declared props
+h(RequiredSlotPanel, null, { default: (props: { label: number }) => <span>{props.label}</span> });
+
+// Untyped components retain the broad producer contract.
+h(
+  Panel,
+  { title: "legacy" },
+  {
+    unknownProducerSlot: (props?: Record<string, unknown>) => <span>{String(props?.value)}</span>,
+  },
+);
 <TypedEmitter
   count={1}
   onIncrement={(count: number) => incrementCalls.push(count)}

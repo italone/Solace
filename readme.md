@@ -17,10 +17,11 @@ Solace focuses on a small runtime core: reactive state, scheduled rendering, VNo
 
 ## Project Status
 
-Solace is currently on the `0.1.0` beta line. This package build is `0.1.0-beta.4`. npm `latest`
-remains `0.0.5`, and npm `beta` is `0.1.0-beta.4`. The beta.4 package freezes the current buffered
-async SSR/SSG/hydration and eight-entry public compatibility contract without adding deferred
-streaming or router-aware server behavior.
+Solace is currently on the `0.1.0` beta line. This repository package build is the unpublished
+`0.1.0-beta.5` candidate. npm `latest` remains `0.0.5`, and npm `beta` remains
+`0.1.0-beta.4`. The beta.5 candidate adds typed JSX/TSX component contracts, broader adoption
+gates, and composable router-aware SSR/hydration primitives without adding streaming or direct
+renderer-owned router options.
 
 Use the local development workflow below to explore the framework. Install the default npm package
 when you want the latest stable line, install `@italone/solace@beta` when you want the beta line, and
@@ -47,17 +48,19 @@ reactive rendering, and validating framework implementation ideas in small examp
 positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The
 beta line includes buffered async initial rendering through `renderToStringAsync()`, sequential
 in-memory SSG through `generateStaticSiteAsync()`, and prepare-then-commit browser hydration through
-`hydrateAsync()`. Streaming SSR, router-aware SSR/hydration, async update scheduling after initial
+`hydrateAsync()`. Router-aware SSR/hydration is available through explicit readiness, server-context,
+and snapshot composition. Streaming SSR, direct renderer-owned router options, async update scheduling after initial
 hydration, first-party UI components, production DevTools distribution, and compatibility guarantees
 for internal modules remain outside the frozen production contract.
 
 ## Public Contract Gate
 
 Public API changes should keep README, project-status, API, package-usage, package exports, and
-consumer smoke coverage aligned before release. The beta contract still defers auth, permissions,
-router-aware SSR, router-aware hydration, streaming SSR, Suspense/selective hydration, and async
-update scheduling after initial hydration. Those capabilities should stay documented as unsupported
-until a separate design widens the public API and the release gate covers the new behavior.
+consumer smoke coverage aligned before release. The beta contract now exposes composable
+router-aware SSR and router-aware hydration through `router.isReady()`, canonical snapshots, and
+`createRouterServerContext()`. It still defers auth, permissions, direct renderer-owned router
+options, streaming SSR, Suspense/selective hydration, and async update scheduling after initial
+hydration.
 Router `auth` and `permissions` options or route record fields are explicitly rejected instead of
 being treated as implicit client authorization.
 SSR, hydration, and SSG option objects also reject unknown own fields with a field-specific

@@ -23,5 +23,7 @@ export declare function createConsumerTsconfig(includeAsync: boolean): {
 };
 
 export declare function parseSmokeArguments(args: string[]): {
-  baseline?: "0.1.0-beta.2";
+  baselines: ("0.1.0-beta.2" | "0.1.0-beta.4")[];
 };
+
+export declare function baselineSupportsAsyncRendering(baseline: string): boolean;

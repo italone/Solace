@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { JSDOM } from "jsdom";
 
 import {
+  baselineSupportsAsyncRendering,
   createConsumerPackageJson,
   createConsumerTsconfig,
   parseSmokeArguments,
@@ -56,16 +57,16 @@ async function main() {
   try {
     activeWorkspace = await realpath(await mkdtemp(join(tmpdir(), "solace-operations-consumer-")));
 
-    if (options.baseline !== undefined) {
+    for (const baseline of options.baselines) {
       try {
-        console.log(`Running baseline consumer with @italone/solace@${options.baseline}`);
+        console.log(`Running baseline consumer with @italone/solace@${baseline}`);
         await runConsumer({
-          consumerDir: join(activeWorkspace, "baseline"),
-          packageSpec: options.baseline,
-          includeAsync: false,
+          consumerDir: join(activeWorkspace, `baseline-${baseline}`),
+          packageSpec: baseline,
+          includeAsync: baselineSupportsAsyncRendering(baseline),
         });
       } catch (error) {
-        throw withFailurePrefix("baseline compatibility failed", error);
+        throw withFailurePrefix(`baseline ${baseline} compatibility failed`, error);
       }
     }
 

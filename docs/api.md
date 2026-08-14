@@ -14,17 +14,17 @@ component instances, and VNode factory internals are not part of the compatibili
 
 The package root exposes the documented runtime surface:
 
-| Area       | APIs                                                                                                                                                                         |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App        | `createApp`                                                                                                                                                                  |
-| Reactivity | `reactive`, `ref`, `computed`, `effect`, `watch`, `watchEffect`                                                                                                              |
-| Rendering  | `h`, `render`, `Fragment`, `useStyle`                                                                                                                                        |
-| Components | `defineComponent`, `defineAsyncComponent`                                                                                                                                    |
-| Context    | `provide`, `inject`                                                                                                                                                          |
-| Lifecycle  | `onMounted`, `onUpdated`, `onUnmounted`                                                                                                                                      |
-| Scheduler  | `nextTick`                                                                                                                                                                   |
-| Store      | `createStore`                                                                                                                                                                |
-| Router     | `createRouter`, `createMemoryHistory`, `createWebHistory`, `createWebHashHistory`, `RouterLink`, `RouterView`, `RouterNavigationError`, `lazyRoute`, `useRouter`, `useRoute` |
+| Area       | APIs                                                                                                                                                                                                                                                                                                   |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| App        | `createApp`                                                                                                                                                                                                                                                                                            |
+| Reactivity | `reactive`, `ref`, `computed`, `effect`, `watch`, `watchEffect`                                                                                                                                                                                                                                        |
+| Rendering  | `h`, `render`, `Fragment`, `useStyle`                                                                                                                                                                                                                                                                  |
+| Components | `defineComponent`, `defineAsyncComponent`                                                                                                                                                                                                                                                              |
+| Context    | `provide`, `inject`                                                                                                                                                                                                                                                                                    |
+| Lifecycle  | `onMounted`, `onUpdated`, `onUnmounted`                                                                                                                                                                                                                                                                |
+| Scheduler  | `nextTick`                                                                                                                                                                                                                                                                                             |
+| Store      | `createStore`                                                                                                                                                                                                                                                                                          |
+| Router     | `createRouter`, `createMemoryHistory`, `createWebHistory`, `createWebHashHistory`, `RouterLink`, `RouterView`, `RouterNavigationError`, `RouterHydrationError`, `createRouterSnapshot`, `parseRouterSnapshot`, `serializeRouterSnapshot`, `verifyRouterSnapshot`, `lazyRoute`, `useRouter`, `useRoute` |
 
 Public TypeScript helper types include:
 
@@ -36,7 +36,7 @@ Public TypeScript helper types include:
 - Router: `LazyRouteComponent`, `NavigationGuard`, `NavigationGuardResult`, `RouteComponent`,
   `RouteLocationNormalized`, `RouteLocationRaw`, `RouteRecord`, `Router`, `RouterHistory`,
   `RouterLinkProps`, `RouterOptions`, `RouterScrollBehavior`, `RouterScrollBehaviorResult`,
-  `RouterScrollPosition`
+  `RouterScrollPosition`, `RouterSnapshot`, `RouteRecordIdentity`, `RouterHydrationErrorField`
 - VNodes: `AsyncComponentVNodeChildren`, `AsyncVNodeChild`, `AsyncVNodeChildren`, `ComponentProps`,
   `ComponentRender`, `ComponentType`, `ComponentVNodeChildren`, `FragmentType`, `VNode`,
   `VNodeChild`, `VNodeChildren`, `VNodeProps`, `VNodeSlots`, `VNodeType`
@@ -94,14 +94,20 @@ beta and SFC/Vite APIs experimental without silently removing their documented e
 
 The current public contract intentionally rejects still-deferred integration surfaces instead of
 silently accepting options that Solace does not implement. Router auth, permissions,
-router-aware SSR, router-aware hydration, streaming SSR, Suspense/selective hydration, and async
-update scheduling remain outside the beta contract. Route `meta` is developer-authored data for
+direct router options on SSR/hydration, streaming SSR, Suspense/selective hydration, and async update
+scheduling remain outside the beta contract. Composable router readiness, server context, and route
+snapshot primitives are available without widening those renderer options. Route `meta` is developer-authored data for
 application code and examples; it is not an authentication or permission enforcement mechanism.
 Router options or route records that use `auth` or `permissions` fields are rejected with explicit
 deferred-boundary errors; use application guards for local UX routing and backend authorization for
 enforcement. Public API work that widens any of these boundaries must update README, project-status,
 package-usage, package boundary tests, consumer smoke coverage, and the release gate in the same
 change.
+
+The first router integration is composable rather than renderer-owned. See the
+[router-aware SSR and hydration design](./superpowers/specs/2026-08-14-router-aware-ssr-hydration-design.md)
+for the request-scoped memory history, canonical route snapshot, server context, and hydration
+verification flow. SSR, SSG, and hydration continue rejecting direct `router` options.
 
 ## App
 
@@ -204,11 +210,13 @@ Import SSR and SSG APIs from `@italone/solace/server`:
 import { h } from "@italone/solace";
 import {
   createStaticRoutesFromRouter,
+  createRouterServerContext,
   generateStaticSite,
   generateStaticSiteAsync,
   renderToString,
   renderToStringAsync,
   resolveStaticAssets,
+  serializeRouterSnapshot,
 } from "@italone/solace/server";
 
 const result = renderToString(h("p", null, "server"));
@@ -260,8 +268,65 @@ function enables later reactive updates after `hydrateAsync()`; resolving direct
 fixed initial result, and promised children are one-shot values. `provide()`, `inject()`, lifecycle
 registration, and `useStyle()` are supported before the first suspension and inside the resolved
 synchronous render function. Ambient component-instance APIs in continuation code after `await` are
-outside the beta.4 contract. Streaming SSR, router-aware SSR, router-aware hydration, and
+outside the beta.4 contract. Streaming SSR, direct router options on SSR/hydration, and
 Suspense/selective hydration remain deferred; async update scheduling remains deferred.
+
+### Router-aware SSR and hydration composition
+
+This composable flow provides router-aware SSR and router-aware hydration without adding a router
+option to renderer APIs.
+
+`router.isReady()` starts the initial history navigation once and returns the same promise to every
+caller. Redirects and global/route guards settle before it resolves. Initial guard cancellation or
+navigation failure rejects, while later `push()` and `replace()` keep their existing semantics.
+
+`createRouterServerContext()` creates a fresh `createMemoryHistory(url)` router for one request,
+allows synchronous global guard registration through `configure`, waits for readiness, and returns
+`{ router, route, snapshot, provides }`. Pass `provides` to the existing renderer; no renderer option
+is widened:
+
+```tsx
+import { RouterView } from "@italone/solace";
+import type { RouteRecord } from "@italone/solace";
+import {
+  createRouterServerContext,
+  renderToStringAsync,
+  serializeRouterSnapshot,
+} from "@italone/solace/server";
+
+const routes: RouteRecord[] = [{ path: "/", name: "home", component: () => <p>home</p> }];
+const identifyRecord = (record: RouteRecord) => record.name ?? record.path;
+const server = await createRouterServerContext({ url: "/", routes, identifyRecord });
+const rendered = await renderToStringAsync(() => <RouterView />, {
+  provides: server.provides,
+});
+const snapshotText = serializeRouterSnapshot(server.snapshot);
+```
+
+In the browser, install the router, await `isReady()`, create a client snapshot with the same record
+identity callback, and verify before calling `hydrateAsync()`:
+
+```tsx
+import {
+  createApp,
+  createRouterSnapshot,
+  parseRouterSnapshot,
+  verifyRouterSnapshot,
+} from "@italone/solace";
+
+const app = createApp(App).use(router);
+await router.isReady();
+const serverSnapshot = parseRouterSnapshot(snapshotElement.textContent ?? "");
+const clientSnapshot = createRouterSnapshot(router.currentRoute.value, identifyRecord);
+verifyRouterSnapshot(serverSnapshot, clientSnapshot);
+await app.hydrateAsync(container);
+```
+
+Record identities must be non-empty and unique for the matched chain. Snapshot params/query keys are
+sorted, query arrays retain item order, and nullish router query inputs remain omitted by the existing
+router contract. Serialization escapes script-sensitive characters; parsing rejects malformed,
+unknown, or unsupported fields. `RouterHydrationError` reports the first mismatching field. Router
+snapshot recovery is application-owned and separate from DOM-only `{ recover: true }`.
 
 ### `generateStaticSite(options)`
 
@@ -510,7 +575,8 @@ Solace components are functions with this shape:
 type ComponentType<
   Props extends object = ComponentProps,
   Events extends ComponentEventMap = ComponentEventMap,
-> = (props: Props, context: ComponentSetupContext<Events>) => VNode | (() => VNode);
+  SlotMap extends object = Slots,
+> = (props: Props, context: ComponentSetupContext<Events, SlotMap>) => VNode | (() => VNode);
 ```
 
 The setup context exposes:
@@ -570,6 +636,15 @@ const App = () => (
 ```
 
 Components without an explicit event map remain permissive by default. This contract types events at compile time and does not add runtime validation; explicit event maps infer precise `onXxx` listener payloads in JSX. Listeners accept a function or an array of functions whose arguments match the event tuple. Kebab-case events expose only their canonical camelized listener, so `value-change` maps to `onValueChange`. This JSX inference does not change the existing broad `h()` props contract.
+
+Slot typing is opt-in through `defineComponent<Props, Events, SlotMap>`. A finite slot map types both
+component-side consumption and producer calls. A required `default` slot requires JSX children;
+components without a declared `default` slot reject JSX children. `h()` accepts direct default
+children or an exact slot object, requires declared required slots, and rejects unknown names or
+incompatible scoped-slot parameters. JSX has no named-slot attribute syntax in this contract, so use
+`h()` when a producer must provide named or scoped slot functions. Components without an explicit
+slot map retain the permissive legacy producer contract. These checks do not add runtime slot
+metadata or validation.
 
 ### `defineComponent(component)`
 
@@ -830,6 +905,11 @@ through canonical paths, aliases preserve the canonical matched records and rout
 props support `true`, plain objects, or functions evaluated from the matched route. When
 `props: true`, the router passes a shallow copy of `route.params`.
 
+`router.isReady()` exposes the single initial history settlement promise. Calling it before install
+starts settlement; calling it after `app.use(router)` waits for the same operation. It resolves to the
+settled `currentRoute.value` after redirects and guards, and remains rejected after an initial
+failure. Later explicit navigations are independent.
+
 ### `createWebHistory()` / `createWebHashHistory()` / `createMemoryHistory()`
 
 Create browser-backed history adapters. Use `createWebHistory()` for normal path routing and
@@ -894,7 +974,9 @@ Public JSX entry points:
 JSX `key` is a framework-level attribute for keyed children and accepts strings or numbers. It does
 not need to be declared on a function component's props type.
 JSX component children are routed to the component setup context as `slots.default`; component props
-do not need to declare a `children` field for normal slot children.
+do not need to declare a `children` field for normal slot children. Explicit finite slot maps make
+required default children mandatory and reject children when no default slot exists. Named and
+scoped producer functions use the typed `h()` slot-object form.
 JSX `onXxx` attributes are the component event handler convention used by `emit()`, so
 `emit("increment")` resolves `onIncrement` when present. TSX component `onXxx` values are typed as
 a function or an array of functions; non-function values are outside the public JSX contract.

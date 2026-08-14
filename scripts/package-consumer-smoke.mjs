@@ -166,6 +166,10 @@ type RequiredButtonSlots = {
   default: (props: { label: string }) => VNodeChildren;
 };
 
+type HeaderOnlyButtonSlots = {
+  header?: () => VNodeChildren;
+};
+
 type TypedButtonProps = {
   value: number;
   onChange?: (value: string) => unknown;
@@ -218,6 +222,12 @@ exactRender();
 const RequiredPackedPanel = defineComponent<object, ComponentEventMap, RequiredButtonSlots>(
   (_props, { slots }) => <section>{slots.default({ label: "required" })}</section>,
 );
+const HeaderOnlyPackedPanel = defineComponent<object, ComponentEventMap, HeaderOnlyButtonSlots>(
+  (_props, { slots }) => {
+    slots.header?.();
+    return <section>header only</section>;
+  },
+);
 
 const ThemeLabel = () => {
   const theme = inject(ThemeKey, "light");
@@ -252,10 +262,29 @@ const GenericLabel = <Value,>(props: {
   onFocus={(reason: string) => reason}
 />;
 <TypedButton value={1} onChange={[(value: number) => String(value)]} />;
+<RequiredPackedPanel>required</RequiredPackedPanel>;
+h(RequiredPackedPanel, null, "required");
+h(RequiredPackedPanel, null, {
+  default: ({ label }) => <span>{label}</span>,
+});
+
+// @ts-expect-error packaged required default slots require JSX children
 <RequiredPackedPanel />;
+
+// @ts-expect-error packaged components without a default slot reject JSX children
+<HeaderOnlyPackedPanel>unexpected</HeaderOnlyPackedPanel>;
+
+// @ts-expect-error packaged required default slots require h() children
 h(RequiredPackedPanel);
+
+// @ts-expect-error packaged typed h() slots reject unknown names
 h(RequiredPackedPanel, null, {
   unknownProducerSlot: (props?: Record<string, unknown>) => <span>{String(props?.value)}</span>,
+});
+
+// @ts-expect-error packaged typed h() scoped slots retain their declared props
+h(RequiredPackedPanel, null, {
+  default: (props: { label: number }) => <span>{props.label}</span>,
 });
 
 // @ts-expect-error packaged typed listeners receive the declared number payload

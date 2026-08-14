@@ -16,7 +16,8 @@ pnpm release:check
 ```
 
 This runs release readiness, format check, typecheck, JSX dev typecheck, lint, default tests,
-package exports tests, coverage thresholds, package consumer smoke, stable application smoke
+package exports tests, coverage thresholds, package consumer smoke, independent adoption smoke,
+stable application smoke
 (`pnpm stable:app`), jsdom benchmark smoke, Chromium production browser benchmark, browser e2e tests,
 and DevTools extension e2e smoke. The package consumer smoke includes packed ESM/CJS import checks,
 TypeScript consumer checks, router public API checks, and a Vite production build that transforms a
@@ -25,7 +26,13 @@ TypeScript consumer checks, router public API checks, and a Vite production buil
 For public API changes, `pnpm release:readiness`, `pnpm package:smoke`, `pnpm test:e2e`, and
 `pnpm test:e2e:devtools-extension` are mandatory gates. `pnpm release:check` includes them so
 release preparation, package-boundary drift, and browser extension drift are checked together. Treat
-`pnpm stable:app` as a mandatory gate as well.
+`pnpm adoption:smoke` as a mandatory gate. Treat `pnpm stable:app` as a mandatory gate as well.
+
+`pnpm adoption:smoke` installs the packed candidate into a temporary consumer with no source alias,
+then typechecks and builds CSR plus SSR/hydration entries. Run `pnpm adoption:smoke:browsers` when
+recording candidate evidence for Chromium, Firefox, and WebKit. Use
+`pnpm adoption:smoke -- --package <exact-version>` for a registry-backed comparison; install/network
+failures are separate from consumer contract failures.
 
 The GitHub Actions CI workflow runs the quality job on both Node 20 and Node 22. It keeps the checks
 split into named steps and runs `pnpm release:readiness` before the longer checks so package metadata
@@ -40,7 +47,8 @@ and `pnpm test:e2e:devtools-extension` without implying cross-browser support fo
 
 Before treating a stable upgrade candidate as ready, run `pnpm release:candidate:check`. It first
 verifies publishable Git/metadata readiness, runs `pnpm stable:app:upgrade` against the exact
-baseline `@italone/solace@0.1.0-beta.2`, and then runs `pnpm release:check`. This network-backed
+long-term `@italone/solace@0.1.0-beta.2` and latest published `@italone/solace@0.1.0-beta.4`
+baselines, and then runs `pnpm release:check`. This network-backed
 candidate command remains separate from routine pull-request CI and is not a substitute for the
 maintainer's release decision. Keep types, docs, changelog, and tests together for every public
 compatibility change. Confirm that protected export paths remain available, and apply the
@@ -112,6 +120,17 @@ with the claim. Browser latest-window summaries use `metadata.runAt` when it is 
 history files do not have to rely on JSONL file order. Keep `.benchmark-history/` ignored and copy
 only summarized results into release notes; local JSONL history must not be committed or packed.
 
+Generate the auditable 1.0 summary with:
+
+```bash
+pnpm benchmark:history:evidence -- --output release/performance-history.json
+```
+
+The admission gate requires five distinct `runAt` timestamps for every browser scenario and jsdom
+task. Repeated task samples under one timestamp count as one run, and metadata-only jsdom records do
+not count toward task history. The checked-in summary records source SHA-256 digests, first/last
+timestamps, and distinct date counts while the raw `.benchmark-history/*.jsonl` files remain ignored.
+
 ## DevTools Extension Notes
 
 Before release notes or demos mention the browser DevTools extension example, run the browser
@@ -121,6 +140,27 @@ inspected origins. The note should describe the panel as an example-grade timeli
 consumes public `DevtoolsEvent` summaries. Do not describe it as a
 production browser-store distribution, persisted capture workflow, telemetry workflow, component
 tree inspector, dependency graph, flame chart, or SSR/SSG/hydration inspector.
+
+## 1.0 Admission Report
+
+The beta evidence file is `release/one-zero-readiness.json`. Inspect every current criterion without
+failing the documentation workflow:
+
+```bash
+pnpm release:one-zero:check -- --report
+```
+
+Run `pnpm release:one-zero:check` without `--report` as the actual admission gate; it exits nonzero
+until all criteria pass. Readiness requires two independent verified npm applications, successful
+upgrade evidence for beta.2 and beta.4, at least five distinct `runAt` timestamps for every declared
+browser scenario and jsdom task, reviewed production DevTools permissions without broad host access, and documented
+compatibility, deprecation, migration, and rollback procedures. Repository fixtures do not count as
+independent applications, and missing beta evidence must not be replaced with inferred success.
+
+The structured procedure evidence points to the
+[migration and rollback runbook](./migration.md) and the synchronized
+[迁移与回滚手册](./migration.zh-CN.md). These documents make the policy reviewable, but they do not
+claim a live npm rollback rehearsal or authorize publication, dist-tag changes, pushes, or tags.
 
 ## Prepare A Version
 
@@ -136,7 +176,7 @@ Apply pending changesets to `package.json` and changelog files:
 pnpm release:version
 ```
 
-For an explicitly selected beta prerelease number such as `0.1.0-beta.4`, first confirm whether
+For an explicitly selected beta prerelease number such as `0.1.0-beta.5`, first confirm whether
 `.changeset/pre.json` exists. Without active Changesets prerelease state, follow the established
 repository beta workflow: set the exact package version and add the matching top-level CHANGELOG
 entry directly. Do not run `pnpm release:version` when it would replace the approved prerelease

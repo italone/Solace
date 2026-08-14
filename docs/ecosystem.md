@@ -68,3 +68,7 @@ Keep ecosystem work focused on documentation, examples, and adapters:
 - Keep third-party UI integration guidance at the app-wrapper level.
 - Keep DevTools panels tied to public event contracts.
 - Keep release notes honest about the absence of first-party UI components and stable plugins.
+
+UI library and plugin marketplace work are not part of the 1.0 admission gate. The main line first
+requires independent adoption, compatibility upgrades, continuous performance history, narrowed
+production DevTools permissions, and explicit migration/rollback procedures.

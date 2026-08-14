@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-08-14",
+  "applications": [
+    {
+      "name": "operations-console",
+      "independent": false,
+      "packageSource": "local",
+      "verified": true,
+      "notes": "Repository-owned compatibility fixture; excluded from real adoption count."
+    },
+    {
+      "name": "adoption-consumer",
+      "independent": false,
+      "packageSource": "local",
+      "verified": true,
+      "notes": "Packed-package CSR and SSR/hydration fixture; excluded from real adoption count."
+    }
+  ],
+  "upgradeMatrix": {
+    "baselines": {
+      "0.1.0-beta.2": { "verified": true },
+      "0.1.0-beta.4": { "verified": true }
+    }
+  },
+  "performance": {
+    "minimumDistinctRuns": 5,
+    "evidence": "release/performance-history.json"
+  },
+  "devtools": {
+    "productionManifestReviewed": true,
+    "broadHostAccessRemoved": true
+  },
+  "migrationPolicy": {
+    "compatibility": {
+      "documented": true,
+      "evidence": ["docs/compatibility.md", "docs/compatibility.zh-CN.md"]
+    },
+    "deprecation": {
+      "documented": true,
+      "evidence": ["docs/compatibility.md", "docs/compatibility.zh-CN.md"]
+    },
+    "migration": {
+      "documented": true,
+      "evidence": ["docs/migration.md", "docs/migration.zh-CN.md"]
+    },
+    "rollback": {
+      "documented": true,
+      "evidence": ["docs/migration.md", "docs/migration.zh-CN.md"]
+    }
+  }
+}

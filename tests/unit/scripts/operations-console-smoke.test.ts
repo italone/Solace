@@ -5,6 +5,7 @@ import {
   discoverBrowserEntry,
 } from "../../../scripts/operations-console-smoke.mjs";
 import {
+  baselineSupportsAsyncRendering,
   createConsumerPackageJson,
   createConsumerTsconfig,
   parseSmokeArguments,
@@ -61,6 +62,11 @@ describe("operations console package smoke", () => {
     expect(candidate.exclude).not.toContain("src/entries/server-async.tsx");
   });
 
+  it("enables async rendering only for the baseline that published it", () => {
+    expect(baselineSupportsAsyncRendering("0.1.0-beta.2")).toBe(false);
+    expect(baselineSupportsAsyncRendering("0.1.0-beta.4")).toBe(true);
+  });
+
   it("returns fresh TypeScript configuration objects", () => {
     const first = createConsumerTsconfig(false);
     const second = createConsumerTsconfig(false);
@@ -71,28 +77,39 @@ describe("operations console package smoke", () => {
     expect(first.exclude).not.toBe(second.exclude);
   });
 
-  it("accepts no arguments or only the pinned baseline option", () => {
-    expect(parseSmokeArguments([])).toEqual({});
+  it("accepts no arguments or the ordered compatibility baseline matrix", () => {
+    expect(parseSmokeArguments([])).toEqual({ baselines: [] });
     expect(parseSmokeArguments(["--baseline", "0.1.0-beta.2"])).toEqual({
-      baseline: "0.1.0-beta.2",
+      baselines: ["0.1.0-beta.2"],
+    });
+    expect(
+      parseSmokeArguments(["--baseline", "0.1.0-beta.2", "--baseline", "0.1.0-beta.4"]),
+    ).toEqual({
+      baselines: ["0.1.0-beta.2", "0.1.0-beta.4"],
     });
   });
 
-  it.each(["latest", "beta", "^0.1.0-beta.2", ">=0.1.0-beta.2"])(
+  it.each(["latest", "beta", "^0.1.0-beta.2", ">=0.1.0-beta.2", "0.1.0-beta.3"])(
     "rejects the unsupported baseline %s",
     (baseline) => {
       expect(() => parseSmokeArguments(["--baseline", baseline])).toThrow(
-        "Baseline must be 0.1.0-beta.2",
+        "Baseline must be one of: 0.1.0-beta.2, 0.1.0-beta.4",
       );
     },
   );
+
+  it("rejects duplicate baselines", () => {
+    expect(() =>
+      parseSmokeArguments(["--baseline", "0.1.0-beta.2", "--baseline", "0.1.0-beta.2"]),
+    ).toThrow("Baseline must not be repeated: 0.1.0-beta.2");
+  });
 
   it.each<[string[]]>([
     [["--baseline"]],
     [["--baseline=0.1.0-beta.2"]],
     [["--unknown"]],
     [["0.1.0-beta.2"]],
-    [["--baseline", "0.1.0-beta.2", "extra"]],
+    [["--baseline", "0.1.0-beta.2", "extra", "0.1.0-beta.4"]],
   ])("rejects malformed arguments: %j", (args) => {
     expect(() => parseSmokeArguments(args)).toThrow();
   });

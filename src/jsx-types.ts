@@ -81,14 +81,20 @@ type ComponentPropsWithListeners<
 export type JSXComponentProps<
   Props extends object,
   Events extends ComponentEventMap = ComponentEventMap,
-> = ComponentPropsWithListeners<Props, Events> & {
-  children?: JSXChildren;
-};
+  SlotMap extends object = Record<string, unknown>,
+> = ComponentPropsWithListeners<Props, Events> & JSXSlotChildren<SlotMap>;
+
+type JSXSlotChildren<SlotMap extends object> = string extends keyof SlotMap
+  ? { children?: JSXChildren }
+  : "default" extends keyof SlotMap
+    ? undefined extends SlotMap["default"]
+      ? { children?: JSXChildren }
+      : { children: JSXChildren }
+    : { children?: never };
 
 export type JSXManagedComponentProps<Component, Props> = Props extends object
-  ? // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    Component extends ComponentType<never, infer Events, infer _SlotMap>
-    ? JSXComponentProps<Props, Events>
+  ? Component extends ComponentType<never, infer Events, infer SlotMap>
+    ? JSXComponentProps<Props, Events, SlotMap>
     : JSXComponentProps<Props, ComponentEventMap>
   : Props;
 

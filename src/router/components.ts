@@ -1,4 +1,5 @@
 import type { ComponentRender, ComponentType, VNodeProps } from "../vnode/vnode";
+import type { ComponentSetupContext } from "../component/component";
 import { Fragment } from "../vnode/vnode";
 import { h } from "../vnode/h";
 import { defineAsyncComponent } from "../component/async-component";
@@ -21,7 +22,7 @@ export interface RouterLinkProps extends VNodeProps {
 
 export function RouterLink(
   props: RouterLinkProps,
-  { slots }: { slots: { default?: () => unknown } },
+  { slots }: ComponentSetupContext,
 ): ComponentRender {
   const router = useRouter();
 

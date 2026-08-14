@@ -19,7 +19,7 @@ export function jsxDEV<
   SlotMap extends object,
 >(
   type: ComponentType<Props, Events, SlotMap>,
-  props?: JSXComponentProps<Props, Events> | null,
+  props: JSXComponentProps<Props, Events, SlotMap>,
   key?: JSXKey,
 ): VNode;
 export function jsxDEV(

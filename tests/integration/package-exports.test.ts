@@ -78,9 +78,14 @@ describe("package exports", () => {
       render: expect.any(Function),
       reactive: expect.any(Function),
       ref: expect.any(Function),
+      RouterHydrationError: expect.any(Function),
       RouterLink: expect.any(Function),
       RouterNavigationError: expect.any(Function),
       RouterView: expect.any(Function),
+      createRouterSnapshot: expect.any(Function),
+      parseRouterSnapshot: expect.any(Function),
+      serializeRouterSnapshot: expect.any(Function),
+      verifyRouterSnapshot: expect.any(Function),
       lazyRoute: expect.any(Function),
       useRoute: expect.any(Function),
       useRouter: expect.any(Function),
@@ -90,6 +95,7 @@ describe("package exports", () => {
     });
     expect(Object.keys(api).sort()).toEqual([
       "Fragment",
+      "RouterHydrationError",
       "RouterLink",
       "RouterNavigationError",
       "RouterView",
@@ -97,6 +103,7 @@ describe("package exports", () => {
       "createApp",
       "createMemoryHistory",
       "createRouter",
+      "createRouterSnapshot",
       "createStore",
       "createWebHashHistory",
       "createWebHistory",
@@ -110,13 +117,16 @@ describe("package exports", () => {
       "onMounted",
       "onUnmounted",
       "onUpdated",
+      "parseRouterSnapshot",
       "provide",
       "reactive",
       "ref",
       "render",
+      "serializeRouterSnapshot",
       "useRoute",
       "useRouter",
       "useStyle",
+      "verifyRouterSnapshot",
       "watch",
       "watchEffect",
     ]);
@@ -208,19 +218,31 @@ describe("package exports", () => {
     const server = await import("@italone/solace/server");
 
     expect(Object.keys(server).sort()).toEqual([
+      "RouterHydrationError",
+      "createRouterServerContext",
+      "createRouterSnapshot",
       "createStaticRoutesFromRouter",
       "generateStaticSite",
       "generateStaticSiteAsync",
+      "parseRouterSnapshot",
       "renderToString",
       "renderToStringAsync",
       "resolveStaticAssets",
+      "serializeRouterSnapshot",
+      "verifyRouterSnapshot",
     ]);
+    expect(server.createRouterServerContext).toEqual(expect.any(Function));
+    expect(server.createRouterSnapshot).toEqual(expect.any(Function));
     expect(server.createStaticRoutesFromRouter).toEqual(expect.any(Function));
     expect(server.generateStaticSite).toEqual(expect.any(Function));
     expect(server.generateStaticSiteAsync).toEqual(expect.any(Function));
     expect(server.renderToString).toEqual(expect.any(Function));
     expect(server.renderToStringAsync).toEqual(expect.any(Function));
     expect(server.resolveStaticAssets).toEqual(expect.any(Function));
+    expect(server.RouterHydrationError).toEqual(expect.any(Function));
+    expect(server.parseRouterSnapshot).toEqual(expect.any(Function));
+    expect(server.serializeRouterSnapshot).toEqual(expect.any(Function));
+    expect(server.verifyRouterSnapshot).toEqual(expect.any(Function));
     expect(server).not.toHaveProperty("hydrate");
     expect(server).not.toHaveProperty("patch");
 
@@ -484,19 +506,31 @@ describe("package exports", () => {
     expect(Object.keys(vite).sort()).toEqual(["default", "solacePlugin"]);
     expect(Object.keys(sfc)).toEqual([]);
     expect(Object.keys(server).sort()).toEqual([
+      "RouterHydrationError",
+      "createRouterServerContext",
+      "createRouterSnapshot",
       "createStaticRoutesFromRouter",
       "generateStaticSite",
       "generateStaticSiteAsync",
+      "parseRouterSnapshot",
       "renderToString",
       "renderToStringAsync",
       "resolveStaticAssets",
+      "serializeRouterSnapshot",
+      "verifyRouterSnapshot",
     ]);
+    expect(server.RouterHydrationError).toEqual(expect.any(Function));
+    expect(server.createRouterServerContext).toEqual(expect.any(Function));
+    expect(server.createRouterSnapshot).toEqual(expect.any(Function));
     expect(server.createStaticRoutesFromRouter).toEqual(expect.any(Function));
     expect(server.generateStaticSite).toEqual(expect.any(Function));
     expect(server.generateStaticSiteAsync).toEqual(expect.any(Function));
+    expect(server.parseRouterSnapshot).toEqual(expect.any(Function));
     expect(server.renderToString).toEqual(expect.any(Function));
     expect(server.renderToStringAsync).toEqual(expect.any(Function));
     expect(server.resolveStaticAssets).toEqual(expect.any(Function));
+    expect(server.serializeRouterSnapshot).toEqual(expect.any(Function));
+    expect(server.verifyRouterSnapshot).toEqual(expect.any(Function));
   });
 
   it("rejects private package subpaths", async () => {

@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createMemoryHistory, h, lazyRoute } from "../../../src/index";
+import { createApp, createMemoryHistory, h, lazyRoute } from "../../../src/index";
 import * as rootModule from "../../../src/index";
 import * as routerModule from "../../../src/router";
-import { createRouter } from "../../../src/router/router";
+import { createRouter, RouterNavigationError } from "../../../src/router/router";
 import type { RouterHistory } from "../../../src/router/types";
 
 const Home = () => h("div", null, "home");
@@ -58,30 +58,107 @@ async function settleNavigationPipeline(): Promise<void> {
 }
 
 describe("createRouter", () => {
+  it("shares one initial readiness promise and settles redirects and guards", async () => {
+    const history = createMemoryLikeHistory("/legacy");
+    const router = createRouter({
+      history,
+      routes: [
+        { path: "/", component: Home },
+        { path: "/legacy", redirect: "/" },
+      ],
+    });
+
+    const first = router.isReady();
+    const second = router.isReady();
+
+    expect(first).toBe(second);
+    await expect(first).resolves.toMatchObject({ fullPath: "/" });
+    expect(router.currentRoute.value.fullPath).toBe("/");
+  });
+
+  it("allows readiness to be awaited after router installation", async () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory("/"),
+      routes: [{ path: "/", component: Home }],
+    });
+    const app = createApp(h("div", null, "app"));
+
+    app.use(router);
+
+    await expect(router.isReady()).resolves.toMatchObject({ fullPath: "/" });
+  });
+
+  it("rejects an initial cancelled guard with a structured navigation error", async () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory("/"),
+      routes: [{ path: "/", component: Home }],
+    });
+    router.beforeEach(() => false);
+
+    await expect(router.isReady()).rejects.toMatchObject({
+      name: "RouterNavigationError",
+      type: "guard-cancelled",
+    });
+  });
+
+  it("keeps a failed readiness promise rejected while later pushes remain independent", async () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory("/"),
+      routes: [{ path: "/", component: Home }],
+    });
+    router.beforeEach(() => {
+      throw new Error("blocked");
+    });
+
+    const first = router.isReady();
+    await expect(first).rejects.toBeInstanceOf(RouterNavigationError);
+    await expect(router.isReady()).rejects.toBeInstanceOf(RouterNavigationError);
+    await expect(router.push("/")).resolves.toMatchObject({ fullPath: "/" });
+  });
+
+  it("rejects invalid initial history when readiness is explicitly awaited", async () => {
+    const router = createRouter({
+      history: createMemoryLikeHistory("https://invalid.example"),
+      routes: [{ path: "/", component: Home }],
+    });
+
+    await expect(router.isReady()).rejects.toBeInstanceOf(TypeError);
+  });
+
   it("re-exports the public router module surface", () => {
     expect(Object.keys(routerModule).sort()).toEqual([
+      "RouterHydrationError",
       "RouterLink",
       "RouterNavigationError",
       "RouterView",
       "createMemoryHistory",
       "createRouter",
+      "createRouterSnapshot",
       "createWebHashHistory",
       "createWebHistory",
       "lazyRoute",
+      "parseRouterSnapshot",
+      "serializeRouterSnapshot",
       "useRoute",
       "useRouter",
+      "verifyRouterSnapshot",
     ]);
     expect(routerModule).toMatchObject({
+      RouterHydrationError: expect.any(Function),
       RouterLink: expect.any(Function),
       RouterNavigationError: expect.any(Function),
       RouterView: expect.any(Function),
       createMemoryHistory: expect.any(Function),
       createRouter: expect.any(Function),
+      createRouterSnapshot: expect.any(Function),
       createWebHashHistory: expect.any(Function),
       createWebHistory: expect.any(Function),
       lazyRoute: expect.any(Function),
+      parseRouterSnapshot: expect.any(Function),
+      serializeRouterSnapshot: expect.any(Function),
       useRoute: expect.any(Function),
       useRouter: expect.any(Function),
+      verifyRouterSnapshot: expect.any(Function),
     });
     expect(routerModule).not.toHaveProperty("historyHrefFormatterKey");
     expect(routerModule).not.toHaveProperty("hasHistoryHrefFormatter");

@@ -15,7 +15,7 @@ describe("release readiness check CLI", () => {
 
     expect(stderr).toBe("");
     expect(stdout).toContain(
-      "public API gates: pnpm release:readiness, pnpm package:smoke, pnpm stable:app, pnpm test:e2e, pnpm test:e2e:devtools-extension",
+      "public API gates: pnpm release:readiness, pnpm package:smoke, pnpm adoption:smoke, pnpm stable:app, pnpm test:e2e, pnpm test:e2e:devtools-extension",
     );
     expect(stdout).toContain(
       "benchmark history: .benchmark-history/ ignored local JSONL artifacts",
@@ -110,6 +110,7 @@ describe("release readiness check CLI", () => {
       "pnpm quality",
       "pnpm test:coverage",
       "pnpm package:smoke",
+      "pnpm adoption:smoke",
       "pnpm stable:app",
       "pnpm benchmark",
       "pnpm benchmark:browser",
@@ -128,6 +129,9 @@ describe("release readiness check CLI", () => {
       "pnpm stable:app:upgrade",
       "pnpm release:check",
     ]);
+    expect(packageJson.scripts?.["stable:app:upgrade"]).toBe(
+      "node scripts/operations-console-smoke.mjs --baseline 0.1.0-beta.2 --baseline 0.1.0-beta.4",
+    );
   });
 
   test("keeps registry smoke explicit and outside ordinary release gates", async () => {

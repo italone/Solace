@@ -23,8 +23,13 @@ export {
   createWebHashHistory,
   createWebHistory,
   lazyRoute,
+  createRouterSnapshot,
+  parseRouterSnapshot,
+  RouterHydrationError,
+  serializeRouterSnapshot,
   useRoute,
   useRouter,
+  verifyRouterSnapshot,
 } from "./router";
 export type {
   AsyncComponentLoader,
@@ -69,6 +74,7 @@ export type {
   RouterScrollPosition,
   RouterLinkProps,
 } from "./router";
+export type { RouteRecordIdentity, RouterHydrationErrorField, RouterSnapshot } from "./router";
 export type {
   ComponentProps,
   ComponentRender,

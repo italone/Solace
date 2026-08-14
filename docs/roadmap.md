@@ -8,11 +8,17 @@ line:
 - Reactive core, scheduler, renderer, function components, events, store, JSX/TSX runtime, DevTools API, examples, and release gates.
 - All tests passing, coverage above thresholds, package exports validated.
 - Completed stable prerequisites: medium-app validation and the compatibility and deprecation policy.
-- Router-aware SSR/hydration and production DevTools remain deferred.
+- Composable router-aware SSR/hydration primitives are implemented; direct renderer integration and
+  production DevTools remain deferred.
 
 ## Next Phase: Beta
 
 Work remaining, in rough priority order:
+
+The selected router-aware SSR/hydration bottleneck now has a composable first slice. Its design is recorded in
+[`2026-08-14-router-aware-ssr-hydration-design.md`](./superpowers/specs/2026-08-14-router-aware-ssr-hydration-design.md).
+This priority does not open auth, permissions, streaming, Suspense, route crawling, or filesystem
+output; each requires a separate public API and compatibility review.
 
 1. **JSX/TSX-first runtime ergonomics** — make function components, JSX/TSX examples, explicit
    runtime APIs, and package-boundary usage the main Solace identity. Avoid steering the framework
@@ -26,8 +32,8 @@ Work remaining, in rough priority order:
    wildcard fallback routes, query strings, web/hash/memory history, nested routes, redirects, route
    names, aliases, route props, named locations, global and route-level guards, explicit
    `lazyRoute()` components, `RouterLink`, `RouterView`, `useRoute`, `useRouter`, and scroll
-   behavior; keep SSR/SSG/hydration integration, auth, and permissions deferred until separately
-   designed.
+   behavior plus `isReady()`, canonical snapshots, and request-scoped server contexts; keep direct
+   SSR/SSG/hydration renderer options, auth, and permissions deferred until separately designed.
 4. **Mandatory public API gates** — keep package export tests, packed-consumer smoke, browser e2e, and release readiness required for public API changes; these are completed stable prerequisites.
 5. **SSR / hydration minimum loop** — implemented through `@italone/solace/server` and
    `createApp(App).hydrate(container)` for synchronous VNode/component trees, including
@@ -37,16 +43,21 @@ Work remaining, in rough priority order:
 6. **SSG core** — implemented on top of `renderToString()` via `generateStaticSite()`; keep
    filesystem output and route crawling deferred while preserving collected `renderToString()`
    styles, production asset tags, and explicit-path router records through the shell contract.
-7. **SSR/SSG/hydration next phase** — follow
-   `docs/superpowers/specs/2026-07-28-ssr-ssg-hydration-next-phase-design.md`; harden hydration
-   mismatch diagnostics, document SSG shell/style placement, and keep full router-aware SSR and
-   hydration deferred until separately designed.
+7. **SSR/SSG/hydration next phase** — the composable router-aware slice now settles request routers,
+   serializes canonical snapshots, and verifies before hydration. Keep streaming, Suspense/selective
+   hydration, route crawling, filesystem output, and direct renderer-owned router options deferred.
 8. **Browser DevTools extension UI** — the first example panel is implemented under
    `examples/devtools-extension`; continue hardening extension packaging, the browser extension QA
    checklist, richer event contracts, and future inspectors without reading private runtime state.
 9. **Production adoption guidance** — large-app patterns, performance tuning, migration notes. A
    first guide now exists in `docs/large-app.md` and `docs/large-app.zh-CN.md`; ecosystem and UI
    library decisions are recorded in `docs/ecosystem.md`; keep evolving both from real usage.
+10. **1.0 admission evidence** — keep `release/one-zero-readiness.json` and
+    `pnpm release:one-zero:check -- --report` honest about independent apps, upgrade coverage,
+    performance history, production DevTools permissions, and migration/rollback procedures. The
+    beta line remains not ready while any criterion fails. Migration and rollback procedures are now
+    documented through structured evidence; independent applications and performance history remain
+    unsatisfied.
 
 ## Out of Scope (for now)
 
@@ -56,6 +67,7 @@ Work remaining, in rough priority order:
 - SFC syntax expansion without a separate design.
 - Production-grade DevTools extension distribution and advanced inspectors.
 - Long-term compatibility guarantees for private internal modules.
+- UI library or plugin marketplace work as a 1.0 admission requirement.
 
 ## How to Propose Changes
 

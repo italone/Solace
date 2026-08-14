@@ -82,6 +82,7 @@ export interface RouterOptions {
 export interface Router {
   currentRoute: Ref<RouteLocationNormalized>;
   install(app: App): void;
+  isReady(): Promise<RouteLocationNormalized>;
   push(to: RouteLocationRaw): Promise<RouteLocationNormalized>;
   replace(to: RouteLocationRaw): Promise<RouteLocationNormalized>;
   back(): void;

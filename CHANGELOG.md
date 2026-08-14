@@ -1,5 +1,19 @@
 # @italone/solace
 
+## 0.1.0-beta.5
+
+### Patch Changes
+
+- Add opt-in typed component emit, inferred JSX listener, and typed component slot contracts while
+  preserving permissive legacy components and the existing runtime payload.
+- Validate release candidates against both the long-term `0.1.0-beta.2` Operations Console
+  baseline and the latest published `0.1.0-beta.4` baseline.
+- Add independent packed CSR and SSR/hydration adoption checks and executable `1.0` admission
+  evidence.
+- Add composable router-aware SSR/hydration through `router.isReady()`, canonical snapshots, and
+  `createRouterServerContext()` while keeping streaming and direct renderer-owned router options
+  deferred.
+
 ## 0.1.0-beta.4
 
 ### Patch Changes

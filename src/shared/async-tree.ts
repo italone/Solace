@@ -225,7 +225,7 @@ function normalizeSource(source: VNode | ComponentType | AsyncComponentType): VN
   }
 
   if (typeof source === "function") {
-    return h(source);
+    return h(source as ComponentType);
   }
 
   throw new TypeError("Async source must resolve to a VNode or component function");

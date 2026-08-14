@@ -18,6 +18,12 @@ describe("public contract documentation", () => {
       projectStatusZh,
       compatibility,
       compatibilityZh,
+      routerAwareSsrDesign,
+      migration,
+      migrationZh,
+      release,
+      roadmap,
+      changelog,
     ] = await Promise.all([
       readDoc("readme.md"),
       readDoc("readme.zh-CN.md"),
@@ -28,6 +34,12 @@ describe("public contract documentation", () => {
       readDoc("docs/project-status.zh-CN.md"),
       readDoc("docs/compatibility.md"),
       readDoc("docs/compatibility.zh-CN.md"),
+      readDoc("docs/superpowers/specs/2026-08-14-router-aware-ssr-hydration-design.md"),
+      readDoc("docs/migration.md"),
+      readDoc("docs/migration.zh-CN.md"),
+      readDoc("docs/release.md"),
+      readDoc("docs/roadmap.md"),
+      readDoc("CHANGELOG.md"),
     ]);
 
     expect(readme).toContain("## Public Contract Gate");
@@ -36,6 +48,15 @@ describe("public contract documentation", () => {
     expect(readmeZh).toContain("[兼容性与弃用策略](./docs/compatibility.zh-CN.md)");
     expect(api).toContain("## Deferred Beta Boundaries");
     expect(apiZh).toContain("## Deferred Beta 边界");
+    for (const doc of [api, apiZh, packageUsage]) {
+      expect(doc).toContain("router.isReady()");
+      expect(doc).toContain("createRouterServerContext()");
+      expect(doc).toContain("createRouterSnapshot");
+      expect(doc).toContain("parseRouterSnapshot");
+      expect(doc).toContain("serializeRouterSnapshot");
+      expect(doc).toContain("verifyRouterSnapshot");
+      expect(doc).toContain("RouterHydrationError");
+    }
     expect(packageUsage).toContain(
       "Do not treat route `meta` as authentication or permission enforcement",
     );
@@ -57,11 +78,19 @@ describe("public contract documentation", () => {
     expect(packageUsage).toContain("pnpm test:e2e:devtools-extension");
     expect(projectStatus).toContain("pnpm test:e2e:devtools-extension");
     expect(projectStatusZh).toContain("pnpm test:e2e:devtools-extension");
-    expect(packageUsage).toContain("example-grade broad inspected-page access");
-    expect(packageUsage).toContain("review and narrow extension permissions");
+    expect(projectStatus).toContain("`release/performance-history.json`");
+    expect(projectStatusZh).toContain("`release/performance-history.json`");
+    expect(projectStatus).toContain("3/5 distinct task runs");
+    expect(projectStatusZh).toContain("3/5 个独立 task runs");
+    expect(release).toContain("pnpm benchmark:history:evidence");
+    expect(release).toContain("five distinct `runAt` timestamps");
+    expect(changelog).toContain("`router.isReady()`");
+    expect(changelog).toContain("`createRouterServerContext()`");
+    expect(packageUsage).toContain("restricted to the fixed local demo origins");
+    expect(packageUsage).toContain("review the exact inspected origins");
     expect(projectStatus).toContain("route `meta` is not mistaken for enforcement");
-    expect(projectStatus).toContain("review and narrow extension permissions");
-    expect(projectStatusZh).toContain("收窄 extension permissions");
+    expect(projectStatus).toContain("now restricted to the local 6174 demo origins");
+    expect(projectStatusZh).toContain("现在只允许本地 6174 demo origins");
     expect(api).toContain("Hydration options must be a non-array object");
     expect(packageUsage).toContain("Hydration options must be a non-array object");
     expect(api).toContain("`renderToString()` context, when provided, must be a plain object");
@@ -105,7 +134,12 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toContain("公开契约门禁仍是发布前的第一条防线");
     expect(projectStatus).toContain("browser extension QA checklist");
     expect(projectStatusZh).toContain("browser extension QA checklist");
-    expect(projectStatus).toContain("2026-08-12 full local `pnpm release:check` passed");
+    expect(projectStatus).toContain("final 2026-08-14 beta.5 local `pnpm release:check` passed");
+    expect(projectStatus).toContain("81 Vitest files / 702 tests");
+    expect(projectStatus).toContain("92.97% statements");
+    expect(projectStatus).toContain("88.11% branches");
+    expect(projectStatus).toMatch(/95\.21%\s+functions/);
+    expect(projectStatus).toContain("93.25% lines");
     expect(projectStatus).toContain("71 Vitest files / 626 tests");
     expect(projectStatus).toContain("94.28% statements");
     expect(projectStatus).toContain("89.18% branches");
@@ -113,22 +147,22 @@ describe("public contract documentation", () => {
     expect(projectStatus).toContain("94.32% lines");
     expect(projectStatus).toMatch(/24 browser e2e\s+tests across Chromium, Firefox, and WebKit/);
     expect(projectStatus).toMatch(/2\s+Chromium-only\s+DevTools\s+extension\s+e2e\s+tests/);
-    expect(projectStatusZh).toContain("2026-08-12 的完整本地 `pnpm release:check` 已通过");
-    expect(projectStatusZh).toMatch(/71 个 Vitest\s+文件 \/ 626 个测试/);
-    expect(projectStatusZh).toContain("94.28% statements");
-    expect(projectStatusZh).toContain("89.18% branches");
-    expect(projectStatusZh).toMatch(/96\.28%\s+functions/);
-    expect(projectStatusZh).toContain("94.32% lines");
+    expect(projectStatusZh).toContain("2026-08-14 beta.5 契约、adoption 和 performance evidence");
+    expect(projectStatusZh).toMatch(/81 个 Vitest\s+文件 \/ 702 个测试/);
+    expect(projectStatusZh).toMatch(/92\.97%\s+statements/);
+    expect(projectStatusZh).toContain("88.11% branches");
+    expect(projectStatusZh).toMatch(/95\.21%\s+functions/);
+    expect(projectStatusZh).toContain("93.25% lines");
     expect(projectStatusZh).toMatch(/Chromium、Firefox、WebKit 共 24 个\s+browser e2e 测试/);
     expect(projectStatusZh).toMatch(/2\s+个仅\s+Chromium\s+的\s+DevTools\s+extension\s+e2e\s+测试/);
-    expect(readme).toContain("This package build is `0.1.0-beta.4`");
-    expect(readme).toContain("npm `beta` is `0.1.0-beta.4`");
-    expect(readmeZh).toContain("本 package build 是 `0.1.0-beta.4`");
-    expect(readmeZh).toContain("npm `beta` 是 `0.1.0-beta.4`");
-    expect(projectStatus).toContain("Repository package version: `0.1.0-beta.4`");
+    expect(readme).toContain("unpublished\n`0.1.0-beta.5` candidate");
+    expect(readme).toContain("npm `beta` remains\n`0.1.0-beta.4`");
+    expect(readmeZh).toContain("尚未发布的 `0.1.0-beta.5` 候选");
+    expect(readmeZh).toContain("npm `beta` 仍是 `0.1.0-beta.4`");
+    expect(projectStatus).toContain("Repository package version: `0.1.0-beta.5`");
     expect(projectStatus).toContain("Published npm `beta`: `0.1.0-beta.4`");
     expect(projectStatus).toContain("remote `v0.1.0-beta.4` tag is present");
-    expect(projectStatusZh).toContain("仓库 package 版本：`0.1.0-beta.4`");
+    expect(projectStatusZh).toContain("仓库 package 版本：`0.1.0-beta.5`");
     expect(projectStatusZh).toContain("npm `beta` 已发布版本：`0.1.0-beta.4`");
     expect(projectStatusZh).toContain("远端 `v0.1.0-beta.4` tag 已存在");
 
@@ -187,12 +221,63 @@ describe("public contract documentation", () => {
 
     for (const doc of [api, apiZh]) {
       expect(doc).toContain("ComponentType<");
-      expect(doc).toContain("ComponentSetupContext<Events>");
+      expect(doc).toContain("ComponentSetupContext<Events, SlotMap>");
     }
 
     expect(packageUsage).toContain("[Compatibility and deprecation policy](./compatibility.md)");
     expect(packageUsage).toContain("[兼容性与弃用策略](./compatibility.zh-CN.md)");
     expect(compatibility).toContain("0.1.x");
     expect(compatibilityZh).toContain("0.1.x");
+
+    expect(migration).toContain("## Migration Procedure");
+    expect(migration).toContain("## Exact Package Consumer Validation");
+    expect(migration).toContain("## Rollback Triggers");
+    expect(migration).toContain("## Rollback Procedure");
+    expect(migration).toContain("Published npm versions are immutable");
+    expect(migration).toMatch(/separate\s+maintainer authorization/);
+    expect(migration).toContain("adoption.independent-apps");
+    expect(migrationZh).toContain("## 迁移流程");
+    expect(migrationZh).toContain("## 精确包消费者验证");
+    expect(migrationZh).toContain("## 回滚触发条件");
+    expect(migrationZh).toContain("## 回滚流程");
+    expect(migrationZh).toContain("已发布的 npm 版本不可变");
+    expect(migrationZh).toContain("单独的维护者授权");
+    expect(migrationZh).toContain("adoption.independent-apps");
+    expect(release).toContain("[migration and rollback runbook](./migration.md)");
+    expect(release).toContain("[迁移与回滚手册](./migration.zh-CN.md)");
+    expect(roadmap).toMatch(
+      /Migration and rollback procedures are now\s+documented through structured evidence/,
+    );
+    expect(projectStatus).toMatch(
+      /Migration and rollback procedures now pass the structured evidence\s+gate/,
+    );
+    expect(projectStatus).toMatch(
+      /only independent production applications and two additional independently collected jsdom\s+task runs remain unsatisfied/,
+    );
+    expect(projectStatus).toMatch(/no live npm\s+rollback rehearsal is claimed/);
+    expect(projectStatusZh).toContain("migration/rollback 流程现已通过结构化证据门禁");
+    expect(projectStatusZh).toMatch(/仅独立生产应用和另外两个独立采集的 jsdom task runs 尚未满足/);
+    expect(projectStatusZh).toContain("不声明已经完成真实 npm 回滚演练");
+
+    expect(routerAwareSsrDesign).toContain("createMemoryHistory()");
+    expect(routerAwareSsrDesign).toContain("canonical route snapshot");
+    expect(routerAwareSsrDesign).toContain("server context");
+    expect(routerAwareSsrDesign).toContain("hydration verification");
+    expect(routerAwareSsrDesign).toContain("Implemented locally and verified on 2026-08-14");
+    expect(projectStatus).toContain("Direct renderer-owned SSR/hydration integration");
+    expect(projectStatusZh).toContain("renderer-owned 直接 SSR/hydration 集成");
+    for (const deferredBoundary of [
+      "auth",
+      "permissions",
+      "streaming",
+      "Suspense",
+      "route crawling",
+      "filesystem output",
+    ]) {
+      expect(routerAwareSsrDesign).toContain(deferredBoundary);
+    }
+    expect(routerAwareSsrDesign).toContain("Router-aware SSR integration is deferred");
+    expect(routerAwareSsrDesign).toContain("Router-aware SSG integration is deferred");
+    expect(routerAwareSsrDesign).toContain("Router-aware hydration integration is deferred");
   });
 });

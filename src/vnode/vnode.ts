@@ -28,6 +28,23 @@ export type AsyncVNodeChildren =
   VNodeChild | AsyncVNodeChild | readonly (VNodeChild | AsyncVNodeChild)[] | null;
 export type VNodeSlots = Record<string, Slot>;
 export type ComponentVNodeChildren = VNodeChildren | VNodeSlots;
+type RequiredKeys<Value extends object> = {
+  [Key in keyof Value]-?: object extends Pick<Value, Key> ? never : Key;
+}[keyof Value];
+type StrictComponentSlotChildren<SlotMap extends object> =
+  Exclude<RequiredKeys<SlotMap>, "default"> extends never
+    ? "default" extends keyof SlotMap
+      ? VNodeChildren | SlotMap
+      : SlotMap
+    : SlotMap;
+export type ComponentSlotChildren<SlotMap extends object> = string extends keyof SlotMap
+  ? ComponentVNodeChildren
+  : StrictComponentSlotChildren<SlotMap>;
+export type ComponentSlotChildrenArguments<SlotMap extends object> = string extends keyof SlotMap
+  ? [children?: ComponentVNodeChildren]
+  : RequiredKeys<SlotMap> extends never
+    ? [children?: ComponentSlotChildren<SlotMap>]
+    : [children: ComponentSlotChildren<SlotMap>];
 export type AsyncComponentVNodeChildren = ComponentVNodeChildren | AsyncVNodeChildren;
 
 export interface VNode {

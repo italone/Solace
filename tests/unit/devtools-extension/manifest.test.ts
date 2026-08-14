@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 
 describe("devtools extension manifest policy", () => {
-  it("documents broad inspected-page permissions as example-grade release risk", async () => {
+  it("restricts inspected-page permissions to the local demo origins", async () => {
     const [manifestRaw, devtools, release] = await Promise.all([
       readFile("examples/devtools-extension/manifest.json", "utf8"),
       readFile("docs/devtools.md", "utf8"),
@@ -15,13 +15,14 @@ describe("devtools extension manifest policy", () => {
       web_accessible_resources?: Array<{ matches?: string[] }>;
     };
 
-    expect(manifest.content_scripts?.[0]?.matches).toEqual(["<all_urls>"]);
-    expect(manifest.host_permissions).toEqual(["<all_urls>"]);
-    expect(manifest.web_accessible_resources?.[0]?.matches).toEqual(["<all_urls>"]);
+    const localDemoMatches = ["http://127.0.0.1:6174/*", "http://localhost:6174/*"];
+    expect(manifest.content_scripts?.[0]?.matches).toEqual(localDemoMatches);
+    expect(manifest.host_permissions).toEqual(localDemoMatches);
+    expect(manifest.web_accessible_resources?.[0]?.matches).toEqual(localDemoMatches);
 
-    expect(devtools).toContain("example-grade broad inspected-page access");
+    expect(devtools).toContain("restricted to the fixed local demo origins");
     expect(devtools).toContain(
-      "Review and narrow `matches`, `host_permissions`, and `web_accessible_resources.matches`",
+      "Review `matches`, `host_permissions`, and `web_accessible_resources.matches`",
     );
     expect(devtools).toContain("production browser-store package");
     expect(release).toContain("review and narrow extension permissions");

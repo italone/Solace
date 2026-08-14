@@ -12,6 +12,10 @@ describe("performance documentation", () => {
     expect(performance).toContain("metadata.runAt");
     expect(performance).toContain("JSONL file order");
     expect(performance).toContain("Keep `.benchmark-history/` ignored");
+    expect(performance).toContain("pnpm benchmark:history:evidence");
+    expect(performance).toContain("release/performance-history.json");
+    expect(performance).toContain("distinct `runAt`");
+    expect(performance).toContain("metadata-only jsdom records");
     expect(performance).toContain(
       "Treat `domMutationCounts` and `movePathCounts` as diagnostic context",
     );

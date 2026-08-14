@@ -25,15 +25,18 @@ export function createApp(rootComponent: ComponentType | AsyncComponentType | VN
   const appProvides: Provides = new Map();
   const app: App = {
     mount(container: Element): void {
-      const vnode = typeof rootComponent === "function" ? h(rootComponent) : rootComponent;
+      const vnode =
+        typeof rootComponent === "function" ? h(rootComponent as ComponentType) : rootComponent;
       render(vnode, container, appProvides);
     },
     hydrate(container: Element, options?: HydrationOptions): void {
-      const vnode = typeof rootComponent === "function" ? h(rootComponent) : rootComponent;
+      const vnode =
+        typeof rootComponent === "function" ? h(rootComponent as ComponentType) : rootComponent;
       hydrate(vnode, container, appProvides, options);
     },
     hydrateAsync(container: Element, options?: HydrationOptions): Promise<void> {
-      const vnode = typeof rootComponent === "function" ? h(rootComponent) : rootComponent;
+      const vnode =
+        typeof rootComponent === "function" ? h(rootComponent as ComponentType) : rootComponent;
       return hydrateAsync(vnode, container, appProvides, options);
     },
     provide<T>(key: ProvideKey, value: T): App {

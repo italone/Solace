@@ -106,6 +106,8 @@ const router = createRouter({
 });
 const pushed = router.push("/");
 pushed.then((route) => route.fullPath);
+const ready = router.isReady();
+ready.then((route) => route.fullPath);
 acceptRouterHistory(createMemoryHistory());
 acceptRouterOptions({ history, routes: [], scrollBehavior });
 acceptRouterOptions({ history, routes: [], scrollBehavior: async () => scrollPosition });
@@ -149,6 +151,7 @@ acceptRouterContract({
   forward: router.forward,
   resolve: router.resolve,
   beforeEach: router.beforeEach,
+  isReady: router.isReady,
   // @ts-expect-error href formatting is not part of the public Router contract
   href: (path: string) => path,
 });

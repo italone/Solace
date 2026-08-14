@@ -13,17 +13,17 @@ JSX/TSX 和明确的运行时 API。运行时能力从包根入口导入，serve
 
 包根入口暴露文档化运行时能力：
 
-| 领域       | API                                                                                                                                                                          |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App        | `createApp`                                                                                                                                                                  |
-| Reactivity | `reactive`、`ref`、`computed`、`effect`、`watch`、`watchEffect`                                                                                                              |
-| Rendering  | `h`、`render`、`Fragment`、`useStyle`                                                                                                                                        |
-| Components | `defineComponent`、`defineAsyncComponent`                                                                                                                                    |
-| Context    | `provide`、`inject`                                                                                                                                                          |
-| Lifecycle  | `onMounted`、`onUpdated`、`onUnmounted`                                                                                                                                      |
-| Scheduler  | `nextTick`                                                                                                                                                                   |
-| Store      | `createStore`                                                                                                                                                                |
-| Router     | `createRouter`、`createMemoryHistory`、`createWebHistory`、`createWebHashHistory`、`RouterLink`、`RouterView`、`RouterNavigationError`、`lazyRoute`、`useRouter`、`useRoute` |
+| 领域       | API                                                                                                                                                                                                                                                                                                    |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| App        | `createApp`                                                                                                                                                                                                                                                                                            |
+| Reactivity | `reactive`、`ref`、`computed`、`effect`、`watch`、`watchEffect`                                                                                                                                                                                                                                        |
+| Rendering  | `h`、`render`、`Fragment`、`useStyle`                                                                                                                                                                                                                                                                  |
+| Components | `defineComponent`、`defineAsyncComponent`                                                                                                                                                                                                                                                              |
+| Context    | `provide`、`inject`                                                                                                                                                                                                                                                                                    |
+| Lifecycle  | `onMounted`、`onUpdated`、`onUnmounted`                                                                                                                                                                                                                                                                |
+| Scheduler  | `nextTick`                                                                                                                                                                                                                                                                                             |
+| Store      | `createStore`                                                                                                                                                                                                                                                                                          |
+| Router     | `createRouter`、`createMemoryHistory`、`createWebHistory`、`createWebHashHistory`、`RouterLink`、`RouterView`、`RouterNavigationError`、`RouterHydrationError`、`createRouterSnapshot`、`parseRouterSnapshot`、`serializeRouterSnapshot`、`verifyRouterSnapshot`、`lazyRoute`、`useRouter`、`useRoute` |
 
 公共 TypeScript 辅助类型包括：
 
@@ -32,7 +32,7 @@ JSX/TSX 和明确的运行时 API。运行时能力从包根入口导入，serve
   `AsyncComponentSource`、`AsyncComponentType`
 - 组件 setup：`ComponentSetupContext`、`EmitFn`、`Slot`、`SlotProps`、`Slots`
 - Store：`Store`、`StoreActionsInput`、`StoreContext`、`StoreGetterContext`、`StoreGetters`、`StoreOptions`
-- Router：`LazyRouteComponent`、`NavigationGuard`、`NavigationGuardResult`、`RouteComponent`、`RouteLocationNormalized`、`RouteLocationRaw`、`RouteRecord`、`Router`、`RouterHistory`、`RouterLinkProps`、`RouterOptions`、`RouterScrollBehavior`、`RouterScrollBehaviorResult`、`RouterScrollPosition`
+- Router：`LazyRouteComponent`、`NavigationGuard`、`NavigationGuardResult`、`RouteComponent`、`RouteLocationNormalized`、`RouteLocationRaw`、`RouteRecord`、`Router`、`RouterHistory`、`RouterLinkProps`、`RouterOptions`、`RouterScrollBehavior`、`RouterScrollBehaviorResult`、`RouterScrollPosition`、`RouterSnapshot`、`RouteRecordIdentity`、`RouterHydrationErrorField`
 - VNode：`AsyncComponentVNodeChildren`、`AsyncVNodeChild`、`AsyncVNodeChildren`、
   `ComponentProps`、`ComponentRender`、`ComponentType`、`ComponentVNodeChildren`、`FragmentType`、
   `VNode`、`VNodeChild`、`VNodeChildren`、`VNodeProps`、`VNodeSlots`、`VNodeType`
@@ -75,6 +75,11 @@ Suspense/selective hydration 和 async update scheduling 仍不属于 beta 契�
 应使用应用自己的 guards，真正的 enforcement 应由后端授权承担。任何扩大这些边界的公共 API
 工作，都需要在同一变更中同步 README、project-status、package-usage、package boundary tests、
 consumer smoke 覆盖和发布门禁。
+
+下一阶段 router integration 仍只处于设计状态。请阅读
+[router-aware SSR 与 hydration 设计](./superpowers/specs/2026-08-14-router-aware-ssr-hydration-design.md)
+现已落地第一组可组合 primitives：request-scoped memory history、canonical route snapshot、server
+context 和 hydration verification。SSR、SSG 和 hydration 仍继续拒绝直接 `router` options。
 
 ## App
 
@@ -227,8 +232,54 @@ Async setup 在 initial preparation 中采用 setup-once 语义。解析为同�
 promised children 是 one-shot values。`provide()`、`inject()`、lifecycle registration 和
 `useStyle()` 可在第一次 suspension 前，以及解析后的同步 render function 内使用；它们不属于
 `await` 之后 continuation code 的 ambient component-instance API 契约。Streaming SSR、
-router-aware SSR、router-aware hydration、Suspense/selective hydration 仍保持 deferred；
-async update scheduling 仍保持 deferred。
+Streaming SSR、SSR/hydration 上的直接 router option、Suspense/selective hydration 仍保持
+deferred；async update scheduling 仍保持 deferred。
+
+### Router-aware SSR 与 hydration 组合
+
+`router.isReady()` 只启动一次初始 history navigation，并向所有调用方返回同一个 promise。初始
+redirect、全局 guard 和 route guard 完成后才 resolve；初始 guard cancellation 或 navigation
+failure 会 reject。后续 `push()` / `replace()` 保持原有语义。
+
+server 侧使用 `createRouterServerContext()` 为每个请求创建独立的
+`createMemoryHistory(url)` router，`configure` 可同步注册 global guards。它等待 readiness 后返回
+`{ router, route, snapshot, provides }`；把 `provides` 传给现有 renderer，不增加 renderer option：
+
+```tsx
+import { RouterView } from "@italone/solace";
+import type { RouteRecord } from "@italone/solace";
+import {
+  createRouterServerContext,
+  renderToStringAsync,
+  serializeRouterSnapshot,
+} from "@italone/solace/server";
+
+const routes: RouteRecord[] = [{ path: "/", name: "home", component: () => <p>home</p> }];
+const identifyRecord = (record: RouteRecord) => record.name ?? record.path;
+const server = await createRouterServerContext({ url: "/", routes, identifyRecord });
+const rendered = await renderToStringAsync(() => <RouterView />, {
+  provides: server.provides,
+});
+const snapshotText = serializeRouterSnapshot(server.snapshot);
+```
+
+浏览器必须先安装 router、await `isReady()`，再用相同 record identity callback 创建 client
+snapshot，并在调用 `hydrateAsync()` 前验证：
+
+```tsx
+const app = createApp(App).use(router);
+await router.isReady();
+const serverSnapshot = parseRouterSnapshot(snapshotElement.textContent ?? "");
+const clientSnapshot = createRouterSnapshot(router.currentRoute.value, identifyRecord);
+verifyRouterSnapshot(serverSnapshot, clientSnapshot);
+await app.hydrateAsync(container);
+```
+
+matched record identity 必须非空且唯一。snapshot 会排序 params/query keys，保留 query array
+item order，并继续沿用 router 对 nullish query input 的省略语义。序列化会转义 script-sensitive
+字符；解析会拒绝 malformed、unknown 或不支持版本。`RouterHydrationError` 指出第一个 mismatch
+字段。router snapshot recovery 由应用显式负责，与仅处理 DOM mismatch 的 `{ recover: true }`
+分离。
 
 ### `generateStaticSite(options)`
 
@@ -459,7 +510,8 @@ Solace 组件是下面这种函数形态：
 type ComponentType<
   Props extends object = ComponentProps,
   Events extends ComponentEventMap = ComponentEventMap,
-> = (props: Props, context: ComponentSetupContext<Events>) => VNode | (() => VNode);
+  SlotMap extends object = Slots,
+> = (props: Props, context: ComponentSetupContext<Events, SlotMap>) => VNode | (() => VNode);
 ```
 
 setup context 暴露：
@@ -516,6 +568,13 @@ const App = () => (
 
 未显式声明事件映射的组件默认保持宽松。这个契约只在编译期约束事件，不增加运行时
 校验。显式事件映射会推导精确的 `onXxx` listener payload：listener 可以是函数或函数数组，参数与事件 tuple 一致。kebab-case 事件只暴露规范的 camelized listener，因此 `value-change` 映射到 `onValueChange`。这个 JSX 推导不会改变 `h()` 现有的宽松 props 契约。
+
+slot 类型通过 `defineComponent<Props, Events, SlotMap>` 显式启用。有限 SlotMap 会同时约束组件
+内部消费和调用端生产：required `default` slot 要求 JSX children；未声明 `default` 的组件拒绝
+JSX children；`h()` 可以接收直接 default children 或精确 slot object，并校验 required slots、
+未知名称和 scoped-slot 参数。JSX 当前没有 named-slot attribute 语法，因此调用端需要提供具名或
+scoped slot function 时使用 `h()`。未显式声明 SlotMap 的组件继续保留旧的宽松生产契约；这些
+检查不会增加运行时 slot metadata 或校验。
 
 ### `defineComponent(component)`
 
@@ -762,6 +821,10 @@ route record 的 name、alias 和 props 已纳入公开契约。named location �
 object 或基于 matched route 计算的 function。`props: true` 时，router 会传入 `route.params`
 的浅拷贝。
 
+`router.isReady()` 暴露唯一的初始 history settlement promise。install 前调用会启动 settlement；
+`app.use(router)` 后调用会等待同一个操作。redirects 和 guards 完成后，它 resolve 为已 settle 的
+`currentRoute.value`；初始失败后保持 rejected。后续显式 navigation 相互独立。
+
 ### `createWebHistory()` / `createWebHashHistory()` / `createMemoryHistory()`
 
 创建浏览器 history adapters。普通 path routing 使用 `createWebHistory()`，hash routing 使用
@@ -787,7 +850,8 @@ href。带 modifier、已被阻止、非 `_self` target 或 `download` attribute
 
 当前 beta router 限制：
 
-- 不包含 auth、permissions、SSR、SSG 或 hydration router integration。
+- 不包含 auth、permissions，且 SSR、SSG 或 hydration 仍不接受直接 `router` option；可组合的
+  readiness、server context 和 snapshot primitives 已单独提供。
 - dynamic params 仅限简单 `:name` segments 和文档化的 wildcard `/:pathMatch(.*)*`；optional
   params、repeat params 和 custom regex params 会抛出 `TypeError`。
 - 传入 `auth` 或 `permissions` 等仍 deferred 的 options 或 route record fields，会抛出 `TypeError`。
@@ -812,7 +876,7 @@ href。带 modifier、已被阻止、非 `_self` target 或 `download` attribute
 - `@italone/solace/jsx-runtime`
 - `@italone/solace/jsx-dev-runtime`
 
-JSX `key` 是 keyed children 使用的框架级属性，接受字符串或数字；函数组件的 props 类型不需要声明 `key`。JSX component children 会进入组件 setup context 的 `slots.default`，普通 slot children 不需要在组件 props 中声明 `children` 字段。JSX `onXxx` attributes 是 `emit()` 使用的组件事件 handler 约定，因此 `emit("increment")` 会匹配已传入的 `onIncrement`。TSX component 的 `onXxx` 值类型是函数或函数数组；非函数值不属于公开 JSX 契约。DOM `onXxx` attributes 只接受函数。JSX fragment shorthand（`<>...</>`）通过 automatic runtime 支持，渲染时不会额外增加 DOM wrapper。
+JSX `key` 是 keyed children 使用的框架级属性，接受字符串或数字；函数组件的 props 类型不需要声明 `key`。JSX component children 会进入组件 setup context 的 `slots.default`，普通 slot children 不需要在组件 props 中声明 `children` 字段。显式有限 SlotMap 会让 required default children 成为必填项，并在没有 default slot 时拒绝 children；具名和 scoped producer function 使用 typed `h()` slot-object 形式。JSX `onXxx` attributes 是 `emit()` 使用的组件事件 handler 约定，因此 `emit("increment")` 会匹配已传入的 `onIncrement`。TSX component 的 `onXxx` 值类型是函数或函数数组；非函数值不属于公开 JSX 契约。DOM `onXxx` attributes 只接受函数。JSX fragment shorthand（`<>...</>`）通过 automatic runtime 支持，渲染时不会额外增加 DOM wrapper。
 
 公共 tooling 入口：
 

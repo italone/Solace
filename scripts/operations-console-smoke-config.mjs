@@ -1,4 +1,4 @@
-const PINNED_BASELINE = "0.1.0-beta.2";
+const SUPPORTED_BASELINES = new Set(["0.1.0-beta.2", "0.1.0-beta.4"]);
 
 export function createConsumerPackageJson(packageSpec) {
   return {
@@ -30,16 +30,38 @@ export function createConsumerTsconfig(includeAsync) {
 
 export function parseSmokeArguments(args) {
   if (args.length === 0) {
-    return {};
+    return { baselines: [] };
   }
 
-  if (args.length !== 2 || args[0] !== "--baseline") {
-    throw new Error("Usage: node scripts/operations-console-smoke.mjs [--baseline 0.1.0-beta.2]");
+  if (args.length % 2 !== 0) {
+    throw usageError();
   }
 
-  if (args[1] !== PINNED_BASELINE) {
-    throw new Error("Baseline must be 0.1.0-beta.2");
+  const baselines = [];
+  for (let index = 0; index < args.length; index += 2) {
+    if (args[index] !== "--baseline" || args[index + 1] === undefined) {
+      throw usageError();
+    }
+
+    const baseline = args[index + 1];
+    if (!SUPPORTED_BASELINES.has(baseline)) {
+      throw new Error("Baseline must be one of: 0.1.0-beta.2, 0.1.0-beta.4");
+    }
+    if (baselines.includes(baseline)) {
+      throw new Error(`Baseline must not be repeated: ${baseline}`);
+    }
+    baselines.push(baseline);
   }
 
-  return { baseline: PINNED_BASELINE };
+  return { baselines };
+}
+
+export function baselineSupportsAsyncRendering(baseline) {
+  return baseline === "0.1.0-beta.4";
+}
+
+function usageError() {
+  return new Error(
+    "Usage: node scripts/operations-console-smoke.mjs [--baseline 0.1.0-beta.2] [--baseline 0.1.0-beta.4]",
+  );
 }

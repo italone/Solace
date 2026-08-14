@@ -120,6 +120,11 @@ Component events use `emit()` with `onXxx` JSX handlers:
 
 Declare typed event producers with `defineComponent<Props, Events>`:
 
+For typed slots, use `defineComponent<Props, Events, SlotMap>`. Required/default slot presence is
+checked in JSX, while named and scoped producer functions use `h(Component, props, slotObject)`.
+Finite maps reject unknown slot names and incompatible scoped props. Omitting `SlotMap` preserves the
+existing permissive behavior, and runtime slot normalization is unchanged.
+
 ```tsx
 import { defineComponent } from "@italone/solace";
 import type { ComponentEventMap } from "@italone/solace";
@@ -208,12 +213,14 @@ The server entry is `@italone/solace/server`:
 ```ts
 import { h, useStyle } from "@italone/solace";
 import {
+  createRouterServerContext,
   createStaticRoutesFromRouter,
   generateStaticSite,
   generateStaticSiteAsync,
   renderToString,
   renderToStringAsync,
   resolveStaticAssets,
+  serializeRouterSnapshot,
 } from "@italone/solace/server";
 
 const App = () => {
@@ -293,14 +300,61 @@ reactive updates after `hydrateAsync()`; one that resolves directly to a VNode i
 preparation, and promise children are one-shot. Ambient instance APIs after `await` and async update
 scheduling remain deferred.
 
-The public loop does not include streaming SSR, filesystem SSG output, route crawling,
-router-aware SSR, router-aware hydration, Suspense/selective hydration, or automatic hydration
-mismatch recovery beyond the explicit `recover` deopt.
+Router-aware SSR and hydration use explicit composition rather than a renderer option. The server
+creates one request-scoped context, renders with its injection map, and serializes the canonical
+snapshot. This provides router-aware SSR and router-aware hydration while direct renderer options
+remain rejected:
+
+```tsx
+import { RouterView } from "@italone/solace";
+import type { RouteRecord } from "@italone/solace";
+import {
+  createRouterServerContext,
+  renderToStringAsync,
+  serializeRouterSnapshot,
+} from "@italone/solace/server";
+
+const routes: RouteRecord[] = [{ path: "/", name: "home", component: () => <p>home</p> }];
+const identifyRecord = (record: RouteRecord) => record.name ?? record.path;
+const server = await createRouterServerContext({ url: "/", routes, identifyRecord });
+const rendered = await renderToStringAsync(() => <RouterView />, {
+  provides: server.provides,
+});
+const snapshotText = serializeRouterSnapshot(server.snapshot);
+```
+
+The browser installs its router, awaits the single initial readiness promise, verifies the same
+record identities, and only then enters hydration:
+
+```tsx
+import {
+  createApp,
+  createRouterSnapshot,
+  parseRouterSnapshot,
+  verifyRouterSnapshot,
+} from "@italone/solace";
+
+const app = createApp(App).use(router);
+await router.isReady();
+const serverSnapshot = parseRouterSnapshot(snapshotElement.textContent ?? "");
+const clientSnapshot = createRouterSnapshot(router.currentRoute.value, identifyRecord);
+verifyRouterSnapshot(serverSnapshot, clientSnapshot);
+await app.hydrateAsync(container);
+```
+
+The identity callback must return a non-empty unique string for each matched record. Snapshot
+serialization escapes script-sensitive characters, parsing validates the exact version-1 schema,
+and `RouterHydrationError` fails closed on the first route mismatch. Application code owns any fresh
+mount recovery. Existing `{ recover: true }` remains limited to DOM hydration mismatch.
+
+The public loop does not include streaming SSR, filesystem SSG output, route crawling, direct
+renderer-owned router options, Suspense/selective hydration, or automatic router snapshot recovery.
 
 Passing only one of `manifest` or `clientEntry` to `generateStaticSite()` throws a `TypeError`; pass
 both to make the shell receive resolved production asset tags. Route-level `manifest`,
-`clientEntry`, and `router` fields are rejected. App-level `router` remains unsupported; convert
-beta router records with `createStaticRoutesFromRouter()` and pass the returned explicit routes.
+`clientEntry`, and `router` fields are rejected. App-level renderer `router` remains unsupported;
+use `createRouterServerContext()` for request-scoped SSR composition, or convert narrow static
+records with `createStaticRoutesFromRouter()` for explicit SSG routes.
 Route paths must be strings before rendering starts, so malformed SSG route inputs fail with a stable
 `TypeError`.
 `generateStaticSite()` options accept only `routes`, `shell`, `manifest`, `clientEntry`, and `base`;
@@ -417,8 +471,9 @@ The current beta router supports path matching, dynamic params, query parsing, b
 adapters, nested route records, redirects, global `beforeEach` guards, route-level `beforeEnter`
 guards, route `meta`, route names, aliases, route props, named locations, `createMemoryHistory()`,
 `lazyRoute()` route components, `RouterLink`, `RouterView`, and `scrollBehavior` after successful
-navigations. The beta router still defers these public features: auth, permissions,
-router-aware SSR, router-aware hydration, streaming SSR, and Suspense/selective hydration. `props: true`
+navigations. It also exposes `router.isReady()` plus canonical route snapshot primitives for explicit
+SSR/hydration composition. The beta router still defers auth, permissions, direct renderer-owned
+router options, streaming SSR, and Suspense/selective hydration. `props: true`
 passes route params, plain object props are used as-is, and function props are evaluated from the
 matched route. Named locations preserve canonical path generation, and alias URLs preserve canonical
 matched/name behavior.
@@ -470,9 +525,9 @@ pnpm test:e2e:devtools-extension
 Before using the extension example in a release note or demo, follow the browser extension QA
 checklist in [docs/devtools.md](./devtools.md). The QA pass should confirm relayed public event
 summaries, bounded captures, reconnect behavior, stale-port handling, and the absence of raw runtime
-payloads. The example manifest uses example-grade broad inspected-page access for local demos;
-release notes and production browser-store packaging must review and narrow extension permissions
-for the intended inspected origins.
+payloads. The example manifest is restricted to the fixed local demo origins
+`http://127.0.0.1:6174/*` and `http://localhost:6174/*`; release notes and production browser-store
+packaging must review the exact inspected origins before widening extension permissions.
 
 The example panel is not a stable browser-store distribution contract. It does not persist captures,
 send events over the network, inspect private runtime objects, or include SSR/SSG/hydration-specific

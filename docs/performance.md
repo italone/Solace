@@ -174,6 +174,24 @@ When browser history records include `metadata.runAt`, the latest-window selecti
 timestamp per scenario instead of relying on JSONL file order.
 Run `pnpm benchmark:history -- --help` to list the supported summary options.
 
+For the 1.0 admission evidence, generate the deterministic checked-in summary from the ignored raw
+history:
+
+```bash
+pnpm benchmark:history:evidence -- --output release/performance-history.json
+```
+
+`release/performance-history.json` records the source paths and SHA-256 digests plus per-scenario
+`recordCount`, `distinctRunCount`, `distinctDateCount`, `firstRunAt`, and `lastRunAt`. Readiness
+requires five distinct `runAt` timestamps for every browser scenario and jsdom task. Calendar-date
+counts and first/last timestamps are audit fields, not separate pass/fail thresholds.
+
+The distinction matters for older history. Early metadata-only jsdom records remain valid source
+history but do not prove any task-level scenario. A later jsdom record with `sampleSize` greater
+than one can contain repeated task metrics from the same command, but all of those samples share one
+metadata timestamp and therefore count as one distinct run. Keep `.benchmark-history/` ignored;
+only the deterministic summary is checked in.
+
 ## Benchmark History Decision Rules
 
 Use benchmark history as an adoption and release signal only when the sample window matches the
@@ -187,6 +205,8 @@ claim:
   merged or reordered.
 - Keep `.benchmark-history/` ignored; copy summarized numbers into docs or release notes, not the
   local JSONL files.
+- Use `release/performance-history.json` for admission evidence and count distinct `runAt` values,
+  not repeated task metrics inside one jsdom record.
 - Keep timing values out of release notes unless the command, sample count, environment metadata,
   and scenario names are stated together.
 - Treat `domMutationCounts` and `movePathCounts` as diagnostic context, not pass/fail thresholds.

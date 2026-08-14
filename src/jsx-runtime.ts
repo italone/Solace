@@ -23,7 +23,7 @@ export { Fragment };
 export function jsx(type: string, props?: JSXElementProps | null, key?: JSXKey): VNode;
 export function jsx<Props extends object, Events extends ComponentEventMap, SlotMap extends object>(
   type: ComponentType<Props, Events, SlotMap>,
-  props?: JSXComponentProps<Props, Events> | null,
+  props: JSXComponentProps<Props, Events, SlotMap>,
   key?: JSXKey,
 ): VNode;
 export function jsx(
@@ -42,7 +42,7 @@ export function jsxs<
   SlotMap extends object,
 >(
   type: ComponentType<Props, Events, SlotMap>,
-  props?: JSXComponentProps<Props, Events> | null,
+  props: JSXComponentProps<Props, Events, SlotMap>,
   key?: JSXKey,
 ): VNode;
 export function jsxs(
@@ -61,7 +61,7 @@ function createJsxVNode(type: VNodeType, props: JSXProps | null, key?: JSXKey): 
     ...(key !== undefined ? { key } : {}),
   };
 
-  return h(type, vnodeProps, normalizeChildren(children));
+  return h(type as never, vnodeProps, normalizeChildren(children));
 }
 
 function normalizeChildren(children: JSXChildren): VNodeChildren {
@@ -106,7 +106,6 @@ export namespace JSX {
     [name: string]: IntrinsicElementProps;
   }
   export interface IntrinsicAttributes {
-    children?: JSXChildren;
     key?: JSXKey;
   }
   export interface ElementChildrenAttribute {

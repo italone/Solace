@@ -56,3 +56,6 @@ export function installFeaturePlugin(app: App): void {
 - third-party UI integration guidance 保持在 app-wrapper 层。
 - DevTools panels 继续绑定公开 event contracts。
 - release notes 必须诚实说明还没有一方 UI components 和稳定 plugins。
+
+UI library 和 plugin marketplace 不属于 1.0 准入门禁。主线应先满足独立真实采用、兼容升级、连续性能
+history、收窄生产 DevTools permissions，以及明确 migration/rollback 流程。

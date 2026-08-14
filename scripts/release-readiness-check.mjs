@@ -31,6 +31,7 @@ requireObject(packageJson.scripts, "package.json scripts");
 
 requireScript("quality");
 requireScript("package:smoke");
+requireScript("adoption:smoke");
 requireScript("stable:app");
 requireScript("release:check");
 requireScript("release:version");
@@ -38,6 +39,7 @@ requireScript("release:publish:beta");
 requireScript("release:publish");
 requireReleaseCheckCommand("pnpm release:readiness");
 requireReleaseCheckCommand("pnpm package:smoke");
+requireReleaseCheckCommand("pnpm adoption:smoke");
 requireReleaseCheckCommand("pnpm stable:app");
 requireReleaseCheckCommand("pnpm test:e2e");
 requireReleaseCheckCommand("pnpm test:e2e:devtools-extension");
@@ -99,7 +101,7 @@ if (failures.length > 0) {
   console.log(`changeset access: ${changesetConfig.access}`);
   console.log(`mode: ${options.publishable ? "publishable" : "default"}`);
   console.log(
-    "public API gates: pnpm release:readiness, pnpm package:smoke, pnpm stable:app, pnpm test:e2e, pnpm test:e2e:devtools-extension",
+    "public API gates: pnpm release:readiness, pnpm package:smoke, pnpm adoption:smoke, pnpm stable:app, pnpm test:e2e, pnpm test:e2e:devtools-extension",
   );
   console.log("benchmark history: .benchmark-history/ ignored local JSONL artifacts");
   if (options.publishable) {

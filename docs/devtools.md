@@ -131,10 +131,11 @@ VNodes, props, store state, reactive targets, user content, stack traces, action
 results. It does not persist captured events, send them over the network, install analytics, or model
 SSR/SSG/hydration state.
 
-The example manifest currently uses example-grade broad inspected-page access with `<all_urls>` for
-the content script, `host_permissions`, and the bridge web-accessible resource so local demos can
-attach to any inspected Solace app. Treat that as a demo convenience, not a production browser-store
-package policy.
+The example manifest is restricted to the fixed local demo origins
+`http://127.0.0.1:6174/*` and `http://localhost:6174/*` for the content script,
+`host_permissions`, and bridge web-accessible resource. This keeps the checked-in example from
+requesting arbitrary inspected-page access. A production distribution must define its inspected
+origins explicitly and must not widen this list by default.
 
 Keep the example manifest local-only. Do not add `permissions`, `optional_permissions`,
 `externally_connectable`, `oauth2`, or custom `content_security_policy` entries without a separate
@@ -162,8 +163,8 @@ workflow rather than private runtime state:
 
 - `pnpm build:devtools-extension` produces classic extension scripts without module imports.
 - `pnpm test:e2e:devtools-extension` captures relayed public `DevtoolsEvent` summaries in the panel.
-- Review and narrow `matches`, `host_permissions`, and `web_accessible_resources.matches` before
-  producing a production browser-store package or demo build with a fixed inspected-origin policy.
+- Review `matches`, `host_permissions`, and `web_accessible_resources.matches` against the exact
+  inspected origins before producing a production browser-store package or demo build.
 - Confirm the manifest still has no storage, tabs, scripting, webRequest, externally connectable,
   OAuth, or custom CSP powers unless a separate production extension policy has approved them.
 - Pause, resume, clear, family filters, selected-event details, and capture limits work without

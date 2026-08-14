@@ -28,7 +28,12 @@ export const routerViewDepthKey = Symbol("Solace.routerViewDepth");
 export class RouterNavigationError extends Error {
   constructor(
     message: string,
-    readonly type: "redirect-loop" | "redirect-rejected" | "guard-rejected" | "lazy-load-failed",
+    readonly type:
+      | "redirect-loop"
+      | "redirect-rejected"
+      | "guard-rejected"
+      | "guard-cancelled"
+      | "lazy-load-failed",
     readonly from: RouteLocationNormalized,
     readonly to: RouteLocationNormalized,
   ) {
@@ -65,6 +70,7 @@ export function createRouter(options: RouterOptions): Router {
   const beforeEachGuards: NavigationGuard[] = [];
   let stopListening: (() => void) | null = null;
   let hasStartedHistorySettlement = false;
+  let readinessPromise: Promise<RouteLocationNormalized> | null = null;
   let isWritingHistory = false;
   let navigationId = 0;
   const currentRoute = ref(resolveInitialHistoryLocation());
@@ -80,6 +86,11 @@ export function createRouter(options: RouterOptions): Router {
           return;
         }
 
+        if (!hasStartedHistorySettlement) {
+          void startInitialSettlement().catch(() => undefined);
+          return;
+        }
+
         void settleHistoryLocation();
       });
       if (typeof stop !== "function") {
@@ -87,7 +98,10 @@ export function createRouter(options: RouterOptions): Router {
       }
 
       stopListening = stop;
-      void settleHistoryLocation();
+      void startInitialSettlement().catch(() => undefined);
+    },
+    isReady() {
+      return startInitialSettlement();
     },
     async push(to: RouteLocationRaw) {
       return navigate(to, "push");
@@ -121,6 +135,51 @@ export function createRouter(options: RouterOptions): Router {
   };
 
   return router;
+
+  function startInitialSettlement(): Promise<RouteLocationNormalized> {
+    if (readinessPromise !== null) {
+      return readinessPromise;
+    }
+
+    hasStartedHistorySettlement = true;
+    const activeNavigationId = ++navigationId;
+    const from = currentRoute.value;
+    readinessPromise = (async () => {
+      try {
+        const initial = resolveLocation(options.history.location());
+        const finalRoute = await resolveNavigation(initial, from);
+
+        if (finalRoute === false) {
+          throw new RouterNavigationError(
+            "Router initial navigation was cancelled",
+            "guard-cancelled",
+            from,
+            initial,
+          );
+        }
+
+        if (activeNavigationId !== navigationId) {
+          return currentRoute.value;
+        }
+
+        if (finalRoute.fullPath !== initial.fullPath) {
+          writeHistory(() => options.history.replace(finalRoute.fullPath));
+        }
+
+        currentRoute.value = finalRoute;
+        await applyScrollBehavior(finalRoute, from, activeNavigationId);
+        return finalRoute;
+      } catch (error) {
+        if (activeNavigationId === navigationId && options.history.location() !== from.fullPath) {
+          writeHistory(() => options.history.replace(from.fullPath));
+        }
+
+        throw error;
+      }
+    })();
+
+    return readinessPromise;
+  }
 
   async function navigate(
     to: RouteLocationRaw,
@@ -207,7 +266,6 @@ export function createRouter(options: RouterOptions): Router {
   }
 
   async function settleHistoryLocation(): Promise<void> {
-    const isInitialHistorySettlement = !hasStartedHistorySettlement;
     hasStartedHistorySettlement = true;
     const activeNavigationId = ++navigationId;
     const from = currentRoute.value;
@@ -216,7 +274,7 @@ export function createRouter(options: RouterOptions): Router {
 
     try {
       initial = resolveLocation(options.history.location());
-      if (!isInitialHistorySettlement && initial.fullPath === from.fullPath) {
+      if (initial.fullPath === from.fullPath) {
         return;
       }
 

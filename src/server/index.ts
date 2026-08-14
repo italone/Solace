@@ -14,6 +14,21 @@ export {
   type StaticRouterRouteRecord,
 } from "./static-router";
 export {
+  createRouterServerContext,
+  type RouterServerContext,
+  type RouterServerContextOptions,
+} from "./router-context";
+export {
+  createRouterSnapshot,
+  parseRouterSnapshot,
+  RouterHydrationError,
+  serializeRouterSnapshot,
+  verifyRouterSnapshot,
+  type RouteRecordIdentity,
+  type RouterHydrationErrorField,
+  type RouterSnapshot,
+} from "../router/snapshot";
+export {
   resolveStaticAssets,
   type ResolveStaticAssetOptions,
   type StaticAssetManifest,

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solace router hydration</title>
+  </head>
+  <body>
+    <div id="router-root">__SOLACE_ROUTER_HTML__</div>
+    <script id="router-snapshot" type="application/json">
+      __SOLACE_ROUTER_SNAPSHOT__
+    </script>
+    <p id="router-match-status">pending</p>
+    <p id="router-mismatch-status">pending</p>
+    <script>
+      location.hash = "#/legacy";
+    </script>
+    <script type="module" src="/src/router-hydration.tsx"></script>
+  </body>
+</html>

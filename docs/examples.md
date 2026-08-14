@@ -107,6 +107,28 @@ provide packed validation that the published package can support a production-sh
 across routing, shared state, async components, server rendering, hydration, and responsive browser
 workflows.
 
+## Independent Adoption Consumer
+
+Location: `examples/adoption-consumer`
+
+This fixture is copied to a temporary directory and installs either the local packed candidate or an
+exact npm version. It imports only documented `@italone/solace` package paths and has no source alias.
+
+```bash
+pnpm adoption:smoke
+pnpm adoption:smoke:browsers
+pnpm adoption:smoke -- --package 0.1.0-beta.4
+```
+
+The first command typechecks the installed consumer, emits separate CSR and SSR bundles, and imports
+the server bundle to verify synchronous and buffered async output. The browser command also checks a
+CSR counter, router navigation, matching hydration DOM reuse, explicit mismatch recovery, and
+post-hydration interaction in Chromium, Firefox, and WebKit. Exact bundle filenames and compressed
+sizes remain build details rather than compatibility promises.
+
+The fixture is release validation, not a real independent application for the 1.0 adoption count.
+Registry install failures are reported separately from typecheck, bundle, server, and browser stages.
+
 ## SFC Counter
 
 Run:
