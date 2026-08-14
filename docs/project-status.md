@@ -6,9 +6,9 @@ This document summarizes the current completion level of Solace as an open-sourc
 
 ## Summary
 
-Solace is now on the `0.1.0` beta line whose repository package version is the unpublished
-`0.1.0-beta.5` candidate. npm `latest` remains the stable `@italone/solace@0.0.5` line, while
-published npm `beta` remains `0.1.0-beta.4`.
+Solace is now on the `0.1.0` beta line whose repository package version is the published
+`0.1.0-beta.5` release. npm `latest` remains the stable `@italone/solace@0.0.5` line, while
+published npm `beta` is `0.1.0-beta.5`.
 It provides a working public API, package exports, examples, tests, benchmarks, and release checks.
 Its primary authoring path is JSX/TSX-first function components backed by explicit runtime APIs. It
 is suitable as a compact educational and experimental frontend framework, but it should not be
@@ -19,14 +19,14 @@ Current repository state:
 - Package name: `@italone/solace`
 - Repository package version: `0.1.0-beta.5`
 - Published npm `latest`: `0.0.5`
-- Published npm `beta`: `0.1.0-beta.4`
-- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.4`
+- Published npm `beta`: `0.1.0-beta.5`
+- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.5`
 - Public package metadata: `"private": false`
 - Current branch: `main`
 - Remote state: recheck with `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
   synchronization claim.
-- Phase: unpublished beta.5 contract and adoption candidate after the beta.4 release. The Router stable slice,
+- Phase: published beta.5 contract and adoption release. The Router stable slice,
   buffered async initial SSR/hydration, sequential async SSG, and the first browser DevTools
   extension timeline panel are implemented, but the project is not a full production contract.
 
@@ -196,6 +196,16 @@ files and is immutable; its README/status files retain the prepublish candidate 
 and remote annotated `v0.1.0-beta.4` tags are present, and the remote peeled ref resolves to release
 commit `fbe6984`.
 
+The 2026-08-14 beta.5 publish for `@italone/solace@0.1.0-beta.5` used
+`pnpm release:publish:beta`, rerunning the full release gate before `changeset publish --tag beta`.
+The gate passed 81 Vitest files / 702 tests, 16 package tests, 24 browser e2e tests, and 2 DevTools
+extension e2e tests with coverage of 92.97% statements / 88.11% branches / 95.21% functions /
+93.25% lines. Registry checks confirm `latest -> 0.0.5` and `beta -> 0.1.0-beta.5`; the registry
+smoke imported all eight protected public entries, rendered through the server entry, and confirmed
+that the private deep path remains blocked. The local `v0.1.0-beta.5` tag points to release commit `afe459e`.
+Remote `v0.1.0-beta.5` tag verification remains pending because live GitHub connectivity was
+unavailable during the post-publish audit.
+
 ## Public API Boundary
 
 Supported public entries:
@@ -257,11 +267,11 @@ These gaps should stay visible in promotional material so the project is positio
 ## Release Coordination State
 
 `@italone/solace@0.0.5` has been published to npm with the `latest` dist-tag.
-`@italone/solace@0.1.0-beta.4` has been published to npm with the `beta` dist-tag. Post-publish
-registry checks confirm npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.4`. The local tag
-points to release commit `fbe6984`, and the remote `v0.1.0-beta.4` tag is present with the same peeled
-target. Recheck Git state, the remote tag, and the published registry before any future publish or
-synchronization claim.
+`@italone/solace@0.1.0-beta.5` has been published to npm with the `beta` dist-tag. Post-publish
+registry checks confirm npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.5`. The local tag
+points to release commit `afe459e`; remote tag verification remains pending because GitHub was not
+reachable from the verification environment. Recheck Git state, the remote tag, and the published
+registry before any future publish or synchronization claim.
 
 Before publishing any future version, follow the same checklist:
 

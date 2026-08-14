@@ -6,9 +6,9 @@
 
 ## 总览
 
-Solace 当前已经进入 `0.1.0` beta 线，仓库 package 版本是尚未发布的 `0.1.0-beta.5` 候选。npm
+Solace 当前已经进入 `0.1.0` beta 线，仓库 package 版本是已发布的 `0.1.0-beta.5` release。npm
 `latest` 仍是稳定 `@italone/solace@0.0.5` 线，npm `beta` 已发布版本是
-`0.1.0-beta.4`。它已经具备可运行的公共
+`0.1.0-beta.5`。它已经具备可运行的公共
 API、包导出、示例、测试、benchmark 和发布检查。它的主要编写路径是 JSX/TSX-first 函数组件，并由明确的运行时 API 支撑。Solace 适合作为一个小型、可阅读、可实验的前端框架进行推广，但不应被描述为
 React、Vue、Svelte 或同类生态的成熟生产替代品。
 
@@ -17,12 +17,12 @@ React、Vue、Svelte 或同类生态的成熟生产替代品。
 - 包名：`@italone/solace`
 - 仓库 package 版本：`0.1.0-beta.5`
 - npm `latest` 已发布版本：`0.0.5`
-- npm `beta` 已发布版本：`0.1.0-beta.4`
-- npm dist-tags：`latest` 指向 `0.0.5`；`beta` 指向 `0.1.0-beta.4`
+- npm `beta` 已发布版本：`0.1.0-beta.5`
+- npm dist-tags：`latest` 指向 `0.0.5`；`beta` 指向 `0.1.0-beta.5`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
 - 本地分支状态：后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
-- 发布阶段：beta.4 已发布，当前为尚未发布的 beta.5 契约与 adoption 候选；初始运行时范围已完成，Router 的稳定切片已落地，但整体仍不是完整生产契约；SSR/hydration minimum loop，以及首个浏览器
+- 发布阶段：beta.5 契约与 adoption release 已发布；初始运行时范围已完成，Router 的稳定切片已落地，但整体仍不是完整生产契约；SSR/hydration minimum loop，以及首个浏览器
   DevTools 扩展 timeline panel 已在仓库中实现
 
 ## 完成度映射
@@ -166,6 +166,15 @@ registry 检查确认 `latest -> 0.0.5` 和 `beta -> 0.1.0-beta.4`。registry sm
 README/status 仍保留发布前候选措辞。本地和远端 annotated tag `v0.1.0-beta.4` 均已存在，远端
 peeled ref 解引用到发布提交 `fbe6984`。
 
+2026-08-14 发布 `@italone/solace@0.1.0-beta.5` 到 npm beta 线时，使用了
+`pnpm release:publish:beta`，并在 `changeset publish --tag beta` 前重新运行完整发布门禁。门禁通过
+81 个 Vitest 文件 / 702 个测试、16 个 package tests、Chromium/Firefox/WebKit 共 24 个 browser
+e2e tests 和 2 个 DevTools extension e2e tests，覆盖率为 92.97% statements / 88.11% branches /
+95.21% functions / 93.25% lines。registry 检查确认 `latest -> 0.0.5` 和
+`beta -> 0.1.0-beta.5`；registry smoke 导入八个受保护的公开入口，验证 server entry 渲染，并确认
+私有 deep path 仍被阻断。本地 `v0.1.0-beta.5` tag 指向发布提交 `afe459e`。由于发布后审计期间
+无法连接 GitHub，远端 `v0.1.0-beta.5` tag 仍待复核。
+
 ## 公共 API 边界
 
 支持的公开入口：
@@ -213,10 +222,9 @@ Solace 当前有意不包含：
 ## 发布协调状态
 
 发布独立于仓库就绪度。`@italone/solace@0.0.5` 已发布到 npm，并且 `latest`
-dist-tag 指向 `0.0.5`。`@italone/solace@0.1.0-beta.4` 已发布到 npm，并且
-`beta` dist-tag 已指向 `0.1.0-beta.4`。本地 tag 指向发布提交 `fbe6984`，远端 `v0.1.0-beta.4` tag 已存在
-且 peeled target 相同。后续任何发布或同步声明前仍应重新核对 Git
-状态、远端 tag 和 npm registry。
+dist-tag 指向 `0.0.5`。`@italone/solace@0.1.0-beta.5` 已发布到 npm，并且
+`beta` dist-tag 已指向 `0.1.0-beta.5`。本地 tag 指向发布提交 `afe459e`；由于验证环境无法连接
+GitHub，远端 tag 仍待复核。后续任何发布或同步声明前仍应重新核对 Git 状态、远端 tag 和 npm registry。
 
 未来发布任何后续版本前：
 

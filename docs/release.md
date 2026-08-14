@@ -47,7 +47,7 @@ and `pnpm test:e2e:devtools-extension` without implying cross-browser support fo
 
 Before treating a stable upgrade candidate as ready, run `pnpm release:candidate:check`. It first
 verifies publishable Git/metadata readiness, runs `pnpm stable:app:upgrade` against the exact
-long-term `@italone/solace@0.1.0-beta.2` and latest published `@italone/solace@0.1.0-beta.4`
+long-term `@italone/solace@0.1.0-beta.2` and previous published `@italone/solace@0.1.0-beta.4`
 baselines, and then runs `pnpm release:check`. This network-backed
 candidate command remains separate from routine pull-request CI and is not a substitute for the
 maintainer's release decision. Keep types, docs, changelog, and tests together for every public

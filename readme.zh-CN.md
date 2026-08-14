@@ -17,8 +17,8 @@ Solace 聚焦于小型运行时核心：响应式状态、调度渲染、VNode d
 
 ## 项目状态
 
-Solace 当前处于 `0.1.0` beta 线。仓库 package build 是尚未发布的 `0.1.0-beta.5` 候选。
-npm `latest` 仍是 `0.0.5`，npm `beta` 仍是 `0.1.0-beta.4`。beta.5 候选增加 typed
+Solace 当前处于 `0.1.0` beta 线。仓库 package build 是已发布的 `0.1.0-beta.5` release。
+npm `latest` 仍是 `0.0.5`，npm `beta` 是 `0.1.0-beta.5`。beta.5 release 增加 typed
 JSX/TSX 组件契约、更完整的 adoption 门禁，以及可组合的 router-aware SSR/hydration primitives，
 但不增加 streaming 或 renderer-owned 直接 router options。
 

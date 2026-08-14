@@ -155,16 +155,18 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toContain("93.25% lines");
     expect(projectStatusZh).toMatch(/Chromium、Firefox、WebKit 共 24 个\s+browser e2e 测试/);
     expect(projectStatusZh).toMatch(/2\s+个仅\s+Chromium\s+的\s+DevTools\s+extension\s+e2e\s+测试/);
-    expect(readme).toContain("unpublished\n`0.1.0-beta.5` candidate");
-    expect(readme).toContain("npm `beta` remains\n`0.1.0-beta.4`");
-    expect(readmeZh).toContain("尚未发布的 `0.1.0-beta.5` 候选");
-    expect(readmeZh).toContain("npm `beta` 仍是 `0.1.0-beta.4`");
+    expect(readme).toContain("published\n`0.1.0-beta.5` release");
+    expect(readme).toContain("npm `beta` is\n`0.1.0-beta.5`");
+    expect(readmeZh).toContain("已发布的 `0.1.0-beta.5` release");
+    expect(readmeZh).toContain("npm `beta` 是 `0.1.0-beta.5`");
     expect(projectStatus).toContain("Repository package version: `0.1.0-beta.5`");
-    expect(projectStatus).toContain("Published npm `beta`: `0.1.0-beta.4`");
-    expect(projectStatus).toContain("remote `v0.1.0-beta.4` tag is present");
+    expect(projectStatus).toContain("Published npm `beta`: `0.1.0-beta.5`");
+    expect(projectStatus).toContain("local `v0.1.0-beta.5` tag points to release commit `afe459e`");
+    expect(projectStatus).toContain("Remote `v0.1.0-beta.5` tag verification remains pending");
     expect(projectStatusZh).toContain("仓库 package 版本：`0.1.0-beta.5`");
-    expect(projectStatusZh).toContain("npm `beta` 已发布版本：`0.1.0-beta.4`");
-    expect(projectStatusZh).toContain("远端 `v0.1.0-beta.4` tag 已存在");
+    expect(projectStatusZh).toContain("npm `beta` 已发布版本：`0.1.0-beta.5`");
+    expect(projectStatusZh).toContain("本地 `v0.1.0-beta.5` tag 指向发布提交 `afe459e`");
+    expect(projectStatusZh).toContain("远端 `v0.1.0-beta.5` tag 仍待复核");
 
     for (const doc of [readme, api, packageUsage, projectStatus]) {
       expect(doc).toContain("renderToStringAsync()");

@@ -17,9 +17,9 @@ Solace focuses on a small runtime core: reactive state, scheduled rendering, VNo
 
 ## Project Status
 
-Solace is currently on the `0.1.0` beta line. This repository package build is the unpublished
-`0.1.0-beta.5` candidate. npm `latest` remains `0.0.5`, and npm `beta` remains
-`0.1.0-beta.4`. The beta.5 candidate adds typed JSX/TSX component contracts, broader adoption
+Solace is currently on the `0.1.0` beta line. This repository package build is the published
+`0.1.0-beta.5` release. npm `latest` remains `0.0.5`, and npm `beta` is
+`0.1.0-beta.5`. The beta.5 release adds typed JSX/TSX component contracts, broader adoption
 gates, and composable router-aware SSR/hydration primitives without adding streaming or direct
 renderer-owned router options.
 
