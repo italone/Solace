@@ -119,12 +119,19 @@ statements / 88.11% branches / 95.21% functions / 93.25% lines；另有 16 个 p
 e2e tests，以及 2 个仅 Chromium 的 DevTools extension e2e tests。packed package smoke、package-only
 CSR 加 SSR/hydration adoption smoke、Operations Console smoke、jsdom benchmark 和 Chromium 生产
 browser benchmark 也已通过；本地 beta.5 tarball 的可选 Chromium/Firefox/WebKit adoption runner 已通过。
-1.0 evidence evaluator 仍为 not ready，因为尚未记录独立生产应用，并且 checked-in
-`release/performance-history.json` 显示当前每个 jsdom task 只有 3/5 个独立 task runs；browser
-scenarios 已满足五个 distinct `runAt` 的要求。migration/rollback 流程现已通过结构化证据门禁；
-仅独立生产应用和另外两个独立采集的 jsdom task runs 尚未满足。
-这只证明流程已文档化，不声明已经完成真实 npm 回滚演练。仓库内 DevTools manifest 的 permission
-review 已满足。
+2026-08-17，两个独立 npm 应用完成精确 beta.5 安装、typecheck、生产构建、Solace bundle 和 preview
+runtime 验证，并记录在 `release/adoption-evidence.md` 后，1.0 evidence evaluator 现已报告 ready。
+checked-in `release/performance-history.json` 现已为每个 jsdom task 记录 5/5 个独立 task runs，
+browser scenarios 也继续满足五个 distinct `runAt` 的要求。migration/rollback 流程与仓库内
+DevTools manifest permission review 均已通过结构化证据门禁。该结果不会自动发布 1.0，也不会扩大
+文档化 beta contract；仍不声明已经完成真实 npm 回滚演练。
+
+2026-08-17 的公共 component 回归矩阵还覆盖 required typed slots、typed events 和 generic
+components 在 automatic JSX runtime、直接 `h()` 与 JSX runtime calls、`createApp`、Router records、
+server rendering sources 和 packed consumer 上的可赋值性。runtime containers 使用内部 metadata-erased
+component transport，JSX/TSX 与 `h()` authoring boundaries 仍保持严格。
+`tests/integration/router-ssr-hydration.test.ts` 新增 stale navigation、guard rejection、snapshot
+mismatch、lazy route failure 和 async hydration 后响应式更新的组合覆盖，且没有增加 Router 或 SSR API。
 
 2026-08-03 的 router 稳定化工作在加入 initial history navigation pipeline、stale async
 navigation result protection、rejected-guard history recovery、invalid history location recovery、

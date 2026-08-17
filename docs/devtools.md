@@ -175,6 +175,14 @@ workflow rather than private runtime state:
 - Captured payloads remain serialized summaries and do not include raw props, state, DOM nodes,
   VNodes, reactive targets, action arguments, action results, stack traces, or user content.
 
+## Local Distribution Evidence
+
+`release/devtools-distribution-evidence.md` records a fresh local production build and Chromium
+extension smoke for the example. It covers the generated manifest permissions, classic bridge and
+content scripts, sourcemap exclusion, and the two passing browser workflows. This evidence is local
+distribution validation only and does not claim browser-store publication, store review, signing,
+automatic updates, or a production-wide inspected-origin policy.
+
 ## Privacy And Safety
 
 - Do not emit full props, state, DOM nodes, or reactive targets by default.

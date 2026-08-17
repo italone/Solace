@@ -1,8 +1,8 @@
-import type { ComponentType } from "../vnode/vnode";
+import type { ComponentTransport } from "../vnode/vnode";
 import type { LazyRouteComponent } from "./types";
 
 export function lazyRoute(
-  load: () => Promise<{ default: ComponentType } | ComponentType>,
+  load: () => Promise<{ default: ComponentTransport } | ComponentTransport>,
 ): LazyRouteComponent {
   return {
     __solaceLazyRouteComponent: true,

@@ -68,6 +68,7 @@ import type { AsyncComponentOptions, ComponentEventMap, ComponentSetupContext, H
 import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtools";
 import type { DevtoolsEvent } from "@italone/solace/devtools";
 import { generateStaticSite, renderToString } from "@italone/solace/server";
+import type { RenderToStringSource } from "@italone/solace/server";
 import solacePlugin, { solacePlugin as namedSolacePlugin } from "@italone/solace/vite";
 import { jsx as packedJsx } from "@italone/solace/jsx-runtime";
 
@@ -228,7 +229,6 @@ const HeaderOnlyPackedPanel = defineComponent<object, ComponentEventMap, HeaderO
     return <section>header only</section>;
   },
 );
-
 const ThemeLabel = () => {
   const theme = inject(ThemeKey, "light");
 
@@ -255,6 +255,22 @@ const GenericLabel = <Value,>(props: {
   formatValue: (value: Value) => string;
 }) => <span>{props.formatValue(props.value)}</span>;
 
+const requiredPackedRouteTransport: RouteComponent = RequiredPackedPanel;
+const typedPackedRouteTransport: RouteComponent = TypedButton;
+const genericPackedRouteTransport: RouteComponent = GenericLabel;
+const requiredPackedServerTransport: RenderToStringSource = RequiredPackedPanel;
+const typedPackedServerTransport: RenderToStringSource = TypedButton;
+const genericPackedServerTransport: RenderToStringSource = GenericLabel;
+createApp(RequiredPackedPanel);
+createApp(TypedButton);
+createApp(GenericLabel);
+void requiredPackedRouteTransport;
+void typedPackedRouteTransport;
+void genericPackedRouteTransport;
+void requiredPackedServerTransport;
+void typedPackedServerTransport;
+void genericPackedServerTransport;
+
 <TypedButton
   value={1}
   onChange={(value: number) => String(value)}
@@ -267,9 +283,17 @@ h(RequiredPackedPanel, null, "required");
 h(RequiredPackedPanel, null, {
   default: ({ label }) => <span>{label}</span>,
 });
+packedJsx(RequiredPackedPanel, { children: "required" });
+packedJsx(GenericLabel, {
+  value: "packed",
+  formatValue: (value: string) => value.toUpperCase(),
+});
 
 // @ts-expect-error packaged required default slots require JSX children
 <RequiredPackedPanel />;
+
+// @ts-expect-error packaged direct jsx required default slots require children
+packedJsx(RequiredPackedPanel, {});
 
 // @ts-expect-error packaged components without a default slot reject JSX children
 <HeaderOnlyPackedPanel>unexpected</HeaderOnlyPackedPanel>;

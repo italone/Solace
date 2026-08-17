@@ -8,8 +8,8 @@
     },
     "jsdom": {
       "path": ".benchmark-history/jsdom.jsonl",
-      "sha256": "d81dce23c0c7c6f44bba57c4fb873830a2099fa9ae78a85ad9600206d4997278",
-      "recordCount": 5
+      "sha256": "6ecb9ce192aae1719751296c167febf7017dff9da897278c9e1e215ceb5e7b91",
+      "recordCount": 7
     }
   },
   "browserScenarios": {
@@ -65,144 +65,144 @@
   },
   "jsdomScenarios": {
     "1000 component batched reactive update": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "1000 component initial render": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "1000 stable child components parent update": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "10000 row create": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "10000 row delete": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "10000 row keyed middle insert": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "10000 row keyed middle remove": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "10000 row keyed mixed adjacent insert and move": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "10000 row keyed mixed adjacent remove and move": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "10000 row keyed mixed insert and move": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "10000 row keyed reorder": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "10000 row keyed tail to head move": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "10000 row local text update": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "10000 row text to keyed list": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "10000 row unkeyed tail append": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "10000 row unkeyed tail remove": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "5000 Fragment child initial render": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "5000 Fragment child local text patch": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "5000 Fragment child middle insert": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     },
     "component mount/unmount loop": {
-      "recordCount": 3,
-      "distinctRunCount": 3,
-      "distinctDateCount": 3,
+      "recordCount": 5,
+      "distinctRunCount": 5,
+      "distinctDateCount": 4,
       "firstRunAt": "2026-07-17T11:05:16.259Z",
-      "lastRunAt": "2026-08-14T03:01:47.960Z"
+      "lastRunAt": "2026-08-17T02:47:51.672Z"
     }
   }
 }

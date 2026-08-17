@@ -87,7 +87,7 @@ function resolveRouteComponent(
   }
 
   if (!isLazyRouteComponent(component)) {
-    return component;
+    return component as ComponentType;
   }
 
   const cached = lazyRouteComponentCache.get(component);
@@ -107,8 +107,9 @@ function resolveRouteComponent(
         .load()
         .then((resolved) => {
           const resolvedComponent = typeof resolved === "function" ? resolved : resolved.default;
-          lazyRouteComponentCache.set(component, resolvedComponent);
-          return resolvedComponent;
+          const normalizedComponent = resolvedComponent as ComponentType;
+          lazyRouteComponentCache.set(component, normalizedComponent);
+          return normalizedComponent;
         })
         .catch(() => {
           const errorRoute = route.value;

@@ -18,6 +18,9 @@ describe("ecosystem direction documentation", () => {
     expect(en).toContain("Do not expose third-party UI library types");
     expect(en).toContain("public event contracts");
     expect(en).toContain("## Revisit Triggers");
+    expect(en).toContain("## Current Adoption Evidence");
+    expect(en).toContain("`release/adoption-evidence.md`");
+    expect(en).toContain("does not yet prove shared UI component patterns");
 
     expect(zh).toContain("## 决策");
     expect(zh).toContain("beta 线不提供一方 UI component library");
@@ -25,6 +28,9 @@ describe("ecosystem direction documentation", () => {
     expect(zh).toContain("应用自有 adapter components");
     expect(zh).toContain("不要把 third-party UI library types");
     expect(zh).toContain("公开 event contracts");
+    expect(zh).toContain("## 当前采用证据");
+    expect(zh).toContain("`release/adoption-evidence.md`");
+    expect(zh).toContain("尚不能证明多个应用复用了相同 UI component patterns");
 
     expect(roadmap).toContain("docs/ecosystem.md");
     expect(projectStatus).toContain("docs/ecosystem.md");

@@ -142,13 +142,22 @@ performance-evidence work. It recorded 81 Vitest files / 702 tests and coverage 
 Firefox, and WebKit, and 2 Chromium-only DevTools extension e2e tests. Packed package smoke,
 package-only CSR plus SSR/hydration adoption smoke, Operations Console smoke, jsdom benchmark, and
 Chromium production browser benchmark also passed. The optional three-browser adoption runner passed
-for the local beta.5 tarball. The 1.0 evidence evaluator remains not ready because no independent
-production applications are recorded and the checked-in `release/performance-history.json` reports
-only 3/5 distinct task runs for every current jsdom task. Browser scenarios already satisfy the
-five-distinct-run requirement. Migration and rollback procedures now pass the structured evidence
-gate; only independent production applications and two additional independently collected jsdom
-task runs remain unsatisfied. This records a documented procedure; no live npm
-rollback rehearsal is claimed. The checked-in DevTools manifest permission review is now satisfied.
+for the local beta.5 tarball. On 2026-08-17, the 1.0 evidence evaluator now reports ready after two
+independent npm applications completed exact beta.5 installation, typecheck, production build,
+Solace bundle, and preview runtime verification recorded in `release/adoption-evidence.md`. The
+checked-in `release/performance-history.json` now records 5/5 distinct task runs for every current
+jsdom task, while the browser scenarios continue to satisfy the five-distinct-run requirement.
+Migration and rollback procedures and the DevTools manifest permission review also pass the
+structured evidence gate. This readiness result does not publish 1.0 or widen the documented beta
+contract, and no live npm rollback rehearsal is claimed.
+
+The 2026-08-17 public component regression matrix also verifies required typed slots, typed events,
+and generic components across the automatic JSX runtime, direct `h()` and JSX runtime calls,
+`createApp`, Router records, server rendering sources, and a packed consumer. Runtime containers use
+an internal metadata-erased component transport while JSX/TSX and `h()` authoring boundaries remain
+strict. `tests/integration/router-ssr-hydration.test.ts` adds composed coverage for stale navigation,
+guard rejection, snapshot mismatch, lazy route failure, and reactive updates after async hydration
+without adding Router or SSR APIs.
 
 The 2026-08-03 router stabilization work refreshed the router-focused checks and `pnpm quality`
 after adding the initial history navigation pipeline, stale async navigation result protection,

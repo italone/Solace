@@ -60,6 +60,13 @@ Reconsider a stable plugin ecosystem only when all of these are true:
   documented and testable.
 - Package smoke tests can validate at least one external-style plugin consumer.
 
+## Current Adoption Evidence
+
+`release/adoption-evidence.md` records exact npm beta.5 installation, typecheck, production build,
+Solace integration bundle, and preview runtime verification in two applications outside this
+repository. This package-adoption evidence does not yet prove shared UI component patterns, a stable
+plugin extension boundary, or production migration experience across multiple Solace applications.
+
 ## Near-Term Scope
 
 Keep ecosystem work focused on documentation, examples, and adapters:

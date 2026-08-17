@@ -1,13 +1,13 @@
 import type { App } from "../app";
 import type { Ref } from "../reactivity/ref";
-import type { ComponentType } from "../vnode/vnode";
+import type { ComponentTransport } from "../vnode/vnode";
 import type { Query, QueryInput } from "./query";
 
-export type RouteComponent = ComponentType | LazyRouteComponent;
+export type RouteComponent = ComponentTransport | LazyRouteComponent;
 
 export interface LazyRouteComponent {
   readonly __solaceLazyRouteComponent: true;
-  load(): Promise<{ default: ComponentType } | ComponentType>;
+  load(): Promise<{ default: ComponentTransport } | ComponentTransport>;
 }
 
 export type NavigationGuardResult =

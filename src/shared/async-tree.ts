@@ -18,16 +18,16 @@ import { h } from "../vnode/h";
 import type {
   AsyncComponentType,
   ComponentRender,
-  ComponentType,
+  ComponentTransport,
   VNode,
   VNodeChild,
 } from "../vnode/vnode";
 
 export type AsyncTreeSource =
   | VNode
-  | ComponentType
+  | ComponentTransport
   | AsyncComponentType
-  | PromiseLike<VNode | ComponentType | AsyncComponentType>;
+  | PromiseLike<VNode | ComponentTransport | AsyncComponentType>;
 
 export interface PreparedVNode {
   vnode: VNode;
@@ -219,13 +219,13 @@ function applyPreparedChildren(vnode: VNode, children: string | PreparedVNode[] 
   vnode.shapeFlag |= ShapeFlags.ARRAY_CHILDREN;
 }
 
-function normalizeSource(source: VNode | ComponentType | AsyncComponentType): VNode {
+function normalizeSource(source: VNode | ComponentTransport | AsyncComponentType): VNode {
   if (isVNode(source)) {
     return source;
   }
 
   if (typeof source === "function") {
-    return h(source as ComponentType);
+    return h(source as ComponentTransport);
   }
 
   throw new TypeError("Async source must resolve to a VNode or component function");

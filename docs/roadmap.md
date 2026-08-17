@@ -55,9 +55,9 @@ output; each requires a separate public API and compatibility review.
 10. **1.0 admission evidence** — keep `release/one-zero-readiness.json` and
     `pnpm release:one-zero:check -- --report` honest about independent apps, upgrade coverage,
     performance history, production DevTools permissions, and migration/rollback procedures. The
-    beta line remains not ready while any criterion fails. Migration and rollback procedures are now
-    documented through structured evidence; independent applications and performance history remain
-    unsatisfied.
+    admission evidence now satisfies all five structured criteria after two independent npm apps and
+    five distinct jsdom runs per task were verified. Keep this evidence refreshed; a ready evidence
+    report does not itself publish 1.0 or widen the beta contract.
 
 ## Out of Scope (for now)
 

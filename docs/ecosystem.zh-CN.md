@@ -48,6 +48,12 @@ export function installFeaturePlugin(app: App): void {
 - permissions、redirects、storage、postMessage 和 network behavior 的安全边界已文档化并可测试。
 - package smoke tests 可以验证至少一个 external-style plugin consumer。
 
+## 当前采用证据
+
+`release/adoption-evidence.md` 记录了两个仓库外应用对 npm beta.5 的精确安装、typecheck、生产构建、
+Solace integration bundle 和 preview runtime 验证。这只属于 package adoption 证据；尚不能证明多个应用复用了相同 UI component patterns，
+也不能证明稳定 plugin extension boundary 或多个 Solace 应用的 production migration experience 已经形成。
+
 ## 近期范围
 
 生态工作先聚焦在文档、示例和 adapters：

@@ -1,9 +1,22 @@
 import { describe, expect, it } from "vitest";
 
-import { defineComponent, h, render } from "../../../src";
+import {
+  createApp,
+  createMemoryHistory,
+  createRouter,
+  defineComponent,
+  h,
+  render,
+} from "../../../src";
 import { jsxDEV } from "../../../src/jsx-dev-runtime";
 import { jsx, jsxs } from "../../../src/jsx-runtime";
-import type { ComponentEventMap, ComponentSetupContext, VNodeChildren } from "../../../src";
+import type {
+  ComponentEventMap,
+  ComponentSetupContext,
+  RouteComponent,
+  VNodeChildren,
+} from "../../../src";
+import type { RenderToStringSource } from "../../../src/server";
 
 const incrementCalls: number[] = [];
 type CounterEvents = {
@@ -163,10 +176,37 @@ const RequiredNamedPanel = defineComponent<object, ComponentEventMap, RequiredNa
   },
 );
 
+const requiredSlotRouteTransport: RouteComponent = RequiredSlotPanel;
+const requiredSlotServerTransport: RenderToStringSource = RequiredSlotPanel;
+createApp(RequiredSlotPanel);
+createRouter({
+  history: createMemoryHistory(),
+  routes: [{ path: "/required-slot", component: RequiredSlotPanel }],
+});
+void requiredSlotRouteTransport;
+void requiredSlotServerTransport;
+
 const Row = (props: { label: string }) => <li>{props.label}</li>;
 const GenericRow = <Value,>(props: { value: Value; formatValue: (value: Value) => string }) => (
   <li>{props.formatValue(props.value)}</li>
 );
+const typedEventRouteTransport: RouteComponent = TypedEmitter;
+const typedEventServerTransport: RenderToStringSource = TypedEmitter;
+const genericRouteTransport: RouteComponent = GenericRow;
+const genericServerTransport: RenderToStringSource = GenericRow;
+createApp(TypedEmitter);
+createApp(GenericRow);
+createRouter({
+  history: createMemoryHistory(),
+  routes: [
+    { path: "/typed-event", component: TypedEmitter },
+    { path: "/generic", component: GenericRow },
+  ],
+});
+void typedEventRouteTransport;
+void typedEventServerTransport;
+void genericRouteTransport;
+void genericServerTransport;
 const CounterButton = (props: { count: number }, { emit, slots }: ComponentSetupContext) => (
   <button onClick={() => emit("increment", props.count)}>
     <span>count: {props.count}</span>
@@ -220,9 +260,20 @@ h(
 h(RequiredNamedPanel, null, {
   header: () => <strong>required header</strong>,
 });
+h(GenericRow, { value: 42, formatValue: (value: number) => value.toFixed(0) });
+jsx(RequiredSlotPanel, { children: "required" });
+jsxDEV(RequiredSlotPanel, { children: "required" });
+jsx(GenericRow, { value: "Ada", formatValue: (value: string) => value.toUpperCase() });
+jsxDEV(GenericRow, { value: 42, formatValue: (value: number) => value.toFixed(0) });
 
 // @ts-expect-error required default slots require JSX children
 <RequiredSlotPanel />;
+
+// @ts-expect-error direct jsx required default slots require children
+jsx(RequiredSlotPanel, {});
+
+// @ts-expect-error direct jsxDEV required default slots require children
+jsxDEV(RequiredSlotPanel, {});
 
 // @ts-expect-error components without a default slot reject JSX children
 <HeaderOnlyPanel>unexpected</HeaderOnlyPanel>;
@@ -243,6 +294,12 @@ h(RequiredSlotPanel, null, {
 
 // @ts-expect-error typed h() scoped slots retain their declared props
 h(RequiredSlotPanel, null, { default: (props: { label: number }) => <span>{props.label}</span> });
+
+// @ts-expect-error direct h() retains generic component prop relationships
+h(GenericRow, { value: 42, formatValue: (value: string) => value });
+
+// @ts-expect-error direct jsx retains generic component prop relationships
+jsx(GenericRow, { value: 42, formatValue: (value: string) => value });
 
 // Untyped components retain the broad producer contract.
 h(

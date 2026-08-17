@@ -22,5 +22,19 @@ describe("DevTools documentation", () => {
     expect(docs).toContain("stale runtime ports");
     expect(docs).toContain("Failed page `postMessage`");
     expect(docs).toContain("do not include raw props, state, DOM nodes");
+    expect(docs).toContain("## Local Distribution Evidence");
+    expect(docs).toContain("`release/devtools-distribution-evidence.md`");
+    expect(docs).toContain("does not claim browser-store publication");
+  });
+
+  test("records the bounded local distribution verification", async () => {
+    const evidence = await readFile("release/devtools-distribution-evidence.md", "utf8");
+
+    expect(evidence).toContain("pnpm test:e2e:devtools-extension");
+    expect(evidence).toContain("2 passed");
+    expect(evidence).toContain("bridge.js");
+    expect(evidence).toContain("content-script.js");
+    expect(evidence).toContain("No `.map` files");
+    expect(evidence).toContain("Browser-store publication remains deferred");
   });
 });

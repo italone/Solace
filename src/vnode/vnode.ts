@@ -9,6 +9,9 @@ export type ComponentType<
   Events extends ComponentEventMap = ComponentEventMap,
   SlotMap extends object = Slots,
 > = (props: Props, context: ComponentSetupContext<Events, SlotMap>) => ComponentRender | VNode;
+// Runtime containers preserve the callable shape while erasing authoring-only metadata maps.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ComponentTransport = ComponentType<never, any, any>;
 export type AsyncComponentSetupResult = PromiseLike<ComponentRender | VNode>;
 export type AsyncComponentType<Props extends object = ComponentProps> = (
   props: Props,
@@ -17,9 +20,7 @@ export type AsyncComponentType<Props extends object = ComponentProps> = (
 export const Fragment = Symbol("Solace.Fragment");
 export type FragmentType = typeof Fragment;
 // The VNode boundary intentionally erases a component's concrete metadata maps.
-export type VNodeType =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ComponentType<never, any, any> | string | AsyncComponentType<never> | FragmentType;
+export type VNodeType = ComponentTransport | string | AsyncComponentType<never> | FragmentType;
 export type VNodeProps = Record<string, unknown>;
 export type VNodeChild = string | VNode;
 export type AsyncVNodeChild = PromiseLike<VNodeChild>;

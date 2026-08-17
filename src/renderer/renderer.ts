@@ -4,7 +4,7 @@ import type { Provides } from "../component/provide";
 import { prepareAsyncSource, type PreparedVNode } from "../shared/async-tree";
 import { createDocumentStyleSink, withStyleSink, type StyleSink } from "../component/style";
 import { h } from "../vnode/h";
-import type { AsyncComponentType, ComponentType, VNode } from "../vnode/vnode";
+import type { AsyncComponentType, ComponentTransport, VNode } from "../vnode/vnode";
 import { patch } from "./diff";
 import {
   assertNoExtraDomNode,
@@ -16,7 +16,7 @@ import {
 } from "./hydration";
 
 export type RenderSource = VNode | (() => VNode);
-export type HydrationSource = VNode | ComponentType;
+export type HydrationSource = VNode | ComponentTransport;
 export type AsyncHydrationSource = HydrationSource | AsyncComponentType;
 export interface HydrationOptions {
   recover?: boolean;

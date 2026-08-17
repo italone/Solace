@@ -9,7 +9,7 @@ import { ShapeFlags } from "../shared/flags";
 import { prepareAsyncSource, type PreparedVNode } from "../shared/async-tree";
 import { escapeAttribute, escapeHtml } from "../shared/html";
 import { h } from "../vnode/h";
-import type { AsyncComponentType, ComponentType, VNode, VNodeProps } from "../vnode/vnode";
+import type { AsyncComponentType, ComponentTransport, VNode, VNodeProps } from "../vnode/vnode";
 
 export interface RenderToStringOptions {
   context?: Record<string, unknown>;
@@ -21,7 +21,7 @@ export interface RenderToStringResult {
   styles: string[];
 }
 
-export type RenderToStringSource = VNode | ComponentType | (() => VNode);
+export type RenderToStringSource = VNode | ComponentTransport | (() => VNode);
 export type RenderToStringAsyncSource =
   | RenderToStringSource
   | AsyncComponentType
@@ -67,7 +67,7 @@ function normalizeSource(source: RenderToStringSource): VNode {
   }
 
   if (typeof source === "function") {
-    return h(source as ComponentType);
+    return h(source as ComponentTransport);
   }
 
   throw new TypeError("SSR source must be a VNode or component function");

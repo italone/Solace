@@ -2,7 +2,7 @@ import { h } from "./vnode/h";
 import { hydrate, hydrateAsync, render } from "./renderer/renderer";
 import type { HydrationOptions } from "./renderer/renderer";
 import type { ProvideKey, Provides } from "./component/provide";
-import type { AsyncComponentType, ComponentType, VNode } from "./vnode/vnode";
+import type { AsyncComponentType, ComponentTransport, VNode } from "./vnode/vnode";
 
 export type PluginInstall = (app: App, ...options: unknown[]) => void;
 
@@ -20,23 +20,29 @@ export interface App {
   use(plugin: Plugin, ...options: unknown[]): App;
 }
 
-export function createApp(rootComponent: ComponentType | AsyncComponentType | VNode): App {
+export function createApp(rootComponent: ComponentTransport | AsyncComponentType | VNode): App {
   const installedPlugins = new Set<Plugin>();
   const appProvides: Provides = new Map();
   const app: App = {
     mount(container: Element): void {
       const vnode =
-        typeof rootComponent === "function" ? h(rootComponent as ComponentType) : rootComponent;
+        typeof rootComponent === "function"
+          ? h(rootComponent as ComponentTransport)
+          : rootComponent;
       render(vnode, container, appProvides);
     },
     hydrate(container: Element, options?: HydrationOptions): void {
       const vnode =
-        typeof rootComponent === "function" ? h(rootComponent as ComponentType) : rootComponent;
+        typeof rootComponent === "function"
+          ? h(rootComponent as ComponentTransport)
+          : rootComponent;
       hydrate(vnode, container, appProvides, options);
     },
     hydrateAsync(container: Element, options?: HydrationOptions): Promise<void> {
       const vnode =
-        typeof rootComponent === "function" ? h(rootComponent as ComponentType) : rootComponent;
+        typeof rootComponent === "function"
+          ? h(rootComponent as ComponentTransport)
+          : rootComponent;
       return hydrateAsync(vnode, container, appProvides, options);
     },
     provide<T>(key: ProvideKey, value: T): App {

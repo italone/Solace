@@ -80,8 +80,10 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toContain("pnpm test:e2e:devtools-extension");
     expect(projectStatus).toContain("`release/performance-history.json`");
     expect(projectStatusZh).toContain("`release/performance-history.json`");
-    expect(projectStatus).toContain("3/5 distinct task runs");
-    expect(projectStatusZh).toContain("3/5 个独立 task runs");
+    expect(projectStatus).toContain("5/5 distinct task runs");
+    expect(projectStatusZh).toContain("5/5 个独立 task runs");
+    expect(projectStatus).toContain("`release/adoption-evidence.md`");
+    expect(projectStatusZh).toContain("`release/adoption-evidence.md`");
     expect(release).toContain("pnpm benchmark:history:evidence");
     expect(release).toContain("five distinct `runAt` timestamps");
     expect(changelog).toContain("`router.isReady()`");
@@ -247,18 +249,14 @@ describe("public contract documentation", () => {
     expect(migrationZh).toContain("adoption.independent-apps");
     expect(release).toContain("[migration and rollback runbook](./migration.md)");
     expect(release).toContain("[迁移与回滚手册](./migration.zh-CN.md)");
-    expect(roadmap).toMatch(
-      /Migration and rollback procedures are now\s+documented through structured evidence/,
-    );
+    expect(roadmap).toMatch(/The\s+admission evidence now satisfies all five structured criteria/);
     expect(projectStatus).toMatch(
-      /Migration and rollback procedures now pass the structured evidence\s+gate/,
+      /Migration and rollback procedures[\s\S]*pass the\s+structured evidence gate/,
     );
-    expect(projectStatus).toMatch(
-      /only independent production applications and two additional independently collected jsdom\s+task runs remain unsatisfied/,
-    );
+    expect(projectStatus).toMatch(/the 1.0 evidence evaluator now reports ready/i);
     expect(projectStatus).toMatch(/no live npm\s+rollback rehearsal is claimed/);
-    expect(projectStatusZh).toContain("migration/rollback 流程现已通过结构化证据门禁");
-    expect(projectStatusZh).toMatch(/仅独立生产应用和另外两个独立采集的 jsdom task runs 尚未满足/);
+    expect(projectStatusZh).toMatch(/migration\/rollback 流程[\s\S]*已通过结构化证据门禁/);
+    expect(projectStatusZh).toContain("1.0 evidence evaluator 现已报告 ready");
     expect(projectStatusZh).toContain("不声明已经完成真实 npm 回滚演练");
 
     expect(routerAwareSsrDesign).toContain("createMemoryHistory()");
