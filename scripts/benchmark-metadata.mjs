@@ -42,12 +42,27 @@ export function parseSampleSize(argv, env) {
   return value;
 }
 
-export async function createBenchmarkMetadata(sampleSize) {
+export function parseBenchmarkCommitSha(env, { required = false } = {}) {
+  const value = env.SOLACE_BENCHMARK_COMMIT_SHA;
+  if (value === undefined || value === "") {
+    if (required) {
+      throw new Error("SOLACE_BENCHMARK_COMMIT_SHA is required for persisted benchmark history");
+    }
+    return undefined;
+  }
+  if (!/^[0-9a-f]{40}$/u.test(value)) {
+    throw new Error("SOLACE_BENCHMARK_COMMIT_SHA must be a 40-character lowercase hexadecimal SHA");
+  }
+  return value;
+}
+
+export async function createBenchmarkMetadata(sampleSize, env = process.env) {
   const packageJson = await readPackageJson();
   const cpuList = cpus();
   const [primaryCpu] = cpuList;
   const currentPlatform = platform();
   const currentArch = arch();
+  const commitSha = parseBenchmarkCommitSha(env);
 
   return {
     packageName: packageJson.name,
@@ -64,6 +79,7 @@ export async function createBenchmarkMetadata(sampleSize) {
     benchmarkEnvironment: "jsdom",
     sampleSize,
     runAt: new Date().toISOString(),
+    ...(commitSha === undefined ? {} : { commitSha }),
   };
 }
 

@@ -20,7 +20,10 @@ type BenchmarkMetadata = {
   benchmarkEnvironment: string;
   sampleSize: number;
   runAt: string;
+  commitSha?: string;
 };
+
+const commitSha = "0123456789abcdef0123456789abcdef01234567";
 
 describe("benchmark metadata CLI", () => {
   test("prints machine and runtime metadata as JSON", async () => {
@@ -53,6 +56,15 @@ describe("benchmark metadata CLI", () => {
     const metadata = JSON.parse(stdout) as BenchmarkMetadata;
 
     expect(metadata.sampleSize).toBe(3);
+  });
+
+  test("propagates the commit SHA when provided", async () => {
+    const { stdout } = await execFileAsync("node", ["scripts/benchmark-metadata.mjs", "--json"], {
+      env: { ...process.env, SOLACE_BENCHMARK_COMMIT_SHA: commitSha },
+    });
+    const metadata = JSON.parse(stdout) as BenchmarkMetadata;
+
+    expect(metadata.commitSha).toBe(commitSha);
   });
 
   test("rejects invalid benchmark sample sizes without a stack trace", async () => {

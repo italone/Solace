@@ -6,6 +6,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   appendBrowserBenchmarkHistory,
+  parseBrowserBenchmarkCommitSha,
   parseBrowserBenchmarkHistoryPath,
   parseBrowserBenchmarkSampleSize,
   type BrowserBenchmarkHistorySummary,
@@ -132,6 +133,22 @@ const shiftWindowKeyedReorderSummary: BrowserBenchmarkHistorySummary = {
 };
 
 describe("browser benchmark history", () => {
+  test("requires a valid commit SHA for persisted history", () => {
+    const commitSha = "0123456789abcdef0123456789abcdef01234567";
+    expect(parseBrowserBenchmarkCommitSha({ SOLACE_BENCHMARK_COMMIT_SHA: commitSha })).toBe(
+      commitSha,
+    );
+    expect(() =>
+      parseBrowserBenchmarkCommitSha(
+        { SOLACE_BENCHMARK_COMMIT_SHA: "invalid" },
+        { required: true },
+      ),
+    ).toThrow("SOLACE_BENCHMARK_COMMIT_SHA must be a 40-character lowercase hexadecimal SHA");
+    expect(() => parseBrowserBenchmarkCommitSha({}, { required: true })).toThrow(
+      "SOLACE_BENCHMARK_COMMIT_SHA is required for persisted benchmark history",
+    );
+  });
+
   test("parses an optional history path", () => {
     expect(parseBrowserBenchmarkHistoryPath({})).toBeUndefined();
     expect(

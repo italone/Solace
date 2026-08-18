@@ -61,6 +61,7 @@ export type BrowserBenchmarkHistoryMetadata = {
   projectName: string;
   sampleSize: number;
   runAt: string;
+  commitSha?: string;
 };
 
 export type BrowserBenchmarkHistorySummary = BrowserBenchmarkHistoryResult & {
@@ -87,6 +88,23 @@ export function parseBrowserBenchmarkHistoryPath(env: {
   }
 
   return rawValue;
+}
+
+export function parseBrowserBenchmarkCommitSha(
+  env: { SOLACE_BENCHMARK_COMMIT_SHA?: string },
+  { required = false }: { required?: boolean } = {},
+): string | undefined {
+  const value = env.SOLACE_BENCHMARK_COMMIT_SHA;
+  if (value === undefined || value === "") {
+    if (required) {
+      throw new Error("SOLACE_BENCHMARK_COMMIT_SHA is required for persisted benchmark history");
+    }
+    return undefined;
+  }
+  if (!/^[0-9a-f]{40}$/u.test(value)) {
+    throw new Error("SOLACE_BENCHMARK_COMMIT_SHA must be a 40-character lowercase hexadecimal SHA");
+  }
+  return value;
 }
 
 export function parseBrowserBenchmarkSampleSize(env: {

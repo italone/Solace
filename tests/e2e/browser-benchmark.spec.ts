@@ -5,6 +5,7 @@ import { expect, test } from "@playwright/test";
 
 import {
   appendBrowserBenchmarkHistory,
+  parseBrowserBenchmarkCommitSha,
   parseBrowserBenchmarkHistoryPath,
   parseBrowserBenchmarkSampleSize,
   type BrowserBenchmarkHistoryMetadata,
@@ -93,6 +94,9 @@ test("measures browser benchmark scenarios in a production browser build", async
   page,
 }, testInfo) => {
   const historyPath = parseBrowserBenchmarkHistoryPath(process.env);
+  const commitSha = parseBrowserBenchmarkCommitSha(process.env, {
+    required: historyPath !== undefined,
+  });
   const sampleSize = parseBrowserBenchmarkSampleSize(process.env);
 
   await page.goto("/");
@@ -122,6 +126,7 @@ test("measures browser benchmark scenarios in a production browser build", async
           projectName: testInfo.project.name,
         },
         sampleSize,
+        commitSha,
       );
 
       expectBrowserBenchmarkSummary(summary, sampleSize, scenario);
@@ -233,6 +238,7 @@ function createBrowserBenchmarkSummary(
   result: BrowserBenchmarkResult,
   options: Pick<BrowserBenchmarkMetadata, "browserName" | "browserVersion" | "projectName">,
   sampleSize: number,
+  commitSha?: string,
 ): BrowserBenchmarkSummary {
   const packageMetadata = readPackageMetadata();
   const cpuList = cpus();
@@ -255,6 +261,7 @@ function createBrowserBenchmarkSummary(
       projectName: options.projectName,
       sampleSize,
       runAt: new Date().toISOString(),
+      ...(commitSha === undefined ? {} : { commitSha }),
     },
   };
 }
