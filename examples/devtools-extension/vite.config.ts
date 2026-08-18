@@ -14,6 +14,7 @@ export default defineConfig({
         "content-script": fileURLToPath(new URL("src/content-script.ts", extensionRoot)),
         devtools: fileURLToPath(new URL("devtools.html", extensionRoot)),
         index: fileURLToPath(new URL("index.html", extensionRoot)),
+        "store-timeline": fileURLToPath(new URL("store-timeline.html", extensionRoot)),
         panel: fileURLToPath(new URL("panel.html", extensionRoot)),
       },
       output: {

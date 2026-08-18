@@ -149,12 +149,26 @@ Run the example locally with:
 pnpm dev:devtools-extension
 ```
 
+The panel offers a `Timeline` view for all recorded event families and a `Store` view listing
+recorded `store:action` summaries as `{ time, type, status, durationMs }` entries. The
+`store-timeline.html` demo page in the example builds a Solace app with a store and dispatches an
+`increment` action so the panel can record it.
+
 Validate the extension build and browser smoke with:
 
 ```bash
 pnpm build:devtools-extension
 pnpm test:e2e:devtools-extension
 ```
+
+## Inspected Origin Checklist
+
+Before distributing the extension beyond local demos:
+
+1. Review `manifest.json` `host_permissions`.
+2. Confirm no runtime payload changes are required.
+3. Run `pnpm test:e2e:devtools-extension` on the target origins.
+4. Publish only after explicit maintainer review.
 
 ## Browser Extension QA Checklist
 

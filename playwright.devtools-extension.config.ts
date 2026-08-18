@@ -6,7 +6,7 @@ sanitizePlaywrightProcessEnv();
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  testMatch: "devtools-extension.spec.ts",
+  testMatch: "devtools-extension*.spec.ts",
   webServer: [
     {
       command: "pnpm exec vite examples/basic-counter --host 127.0.0.1 --port 6174",

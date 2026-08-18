@@ -13,6 +13,7 @@ const eventSource = createPanelEventSource((event) => {
 function replacePanelState(nextState: PanelState): void {
   const wasPaused = panelState.paused;
 
+  panelState.view = nextState.view;
   panelState.paused = nextState.paused;
   panelState.limit = nextState.limit;
   panelState.filter = nextState.filter;

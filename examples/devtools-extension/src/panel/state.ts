@@ -2,6 +2,8 @@ import type { DevtoolsEvent } from "@italone/solace/devtools";
 
 export type TimelineFamily = "component" | "scheduler" | "reactivity" | "renderer" | "store";
 
+export type PanelView = "timeline" | "store";
+
 export interface TimelineFilter {
   family?: TimelineFamily;
 }
@@ -14,7 +16,16 @@ export interface TimelineRow {
   event: DevtoolsEvent;
 }
 
+export interface StoreActionEntry {
+  id: string;
+  time: number;
+  type: string;
+  status: "success" | "error";
+  durationMs: number;
+}
+
 export interface PanelState {
+  view: PanelView;
   paused: boolean;
   limit: number;
   filter: TimelineFilter;
@@ -38,6 +49,7 @@ export function createPanelState(options: CreatePanelStateOptions = {}): PanelSt
   assertValidLimit(limit);
 
   return {
+    view: "timeline",
     paused: false,
     limit,
     filter: {},
@@ -82,6 +94,31 @@ export function filterTimeline(rows: TimelineRow[], filter: TimelineFilter): Tim
   }
 
   return rows.filter((row) => row.family === filter.family);
+}
+
+export function setPanelView(state: PanelState, view: PanelView): PanelState {
+  return {
+    ...state,
+    view,
+  };
+}
+
+export function getStoreActionEntries(state: PanelState): StoreActionEntry[] {
+  return state.events.flatMap((row) => {
+    if (row.event.type !== "store:action") {
+      return [];
+    }
+
+    return [
+      {
+        id: row.id,
+        time: row.timestamp,
+        type: row.event.name,
+        status: row.event.status,
+        durationMs: row.event.durationMs,
+      },
+    ];
+  });
 }
 
 export function setPanelPaused(state: PanelState, paused: boolean): PanelState {

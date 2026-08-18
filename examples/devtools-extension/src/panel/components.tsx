@@ -1,11 +1,13 @@
 import { h } from "@italone/solace";
-import type { PanelState, TimelineFamily } from "./state";
+import type { PanelState, StoreActionEntry, TimelineFamily } from "./state";
 import {
   clearTimeline,
   filterTimeline,
   getSelectedTimelineRow,
+  getStoreActionEntries,
   selectTimelineEvent,
   setPanelPaused,
+  setPanelView,
   setRecorderLimit,
   setTimelineFilter,
 } from "./state";
@@ -28,6 +30,7 @@ export function TimelinePanel(props: TimelinePanelProps) {
     const { state, onStateChange } = props;
     const rows = filterTimeline(state.events, state.filter);
     const selectedRow = getSelectedTimelineRow(state);
+    const storeActions = getStoreActionEntries(state);
 
     function updateLimit(event: Event): void {
       const nextLimit = (event.target as HTMLInputElement).valueAsNumber;
@@ -78,6 +81,35 @@ export function TimelinePanel(props: TimelinePanelProps) {
           }),
         ]),
       ]),
+      h(
+        "nav",
+        {
+          class: "panel-tabs",
+          "data-testid": "panel-tabs",
+          "aria-label": "Panel views",
+        },
+        (["timeline", "store"] as const).map((view) =>
+          h(
+            "button",
+            {
+              class: "tab-button",
+              type: "button",
+              "aria-pressed": state.view === view,
+              onClick: () => onStateChange(setPanelView(state, view)),
+            },
+            view === "timeline" ? "Timeline" : "Store",
+          ),
+        ),
+      ),
+      ...(state.view === "store"
+        ? [
+            h(
+              "section",
+              { class: "store-pane", "aria-label": "Store actions" },
+              [StoreActions({ actions: storeActions })],
+            ),
+          ]
+        : [
       h(
         "nav",
         {
@@ -139,6 +171,20 @@ export function TimelinePanel(props: TimelinePanelProps) {
           ],
         ),
       ]),
+          ]),
     ]);
   };
+}
+
+export function StoreActions(props: { actions: StoreActionEntry[] }) {
+  return h(
+    "ul",
+    { class: "store-action-list", "data-testid": "store-actions", "aria-label": "Store actions" },
+    props.actions.map((action) =>
+      h("li", { key: action.id }, [
+        h("strong", null, `${action.time}: ${action.type}`),
+        h("span", null, `${action.status} in ${action.durationMs.toFixed(2)}ms`),
+      ]),
+    ),
+  );
 }

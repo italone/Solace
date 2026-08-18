@@ -92,6 +92,63 @@ input {
   color: #d7dde7;
 }
 
+.panel-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid #29313b;
+  padding: 6px 10px;
+}
+
+.tab-button {
+  height: 26px;
+  border: 1px solid #3a4351;
+  border-radius: 4px;
+  padding: 0 12px;
+  background: #171c23;
+  color: #b7c0cf;
+  cursor: pointer;
+}
+
+.tab-button:hover {
+  background: #202731;
+}
+
+.tab-button[aria-pressed="true"] {
+  border-color: #74a5ff;
+  background: #183255;
+  color: #eef5ff;
+}
+
+.store-pane {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.store-action-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.store-action-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid #202730;
+  padding: 7px 10px;
+}
+
+.store-action-list strong {
+  color: #eef5ff;
+  font-weight: 600;
+}
+
+.store-action-list span {
+  color: #9da8b8;
+}
+
 .family-filters {
   min-height: 38px;
   flex-wrap: wrap;
