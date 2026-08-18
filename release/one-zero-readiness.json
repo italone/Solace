@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-08-17",
+  "adoptionEvidence": "release/adoption-evidence.json",
   "applications": [
     {
       "name": "operations-console",
@@ -91,6 +92,7 @@
     "evidence": "release/performance-history.json"
   },
   "devtools": {
+    "evidence": "release/devtools-distribution-evidence.json",
     "productionManifestReviewed": true,
     "broadHostAccessRemoved": true,
     "distributableManifestVerified": false,

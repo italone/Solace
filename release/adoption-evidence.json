@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-08-17",
+  "applications": [
+    {
+      "name": "operations-console",
+      "verified": true,
+      "packageVersion": "local-beta.6",
+      "packageSource": "local",
+      "primaryRenderer": "solace",
+      "productionWorkflows": {
+        "router": true,
+        "store": true,
+        "asyncComponents": true,
+        "errorRecovery": true,
+        "ssrHydration": true
+      },
+      "upgrade": { "verified": true, "fromVersion": "0.1.0-beta.2" },
+      "rollback": { "rehearsed": false },
+      "evidencePath": "docs/project-status.md",
+      "rollbackEvidencePath": "docs/migration.md"
+    },
+    {
+      "name": "adoption-consumer",
+      "verified": true,
+      "packageVersion": "local-beta.6",
+      "packageSource": "local",
+      "primaryRenderer": "solace",
+      "productionWorkflows": {
+        "router": true,
+        "store": true,
+        "asyncComponents": true,
+        "errorRecovery": true,
+        "ssrHydration": true
+      },
+      "upgrade": { "verified": true, "fromVersion": "0.1.0-beta.4" },
+      "rollback": { "rehearsed": false },
+      "evidencePath": "docs/project-status.md",
+      "rollbackEvidencePath": "docs/migration.md"
+    },
+    {
+      "name": "h5-design",
+      "verified": true,
+      "packageVersion": "0.1.0-beta.5",
+      "packageSource": "npm",
+      "primaryRenderer": "react",
+      "productionWorkflows": {
+        "router": false,
+        "store": false,
+        "asyncComponents": false,
+        "errorRecovery": false,
+        "ssrHydration": false
+      },
+      "upgrade": { "verified": false, "fromVersion": "" },
+      "rollback": { "rehearsed": false },
+      "evidencePath": "release/adoption-evidence.md",
+      "rollbackEvidencePath": "release/adoption-evidence.md"
+    },
+    {
+      "name": "css-world",
+      "verified": true,
+      "packageVersion": "0.1.0-beta.5",
+      "packageSource": "npm",
+      "primaryRenderer": "react",
+      "productionWorkflows": {
+        "router": false,
+        "store": false,
+        "asyncComponents": false,
+        "errorRecovery": false,
+        "ssrHydration": false
+      },
+      "upgrade": { "verified": false, "fromVersion": "" },
+      "rollback": { "rehearsed": false },
+      "evidencePath": "release/adoption-evidence.md",
+      "rollbackEvidencePath": "release/adoption-evidence.md"
+    }
+  ]
+}

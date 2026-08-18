@@ -11,6 +11,7 @@ type ReadinessEvidenceFixture = {
     name: string;
     independent: boolean;
     packageSource: string;
+    packageVersion: string;
     verified: boolean;
     primaryRenderer: "solace" | "react";
     productionWorkflows: {
@@ -23,6 +24,16 @@ type ReadinessEvidenceFixture = {
     upgrade: { verified: boolean; fromVersion: string };
     rollback: { rehearsed: boolean; evidence: string };
     evidence: string;
+    evidenceRecord?: {
+      name: string;
+      verified: boolean;
+      packageVersion: string;
+      packageSource: string;
+      primaryRenderer: "solace" | "react";
+      productionWorkflows: ReadinessEvidenceFixture["applications"][number]["productionWorkflows"];
+      upgrade: { verified: boolean; fromVersion: string };
+      rollback: { rehearsed: boolean };
+    };
   }>;
   upgradeMatrix: { baselines: Record<string, { verified: boolean }> };
   performance: {
@@ -41,8 +52,18 @@ type ReadinessEvidenceFixture = {
     broadHostAccessRemoved: boolean;
     distributableManifestVerified: boolean;
     testedOrigins: string[];
+    evidenceRecord?: {
+      productionManifestReviewed: boolean;
+      broadHostAccessRemoved: boolean;
+      distributableManifestVerified: boolean;
+      testedOrigins: string[];
+    };
   };
-  contract: { stableAdmission: boolean; evidence: string };
+  contract: {
+    stableAdmission: boolean;
+    evidence: string;
+    evidenceRecord?: { schemaVersion: number; stableAdmission: boolean };
+  };
   migrationPolicy: Record<string, unknown>;
 };
 
@@ -69,6 +90,7 @@ function readyEvidence(): ReadinessEvidenceFixture {
     name,
     independent: true as const,
     packageSource: "npm" as const,
+    packageVersion: "0.1.0-beta.5",
     verified: true,
     primaryRenderer: "solace" as const,
     productionWorkflows: {
@@ -81,6 +103,22 @@ function readyEvidence(): ReadinessEvidenceFixture {
     upgrade: { verified: true, fromVersion },
     rollback: { rehearsed: true, evidence: "release/adoption-evidence.md" },
     evidence: "release/adoption-evidence.md",
+    evidenceRecord: {
+      name,
+      verified: true,
+      packageVersion: "0.1.0-beta.5",
+      packageSource: "npm",
+      primaryRenderer: "solace" as const,
+      productionWorkflows: {
+        router: true,
+        store: true,
+        asyncComponents: true,
+        errorRecovery: true,
+        ssrHydration: true,
+      },
+      upgrade: { verified: true, fromVersion },
+      rollback: { rehearsed: true },
+    },
   });
 
   return {
@@ -128,8 +166,18 @@ function readyEvidence(): ReadinessEvidenceFixture {
       broadHostAccessRemoved: true,
       distributableManifestVerified: true,
       testedOrigins: ["https://customer.example"],
+      evidenceRecord: {
+        productionManifestReviewed: true,
+        broadHostAccessRemoved: true,
+        distributableManifestVerified: true,
+        testedOrigins: ["https://customer.example"],
+      },
     },
-    contract: { stableAdmission: true, evidence: "release/public-contract.json" },
+    contract: {
+      stableAdmission: true,
+      evidence: "release/public-contract.json",
+      evidenceRecord: { schemaVersion: 1, stableAdmission: true },
+    },
     migrationPolicy: {
       compatibility: {
         documented: true,
@@ -228,6 +276,21 @@ describe("1.0 readiness evaluation", () => {
 
     expect(criterion).toMatchObject({ id: "adoption.independent-apps", passed: false });
     expect(criterion.message).toContain("primary");
+  });
+
+  it("does not treat boolean-only claims as loaded production evidence", () => {
+    const evidence = readyEvidence();
+    delete evidence.applications[0].evidenceRecord;
+    delete evidence.applications[1].evidenceRecord;
+    delete evidence.devtools.evidenceRecord;
+    delete evidence.contract.evidenceRecord;
+
+    const result = evaluateOneZeroReadiness(evidence);
+
+    expect(result.ready).toBe(false);
+    expect(result.criteria[0]).toMatchObject({ passed: false });
+    expect(result.criteria[3]).toMatchObject({ passed: false });
+    expect(result.criteria[5]).toMatchObject({ passed: false });
   });
 
   it("requires five distinct calendar dates for every performance scenario", () => {

@@ -103,4 +103,81 @@ describe("1.0 readiness evidence loading", () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+
+  it("rejects an empty structured contract evidence document", async () => {
+    const root = await mkdtemp(join(tmpdir(), "solace-one-zero-contract-"));
+    await mkdir(join(root, "release"));
+
+    try {
+      await writeJson(join(root, "release", "one-zero-readiness.json"), {
+        contract: { stableAdmission: true, evidence: "release/public-contract.json" },
+        performance: { evidence: "release/performance-history.json" },
+      });
+      await writeJson(join(root, "release", "performance-history.json"), {
+        schemaVersion: 1,
+        browserScenarios: { "large-list": {} },
+        jsdomScenarios: { render: {} },
+      });
+      await writeFile(join(root, "release", "public-contract.json"), "\n", "utf8");
+
+      await expect(loadOneZeroReadinessEvidence({ root })).rejects.toThrow(
+        "Empty readiness evidence document: release/public-contract.json",
+      );
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects a non-structured DevTools evidence document", async () => {
+    const root = await mkdtemp(join(tmpdir(), "solace-one-zero-devtools-"));
+    await mkdir(join(root, "release"));
+
+    try {
+      await writeJson(join(root, "release", "one-zero-readiness.json"), {
+        devtools: { evidence: "release/devtools.json" },
+        performance: { evidence: "release/performance-history.json" },
+      });
+      await writeJson(join(root, "release", "performance-history.json"), {
+        schemaVersion: 1,
+        browserScenarios: { "large-list": {} },
+        jsdomScenarios: { render: {} },
+      });
+      await writeFile(join(root, "release", "devtools.json"), "plain text\n", "utf8");
+
+      await expect(loadOneZeroReadinessEvidence({ root })).rejects.toThrow(
+        "Invalid readiness evidence JSON at release/devtools.json",
+      );
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects adoption records that do not match the declared application", async () => {
+    const root = await mkdtemp(join(tmpdir(), "solace-one-zero-adoption-record-"));
+    await mkdir(join(root, "release"));
+
+    try {
+      await writeJson(join(root, "release", "one-zero-readiness.json"), {
+        adoptionEvidence: "release/adoption.json",
+        applications: [{ name: "customer-app", evidence: "release/adoption.md" }],
+        performance: { evidence: "release/performance-history.json" },
+      });
+      await writeJson(join(root, "release", "adoption.json"), {
+        schemaVersion: 1,
+        applications: [{ name: "different-app" }],
+      });
+      await writeFile(join(root, "release", "adoption.md"), "evidence\n", "utf8");
+      await writeJson(join(root, "release", "performance-history.json"), {
+        schemaVersion: 1,
+        browserScenarios: { "large-list": {} },
+        jsdomScenarios: { render: {} },
+      });
+
+      await expect(loadOneZeroReadinessEvidence({ root })).rejects.toThrow(
+        "Missing adoption evidence record: customer-app",
+      );
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
 });

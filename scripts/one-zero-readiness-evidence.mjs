@@ -19,13 +19,93 @@ export async function loadOneZeroReadinessEvidence({
 
   const performanceSummary = await readJson(root, performanceEvidencePath);
   await verifyDocumentReferences(root, evidence);
+  const applications = await loadAdoptionEvidence(root, evidence);
+  const devtools = await loadDevtoolsEvidence(root, evidence);
+  const contract = await loadContractEvidence(root, evidence);
   return {
     ...evidence,
+    applications,
+    devtools,
+    contract,
     performance: {
       ...evidence.performance,
       summary: performanceSummary,
     },
   };
+}
+
+async function loadAdoptionEvidence(root, evidence) {
+  if (!Array.isArray(evidence?.applications) || evidence.applications.length === 0) {
+    return evidence?.applications;
+  }
+  const path = evidence?.adoptionEvidence;
+  if (!isSafeEvidencePath(path)) {
+    throw new Error("Adoption evidence JSON path is required when applications are declared");
+  }
+  const document = await readJson(root, path);
+  if (
+    document?.schemaVersion !== 1 ||
+    !Array.isArray(document.applications) ||
+    document.applications.length === 0
+  ) {
+    throw new Error(`Invalid adoption evidence schema at ${path}`);
+  }
+  const records = new Map(document.applications.map((record) => [record?.name, record]));
+  return evidence.applications.map((application) => {
+    const record = records.get(application?.name);
+    if (!record) throw new Error(`Missing adoption evidence record: ${String(application?.name)}`);
+    if (record.evidencePath !== application?.evidence) {
+      throw new Error(`Adoption evidence path does not match: ${String(application?.name)}`);
+    }
+    if (record.rollbackEvidencePath !== application?.rollback?.evidence) {
+      throw new Error(
+        `Adoption rollback evidence path does not match: ${String(application?.name)}`,
+      );
+    }
+    return { ...application, evidenceRecord: record };
+  });
+}
+
+async function loadDevtoolsEvidence(root, evidence) {
+  const path = evidence?.devtools?.evidence;
+  if (path === undefined) return evidence?.devtools;
+  if (!isSafeEvidencePath(path)) throw new Error(`Invalid DevTools evidence path: ${String(path)}`);
+  const document = await readJson(root, path);
+  if (
+    document?.schemaVersion !== 1 ||
+    !Array.isArray(document.hostPermissions) ||
+    !Array.isArray(document.testedOrigins)
+  ) {
+    throw new Error(`Invalid DevTools evidence schema at ${path}`);
+  }
+  if (!isSafeEvidencePath(document.manifestPath)) {
+    throw new Error(`Invalid DevTools manifest path in ${path}`);
+  }
+  const manifest = await readJson(root, document.manifestPath);
+  if (
+    JSON.stringify(manifest.host_permissions ?? []) !==
+    JSON.stringify(document.hostPermissions ?? [])
+  ) {
+    throw new Error(
+      `DevTools manifest permissions do not match evidence: ${document.manifestPath}`,
+    );
+  }
+  return { ...evidence.devtools, evidenceRecord: document };
+}
+
+async function loadContractEvidence(root, evidence) {
+  const path = evidence?.contract?.evidence;
+  if (path === undefined) return evidence?.contract;
+  if (!isSafeEvidencePath(path)) throw new Error(`Invalid contract evidence path: ${String(path)}`);
+  const document = await readJson(root, path);
+  if (
+    document?.schemaVersion !== 1 ||
+    !Array.isArray(document.entries) ||
+    document.entries.length === 0
+  ) {
+    throw new Error(`Invalid public contract evidence schema at ${path}`);
+  }
+  return { ...evidence.contract, evidenceRecord: document };
 }
 
 async function verifyDocumentReferences(root, evidence) {
@@ -66,6 +146,8 @@ async function readJson(root, path) {
     }
     throw error;
   }
+
+  if (content.trim() === "") throw new Error(`Empty readiness evidence document: ${path}`);
 
   try {
     return JSON.parse(content);

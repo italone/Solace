@@ -32,11 +32,7 @@ export function evaluateOneZeroReadiness(evidence) {
           typeof application?.name === "string" &&
           application.name.trim() !== "" &&
           application?.primaryRenderer === "solace" &&
-          hasRequiredAdoptionWorkflows(application.productionWorkflows) &&
-          application?.upgrade?.verified === true &&
-          typeof application.upgrade.fromVersion === "string" &&
-          application.upgrade.fromVersion.trim() !== "" &&
-          application?.rollback?.rehearsed === true &&
+          hasVerifiedAdoptionEvidence(application) &&
           isSafeEvidencePath(application.rollback.evidence) &&
           isSafeEvidencePath(application.evidence),
       )
@@ -52,20 +48,13 @@ export function evaluateOneZeroReadiness(evidence) {
 
   const performance = evaluatePerformanceEvidence(evidence?.performance);
 
-  const devtoolsPassed =
-    evidence?.devtools?.productionManifestReviewed === true &&
-    evidence?.devtools?.broadHostAccessRemoved === true &&
-    evidence?.devtools?.distributableManifestVerified === true &&
-    Array.isArray(evidence?.devtools?.testedOrigins) &&
-    evidence.devtools.testedOrigins.length > 0;
+  const devtoolsPassed = hasVerifiedDevtoolsEvidence(evidence?.devtools);
 
   const missingMigrationFields = REQUIRED_MIGRATION_FIELDS.filter(
     (field) => !isDocumentedProcedure(evidence?.migrationPolicy?.[field]),
   );
   const migrationPassed = missingMigrationFields.length === 0;
-  const contractPassed =
-    evidence?.contract?.stableAdmission === true &&
-    isSafeEvidencePath(evidence?.contract?.evidence);
+  const contractPassed = hasVerifiedContractEvidence(evidence?.contract);
 
   const criteria = [
     {
@@ -137,6 +126,71 @@ function hasRequiredAdoptionWorkflows(workflows) {
   return (
     isRecord(workflows) &&
     REQUIRED_ADOPTION_WORKFLOWS.every((workflow) => workflows[workflow] === true)
+  );
+}
+
+function hasVerifiedAdoptionEvidence(application) {
+  const record = application?.evidenceRecord;
+  return (
+    isRecord(record) &&
+    record.name === application.name &&
+    record.verified === application.verified &&
+    record.packageVersion === application.packageVersion &&
+    record.packageSource === application.packageSource &&
+    record.primaryRenderer === application.primaryRenderer &&
+    sameWorkflowClaims(record.productionWorkflows, application.productionWorkflows) &&
+    record.upgrade?.verified === application.upgrade?.verified &&
+    record.upgrade?.fromVersion === application.upgrade?.fromVersion &&
+    record.rollback?.rehearsed === application.rollback?.rehearsed &&
+    hasRequiredAdoptionWorkflows(record.productionWorkflows) &&
+    record.upgrade?.verified === true &&
+    typeof record.upgrade.fromVersion === "string" &&
+    record.upgrade.fromVersion.trim() !== "" &&
+    record.rollback?.rehearsed === true
+  );
+}
+
+function hasVerifiedDevtoolsEvidence(devtools) {
+  const record = devtools?.evidenceRecord;
+  return (
+    isRecord(record) &&
+    record.productionManifestReviewed === devtools.productionManifestReviewed &&
+    record.broadHostAccessRemoved === devtools.broadHostAccessRemoved &&
+    record.distributableManifestVerified === devtools.distributableManifestVerified &&
+    sameStringArray(record.testedOrigins, devtools.testedOrigins) &&
+    record.productionManifestReviewed === true &&
+    record.broadHostAccessRemoved === true &&
+    record.distributableManifestVerified === true &&
+    Array.isArray(record.testedOrigins) &&
+    record.testedOrigins.length > 0
+  );
+}
+
+function hasVerifiedContractEvidence(contract) {
+  const record = contract?.evidenceRecord;
+  return (
+    isRecord(record) &&
+    record.schemaVersion === 1 &&
+    record.stableAdmission === contract.stableAdmission &&
+    contract.stableAdmission === true &&
+    isSafeEvidencePath(contract.evidence)
+  );
+}
+
+function sameWorkflowClaims(left, right) {
+  return (
+    isRecord(left) &&
+    isRecord(right) &&
+    REQUIRED_ADOPTION_WORKFLOWS.every((workflow) => left[workflow] === right[workflow])
+  );
+}
+
+function sameStringArray(left, right) {
+  return (
+    Array.isArray(left) &&
+    Array.isArray(right) &&
+    left.length === right.length &&
+    left.every((value, index) => value === right[index])
   );
 }
 

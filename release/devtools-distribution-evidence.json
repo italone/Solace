@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "verified": false,
+  "manifestPath": "examples/devtools-extension/manifest.json",
+  "hostPermissions": ["http://127.0.0.1:6174/*", "http://localhost:6174/*"],
+  "productionManifestReviewed": true,
+  "broadHostAccessRemoved": true,
+  "distributableManifestVerified": false,
+  "testedOrigins": [],
+  "evidencePath": "release/devtools-distribution-evidence.md"
+}
