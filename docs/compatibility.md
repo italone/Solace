@@ -35,6 +35,17 @@ The following eight export keys and import paths are protected public package en
 | `./sfc`             | `@italone/solace/sfc`             | Experimental          | Narrow `.solace` TypeScript type shim                          |
 | `./vite`            | `@italone/solace/vite`            | Experimental          | Narrow `.solace` Vite transform plugin                         |
 
+## Frozen Public Maturity Boundary
+
+The current beta line freezes `./jsx-runtime`, `./jsx-dev-runtime`, and `./package.json` as stable
+tooling and metadata entries. The root entry, `./server`, and `./devtools` remain beta; `./sfc` and
+`./vite` remain experimental. `stableAdmission` remains `false`, so this boundary does not declare
+Solace 1.0 ready.
+
+A maturity promotion requires a separate design, synchronized English and Chinese documentation,
+retained package-boundary tests, a changeset, and fresh release evidence. Promotion is an explicit
+compatibility decision rather than a side effect of passing the manifest checker.
+
 ## Maturity And Deferred Features
 
 Router behavior is beta and async rendering and hydration behavior is beta. SFC and Vite support is

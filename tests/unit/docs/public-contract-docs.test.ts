@@ -249,6 +249,10 @@ describe("public contract documentation", () => {
     expect(packageUsage).toContain("[兼容性与弃用策略](./compatibility.zh-CN.md)");
     expect(compatibility).toContain("0.1.x");
     expect(compatibilityZh).toContain("0.1.x");
+    expect(compatibility).toContain("## Frozen Public Maturity Boundary");
+    expect(compatibilityZh).toContain("## 冻结的公共成熟度边界");
+    expect(compatibility).toContain("`stableAdmission` remains `false`");
+    expect(compatibilityZh).toContain("`stableAdmission` 保持为 `false`");
 
     expect(migration).toContain("## Migration Procedure");
     expect(migration).toContain("## Exact Package Consumer Validation");

@@ -27,6 +27,7 @@ const protectedEntries = [
 const englishSections = [
   "## Compatibility Contract",
   "## Protected Package Entries",
+  "## Frozen Public Maturity Boundary",
   "## Maturity And Deferred Features",
   "## Private Implementation Details",
   "## Deprecation Process",
@@ -36,6 +37,7 @@ const englishSections = [
 const chineseSections = [
   "## 兼容性契约",
   "## 受保护的包入口",
+  "## 冻结的公共成熟度边界",
   "## 成熟度与延期能力",
   "## 私有实现细节",
   "## 弃用流程",
@@ -100,6 +102,22 @@ describe("compatibility and deprecation policy documentation", () => {
     expect(chinese).toContain("不得静默移除入口");
     expect(english).toMatch(/\| `\.`\s+\| `@italone\/solace`\s+\| Beta\s+\|/);
     expect(chinese).toMatch(/\| `\.`\s+\| `@italone\/solace`\s+\| Beta\s+\|/);
+    expect(english).toContain(
+      "`./jsx-runtime`, `./jsx-dev-runtime`, and `./package.json` as stable",
+    );
+    expect(english).toMatch(
+      /The root entry, `\.\/server`, and `\.\/devtools` remain beta; `\.\/sfc` and\s+`\.\/vite` remain experimental/,
+    );
+    expect(english).toContain("`stableAdmission` remains `false`");
+    expect(english).toContain("A maturity promotion requires a separate design");
+    expect(chinese).toContain(
+      "`./jsx-runtime`、`./jsx-dev-runtime` 和 `./package.json` 冻结为 stable",
+    );
+    expect(chinese).toMatch(
+      /根入口、`\.\/server` 和 `\.\/devtools` 继续为 beta；`\.\/sfc` 和 `\.\/vite` 继续为\s+experimental/,
+    );
+    expect(chinese).toContain("`stableAdmission` 保持为 `false`");
+    expect(chinese).toContain("成熟度晋级需要单独设计");
     for (const policy of [english, chinese]) {
       expect(policy).toContain("release/public-contract.json");
       expect(policy).toContain("pnpm release:contract:check");

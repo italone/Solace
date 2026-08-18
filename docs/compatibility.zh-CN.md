@@ -30,6 +30,15 @@ admission。manifest 检查通过只表示声明边界内部一致，不代表 S
 | `./sfc`             | `@italone/solace/sfc`             | Experimental          | 窄范围 `.solace` TypeScript type shim         |
 | `./vite`            | `@italone/solace/vite`            | Experimental          | 窄范围 `.solace` Vite transform plugin        |
 
+## 冻结的公共成熟度边界
+
+当前 beta 线将 `./jsx-runtime`、`./jsx-dev-runtime` 和 `./package.json` 冻结为 stable 的 tooling
+和 metadata 入口。根入口、`./server` 和 `./devtools` 继续为 beta；`./sfc` 和 `./vite` 继续为
+experimental。`stableAdmission` 保持为 `false`，因此该边界不代表 Solace 已达到 1.0。
+
+成熟度晋级需要单独设计、同步中英文文档、保留 package-boundary tests、changeset 和新的 release
+evidence。晋级是一项明确的兼容性决策，不能作为 manifest checker 通过后的附带结果。
+
 ## 成熟度与延期能力
 
 Router 行为属于 beta，async rendering 和 hydration 行为也属于 beta。SFC 和 Vite 支持属于
