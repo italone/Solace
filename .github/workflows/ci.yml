@@ -113,3 +113,45 @@ jobs:
 
       - name: DevTools extension E2E
         run: pnpm test:e2e:devtools-extension
+
+  performance-comparison:
+    needs: quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Compare base and candidate performance
+        run: pnpm performance:compare:ci
+        env:
+          SOLACE_PERFORMANCE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          SOLACE_PERFORMANCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Upload performance comparison diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-cross-commit-${{ github.run_id }}
+          path: .performance-artifacts/
+          if-no-files-found: warn

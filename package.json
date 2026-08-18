@@ -94,6 +94,7 @@
     "release:one-zero:check": "node scripts/one-zero-readiness.mjs",
     "release:contract:check": "node scripts/public-contract-check.mjs",
     "performance:regression": "node scripts/performance-regression-check.mjs",
+    "performance:compare:ci": "node scripts/ci-performance-comparison.mjs",
     "release:version": "changeset version",
     "release:candidate:check": "pnpm release:readiness -- --publishable && pnpm stable:app:upgrade && pnpm release:check",
     "release:check": "pnpm release:readiness && pnpm quality && pnpm test:coverage && pnpm package:smoke && pnpm adoption:smoke && pnpm stable:app && pnpm benchmark && pnpm benchmark:browser && pnpm performance:regression && pnpm test:e2e && pnpm test:e2e:devtools-extension",

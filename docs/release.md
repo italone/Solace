@@ -140,6 +140,13 @@ metrics with explicit millisecond budgets. Missing history, malformed budgets, o
 metric fails the command with a scenario-specific message. The separate 1.0 admission checklist
 still requires five distinct dates for every browser scenario and jsdom task.
 
+CI also runs `pnpm performance:compare:ci` for the base and candidate commits. The comparison uses the
+same GitHub Actions runner. It collects three samples per metric and fails when the candidate median regresses by
+more than 20 percent. Raw JSONL records and the structured report remain under
+`.performance-artifacts/` and are uploaded even when the comparison fails. This same-runner gate is
+candidate diagnostics; it does not count toward the five-date 1.0 evidence requirement and never
+updates `release/performance-history.json` or `.benchmark-history/`.
+
 ## DevTools Extension Notes
 
 Before release notes or demos mention the browser DevTools extension example, run the browser

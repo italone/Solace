@@ -10,6 +10,7 @@ coverage/
 test-results/
 playwright-report/
 .benchmark-history/
+.performance-artifacts/
 .worktrees/
 
 # Vite and tooling caches

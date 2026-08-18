@@ -17,6 +17,22 @@ describe("release documentation", () => {
     expect(release).toContain("local JSONL history must not be committed or packed");
   });
 
+  it("documents the same-runner cross-commit performance gate", async () => {
+    const [release, workflow] = await Promise.all([
+      readFile("docs/release.md", "utf8"),
+      readFile(".github/workflows/ci.yml", "utf8"),
+    ]);
+
+    expect(release).toContain("pnpm performance:compare:ci");
+    expect(release).toContain("same GitHub Actions runner");
+    expect(release).toContain("three samples");
+    expect(release).toContain("20 percent");
+    expect(release).toContain(".performance-artifacts/");
+    expect(release).toContain("uploaded even when the comparison fails");
+    expect(release).toContain("does not count toward the five-date 1.0 evidence requirement");
+    expect(workflow).toContain("ref: ${{ github.event.pull_request.head.sha || github.sha }}");
+  });
+
   it("mentions DevTools extension QA requirements for release notes", async () => {
     const release = await readFile("docs/release.md", "utf8");
 
