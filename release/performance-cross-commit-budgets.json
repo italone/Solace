@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "minimumSamples": 3,
+  "maximumRatio": 1.2,
+  "browser": {
+    "large-list": ["initialRenderMs", "updateMs", "unmountMs"],
+    "keyed-reorder:reverse": ["initialRenderMs", "reorderMs", "unmountMs"],
+    "keyed-reorder:sorted": ["initialRenderMs", "reorderMs", "unmountMs"],
+    "keyed-reorder:swap-neighbors": ["initialRenderMs", "reorderMs", "unmountMs"],
+    "keyed-reorder:shuffle": ["initialRenderMs", "reorderMs", "unmountMs"],
+    "keyed-reorder:shift-window": ["initialRenderMs", "reorderMs", "unmountMs"]
+  },
+  "jsdom": {
+    "component mount/unmount loop": ["latencyMeanMs", "latencyP99Ms"],
+    "1000 component initial render": ["latencyMeanMs", "latencyP99Ms"],
+    "1000 component batched reactive update": ["latencyMeanMs", "latencyP99Ms"],
+    "1000 stable child components parent update": ["latencyMeanMs", "latencyP99Ms"],
+    "5000 Fragment child initial render": ["latencyMeanMs", "latencyP99Ms"],
+    "5000 Fragment child local text patch": ["latencyMeanMs", "latencyP99Ms"],
+    "5000 Fragment child middle insert": ["latencyMeanMs", "latencyP99Ms"],
+    "10000 row create": ["latencyMeanMs", "latencyP99Ms"],
+    "10000 row text to keyed list": ["latencyMeanMs", "latencyP99Ms"],
+    "10000 row local text update": ["latencyMeanMs", "latencyP99Ms"],
+    "10000 row delete": ["latencyMeanMs", "latencyP99Ms"],
+    "10000 row keyed middle insert": ["latencyMeanMs", "latencyP99Ms"],
+    "10000 row unkeyed tail append": ["latencyMeanMs", "latencyP99Ms"],
+    "10000 row unkeyed tail remove": ["latencyMeanMs", "latencyP99Ms"],
+    "10000 row keyed middle remove": ["latencyMeanMs", "latencyP99Ms"],
+    "10000 row keyed tail to head move": ["latencyMeanMs", "latencyP99Ms"],
+    "10000 row keyed mixed insert and move": ["latencyMeanMs", "latencyP99Ms"],
+    "10000 row keyed mixed adjacent insert and move": ["latencyMeanMs", "latencyP99Ms"],
+    "10000 row keyed mixed adjacent remove and move": ["latencyMeanMs", "latencyP99Ms"],
+    "10000 row keyed reorder": ["latencyMeanMs", "latencyP99Ms"]
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "minimumSamples": 3,
+  "maximumRatio": 1.2,
+  "browser": { "large-list": ["initialRenderMs", "updateMs"] },
+  "jsdom": { "render": ["latencyMeanMs"] }
+}
