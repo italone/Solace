@@ -203,7 +203,7 @@ pnpm release:readiness -- --publishable
 Expected: 1.0 remains `INCOMPLETE` with stable admission still blocked; publishable readiness fails
 only because the local branch is ahead of `origin/main`. Do not push, publish, or create a tag.
 
-- [ ] **Step 5: Commit the changeset and final local state**
+- [x] **Step 5: Commit the changeset and final local state**
 
 ```bash
 git add .changeset/frozen-contract-boundary.md
