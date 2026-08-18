@@ -103,74 +103,72 @@ export function TimelinePanel(props: TimelinePanelProps) {
       ),
       ...(state.view === "store"
         ? [
-            h(
-              "section",
-              { class: "store-pane", "aria-label": "Store actions" },
-              [StoreActions({ actions: storeActions })],
-            ),
+            h("section", { class: "store-pane", "aria-label": "Store actions" }, [
+              StoreActions({ actions: storeActions }),
+            ]),
           ]
         : [
-      h(
-        "nav",
-        {
-          class: "family-filters",
-          "data-testid": "family-filters",
-          "aria-label": "Family filters",
-        },
-        timelineFamilies.map((family) =>
-          h(
-            "button",
-            {
-              class: "filter-button",
-              type: "button",
-              "aria-pressed": state.filter.family === family,
-              onClick: () => toggleFamily(family),
-            },
-            family,
-          ),
-        ),
-      ),
-      h("section", { class: "panel-grid" }, [
-        h("section", { class: "timeline-pane", "aria-label": "Timeline" }, [
-          h(
-            "ol",
-            {
-              class: "timeline-list",
-              "data-testid": "timeline-list",
-              "aria-label": "Timeline events",
-            },
-            rows.map((row) =>
-              h("li", { key: row.id }, [
+            h(
+              "nav",
+              {
+                class: "family-filters",
+                "data-testid": "family-filters",
+                "aria-label": "Family filters",
+              },
+              timelineFamilies.map((family) =>
                 h(
                   "button",
                   {
-                    class: "timeline-row",
+                    class: "filter-button",
                     type: "button",
-                    "aria-pressed": state.selectedEventId === row.id,
-                    onClick: () => onStateChange(selectTimelineEvent(state, row.id)),
+                    "aria-pressed": state.filter.family === family,
+                    onClick: () => toggleFamily(family),
                   },
-                  [h("strong", null, row.event.type), h("span", null, row.summary)],
+                  family,
+                ),
+              ),
+            ),
+            h("section", { class: "panel-grid" }, [
+              h("section", { class: "timeline-pane", "aria-label": "Timeline" }, [
+                h(
+                  "ol",
+                  {
+                    class: "timeline-list",
+                    "data-testid": "timeline-list",
+                    "aria-label": "Timeline events",
+                  },
+                  rows.map((row) =>
+                    h("li", { key: row.id }, [
+                      h(
+                        "button",
+                        {
+                          class: "timeline-row",
+                          type: "button",
+                          "aria-pressed": state.selectedEventId === row.id,
+                          onClick: () => onStateChange(selectTimelineEvent(state, row.id)),
+                        },
+                        [h("strong", null, row.event.type), h("span", null, row.summary)],
+                      ),
+                    ]),
+                  ),
                 ),
               ]),
-            ),
-          ),
-        ]),
-        h(
-          "aside",
-          {
-            class: "details-pane",
-            "data-testid": "event-details",
-            "aria-label": "Selected event details",
-          },
-          [
-            h(
-              "pre",
-              null,
-              selectedRow === undefined ? "" : JSON.stringify(selectedRow.event, null, 2),
-            ),
-          ],
-        ),
-      ]),
+              h(
+                "aside",
+                {
+                  class: "details-pane",
+                  "data-testid": "event-details",
+                  "aria-label": "Selected event details",
+                },
+                [
+                  h(
+                    "pre",
+                    null,
+                    selectedRow === undefined ? "" : JSON.stringify(selectedRow.event, null, 2),
+                  ),
+                ],
+              ),
+            ]),
           ]),
     ]);
   };

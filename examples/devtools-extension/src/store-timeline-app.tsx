@@ -37,11 +37,7 @@ function Counter() {
         },
         "increment",
       ),
-      h(
-        "p",
-        { id: "recorded-actions" },
-        `recorded store actions: ${recordedActions.length}`,
-      ),
+      h("p", { id: "recorded-actions" }, `recorded store actions: ${recordedActions.length}`),
     ]);
 }
 
