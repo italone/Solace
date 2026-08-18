@@ -8,6 +8,7 @@ import {
   type RouterHrefFormatter,
 } from "./internal";
 import { createMatcher } from "./matcher";
+import { preloadLazyRouteComponent } from "./lazy";
 import { parseQuery, stringifyQuery } from "./query";
 import type {
   LazyRouteComponent,
@@ -207,6 +208,15 @@ export function createRouter(options: RouterOptions): Router {
       return from;
     }
 
+    const lazyComponents = getLazyRouteComponents(finalRoute);
+    if (lazyComponents.length > 0) {
+      await preloadLazyRouteComponents(lazyComponents, from, finalRoute);
+
+      if (activeNavigationId !== navigationId) {
+        return currentRoute.value;
+      }
+    }
+
     writeHistory(() => {
       if (mode === "replace") {
         options.history.replace(finalRoute.fullPath);
@@ -263,6 +273,29 @@ export function createRouter(options: RouterOptions): Router {
 
     state.count += 1;
     return resolveNavigation(guardRedirect, from, state);
+  }
+
+  function getLazyRouteComponents(to: RouteLocationNormalized): LazyRouteComponent[] {
+    return to.matched.flatMap((record) =>
+      isLazyRouteComponent(record.component) ? [record.component] : [],
+    );
+  }
+
+  async function preloadLazyRouteComponents(
+    lazyComponents: LazyRouteComponent[],
+    from: RouteLocationNormalized,
+    to: RouteLocationNormalized,
+  ): Promise<void> {
+    try {
+      await Promise.all(lazyComponents.map((component) => preloadLazyRouteComponent(component)));
+    } catch {
+      throw new RouterNavigationError(
+        "Lazy route component failed to load",
+        "lazy-load-failed",
+        from,
+        to,
+      );
+    }
   }
 
   async function settleHistoryLocation(): Promise<void> {

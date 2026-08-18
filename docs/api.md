@@ -973,6 +973,13 @@ rendered. If a route redirect function throws or returns a deferred or otherwise
 navigation rejects with `RouterNavigationError` of type `"redirect-rejected"`; the error's `to`
 location is the route whose redirect failed.
 
+Programmatic `router.push()` and `router.replace()` preload `lazyRoute()` components for the target
+route before committing the navigation, and a failing loader rejects the navigation promise with
+`RouterNavigationError` of type `"lazy-load-failed"` (`from` is the current route, `to` is the
+attempted location) while leaving the current route unchanged. Successful preloads are shared with
+`RouterView`, so a loader runs at most once per `lazyRoute()` component; the initial route
+settlement (`router.isReady()`) still surfaces lazy failures through the render wrapper.
+
 Current beta router limitations:
 
 - No auth, permissions, SSR, SSG, or hydration router integration.

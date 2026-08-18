@@ -14,6 +14,7 @@ import {
   verifyRouterSnapshot,
 } from "../../src";
 import type { AsyncComponentType, RouteRecord } from "../../src";
+import { SolaceHydrationError } from "../../src/renderer/renderer";
 import { createRouterServerContext, renderToStringAsync } from "../../src/server";
 
 const identifyRecord = (record: RouteRecord): string => record.name ?? record.path;
@@ -212,5 +213,91 @@ describe("Router SSR hydration integration", () => {
     await nextTick();
 
     expect(container.innerHTML).toBe('<main id="router-shell"><button>count: 1</button></main>');
+  });
+});
+
+describe("lazy route failure surface", () => {
+  it("surfaces lazy-load-failed error with active route location", async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: "/", name: "home", component: () => h("p", null, "home") },
+        {
+          path: "/lazy",
+          name: "lazy",
+          component: lazyRoute(() => Promise.reject(new Error("load failed"))),
+        },
+      ],
+    });
+    await router.isReady();
+
+    await expect(router.push("/lazy")).rejects.toMatchObject({
+      name: "RouterNavigationError",
+      type: "lazy-load-failed",
+      to: expect.objectContaining({ path: "/lazy" }),
+    });
+    expect(router.currentRoute.value.fullPath).toBe("/");
+  });
+
+  it("caches preloaded lazy components so push and render share one load", async () => {
+    let loadCalls = 0;
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: "/", name: "home", component: () => h("p", null, "home") },
+        {
+          path: "/lazy",
+          name: "lazy",
+          component: lazyRoute(() => {
+            loadCalls += 1;
+            return Promise.resolve(() => h("p", { id: "lazy" }, "lazy"));
+          }),
+        },
+      ],
+    });
+    const container = document.createElement("div");
+    createApp(RouterApp).use(router).mount(container);
+    await router.isReady();
+
+    await router.push("/lazy");
+    await nextTick();
+    await nextTick();
+
+    expect(loadCalls).toBe(1);
+    expect(router.currentRoute.value.fullPath).toBe("/lazy");
+    expect(container.querySelector("#lazy")?.textContent).toBe("lazy");
+  });
+});
+
+describe("router snapshot hydration mismatch", () => {
+  it("throws on snapshot mismatch unless recover is enabled", async () => {
+    const serverRoutes: RouteRecord[] = [
+      { path: "/expected", name: "expected", component: () => h("p", null, "expected") },
+    ];
+    const clientRoutes: RouteRecord[] = [
+      { path: "/wrong", name: "wrong", component: () => h("p", null, "wrong") },
+    ];
+    const server = await renderServerRoute("/expected", serverRoutes);
+    const container = document.createElement("div");
+    container.innerHTML = server.rendered.html;
+    const router = createRouter({
+      history: createMemoryHistory("/wrong"),
+      routes: clientRoutes,
+    });
+    const app = createApp(RouterApp).use(router);
+    await router.isReady();
+
+    expect(() =>
+      verifyRouterSnapshot(
+        server.context.snapshot,
+        createRouterSnapshot(router.currentRoute.value, identifyRecord),
+      ),
+    ).toThrow(RouterHydrationError);
+
+    await expect(app.hydrateAsync(container)).rejects.toThrow(SolaceHydrationError);
+    expect(container.innerHTML).toBe(server.rendered.html);
+
+    await expect(app.hydrateAsync(container, { recover: true })).resolves.toBeUndefined();
+    expect(container.innerHTML).toBe('<main id="router-shell"><p>wrong</p></main>');
   });
 });

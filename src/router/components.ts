@@ -6,6 +6,7 @@ import { defineAsyncComponent } from "../component/async-component";
 import { inject, provide } from "../component/provide";
 import type { Ref } from "../reactivity/ref";
 import { routerHrefFormatterKey, type RouterHrefFormatter } from "./internal";
+import { cacheLazyRouteComponent, getCachedLazyRouteComponent } from "./lazy";
 import { RouterNavigationError, routerViewDepthKey, useRoute, useRouter } from "./router";
 import type {
   LazyRouteComponent,
@@ -75,7 +76,6 @@ export function RouterView(): ComponentRender {
   };
 }
 
-const lazyRouteComponentCache = new WeakMap<object, ComponentType>();
 const lazyRouteComponentWrappers = new WeakMap<object, WeakMap<object, ComponentType>>();
 
 function resolveRouteComponent(
@@ -90,7 +90,7 @@ function resolveRouteComponent(
     return component as ComponentType;
   }
 
-  const cached = lazyRouteComponentCache.get(component);
+  const cached = getCachedLazyRouteComponent(component);
   if (cached !== undefined) {
     return cached;
   }
@@ -108,7 +108,7 @@ function resolveRouteComponent(
         .then((resolved) => {
           const resolvedComponent = typeof resolved === "function" ? resolved : resolved.default;
           const normalizedComponent = resolvedComponent as ComponentType;
-          lazyRouteComponentCache.set(component, normalizedComponent);
+          cacheLazyRouteComponent(component, normalizedComponent);
           return normalizedComponent;
         })
         .catch(() => {

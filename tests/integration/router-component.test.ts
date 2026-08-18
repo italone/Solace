@@ -436,16 +436,14 @@ describe("router components", () => {
 
       await settleLazyRouteComponent();
       await new Promise((resolve) => setTimeout(resolve, 0));
-      await router.push("/second-lazy");
-      await settleLazyRouteComponent();
-      await new Promise((resolve) => setTimeout(resolve, 0));
 
-      expect(capturedErrors[capturedErrors.length - 1]).toMatchObject({
+      await expect(router.push("/second-lazy")).rejects.toMatchObject({
         name: "RouterNavigationError",
         type: "lazy-load-failed",
-        from: { fullPath: "/second-lazy" },
+        from: { fullPath: "/first-lazy" },
         to: { fullPath: "/second-lazy" },
       });
+      expect(router.currentRoute.value.fullPath).toBe("/first-lazy");
     } finally {
       process.off("unhandledRejection", onUnhandledRejection);
     }
