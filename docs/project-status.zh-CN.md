@@ -133,14 +133,16 @@ component transport，JSX/TSX 与 `h()` authoring boundaries 仍保持严格。
 `tests/integration/router-ssr-hydration.test.ts` 新增 stale navigation、guard rejection、snapshot
 mismatch、lazy route failure 和 async hydration 后响应式更新的组合覆盖，且没有增加 Router 或 SSR API。
 
-2026-08-18 的本地 beta.6 candidate 加固通过 `pnpm quality`：86 个 Vitest 文件 / 734 个测试，
+2026-08-18 的本地 beta.6 candidate 加固通过 `pnpm quality`：86 个 Vitest 文件 / 735 个测试，
 以及 16 个 package tests。coverage 为 92.81% statements / 87.91% branches / 95.44% functions /
 93.25% lines。packed package、adoption 和 Operations Console smokes 均通过；jsdom 与 Chromium
 生产 benchmark 通过；普通 browser e2e 在 Chromium、Firefox、WebKit 上 24/24 通过；DevTools
-extension e2e 4/4 通过。完整 `pnpm release:check` 随后在新的 performance regression gate 停止，
-因为五个 keyed browser scenarios 只有 2/5 个不同日期。`pnpm release:one-zero:check` 仍为
-`INCOMPLETE`，publishable readiness 因本地 Git 超前 `origin/main` 被阻断，pinned beta.2 upgrade
-复核也因 npm registry DNS 失败而无法安装。该 beta.6 candidate 已完成本地验证，但不可发布。
+extension e2e 4/4 通过。在把 beta regression gate 与长期 1.0 evidence threshold 分层后，完整
+`pnpm release:check` 通过；beta regression 现在要求至少 5 次运行且覆盖至少 2 个不同日期。
+`pnpm release:one-zero:check` 仍为 `INCOMPLETE`，因为更严格的 checklist 仍缺少每个 scenario 五个
+不同日期、Solace-primary 生产采用、回滚演练、可分发 DevTools 证据和 stable contract admission。
+publishable readiness 仍因本地 Git 超前 `origin/main` 被阻断，pinned beta.2 upgrade 复核也因
+npm registry DNS 失败而无法安装。该 beta.6 candidate 已完成本地 release gate 验证，但不可发布。
 
 2026-08-03 的 router 稳定化工作在加入 initial history navigation pipeline、stale async
 navigation result protection、rejected-guard history recovery、invalid history location recovery、

@@ -483,7 +483,7 @@ pnpm benchmark:browser
 
 当性能宣称需要趋势窗口时，使用 `pnpm benchmark:history`。发布说明或 README 中的性能说法要把最新 browser 样本数、jsdom 样本数和场景名一起写清。当前阈值规则见 [docs/performance.md](./docs/performance.md) 和 [docs/release.md](./docs/release.md)。
 
-在把 benchmark 输出作为 release 信号前，运行 `pnpm performance:regression`，它会检查场景预算和五个不同日期的历史要求。
+在把 benchmark 输出作为 release 信号前，运行 `pnpm performance:regression`，它会检查场景预算和 beta 历史要求（至少 5 次运行且覆盖至少 2 个不同日期）。1.0 evidence checklist 仍然单独要求每个场景覆盖 5 个不同日期。
 
 ## 开发
 

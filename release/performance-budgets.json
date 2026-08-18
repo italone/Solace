@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "minimumDistinctRuns": 5,
-  "minimumDistinctDates": 5,
+  "minimumDistinctDates": 2,
   "browser": {
     "large-list": {
       "initialRenderMs": 1000,

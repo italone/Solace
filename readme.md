@@ -499,7 +499,7 @@ pnpm benchmark:browser
 
 Use `pnpm benchmark:history` when a performance claim needs a trend window. Keep the latest browser sample count, jsdom sample count, and scenario names together with any release note or README claim. For the current threshold rules, see [docs/performance.md](./docs/performance.md) and [docs/release.md](./docs/release.md).
 
-Run `pnpm performance:regression` to enforce the checked-in scenario budgets and five-date history requirement before treating benchmark output as a release signal.
+Run `pnpm performance:regression` to enforce the checked-in scenario budgets and beta history requirement (five runs backed by at least two calendar dates) before treating benchmark output as a release signal. The 1.0 evidence checklist separately requires five distinct dates.
 
 ## Development
 

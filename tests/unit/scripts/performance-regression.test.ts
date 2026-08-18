@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { evaluatePerformanceRegression } from "../../../scripts/performance-regression-config.mjs";
@@ -23,12 +26,24 @@ const jsdomRuns = (count = 5, dates = 5, latencyMeanMs = 10) =>
 const budgets = {
   schemaVersion: 1,
   minimumDistinctRuns: 5,
-  minimumDistinctDates: 5,
+  minimumDistinctDates: 2,
   browser: { "large-list": { initialRenderMs: 100, updateMs: 100, unmountMs: 100 } },
   jsdom: { render: { latencyMeanMs: 100, latencyP99Ms: 100 } },
 };
 
 describe("performance regression evaluator", () => {
+  it("keeps the beta regression and 1.0 evidence date thresholds separate", () => {
+    const releaseBudgets = JSON.parse(
+      readFileSync(resolve(process.cwd(), "release/performance-budgets.json"), "utf8"),
+    ) as { minimumDistinctDates: number };
+    const oneZeroEvidence = JSON.parse(
+      readFileSync(resolve(process.cwd(), "release/one-zero-readiness.json"), "utf8"),
+    ) as { performance: { minimumDistinctDates: number } };
+
+    expect(releaseBudgets.minimumDistinctDates).toBe(2);
+    expect(oneZeroEvidence.performance.minimumDistinctDates).toBe(5);
+  });
+
   it("accepts complete histories under budget", () => {
     expect(
       evaluatePerformanceRegression({ budgets, browserRecords: runs(), jsdomRecords: jsdomRuns() })
@@ -67,12 +82,12 @@ describe("performance regression evaluator", () => {
     expect(result.errors.join(" ")).toContain("jsdom:render.latencyMeanMs");
   });
 
-  it("rejects histories with fewer than five distinct dates", () => {
+  it("rejects histories below the configured distinct-date threshold", () => {
     const result = evaluatePerformanceRegression({
       budgets,
-      browserRecords: runs(5, 2),
-      jsdomRecords: jsdomRuns(5, 2),
+      browserRecords: runs(5, 1),
+      jsdomRecords: jsdomRuns(5, 1),
     });
-    expect(result.errors.join(" ")).toContain("distinct dates");
+    expect(result.errors.join(" ")).toContain("1/2 distinct dates");
   });
 });

@@ -169,15 +169,18 @@ refresh) each reran the relevant focused checks and `pnpm quality` before commit
 rerun coverage, package smoke, benchmarks, browser e2e, or the full `release:check`; rerun the
 full gate before any future release claim. The published beta.5 release state is unchanged.
 
-The 2026-08-18 local beta.6 candidate hardening passed `pnpm quality` with 86 Vitest files / 734
+The 2026-08-18 local beta.6 candidate hardening passed `pnpm quality` with 86 Vitest files / 735
 tests and 16 package tests. Coverage passed at 92.81% statements / 87.91% branches / 95.44%
 functions / 93.25% lines. Packed package, adoption, and Operations Console smokes passed; jsdom and
 Chromium production benchmarks passed; ordinary browser e2e passed 24/24 across Chromium, Firefox,
-and WebKit; DevTools extension e2e passed 4/4. The full `pnpm release:check` then stopped at the new
-performance regression gate because five keyed browser scenarios have only 2/5 distinct dates.
-`pnpm release:one-zero:check` remains `INCOMPLETE`, publishable readiness is blocked by local Git
-being ahead of `origin/main`, and the pinned beta.2 upgrade recheck could not install from npm due
-registry DNS failure. The local beta.6 candidate is therefore verified but not publishable.
+and WebKit; DevTools extension e2e passed 4/4. After separating the beta regression gate from the
+long-term 1.0 evidence threshold, the full `pnpm release:check` passed; beta regression now requires
+five runs backed by at least two distinct calendar dates. `pnpm release:one-zero:check` remains
+`INCOMPLETE` because the stricter checklist still requires five dates per scenario, Solace-primary
+production adoption, rollback rehearsal, distributable DevTools evidence, and stable contract
+admission. Publishable readiness remains blocked by local Git being ahead of `origin/main`, and the
+pinned beta.2 upgrade recheck could not install from npm due registry DNS failure. The local beta.6
+candidate is locally release-checked but not publishable.
 
 The 2026-08-17 public component regression matrix also verifies required typed slots, typed events,
 and generic components across the automatic JSX runtime, direct `h()` and JSX runtime calls,

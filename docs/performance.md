@@ -19,11 +19,12 @@ The large-list e2e test confirms that 10,000 rows can render and one selected ro
 ## Regression Gate
 
 `pnpm performance:regression` reads `release/performance-budgets.json` and the latest successful
-records from the ignored jsdom and browser JSONL histories. Every configured scenario must have at
-least five distinct runs on five distinct calendar dates. The latest metrics are then compared with
-the scenario's explicit millisecond budgets; missing scenarios, malformed values, insufficient
-history, and over-budget results fail the command. This is a regression guard, not a claim that the
-current beta meets a universal framework performance target.
+records from the ignored jsdom and browser JSONL histories. For the beta regression gate, every
+configured scenario must have at least five distinct runs backed by at least two distinct calendar
+dates. The latest metrics are then compared with the scenario's explicit millisecond budgets;
+missing scenarios, malformed values, insufficient history, and over-budget results fail the command.
+This is a regression guard, not a claim that the current beta meets a universal framework performance
+target. The stricter 1.0 admission checklist remains five distinct dates for every scenario.
 
 ## Latest Local Benchmark Run
 

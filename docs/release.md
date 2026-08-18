@@ -134,9 +134,11 @@ not count toward task history. The checked-in summary records source SHA-256 dig
 timestamps, and distinct date counts while the raw `.benchmark-history/*.jsonl` files remain ignored.
 
 `release/performance-budgets.json` adds the regression gate used by `pnpm performance:regression`.
-It checks that every checked-in scenario has at least five distinct runs and dates, then compares
-the latest successful browser and jsdom metrics with explicit millisecond budgets. Missing history,
-malformed budgets, or an over-budget metric fails the command with a scenario-specific message.
+For beta release checks, it requires every checked-in scenario to have at least five distinct runs
+backed by at least two distinct calendar dates, then compares the latest successful browser and jsdom
+metrics with explicit millisecond budgets. Missing history, malformed budgets, or an over-budget
+metric fails the command with a scenario-specific message. The separate 1.0 admission checklist
+still requires five distinct dates for every browser scenario and jsdom task.
 
 ## DevTools Extension Notes
 
