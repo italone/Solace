@@ -168,6 +168,11 @@ contract admission; and documented migration procedures. Repository fixtures and
 compatibility installs do not count as independent adoption. `READY` is an evidence state, not a
 maintainer decision to publish 1.0.
 
+The loader verifies the machine-readable `release/adoption-evidence.json`,
+`release/devtools-distribution-evidence.json`, and `release/public-contract.json` records before
+evaluating their claims. It also compares the DevTools record with the checked-in extension manifest.
+The accompanying Markdown evidence remains review material, not a substitute for those records.
+
 The structured procedure evidence points to the
 [migration and rollback runbook](./migration.md) and the synchronized
 [迁移与回滚手册](./migration.zh-CN.md). These documents make the policy reviewable, but they do not

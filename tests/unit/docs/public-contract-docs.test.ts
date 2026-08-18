@@ -84,9 +84,15 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toContain("五个不同日期的历史");
     expect(projectStatus).toContain("`release/adoption-evidence.md`");
     expect(projectStatusZh).toContain("`release/adoption-evidence.md`");
+    expect(projectStatus).toContain("`release/adoption-evidence.json`");
+    expect(projectStatusZh).toContain("`release/adoption-evidence.json`");
+    expect(projectStatus).toContain("`release/devtools-distribution-evidence.json`");
+    expect(projectStatusZh).toContain("`release/devtools-distribution-evidence.json`");
     expect(release).toContain("pnpm benchmark:history:evidence");
     expect(release).toContain("five distinct `runAt` timestamps");
     expect(release).toContain("pnpm performance:regression");
+    expect(release).toContain("`release/adoption-evidence.json`");
+    expect(release).toContain("`release/devtools-distribution-evidence.json`");
     expect(changelog).toContain("`router.isReady()`");
     expect(changelog).toContain("`createRouterServerContext()`");
     expect(packageUsage).toContain("restricted to the fixed local demo origins");
@@ -170,6 +176,16 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toContain("npm `beta` 已发布版本：`0.1.0-beta.5`");
     expect(projectStatusZh).toContain("本地 `v0.1.0-beta.5` tag 指向发布提交 `afe459e`");
     expect(projectStatusZh).toContain("远端 `v0.1.0-beta.5` tag 仍待复核");
+    expect(projectStatus).toContain("86 Vitest files / 739 tests");
+    expect(projectStatus).toContain("92.41% statements");
+    expect(projectStatus).toMatch(/87\.29%\s+branches/);
+    expect(projectStatus).toMatch(/95\.52%\s+functions/);
+    expect(projectStatus).toMatch(/92\.81%\s+lines/);
+    expect(projectStatusZh).toMatch(/86 个 Vitest 文件 \/ 739 个测试/);
+    expect(projectStatusZh).toMatch(/92\.41%\s+statements/);
+    expect(projectStatusZh).toMatch(/87\.29%\s+branches/);
+    expect(projectStatusZh).toMatch(/95\.52%\s+functions/);
+    expect(projectStatusZh).toMatch(/92\.81%\s+lines/);
 
     for (const doc of [readme, api, packageUsage, projectStatus]) {
       expect(doc).toContain("renderToStringAsync()");
