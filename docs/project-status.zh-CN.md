@@ -134,8 +134,8 @@ component transport，JSX/TSX 与 `h()` authoring boundaries 仍保持严格。
 mismatch、lazy route failure 和 async hydration 后响应式更新的组合覆盖，且没有增加 Router 或 SSR API。
 
 2026-08-18 的本地 beta.6 candidate 在接入结构化 1.0 evidence 后，重新通过完整
-`pnpm release:check`：86 个 Vitest 文件 / 739 个测试、16 个 package tests，coverage 为 92.41%
-statements / 87.29% branches / 95.52% functions / 92.81% lines。packed package、adoption 和
+`pnpm release:check`：86 个 Vitest 文件 / 742 个测试、16 个 package tests，coverage 为 92.34%
+statements / 87.24% branches / 95.54% functions / 92.73% lines。packed package、adoption 和
 Operations Console smokes 均通过；jsdom 与 Chromium 生产 benchmark 通过；普通 browser e2e 在
 Chromium、Firefox、WebKit 上 24/24 通过；DevTools extension e2e 4/4 通过。beta regression
 要求至少 5 次运行且覆盖至少 2 个不同日期。

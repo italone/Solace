@@ -176,16 +176,16 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toContain("npm `beta` 已发布版本：`0.1.0-beta.5`");
     expect(projectStatusZh).toContain("本地 `v0.1.0-beta.5` tag 指向发布提交 `afe459e`");
     expect(projectStatusZh).toContain("远端 `v0.1.0-beta.5` tag 仍待复核");
-    expect(projectStatus).toContain("86 Vitest files / 739 tests");
-    expect(projectStatus).toContain("92.41% statements");
-    expect(projectStatus).toMatch(/87\.29%\s+branches/);
-    expect(projectStatus).toMatch(/95\.52%\s+functions/);
-    expect(projectStatus).toMatch(/92\.81%\s+lines/);
-    expect(projectStatusZh).toMatch(/86 个 Vitest 文件 \/ 739 个测试/);
-    expect(projectStatusZh).toMatch(/92\.41%\s+statements/);
-    expect(projectStatusZh).toMatch(/87\.29%\s+branches/);
-    expect(projectStatusZh).toMatch(/95\.52%\s+functions/);
-    expect(projectStatusZh).toMatch(/92\.81%\s+lines/);
+    expect(projectStatus).toContain("86 Vitest files / 742 tests");
+    expect(projectStatus).toContain("92.34% statements");
+    expect(projectStatus).toMatch(/87\.24%\s+branches/);
+    expect(projectStatus).toMatch(/95\.54%\s+functions/);
+    expect(projectStatus).toMatch(/92\.73%\s+lines/);
+    expect(projectStatusZh).toMatch(/86 个 Vitest 文件 \/ 742 个测试/);
+    expect(projectStatusZh).toMatch(/92\.34%\s+statements/);
+    expect(projectStatusZh).toMatch(/87\.24%\s+branches/);
+    expect(projectStatusZh).toMatch(/95\.54%\s+functions/);
+    expect(projectStatusZh).toMatch(/92\.73%\s+lines/);
 
     for (const doc of [readme, api, packageUsage, projectStatus]) {
       expect(doc).toContain("renderToStringAsync()");

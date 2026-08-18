@@ -17,7 +17,7 @@
 - Modify: `scripts/public-contract-check-config.mjs`
 - Test: `tests/unit/scripts/public-contract-check.test.ts`
 
-- [ ] **Step 1: Add the frozen entry map and duplicate/path checks**
+- [x] **Step 1: Add the frozen entry map and duplicate/path checks**
 
 Export the approved map from `scripts/public-contract-check-config.mjs`:
 
@@ -39,7 +39,7 @@ frozen map, require the package export keys to match the frozen map exactly, and
 `path` and `maturity` with the frozen record. Keep the existing `stableAdmission` rule so setting it
 to `true` still fails while any frozen entry is not stable.
 
-- [ ] **Step 2: Add red tests for each new invariant**
+- [x] **Step 2: Add red tests for each new invariant**
 
 Extend `tests/unit/scripts/public-contract-check.test.ts` with cases that:
 
@@ -74,19 +74,19 @@ it("rejects a path or maturity drift from the frozen boundary", () => {
 Also add a test that parses the checked-in `package.json` and `release/public-contract.json` and
 asserts `evaluatePublicContract` returns `{ valid: true, stableAdmission: false, errors: [] }`.
 
-- [ ] **Step 3: Run the focused checker tests**
+- [x] **Step 3: Run the focused checker tests**
 
 Run: `pnpm exec vitest run tests/unit/scripts/public-contract-check.test.ts`
 
 Expected: all tests in the file pass.
 
-- [ ] **Step 4: Run the release contract command**
+- [x] **Step 4: Run the release contract command**
 
 Run: `pnpm release:contract:check`
 
 Expected: `public contract check: PASS`.
 
-- [ ] **Step 5: Commit the checker slice**
+- [x] **Step 5: Commit the checker slice**
 
 ```bash
 git add scripts/public-contract-check-config.mjs tests/unit/scripts/public-contract-check.test.ts
@@ -102,7 +102,7 @@ git commit -m "test: freeze public contract maturity boundary"
 - Test: `tests/unit/docs/compatibility-docs.test.ts`
 - Test: `tests/unit/docs/public-contract-docs.test.ts`
 
-- [ ] **Step 1: Add the frozen-boundary section to both policies**
+- [x] **Step 1: Add the frozen-boundary section to both policies**
 
 Add an English section after the protected-entry table:
 
@@ -127,7 +127,7 @@ tooling/metadata 入口。根入口、`./server` 和 `./devtools` 继续为 beta
 保留 package tests、changeset 和新的 release evidence。
 ```
 
-- [ ] **Step 2: Extend the bilingual structure and content assertions**
+- [x] **Step 2: Extend the bilingual structure and content assertions**
 
 Add both new headings to the section arrays in `tests/unit/docs/compatibility-docs.test.ts`. Assert
 that the English policy contains the stable entry names, the beta/experimental entry names,
@@ -135,7 +135,7 @@ that the English policy contains the stable entry names, the beta/experimental e
 Chinese policy. Extend `tests/unit/docs/public-contract-docs.test.ts` to require the same maturity
 sentences so later status edits cannot remove the boundary from the public documentation set.
 
-- [ ] **Step 3: Format and run the documentation tests**
+- [x] **Step 3: Format and run the documentation tests**
 
 Run:
 
@@ -146,7 +146,7 @@ pnpm exec vitest run tests/unit/docs/compatibility-docs.test.ts tests/unit/docs/
 
 Expected: Prettier reports all files matched and both test files pass.
 
-- [ ] **Step 4: Commit the documentation slice**
+- [x] **Step 4: Commit the documentation slice**
 
 ```bash
 git add docs/compatibility.md docs/compatibility.zh-CN.md tests/unit/docs/compatibility-docs.test.ts tests/unit/docs/public-contract-docs.test.ts
@@ -159,7 +159,7 @@ git commit -m "docs: document frozen public maturity boundary"
 
 - Create: `.changeset/frozen-contract-boundary.md`
 
-- [ ] **Step 1: Add the beta patch changeset**
+- [x] **Step 1: Add the beta patch changeset**
 
 Create `.changeset/frozen-contract-boundary.md`:
 
@@ -171,7 +171,7 @@ Create `.changeset/frozen-contract-boundary.md`:
 Freeze the documented stable, beta, and experimental public entry boundaries and enforce them in the release contract gate.
 ```
 
-- [ ] **Step 2: Verify the release metadata and formatting**
+- [x] **Step 2: Verify the release metadata and formatting**
 
 Run:
 
@@ -184,14 +184,14 @@ git diff --check
 Expected: Changesets reports `@italone/solace` under patch bumps; formatting and whitespace checks
 pass.
 
-- [ ] **Step 3: Run the complete local quality gate**
+- [x] **Step 3: Run the complete local quality gate**
 
 Run: `pnpm quality`
 
-Expected: format, public contract check, build, both typechecks, lint, 739 unit tests, and 16 package
+Expected: format, public contract check, build, both typechecks, lint, 742 unit tests, and 16 package
 tests pass.
 
-- [ ] **Step 4: Re-run the 1.0 and publishability checks**
+- [x] **Step 4: Re-run the 1.0 and publishability checks**
 
 Run:
 

@@ -170,8 +170,8 @@ rerun coverage, package smoke, benchmarks, browser e2e, or the full `release:che
 full gate before any future release claim. The published beta.5 release state is unchanged.
 
 The 2026-08-18 local beta.6 candidate passed a fresh `pnpm release:check` after structured 1.0
-evidence binding. It recorded 86 Vitest files / 739 tests, coverage of 92.41% statements / 87.29%
-branches / 95.52% functions / 92.81% lines, and 16 package tests. Packed package, adoption, and
+evidence binding. It recorded 86 Vitest files / 742 tests, coverage of 92.34% statements / 87.24%
+branches / 95.54% functions / 92.73% lines, and 16 package tests. Packed package, adoption, and
 Operations Console smokes passed; jsdom and Chromium production benchmarks passed; ordinary browser
 e2e passed 24/24 across Chromium, Firefox, and WebKit; DevTools extension e2e passed 4/4. Beta
 regression requires five runs backed by at least two distinct calendar dates.
