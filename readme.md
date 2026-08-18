@@ -21,7 +21,9 @@ Solace is currently on the `0.1.0` beta line. This repository package build is t
 `0.1.0-beta.5` release. npm `latest` remains `0.0.5`, and npm `beta` is
 `0.1.0-beta.5`. The beta.5 release adds typed JSX/TSX component contracts, broader adoption
 gates, and composable router-aware SSR/hydration primitives without adding streaming or direct
-renderer-owned router options.
+renderer-owned router options. Post-release hardening on `main` strengthened the JSX typed
+named-slot contract, router stable-slice edge coverage, DevTools store action timeline and QA
+checklists, and benchmark history evidence without widening the beta contract.
 
 Use the local development workflow below to explore the framework. Install the default npm package
 when you want the latest stable line, install `@italone/solace@beta` when you want the beta line, and
@@ -298,6 +300,40 @@ const LazyPanel = defineAsyncComponent<{ title: string }>({
   retryDelay: 100,
 });
 ```
+
+Typed named slots can be provided directly in JSX through the `v-slots` prop when a component
+declares a slot map through `defineComponent<Props, Events, SlotMap>`:
+
+```tsx
+import { defineComponent } from "@italone/solace";
+import type { ComponentEventMap, ComponentSetupContext, VNodeChild } from "@italone/solace";
+
+type CardSlots = {
+  header?: () => VNodeChild;
+  default?: () => VNodeChild;
+  footer?: () => VNodeChild;
+};
+
+const Card = defineComponent<object, ComponentEventMap, CardSlots>(
+  (_props, { slots }: ComponentSetupContext<ComponentEventMap, CardSlots>) =>
+    () => (
+      <section>
+        <header>{slots.header?.()}</header>
+        <main>{slots.default?.()}</main>
+        <footer>{slots.footer?.()}</footer>
+      </section>
+    ),
+);
+
+const App = () => (
+  <Card v-slots={{ header: () => <h2>Title</h2>, footer: () => <small>Fine print</small> }}>
+    Body content
+  </Card>
+);
+```
+
+See [docs/api.md](./docs/api.md) for the full typed slot, typed event, and generic component
+contract, including `h()` slot-object rules.
 
 `provide()` and `inject()` pass values through the component tree without prop drilling. Component
 providers override app-level providers. `inject()` can return `undefined` or a supplied default when
