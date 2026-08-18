@@ -95,6 +95,7 @@ beta 范围边界；SSR/hydration 已覆盖 buffered async initial rendering，
 - Operations Console packed candidate smoke：`pnpm stable:app`
 - jsdom benchmark smoke：`pnpm benchmark`
 - Chromium 生产构建浏览器 benchmark：`pnpm benchmark:browser`
+- CI 同 runner 跨提交对比：`pnpm performance:compare:ci`
 - benchmark history 质量门禁：`pnpm benchmark:history -- --min-browser-count <count> --min-jsdom-count <count>`
 - checked-in benchmark readiness evidence：`pnpm benchmark:history:evidence -- --output release/performance-history.json`
 - 浏览器 e2e：`pnpm test:e2e`
@@ -148,6 +149,17 @@ permissions，但明确没有生产分发或已测试的生产 origins。因此�
 `INCOMPLETE`：缺少独立采用、每个 keyed browser scenario 五个不同日期、可分发 DevTools 证据和
 stable contract admission。publishable readiness 仍因本地 Git 超前 `origin/main` 被阻断；该 beta.6
 candidate 已完成 release check，但不可发布。
+
+CI 跨提交性能门禁现已通过 `pnpm performance:compare:ci` 配置完成。它会在同一 runner 上比较
+base 与 candidate 的 median，每个 metric 采集三个 samples，并使用 1.2 最大 ratio，同时在诊断
+artifacts 中保留 commit 与 environment fingerprint。它不计入 1.0 所需的五个不同日期证据。该门禁
+不会更新 `release/performance-history.json`，也不会改变当前 `INCOMPLETE` 的准入结果。
+
+随后进行的新一轮本地验证通过了 88 个 Vitest 文件 / 761 个测试、16 个 package tests，coverage
+为 90.08% statements / 85.51% branches / 93.27% functions / 90.62% lines。package 和 adoption
+smoke、packed Operations Console 检查、jsdom 与 Chromium benchmark、24 个 browser E2E 测试以及
+4 个 DevTools extension E2E 测试也全部通过。这些检查验证的是 beta.6 candidate，并没有补齐
+1.0 所缺少的 adoption、history、DevTools distribution 或 stable admission 证据。
 
 2026-08-03 的 router 稳定化工作在加入 initial history navigation pipeline、stale async
 navigation result protection、rejected-guard history recovery、invalid history location recovery、

@@ -186,6 +186,24 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toMatch(/87\.24%\s+branches/);
     expect(projectStatusZh).toMatch(/95\.54%\s+functions/);
     expect(projectStatusZh).toMatch(/92\.73%\s+lines/);
+    expect(projectStatus).toContain("pnpm performance:compare:ci");
+    expect(projectStatus).toContain("three samples per metric");
+    expect(projectStatus).toContain("1.2 maximum ratio");
+    expect(projectStatus).toContain("does not count toward the five-date 1.0 evidence requirement");
+    expect(projectStatus).toContain("88 Vitest files / 761 tests");
+    expect(projectStatus).toContain("90.08% statements");
+    expect(projectStatus).toContain("85.51% branches");
+    expect(projectStatus).toContain("93.27% functions");
+    expect(projectStatus).toContain("90.62% lines");
+    expect(projectStatusZh).toContain("pnpm performance:compare:ci");
+    expect(projectStatusZh).toContain("每个 metric 采集三个 samples");
+    expect(projectStatusZh).toContain("1.2 最大 ratio");
+    expect(projectStatusZh).toContain("不计入 1.0 所需的五个不同日期证据");
+    expect(projectStatusZh).toMatch(/88 个 Vitest 文件 \/ 761 个测试/);
+    expect(projectStatusZh).toMatch(/90\.08%\s+statements/);
+    expect(projectStatusZh).toContain("85.51% branches");
+    expect(projectStatusZh).toMatch(/93\.27%\s+functions/);
+    expect(projectStatusZh).toMatch(/90\.62%\s+lines/);
 
     for (const doc of [readme, api, packageUsage, projectStatus]) {
       expect(doc).toContain("renderToStringAsync()");

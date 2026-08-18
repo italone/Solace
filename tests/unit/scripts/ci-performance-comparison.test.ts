@@ -133,4 +133,17 @@ describe("CI performance comparison orchestration", () => {
       "head",
     ]);
   });
+
+  it("rejects invalid collection counts and malformed benchmark inputs", () => {
+    expect(() => createRevisionCollectionOrder(0)).toThrow(
+      "comparison sample count must be a positive integer",
+    );
+    expect(() => normalizeRevisionRecords([null], baseSha)).toThrow(
+      "benchmark record must be an object",
+    );
+    expect(() => normalizeRevisionRecords([{ kind: "unknown" }], baseSha)).toThrow(
+      "unsupported benchmark record kind: unknown",
+    );
+    expect(() => parseComparisonArguments(["--unknown"])).toThrow("Usage:");
+  });
 });

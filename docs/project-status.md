@@ -120,6 +120,7 @@ The repository includes these validation layers:
 - Operations Console packed candidate smoke: `pnpm stable:app`
 - jsdom benchmark smoke: `pnpm benchmark`
 - Chromium production browser benchmark: `pnpm benchmark:browser`
+- CI same-runner cross-commit comparison: `pnpm performance:compare:ci`
 - Benchmark history quality gate: `pnpm benchmark:history -- --min-browser-count <count> --min-jsdom-count <count>`
 - Checked-in benchmark readiness evidence: `pnpm benchmark:history:evidence -- --output release/performance-history.json`
 - Browser e2e tests: `pnpm test:e2e`
@@ -186,6 +187,19 @@ origins. `pnpm release:one-zero:check` therefore remains `INCOMPLETE` for indepe
 five distinct dates per keyed browser scenario, distributable DevTools evidence, and stable contract
 admission. Publishable readiness remains blocked by local Git being ahead of `origin/main`; the
 local beta.6 candidate is release-checked but not publishable.
+
+The CI cross-commit performance gate is now configured through
+`pnpm performance:compare:ci`. It compares base and candidate medians on the same runner.
+It uses three samples per metric. The gate enforces a 1.2 maximum ratio and retains commit and environment
+fingerprints in diagnostic artifacts. It does not count toward the five-date 1.0 evidence requirement.
+The gate does not update `release/performance-history.json` and does not change the current
+`INCOMPLETE` admission result.
+
+The subsequent fresh local verification passed 88 Vitest files / 761 tests, 16 package tests, and
+coverage of 90.08% statements / 85.51% branches / 93.27% functions / 90.62% lines. It also passed
+package and adoption smoke, the packed Operations Console check, jsdom and Chromium benchmarks,
+24 browser E2E tests, and 4 DevTools extension E2E tests. These checks validate the beta.6 candidate;
+they do not supply the missing 1.0 adoption, history, DevTools distribution, or stable-admission evidence.
 
 The 2026-08-17 public component regression matrix also verifies required typed slots, typed events,
 and generic components across the automatic JSX runtime, direct `h()` and JSX runtime calls,
