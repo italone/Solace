@@ -80,12 +80,13 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toContain("pnpm test:e2e:devtools-extension");
     expect(projectStatus).toContain("`release/performance-history.json`");
     expect(projectStatusZh).toContain("`release/performance-history.json`");
-    expect(projectStatus).toContain("5/5 distinct task runs");
-    expect(projectStatusZh).toContain("5/5 个独立 task runs");
+    expect(projectStatus).toMatch(/five distinct\s+dates for every browser scenario/);
+    expect(projectStatusZh).toContain("五个不同日期的历史");
     expect(projectStatus).toContain("`release/adoption-evidence.md`");
     expect(projectStatusZh).toContain("`release/adoption-evidence.md`");
     expect(release).toContain("pnpm benchmark:history:evidence");
     expect(release).toContain("five distinct `runAt` timestamps");
+    expect(release).toContain("pnpm performance:regression");
     expect(changelog).toContain("`router.isReady()`");
     expect(changelog).toContain("`createRouterServerContext()`");
     expect(packageUsage).toContain("restricted to the fixed local demo origins");
@@ -157,15 +158,15 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toContain("93.25% lines");
     expect(projectStatusZh).toMatch(/Chromium、Firefox、WebKit 共 24 个\s+browser e2e 测试/);
     expect(projectStatusZh).toMatch(/2\s+个仅\s+Chromium\s+的\s+DevTools\s+extension\s+e2e\s+测试/);
-    expect(readme).toContain("published\n`0.1.0-beta.5` release");
+    expect(readme).toContain("local, unpublished\n`0.1.0-beta.6` candidate");
     expect(readme).toContain("npm `beta` is\n`0.1.0-beta.5`");
-    expect(readmeZh).toContain("已发布的 `0.1.0-beta.5` release");
+    expect(readmeZh).toContain("本地、尚未发布的 `0.1.0-beta.6` candidate");
     expect(readmeZh).toContain("npm `beta` 是 `0.1.0-beta.5`");
-    expect(projectStatus).toContain("Repository package version: `0.1.0-beta.5`");
+    expect(projectStatus).toContain("Repository package version: local `0.1.0-beta.6` candidate");
     expect(projectStatus).toContain("Published npm `beta`: `0.1.0-beta.5`");
     expect(projectStatus).toContain("local `v0.1.0-beta.5` tag points to release commit `afe459e`");
     expect(projectStatus).toContain("Remote `v0.1.0-beta.5` tag verification remains pending");
-    expect(projectStatusZh).toContain("仓库 package 版本：`0.1.0-beta.5`");
+    expect(projectStatusZh).toContain("仓库 package 版本：本地 `0.1.0-beta.6` candidate");
     expect(projectStatusZh).toContain("npm `beta` 已发布版本：`0.1.0-beta.5`");
     expect(projectStatusZh).toContain("本地 `v0.1.0-beta.5` tag 指向发布提交 `afe459e`");
     expect(projectStatusZh).toContain("远端 `v0.1.0-beta.5` tag 仍待复核");
@@ -249,15 +250,12 @@ describe("public contract documentation", () => {
     expect(migrationZh).toContain("adoption.independent-apps");
     expect(release).toContain("[migration and rollback runbook](./migration.md)");
     expect(release).toContain("[迁移与回滚手册](./migration.zh-CN.md)");
-    expect(roadmap).toMatch(/The\s+admission evidence now satisfies all five structured criteria/);
-    expect(projectStatus).toMatch(
-      /Migration and rollback procedures[\s\S]*pass the\s+structured evidence gate/,
-    );
-    expect(projectStatus).toMatch(/the 1.0 evidence evaluator now reports ready/i);
-    expect(projectStatus).toMatch(/no live npm\s+rollback rehearsal is claimed/);
-    expect(projectStatusZh).toMatch(/migration\/rollback 流程[\s\S]*已通过结构化证据门禁/);
-    expect(projectStatusZh).toContain("1.0 evidence evaluator 现已报告 ready");
-    expect(projectStatusZh).toContain("不声明已经完成真实 npm 回滚演练");
+    expect(roadmap).toContain("the stricter evidence checklist currently reports `INCOMPLETE`");
+    expect(projectStatus).toContain("Solace 1.0 evidence checklist");
+    expect(projectStatus).toContain("reports `INCOMPLETE`");
+    expect(projectStatus).toContain("not Solace-primary production adoption");
+    expect(projectStatusZh).toContain("Solace 1.0 evidence checklist");
+    expect(projectStatusZh).toMatch(/当前报告[\s\S]*`INCOMPLETE`/);
 
     expect(routerAwareSsrDesign).toContain("createMemoryHistory()");
     expect(routerAwareSsrDesign).toContain("canonical route snapshot");

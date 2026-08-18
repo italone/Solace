@@ -4,6 +4,11 @@ export type OneZeroReadinessCriterion = {
   message: string;
 };
 
+export type OneZeroReadinessResult = {
+  ready: boolean;
+  criteria: OneZeroReadinessCriterion[];
+};
+
 export function parseOneZeroReadinessArguments(rawArgs: string[]): "check" | "report" | "help";
 
 export function oneZeroReadinessUsage(): string;

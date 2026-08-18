@@ -19,7 +19,7 @@ This runs release readiness, format check, typecheck, JSX dev typecheck, lint, d
 package exports tests, coverage thresholds, package consumer smoke, independent adoption smoke,
 stable application smoke
 (`pnpm stable:app`), jsdom benchmark smoke, Chromium production browser benchmark, browser e2e tests,
-and DevTools extension e2e smoke. The package consumer smoke includes packed ESM/CJS import checks,
+performance regression budgets, and DevTools extension e2e smoke. The package consumer smoke includes packed ESM/CJS import checks,
 TypeScript consumer checks, router public API checks, and a Vite production build that transforms a
 `.solace` single-file component through the packed `@italone/solace/vite` plugin.
 
@@ -36,7 +36,9 @@ failures are separate from consumer contract failures.
 
 The GitHub Actions CI workflow runs the quality job on both Node 20 and Node 22. It keeps the checks
 split into named steps and runs `pnpm release:readiness` before the longer checks so package metadata
-and release script drift fail early.
+and release script drift fail early. CI also runs `pnpm release:contract:check` and emits the
+non-blocking-style diagnostic report from `pnpm release:one-zero:check -- --report`; the report is
+expected to be incomplete during the beta line.
 
 After both quality matrix jobs pass, the Node 22 browser job runs ordinary application e2e on
 Chromium, Firefox, and WebKit. The production browser benchmark and DevTools extension e2e smoke
@@ -131,6 +133,11 @@ task. Repeated task samples under one timestamp count as one run, and metadata-o
 not count toward task history. The checked-in summary records source SHA-256 digests, first/last
 timestamps, and distinct date counts while the raw `.benchmark-history/*.jsonl` files remain ignored.
 
+`release/performance-budgets.json` adds the regression gate used by `pnpm performance:regression`.
+It checks that every checked-in scenario has at least five distinct runs and dates, then compares
+the latest successful browser and jsdom metrics with explicit millisecond budgets. Missing history,
+malformed budgets, or an over-budget metric fails the command with a scenario-specific message.
+
 ## DevTools Extension Notes
 
 Before release notes or demos mention the browser DevTools extension example, run the browser
@@ -151,11 +158,13 @@ pnpm release:one-zero:check -- --report
 ```
 
 Run `pnpm release:one-zero:check` without `--report` as the actual admission gate; it exits nonzero
-until all criteria pass. Readiness requires two independent verified npm applications, successful
-upgrade evidence for beta.2 and beta.4, at least five distinct `runAt` timestamps for every declared
-browser scenario and jsdom task, reviewed production DevTools permissions without broad host access, and documented
-compatibility, deprecation, migration, and rollback procedures. Repository fixtures do not count as
-independent applications, and missing beta evidence must not be replaced with inferred success.
+until all criteria pass. The evidence checklist requires two independent Solace-primary npm
+applications with Router, Store, async components, error recovery, SSR/hydration, upgrade, and
+rollback evidence; successful compatibility baselines; five distinct runs on five dates for every
+browser scenario and jsdom task; distributable DevTools evidence with tested origins; stable public
+contract admission; and documented migration procedures. Repository fixtures and React/Vite
+compatibility installs do not count as independent adoption. `READY` is an evidence state, not a
+maintainer decision to publish 1.0.
 
 The structured procedure evidence points to the
 [migration and rollback runbook](./migration.md) and the synchronized
@@ -210,9 +219,9 @@ After a maintainer decides the current version should become the default npm rel
 pnpm release:publish
 ```
 
-`release:publish:beta` and `release:publish` both run the full local release gate before
-`changeset publish`. `release:publish:beta` passes `--tag beta`; `release:publish` uses Changesets'
-default npm tag behavior.
+`release:publish:beta` runs the full local release gate and publishes with `--tag beta`.
+`release:publish` additionally requires the strict 1.0 evidence checklist and public contract gate
+before the full local release gate, then uses Changesets' default npm tag behavior.
 
 If publishing is skipped, do not run `release:publish:beta`, `release:publish`, `changeset publish`,
 or `npm publish`. Leave the local version state documented in `docs/project-status.md` until a

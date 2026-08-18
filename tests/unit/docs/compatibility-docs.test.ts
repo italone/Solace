@@ -98,11 +98,11 @@ describe("compatibility and deprecation policy documentation", () => {
     expect(chinese).toContain("不得早于 `0.2.0`");
     expect(english).toContain("without silent entry removal");
     expect(chinese).toContain("不得静默移除入口");
-    expect(english).toContain(
-      "| `.`                 | `@italone/solace`                 | Stable synchronous runtime; router and async APIs are beta | Core app, reactivity, rendering, components, store, and router |",
-    );
-    expect(chinese).toContain(
-      "| `.`                 | `@italone/solace`                 | Stable synchronous runtime；router 和 async API 为 beta | 核心 app、响应式、渲染、组件、store 和 router |",
-    );
+    expect(english).toMatch(/\| `\.`\s+\| `@italone\/solace`\s+\| Beta\s+\|/);
+    expect(chinese).toMatch(/\| `\.`\s+\| `@italone\/solace`\s+\| Beta\s+\|/);
+    for (const policy of [english, chinese]) {
+      expect(policy).toContain("release/public-contract.json");
+      expect(policy).toContain("pnpm release:contract:check");
+    }
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "@italone/solace",
-  "version": "0.1.0-beta.5",
+  "version": "0.1.0-beta.6",
   "private": false,
   "license": "MIT",
   "author": "italone",
@@ -92,12 +92,14 @@
     "changeset": "changeset",
     "release:readiness": "node scripts/release-readiness-check.mjs",
     "release:one-zero:check": "node scripts/one-zero-readiness.mjs",
+    "release:contract:check": "node scripts/public-contract-check.mjs",
+    "performance:regression": "node scripts/performance-regression-check.mjs",
     "release:version": "changeset version",
     "release:candidate:check": "pnpm release:readiness -- --publishable && pnpm stable:app:upgrade && pnpm release:check",
-    "release:check": "pnpm release:readiness && pnpm quality && pnpm test:coverage && pnpm package:smoke && pnpm adoption:smoke && pnpm stable:app && pnpm benchmark && pnpm benchmark:browser && pnpm test:e2e && pnpm test:e2e:devtools-extension",
+    "release:check": "pnpm release:readiness && pnpm quality && pnpm test:coverage && pnpm package:smoke && pnpm adoption:smoke && pnpm stable:app && pnpm benchmark && pnpm benchmark:browser && pnpm performance:regression && pnpm test:e2e && pnpm test:e2e:devtools-extension",
     "release:publish:beta": "pnpm release:check && changeset publish --tag beta",
-    "release:publish": "pnpm release:check && changeset publish",
-    "quality": "pnpm format:check && pnpm build && pnpm typecheck && pnpm build:operations && pnpm typecheck:jsxdev && pnpm lint && pnpm test && pnpm test:package"
+    "release:publish": "pnpm release:one-zero:check && pnpm release:contract:check && pnpm release:check && changeset publish",
+    "quality": "pnpm format:check && pnpm release:contract:check && pnpm build && pnpm typecheck && pnpm build:operations && pnpm typecheck:jsxdev && pnpm lint && pnpm test && pnpm test:package"
   },
   "packageManager": "pnpm@10.33.4",
   "devDependencies": {

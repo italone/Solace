@@ -14,20 +14,26 @@ labels describe behavior and support expectations. Protected entries remain avai
 protected entry remains resolvable throughout the compatibility line unless the deprecation process
 below has completed at a breaking boundary.
 
+`release/public-contract.json` is the machine-readable source for entry maturity. The
+`pnpm release:contract:check` gate requires every package export to appear in that manifest and
+prevents stable admission while any protected entry remains beta or experimental. A passing
+manifest check means the declared boundary is internally consistent; it does not mean Solace 1.0
+is ready.
+
 ## Protected Package Entries
 
 The following eight export keys and import paths are protected public package entries:
 
-| Export key          | Import path                       | Maturity                                                   | Scope                                                          |
-| ------------------- | --------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------- |
-| `.`                 | `@italone/solace`                 | Stable synchronous runtime; router and async APIs are beta | Core app, reactivity, rendering, components, store, and router |
-| `./devtools`        | `@italone/solace/devtools`        | Beta                                                       | Instrumentation listener and recorder APIs                     |
-| `./jsx-dev-runtime` | `@italone/solace/jsx-dev-runtime` | Stable tooling entry                                       | Development JSX runtime                                        |
-| `./jsx-runtime`     | `@italone/solace/jsx-runtime`     | Stable tooling entry                                       | Automatic JSX runtime                                          |
-| `./package.json`    | `@italone/solace/package.json`    | Stable metadata entry                                      | Package metadata consumers explicitly need                     |
-| `./server`          | `@italone/solace/server`          | Stable sync APIs; async APIs are beta                      | SSR, SSG, and static asset helpers                             |
-| `./sfc`             | `@italone/solace/sfc`             | Experimental                                               | Narrow `.solace` TypeScript type shim                          |
-| `./vite`            | `@italone/solace/vite`            | Experimental                                               | Narrow `.solace` Vite transform plugin                         |
+| Export key          | Import path                       | Maturity              | Scope                                                          |
+| ------------------- | --------------------------------- | --------------------- | -------------------------------------------------------------- |
+| `.`                 | `@italone/solace`                 | Beta                  | Core app, reactivity, rendering, components, store, and router |
+| `./devtools`        | `@italone/solace/devtools`        | Beta                  | Instrumentation listener and recorder APIs                     |
+| `./jsx-dev-runtime` | `@italone/solace/jsx-dev-runtime` | Stable tooling entry  | Development JSX runtime                                        |
+| `./jsx-runtime`     | `@italone/solace/jsx-runtime`     | Stable tooling entry  | Automatic JSX runtime                                          |
+| `./package.json`    | `@italone/solace/package.json`    | Stable metadata entry | Package metadata consumers explicitly need                     |
+| `./server`          | `@italone/solace/server`          | Beta                  | SSR, SSG, and static asset helpers                             |
+| `./sfc`             | `@italone/solace/sfc`             | Experimental          | Narrow `.solace` TypeScript type shim                          |
+| `./vite`            | `@italone/solace/vite`            | Experimental          | Narrow `.solace` Vite transform plugin                         |
 
 ## Maturity And Deferred Features
 

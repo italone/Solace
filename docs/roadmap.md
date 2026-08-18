@@ -55,9 +55,10 @@ output; each requires a separate public API and compatibility review.
 10. **1.0 admission evidence** — keep `release/one-zero-readiness.json` and
     `pnpm release:one-zero:check -- --report` honest about independent apps, upgrade coverage,
     performance history, production DevTools permissions, and migration/rollback procedures. The
-    admission evidence now satisfies all five structured criteria after two independent npm apps and
-    five distinct jsdom runs per task were verified. Keep this evidence refreshed; a ready evidence
-    report does not itself publish 1.0 or widen the beta contract.
+    the stricter evidence checklist currently reports `INCOMPLETE`: React/Vite compatibility installs
+    are not Solace-primary adoption, browser keyed scenarios lack five distinct dates, DevTools lacks
+    distributable evidence, and stable contract admission is still blocked. A future `READY` report
+    remains evidence state only; it does not publish 1.0 or widen the beta contract.
 
 ## Out of Scope (for now)
 

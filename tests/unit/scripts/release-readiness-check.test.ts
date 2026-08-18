@@ -15,7 +15,7 @@ describe("release readiness check CLI", () => {
 
     expect(stderr).toBe("");
     expect(stdout).toContain(
-      "public API gates: pnpm release:readiness, pnpm package:smoke, pnpm adoption:smoke, pnpm stable:app, pnpm test:e2e, pnpm test:e2e:devtools-extension",
+      "public API gates: pnpm release:readiness, pnpm release:contract:check, pnpm package:smoke, pnpm adoption:smoke, pnpm stable:app, pnpm performance:regression, pnpm test:e2e, pnpm test:e2e:devtools-extension",
     );
     expect(stdout).toContain(
       "benchmark history: .benchmark-history/ ignored local JSONL artifacts",
@@ -114,6 +114,7 @@ describe("release readiness check CLI", () => {
       "pnpm stable:app",
       "pnpm benchmark",
       "pnpm benchmark:browser",
+      "pnpm performance:regression",
       "pnpm test:e2e",
       "pnpm test:e2e:devtools-extension",
     ]);
@@ -164,10 +165,21 @@ describe("release readiness check CLI", () => {
     };
     const quality = packageJson.scripts?.quality;
 
-    expect(quality?.split(" && ").slice(0, 3)).toEqual([
+    expect(quality?.split(" && ").slice(0, 4)).toEqual([
       "pnpm format:check",
+      "pnpm release:contract:check",
       "pnpm build",
       "pnpm typecheck",
     ]);
+  });
+
+  test("keeps stable evidence gates out of beta publishing", async () => {
+    const packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
+      scripts?: Record<string, string>;
+    };
+
+    expect(packageJson.scripts?.["release:publish"]).toContain("pnpm release:one-zero:check");
+    expect(packageJson.scripts?.["release:publish"]).toContain("pnpm release:contract:check");
+    expect(packageJson.scripts?.["release:publish:beta"]).not.toContain("release:one-zero:check");
   });
 });

@@ -80,4 +80,27 @@ describe("1.0 readiness evidence loading", () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+
+  it("rejects a missing application evidence document", async () => {
+    const root = await mkdtemp(join(tmpdir(), "solace-one-zero-adoption-path-"));
+    await mkdir(join(root, "release"));
+
+    try {
+      await writeJson(join(root, "release", "one-zero-readiness.json"), {
+        applications: [{ evidence: "release/missing-adoption.md" }],
+        performance: { evidence: "release/performance-history.json" },
+      });
+      await writeJson(join(root, "release", "performance-history.json"), {
+        schemaVersion: 1,
+        browserScenarios: { "large-list": {} },
+        jsdomScenarios: { render: {} },
+      });
+
+      await expect(loadOneZeroReadinessEvidence({ root })).rejects.toThrow(
+        "Readiness evidence file not found: release/missing-adoption.md",
+      );
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
 });

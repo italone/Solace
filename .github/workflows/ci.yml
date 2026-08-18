@@ -35,6 +35,12 @@ jobs:
       - name: Release readiness
         run: pnpm release:readiness
 
+      - name: Public contract
+        run: pnpm release:contract:check
+
+      - name: 1.0 evidence checklist report
+        run: pnpm release:one-zero:check -- --report
+
       - name: Format check
         run: pnpm format:check
 
@@ -98,6 +104,9 @@ jobs:
 
       - name: Browser benchmark
         run: pnpm benchmark:browser
+
+      - name: Performance regression
+        run: pnpm performance:regression
 
       - name: E2E
         run: pnpm test:e2e

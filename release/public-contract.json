@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "stableAdmission": false,
+  "entries": [
+    {
+      "key": ".",
+      "path": "@italone/solace",
+      "maturity": "beta",
+      "scope": "Stable synchronous runtime; Router and async APIs remain beta."
+    },
+    {
+      "key": "./devtools",
+      "path": "@italone/solace/devtools",
+      "maturity": "beta",
+      "scope": "Instrumentation listener and recorder APIs."
+    },
+    {
+      "key": "./jsx-dev-runtime",
+      "path": "@italone/solace/jsx-dev-runtime",
+      "maturity": "stable",
+      "scope": "Development JSX runtime."
+    },
+    {
+      "key": "./jsx-runtime",
+      "path": "@italone/solace/jsx-runtime",
+      "maturity": "stable",
+      "scope": "Automatic JSX runtime."
+    },
+    {
+      "key": "./package.json",
+      "path": "@italone/solace/package.json",
+      "maturity": "stable",
+      "scope": "Published package metadata."
+    },
+    {
+      "key": "./server",
+      "path": "@italone/solace/server",
+      "maturity": "beta",
+      "scope": "SSR, SSG, and hydration helpers."
+    },
+    {
+      "key": "./sfc",
+      "path": "@italone/solace/sfc",
+      "maturity": "experimental",
+      "scope": "Narrow .solace type shim."
+    },
+    {
+      "key": "./vite",
+      "path": "@italone/solace/vite",
+      "maturity": "experimental",
+      "scope": "Narrow .solace Vite transform plugin."
+    }
+  ]
+}

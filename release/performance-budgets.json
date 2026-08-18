@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "minimumDistinctRuns": 5,
+  "minimumDistinctDates": 5,
+  "browser": {
+    "large-list": {
+      "initialRenderMs": 1000,
+      "updateMs": 1000,
+      "unmountMs": 1000
+    },
+    "keyed-reorder:reverse": {
+      "initialRenderMs": 1000,
+      "reorderMs": 1000,
+      "unmountMs": 1000
+    },
+    "keyed-reorder:sorted": {
+      "initialRenderMs": 1000,
+      "reorderMs": 1000,
+      "unmountMs": 1000
+    },
+    "keyed-reorder:swap-neighbors": {
+      "initialRenderMs": 1000,
+      "reorderMs": 1000,
+      "unmountMs": 1000
+    },
+    "keyed-reorder:shuffle": {
+      "initialRenderMs": 1000,
+      "reorderMs": 1000,
+      "unmountMs": 1000
+    },
+    "keyed-reorder:shift-window": {
+      "initialRenderMs": 1000,
+      "reorderMs": 1000,
+      "unmountMs": 1000
+    }
+  },
+  "jsdom": {
+    "component mount/unmount loop": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "1000 component initial render": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "1000 component batched reactive update": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "1000 stable child components parent update": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "5000 Fragment child initial render": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "5000 Fragment child local text patch": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "5000 Fragment child middle insert": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "10000 row create": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "10000 row text to keyed list": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "10000 row local text update": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "10000 row delete": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "10000 row keyed middle insert": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "10000 row unkeyed tail append": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "10000 row unkeyed tail remove": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "10000 row keyed middle remove": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "10000 row keyed tail to head move": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "10000 row keyed mixed insert and move": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 },
+    "10000 row keyed mixed adjacent insert and move": {
+      "latencyMeanMs": 5000,
+      "latencyP99Ms": 5000
+    },
+    "10000 row keyed mixed adjacent remove and move": {
+      "latencyMeanMs": 5000,
+      "latencyP99Ms": 5000
+    },
+    "10000 row keyed reorder": { "latencyMeanMs": 5000, "latencyP99Ms": 5000 }
+  }
+}

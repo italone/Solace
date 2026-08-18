@@ -1,5 +1,12 @@
 const REQUIRED_BASELINES = ["0.1.0-beta.2", "0.1.0-beta.4"];
 const REQUIRED_MIGRATION_FIELDS = ["compatibility", "deprecation", "migration", "rollback"];
+const REQUIRED_ADOPTION_WORKFLOWS = [
+  "router",
+  "store",
+  "asyncComponents",
+  "errorRecovery",
+  "ssrHydration",
+];
 
 export function parseOneZeroReadinessArguments(rawArgs) {
   const args = rawArgs[0] === "--" ? rawArgs.slice(1) : [...rawArgs];
@@ -23,7 +30,15 @@ export function evaluateOneZeroReadiness(evidence) {
           application?.packageSource === "npm" &&
           application?.verified === true &&
           typeof application?.name === "string" &&
-          application.name.trim() !== "",
+          application.name.trim() !== "" &&
+          application?.primaryRenderer === "solace" &&
+          hasRequiredAdoptionWorkflows(application.productionWorkflows) &&
+          application?.upgrade?.verified === true &&
+          typeof application.upgrade.fromVersion === "string" &&
+          application.upgrade.fromVersion.trim() !== "" &&
+          application?.rollback?.rehearsed === true &&
+          isSafeEvidencePath(application.rollback.evidence) &&
+          isSafeEvidencePath(application.evidence),
       )
       .map((application) => application.name),
   );
@@ -39,20 +54,26 @@ export function evaluateOneZeroReadiness(evidence) {
 
   const devtoolsPassed =
     evidence?.devtools?.productionManifestReviewed === true &&
-    evidence?.devtools?.broadHostAccessRemoved === true;
+    evidence?.devtools?.broadHostAccessRemoved === true &&
+    evidence?.devtools?.distributableManifestVerified === true &&
+    Array.isArray(evidence?.devtools?.testedOrigins) &&
+    evidence.devtools.testedOrigins.length > 0;
 
   const missingMigrationFields = REQUIRED_MIGRATION_FIELDS.filter(
     (field) => !isDocumentedProcedure(evidence?.migrationPolicy?.[field]),
   );
   const migrationPassed = missingMigrationFields.length === 0;
+  const contractPassed =
+    evidence?.contract?.stableAdmission === true &&
+    isSafeEvidencePath(evidence?.contract?.evidence);
 
   const criteria = [
     {
       id: "adoption.independent-apps",
       passed: adoptionPassed,
       message: adoptionPassed
-        ? `${independentApplications.size} independent npm applications are verified.`
-        : `Need 2 independent verified npm applications; found ${independentApplications.size}.`,
+        ? `${independentApplications.size} independent Solace-primary npm applications are verified.`
+        : `Need 2 independent npm applications with Solace-primary production workflows; found ${independentApplications.size}.`,
     },
     {
       id: "compatibility.upgrade-matrix",
@@ -72,8 +93,8 @@ export function evaluateOneZeroReadiness(evidence) {
       id: "devtools.production-permissions",
       passed: devtoolsPassed,
       message: devtoolsPassed
-        ? "Production DevTools permissions were reviewed and broad host access was removed."
-        : "Production DevTools manifest review and removal of broad host access are required.",
+        ? "Production DevTools distribution, permissions, and tested origins are verified."
+        : "Production DevTools distribution, manifest permissions, and tested origins are required.",
     },
     {
       id: "release.migration-policy",
@@ -81,6 +102,13 @@ export function evaluateOneZeroReadiness(evidence) {
       message: migrationPassed
         ? "Compatibility, deprecation, migration, and rollback procedures are documented."
         : `Missing release procedures: ${missingMigrationFields.join(", ")}.`,
+    },
+    {
+      id: "contract.stable-boundary",
+      passed: contractPassed,
+      message: contractPassed
+        ? "The public contract manifest confirms a stable 1.0 boundary."
+        : "The public contract is still beta or experimental; stable admission remains blocked.",
     },
   ];
 
@@ -105,14 +133,25 @@ export function isSafeEvidencePath(value) {
   );
 }
 
+function hasRequiredAdoptionWorkflows(workflows) {
+  return (
+    isRecord(workflows) &&
+    REQUIRED_ADOPTION_WORKFLOWS.every((workflow) => workflows[workflow] === true)
+  );
+}
+
 function evaluatePerformanceEvidence(performance) {
   const minimumDistinctRuns = performance?.minimumDistinctRuns;
+  const minimumDistinctDates = performance?.minimumDistinctDates;
   const evidencePath = performance?.evidence;
   const summary = performance?.summary;
   const gaps = [];
 
   if (!Number.isInteger(minimumDistinctRuns) || minimumDistinctRuns < 5) {
     gaps.push("minimumDistinctRuns must be at least 5");
+  }
+  if (!Number.isInteger(minimumDistinctDates) || minimumDistinctDates < 5) {
+    gaps.push("minimumDistinctDates must be at least 5");
   }
   if (!isSafeEvidencePath(evidencePath)) gaps.push("performance evidence path is invalid");
   if (summary?.schemaVersion !== 1) gaps.push("performance summary schemaVersion must be 1");
@@ -130,14 +169,20 @@ function evaluatePerformanceEvidence(performance) {
   if (Object.keys(jsdomScenarios).length === 0) gaps.push("jsdom scenarios are missing");
 
   gaps.push(
-    ...findScenarioEvidenceGaps("browser", browserScenarios, minimumDistinctRuns),
-    ...findScenarioEvidenceGaps("jsdom", jsdomScenarios, minimumDistinctRuns),
+    ...findScenarioEvidenceGaps(
+      "browser",
+      browserScenarios,
+      minimumDistinctRuns,
+      minimumDistinctDates,
+    ),
+    ...findScenarioEvidenceGaps("jsdom", jsdomScenarios, minimumDistinctRuns, minimumDistinctDates),
   );
 
   return {
     passed: gaps.length === 0,
     gaps,
     minimumDistinctRuns,
+    minimumDistinctDates,
     evidencePath,
   };
 }
@@ -153,13 +198,21 @@ function isValidSourceEvidence(source) {
   );
 }
 
-function findScenarioEvidenceGaps(kind, scenarios, minimumDistinctRuns) {
+function findScenarioEvidenceGaps(kind, scenarios, minimumDistinctRuns, minimumDistinctDates) {
   return Object.entries(scenarios).flatMap(([name, scenario]) => {
     const label = `${kind}:${name}`;
     if (!isValidScenarioEvidence(scenario)) return [`${label} has invalid audit fields`];
     if (!Number.isInteger(minimumDistinctRuns) || scenario.distinctRunCount < minimumDistinctRuns) {
       return [
         `${label} (${String(scenario.distinctRunCount)}/${String(minimumDistinctRuns)} distinct runs)`,
+      ];
+    }
+    if (
+      !Number.isInteger(minimumDistinctDates) ||
+      scenario.distinctDateCount < minimumDistinctDates
+    ) {
+      return [
+        `${label} (${String(scenario.distinctDateCount)}/${String(minimumDistinctDates)} distinct dates)`,
       ];
     }
     return [];

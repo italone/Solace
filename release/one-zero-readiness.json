@@ -7,6 +7,17 @@
       "independent": false,
       "packageSource": "local",
       "verified": true,
+      "primaryRenderer": "solace",
+      "productionWorkflows": {
+        "router": true,
+        "store": true,
+        "asyncComponents": true,
+        "errorRecovery": true,
+        "ssrHydration": true
+      },
+      "upgrade": { "verified": true, "fromVersion": "0.1.0-beta.2" },
+      "rollback": { "rehearsed": false, "evidence": "docs/migration.md" },
+      "evidence": "docs/project-status.md",
       "notes": "Repository-owned compatibility fixture; excluded from real adoption count."
     },
     {
@@ -14,6 +25,17 @@
       "independent": false,
       "packageSource": "local",
       "verified": true,
+      "primaryRenderer": "solace",
+      "productionWorkflows": {
+        "router": true,
+        "store": true,
+        "asyncComponents": true,
+        "errorRecovery": true,
+        "ssrHydration": true
+      },
+      "upgrade": { "verified": true, "fromVersion": "0.1.0-beta.4" },
+      "rollback": { "rehearsed": false, "evidence": "docs/migration.md" },
+      "evidence": "docs/project-status.md",
       "notes": "Packed-package CSR and SSR/hydration fixture; excluded from real adoption count."
     },
     {
@@ -24,7 +46,17 @@
       "packageVersion": "0.1.0-beta.5",
       "applicationPath": "/Users/alone/Desktop/TEST/h5-design",
       "evidence": "release/adoption-evidence.md",
-      "notes": "Independent React/Vite application validated from an exact npm install in a disposable copy."
+      "primaryRenderer": "react",
+      "productionWorkflows": {
+        "router": false,
+        "store": false,
+        "asyncComponents": false,
+        "errorRecovery": false,
+        "ssrHydration": false
+      },
+      "upgrade": { "verified": false, "fromVersion": "" },
+      "rollback": { "rehearsed": false, "evidence": "release/adoption-evidence.md" },
+      "notes": "Compatibility-only React/Vite installation; it does not count as Solace-primary adoption."
     },
     {
       "name": "css-world",
@@ -34,7 +66,17 @@
       "packageVersion": "0.1.0-beta.5",
       "applicationPath": "/Users/alone/Desktop/TEST/css-world",
       "evidence": "release/adoption-evidence.md",
-      "notes": "Independent React/Vite application validated from an exact npm install in a disposable copy."
+      "primaryRenderer": "react",
+      "productionWorkflows": {
+        "router": false,
+        "store": false,
+        "asyncComponents": false,
+        "errorRecovery": false,
+        "ssrHydration": false
+      },
+      "upgrade": { "verified": false, "fromVersion": "" },
+      "rollback": { "rehearsed": false, "evidence": "release/adoption-evidence.md" },
+      "notes": "Compatibility-only React/Vite installation; it does not count as Solace-primary adoption."
     }
   ],
   "upgradeMatrix": {
@@ -45,11 +87,18 @@
   },
   "performance": {
     "minimumDistinctRuns": 5,
+    "minimumDistinctDates": 5,
     "evidence": "release/performance-history.json"
   },
   "devtools": {
     "productionManifestReviewed": true,
-    "broadHostAccessRemoved": true
+    "broadHostAccessRemoved": true,
+    "distributableManifestVerified": false,
+    "testedOrigins": []
+  },
+  "contract": {
+    "stableAdmission": false,
+    "evidence": "release/public-contract.json"
   },
   "migrationPolicy": {
     "compatibility": {

@@ -16,6 +16,15 @@ The repository currently validates behavior with:
 
 The large-list e2e test confirms that 10,000 rows can render and one selected row can update in a browser smoke test. It is not a benchmark result.
 
+## Regression Gate
+
+`pnpm performance:regression` reads `release/performance-budgets.json` and the latest successful
+records from the ignored jsdom and browser JSONL histories. Every configured scenario must have at
+least five distinct runs on five distinct calendar dates. The latest metrics are then compared with
+the scenario's explicit millisecond budgets; missing scenarios, malformed values, insufficient
+history, and over-budget results fail the command. This is a regression guard, not a claim that the
+current beta meets a universal framework performance target.
+
 ## Latest Local Benchmark Run
 
 Date: 2026-07-21

@@ -17,7 +17,7 @@ Solace 聚焦于小型运行时核心：响应式状态、调度渲染、VNode d
 
 ## 项目状态
 
-Solace 当前处于 `0.1.0` beta 线。仓库 package build 是已发布的 `0.1.0-beta.5` release。
+Solace 当前处于 `0.1.0` beta 线。当前工作区准备本地、尚未发布的 `0.1.0-beta.6` candidate。
 npm `latest` 仍是 `0.0.5`，npm `beta` 是 `0.1.0-beta.5`。beta.5 release 增加 typed
 JSX/TSX 组件契约、更完整的 adoption 门禁，以及可组合的 router-aware SSR/hydration primitives，
 但不增加 streaming 或 renderer-owned 直接 router options。发布之后 `main` 上的后续加固强化了
@@ -90,6 +90,11 @@ pnpm quality
 pnpm release:check
 ```
 
+机器可读的公共边界检查使用 `pnpm release:contract:check`。严格的
+`pnpm release:one-zero:check` 只是 evidence checklist，不代表 1.0 已就绪；当前 React/Vite
+记录仍然只是 compatibility-only，直到补齐 Solace-primary 生产工作流、upgrade/rollback 演练和
+stable contract admission 证据。
+
 完整发布检查包含 `pnpm test:e2e` 和 `pnpm test:e2e:devtools-extension`，确保普通浏览器示例与
 DevTools extension 冒烟在 release notes 或发布前保持一致。
 
@@ -148,7 +153,7 @@ createApp(App).mount(document.querySelector("#app") as Element);
 
 ## 核心 API
 
-Solace 保持较小的公共 API 面。包根入口是稳定的运行时入口；`src/**` 下的内部模块和
+Solace 保持较小的公共 API 面。包根入口是主要的 beta 运行时入口；`src/**` 下的内部模块和
 `dist/**` 下的生成文件都属于实现细节。
 
 ### App
@@ -477,6 +482,8 @@ pnpm benchmark:browser
 ```
 
 当性能宣称需要趋势窗口时，使用 `pnpm benchmark:history`。发布说明或 README 中的性能说法要把最新 browser 样本数、jsdom 样本数和场景名一起写清。当前阈值规则见 [docs/performance.md](./docs/performance.md) 和 [docs/release.md](./docs/release.md)。
+
+在把 benchmark 输出作为 release 信号前，运行 `pnpm performance:regression`，它会检查场景预算和五个不同日期的历史要求。
 
 ## 开发
 

@@ -17,7 +17,7 @@ try {
   } else {
     const evidence = await loadOneZeroReadinessEvidence({ root });
     const result = evaluateOneZeroReadiness(evidence);
-    console.log(`Solace 1.0 readiness: ${result.ready ? "READY" : "NOT READY"}`);
+    console.log(`Solace 1.0 evidence checklist: ${result.ready ? "READY" : "INCOMPLETE"}`);
     for (const criterion of result.criteria) {
       console.log(`${criterion.passed ? "PASS" : "FAIL"} ${criterion.id}: ${criterion.message}`);
     }

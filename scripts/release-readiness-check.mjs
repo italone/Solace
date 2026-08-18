@@ -34,6 +34,9 @@ requireScript("package:smoke");
 requireScript("adoption:smoke");
 requireScript("stable:app");
 requireScript("release:check");
+requireScript("release:contract:check");
+requireScript("release:one-zero:check");
+requireScript("performance:regression");
 requireScript("release:version");
 requireScript("release:publish:beta");
 requireScript("release:publish");
@@ -44,6 +47,10 @@ requireReleaseCheckCommand("pnpm stable:app");
 requireReleaseCheckCommand("pnpm test:e2e");
 requireReleaseCheckCommand("pnpm test:e2e:devtools-extension");
 requireReleaseCheckCommand("pnpm benchmark:browser");
+requireReleaseCheckCommand("pnpm performance:regression");
+requireScriptCommand("quality", "pnpm release:contract:check");
+requireScriptCommand("release:publish", "pnpm release:one-zero:check");
+requireScriptCommand("release:publish", "pnpm release:contract:check");
 requireGitignorePattern(".benchmark-history/");
 
 if (changesetConfig.access !== "public") {
@@ -101,7 +108,7 @@ if (failures.length > 0) {
   console.log(`changeset access: ${changesetConfig.access}`);
   console.log(`mode: ${options.publishable ? "publishable" : "default"}`);
   console.log(
-    "public API gates: pnpm release:readiness, pnpm package:smoke, pnpm adoption:smoke, pnpm stable:app, pnpm test:e2e, pnpm test:e2e:devtools-extension",
+    "public API gates: pnpm release:readiness, pnpm release:contract:check, pnpm package:smoke, pnpm adoption:smoke, pnpm stable:app, pnpm performance:regression, pnpm test:e2e, pnpm test:e2e:devtools-extension",
   );
   console.log("benchmark history: .benchmark-history/ ignored local JSONL artifacts");
   if (options.publishable) {
@@ -275,6 +282,13 @@ function requireReleaseCheckCommand(command) {
 
   if (!hasReleaseCheckCommand(releaseCheck, command)) {
     failures.push(`package.json release:check must include "${command}".`);
+  }
+}
+
+function requireScriptCommand(scriptName, command) {
+  const script = packageJson.scripts?.[scriptName];
+  if (!hasReleaseCheckCommand(script, command)) {
+    failures.push(`package.json ${scriptName} must include "${command}".`);
   }
 }
 

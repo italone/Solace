@@ -6,8 +6,8 @@ This document summarizes the current completion level of Solace as an open-sourc
 
 ## Summary
 
-Solace is now on the `0.1.0` beta line whose repository package version is the published
-`0.1.0-beta.5` release. npm `latest` remains the stable `@italone/solace@0.0.5` line, while
+Solace is now on the `0.1.0` beta line. This working tree prepares a local `0.1.0-beta.6`
+candidate; it is not published. npm `latest` remains the stable `@italone/solace@0.0.5` line, while
 published npm `beta` is `0.1.0-beta.5`.
 It provides a working public API, package exports, examples, tests, benchmarks, and release checks.
 Its primary authoring path is JSX/TSX-first function components backed by explicit runtime APIs. It
@@ -17,7 +17,7 @@ described as a mature production replacement for React, Vue, Svelte, or similar 
 Current repository state:
 
 - Package name: `@italone/solace`
-- Repository package version: `0.1.0-beta.5`
+- Repository package version: local `0.1.0-beta.6` candidate
 - Published npm `latest`: `0.0.5`
 - Published npm `beta`: `0.1.0-beta.5`
 - npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.5`
@@ -55,7 +55,7 @@ APIs were added and the published beta.5 release state is unchanged.
 | Examples         | Implemented                                          | Basic counter, todo app, large list, performance benchmark, router, SFC, and DevTools extension examples exist under `examples/**`.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | Package output   | Implemented                                          | Rollup builds ESM, CJS, and type declarations; package export tests and packed-consumer smoke tests validate public entries.                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Documentation    | Mostly complete                                      | English and Chinese README files, API docs, package usage, release, performance, architecture, DevTools, large-app adoption, ecosystem direction in `docs/ecosystem.md`, contributing, and security docs exist.                                                                                                                                                                                                                                                                                                                                                          |
-| Release gates    | Implemented                                          | `release:readiness`, `quality`, `release:check`, package smoke tests, benchmarks, and e2e scripts are configured; `release:check` starts with release readiness.                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Release gates    | Implemented, evidence-blocked candidate              | `release:readiness`, `quality`, `release:check`, public contract, performance regression, package smoke, benchmark, and e2e scripts are configured; stable publish additionally requires the 1.0 evidence checklist.                                                                                                                                                                                                                                                                                                                                                     |
 
 ## Strengths and Tradeoffs
 
@@ -149,14 +149,13 @@ performance-evidence work. It recorded 81 Vitest files / 702 tests and coverage 
 Firefox, and WebKit, and 2 Chromium-only DevTools extension e2e tests. Packed package smoke,
 package-only CSR plus SSR/hydration adoption smoke, Operations Console smoke, jsdom benchmark, and
 Chromium production browser benchmark also passed. The optional three-browser adoption runner passed
-for the local beta.5 tarball. On 2026-08-17, the 1.0 evidence evaluator now reports ready after two
-independent npm applications completed exact beta.5 installation, typecheck, production build,
-Solace bundle, and preview runtime verification recorded in `release/adoption-evidence.md`. The
-checked-in `release/performance-history.json` now records 5/5 distinct task runs for every current
-jsdom task, while the browser scenarios continue to satisfy the five-distinct-run requirement.
-Migration and rollback procedures and the DevTools manifest permission review also pass the
-structured evidence gate. This readiness result does not publish 1.0 or widen the documented beta
-contract, and no live npm rollback rehearsal is claimed.
+for the local beta.5 tarball. The stricter 2026-08-18 evaluator now names this result the
+`Solace 1.0 evidence checklist` and reports `INCOMPLETE`; the source record remains
+`release/adoption-evidence.md`. The two external React/Vite applications
+prove package compatibility only; they are not Solace-primary production adoption. Production
+rollback rehearsal, distributable DevTools evidence, stable contract admission, and five distinct
+dates for every browser scenario are also still missing. `READY` therefore means only that every
+checked evidence item is present; it is not a 1.0 release decision.
 
 The 2026-08-18 beta.5 baseline re-validation reran the full local `pnpm release:check` on the
 published beta.5 state and passed. It recorded 82 Vitest files / 708 tests and coverage of 93.00%
@@ -169,6 +168,16 @@ stable-slice edge coverage, JSX typed named-slot hardening, and benchmark histor
 refresh) each reran the relevant focused checks and `pnpm quality` before commit. They did not
 rerun coverage, package smoke, benchmarks, browser e2e, or the full `release:check`; rerun the
 full gate before any future release claim. The published beta.5 release state is unchanged.
+
+The 2026-08-18 local beta.6 candidate hardening passed `pnpm quality` with 86 Vitest files / 734
+tests and 16 package tests. Coverage passed at 92.81% statements / 87.91% branches / 95.44%
+functions / 93.25% lines. Packed package, adoption, and Operations Console smokes passed; jsdom and
+Chromium production benchmarks passed; ordinary browser e2e passed 24/24 across Chromium, Firefox,
+and WebKit; DevTools extension e2e passed 4/4. The full `pnpm release:check` then stopped at the new
+performance regression gate because five keyed browser scenarios have only 2/5 distinct dates.
+`pnpm release:one-zero:check` remains `INCOMPLETE`, publishable readiness is blocked by local Git
+being ahead of `origin/main`, and the pinned beta.2 upgrade recheck could not install from npm due
+registry DNS failure. The local beta.6 candidate is therefore verified but not publishable.
 
 The 2026-08-17 public component regression matrix also verifies required typed slots, typed events,
 and generic components across the automatic JSX runtime, direct `h()` and JSX runtime calls,

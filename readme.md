@@ -17,8 +17,8 @@ Solace focuses on a small runtime core: reactive state, scheduled rendering, VNo
 
 ## Project Status
 
-Solace is currently on the `0.1.0` beta line. This repository package build is the published
-`0.1.0-beta.5` release. npm `latest` remains `0.0.5`, and npm `beta` is
+Solace is currently on the `0.1.0` beta line. This working tree prepares a local, unpublished
+`0.1.0-beta.6` candidate; npm `latest` remains `0.0.5`, and npm `beta` is
 `0.1.0-beta.5`. The beta.5 release adds typed JSX/TSX component contracts, broader adoption
 gates, and composable router-aware SSR/hydration primitives without adding streaming or direct
 renderer-owned router options. Post-release hardening on `main` strengthened the JSX typed
@@ -99,6 +99,11 @@ Run the full release check before publishing decisions:
 pnpm release:check
 ```
 
+The machine-readable public boundary is checked with `pnpm release:contract:check`. The strict
+`pnpm release:one-zero:check` command is an evidence checklist, not a claim that 1.0 is ready;
+the current React/Vite records are compatibility-only until Solace-primary production workflows,
+upgrade and rollback rehearsals, and stable contract admission are evidenced.
+
 The full release check includes `pnpm test:e2e` and `pnpm test:e2e:devtools-extension` so regular
 browser examples and the DevTools extension smoke stay aligned before release notes or publishing.
 
@@ -157,7 +162,7 @@ createApp(App).mount(document.querySelector("#app") as Element);
 
 ## Core APIs
 
-Solace keeps its public API small. The package root is the stable runtime entry point; internal
+Solace keeps its public API small. The package root is the primary beta runtime entry point; internal
 modules under `src/**` and generated files under `dist/**` are implementation details.
 
 ### App
@@ -493,6 +498,8 @@ pnpm benchmark:browser
 ```
 
 Use `pnpm benchmark:history` when a performance claim needs a trend window. Keep the latest browser sample count, jsdom sample count, and scenario names together with any release note or README claim. For the current threshold rules, see [docs/performance.md](./docs/performance.md) and [docs/release.md](./docs/release.md).
+
+Run `pnpm performance:regression` to enforce the checked-in scenario budgets and five-date history requirement before treating benchmark output as a release signal.
 
 ## Development
 

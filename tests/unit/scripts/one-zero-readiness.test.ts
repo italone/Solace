@@ -12,10 +12,22 @@ type ReadinessEvidenceFixture = {
     independent: boolean;
     packageSource: string;
     verified: boolean;
+    primaryRenderer: "solace" | "react";
+    productionWorkflows: {
+      router: boolean;
+      store: boolean;
+      asyncComponents: boolean;
+      errorRecovery: boolean;
+      ssrHydration: boolean;
+    };
+    upgrade: { verified: boolean; fromVersion: string };
+    rollback: { rehearsed: boolean; evidence: string };
+    evidence: string;
   }>;
   upgradeMatrix: { baselines: Record<string, { verified: boolean }> };
   performance: {
     minimumDistinctRuns: number;
+    minimumDistinctDates: number;
     evidence: string;
     summary: {
       schemaVersion: number;
@@ -24,7 +36,13 @@ type ReadinessEvidenceFixture = {
       jsdomScenarios: Record<string, PerformanceScenarioFixture>;
     };
   };
-  devtools: { productionManifestReviewed: boolean; broadHostAccessRemoved: boolean };
+  devtools: {
+    productionManifestReviewed: boolean;
+    broadHostAccessRemoved: boolean;
+    distributableManifestVerified: boolean;
+    testedOrigins: string[];
+  };
+  contract: { stableAdmission: boolean; evidence: string };
   migrationPolicy: Record<string, unknown>;
 };
 
@@ -40,18 +58,36 @@ function performanceScenario(distinctRunCount = 5): PerformanceScenarioFixture {
   return {
     recordCount: distinctRunCount,
     distinctRunCount,
-    distinctDateCount: 3,
+    distinctDateCount: 5,
     firstRunAt: "2026-07-16T00:00:00.000Z",
     lastRunAt: "2026-08-14T00:00:00.000Z",
   };
 }
 
 function readyEvidence(): ReadinessEvidenceFixture {
+  const application = (name: string, fromVersion: string) => ({
+    name,
+    independent: true as const,
+    packageSource: "npm" as const,
+    verified: true,
+    primaryRenderer: "solace" as const,
+    productionWorkflows: {
+      router: true,
+      store: true,
+      asyncComponents: true,
+      errorRecovery: true,
+      ssrHydration: true,
+    },
+    upgrade: { verified: true, fromVersion },
+    rollback: { rehearsed: true, evidence: "release/adoption-evidence.md" },
+    evidence: "release/adoption-evidence.md",
+  });
+
   return {
     schemaVersion: 1,
     applications: [
-      { name: "customer-csr", independent: true, packageSource: "npm", verified: true },
-      { name: "customer-ssr", independent: true, packageSource: "npm", verified: true },
+      application("customer-csr", "0.1.0-beta.4"),
+      application("customer-ssr", "0.1.0-beta.4"),
     ],
     upgradeMatrix: {
       baselines: {
@@ -61,6 +97,7 @@ function readyEvidence(): ReadinessEvidenceFixture {
     },
     performance: {
       minimumDistinctRuns: 5,
+      minimumDistinctDates: 5,
       evidence: "release/performance-history.json",
       summary: {
         schemaVersion: 1,
@@ -89,7 +126,10 @@ function readyEvidence(): ReadinessEvidenceFixture {
     devtools: {
       productionManifestReviewed: true,
       broadHostAccessRemoved: true,
+      distributableManifestVerified: true,
+      testedOrigins: ["https://customer.example"],
     },
+    contract: { stableAdmission: true, evidence: "release/public-contract.json" },
     migrationPolicy: {
       compatibility: {
         documented: true,
@@ -130,6 +170,7 @@ describe("1.0 readiness evaluation", () => {
       "performance.recent-history",
       "devtools.production-permissions",
       "release.migration-policy",
+      "contract.stable-boundary",
     ]);
     expect(result.criteria.every(({ passed }) => passed)).toBe(true);
   });
@@ -137,7 +178,12 @@ describe("1.0 readiness evaluation", () => {
   it("reports every current beta gap in one pass", () => {
     const evidence = readyEvidence();
     evidence.applications = [
-      { name: "repository-example", independent: false, packageSource: "local", verified: true },
+      {
+        ...evidence.applications[0],
+        name: "repository-example",
+        independent: false,
+        packageSource: "local",
+      },
     ];
     evidence.upgradeMatrix.baselines["0.1.0-beta.4"].verified = false;
     evidence.performance.summary.browserScenarios["large-list"] = performanceScenario(4);
@@ -164,13 +210,39 @@ describe("1.0 readiness evaluation", () => {
   it("does not count duplicate or non-registry adoption evidence", () => {
     const evidence = readyEvidence();
     evidence.applications = [
-      { name: "same-app", independent: true, packageSource: "npm", verified: true },
-      { name: "same-app", independent: true, packageSource: "npm", verified: true },
-      { name: "local-fixture", independent: true, packageSource: "local", verified: true },
+      { ...evidence.applications[0], name: "same-app" },
+      { ...evidence.applications[0], name: "same-app" },
+      { ...evidence.applications[0], name: "local-fixture", packageSource: "local" },
     ];
 
     const criterion = evaluateOneZeroReadiness(evidence).criteria[0];
     expect(criterion).toMatchObject({ id: "adoption.independent-apps", passed: false });
+  });
+
+  it("does not count npm applications without Solace-primary workflow evidence", () => {
+    const evidence = readyEvidence();
+    evidence.applications[0].primaryRenderer = "react";
+    evidence.applications[1].productionWorkflows.ssrHydration = false;
+
+    const criterion = evaluateOneZeroReadiness(evidence).criteria[0];
+
+    expect(criterion).toMatchObject({ id: "adoption.independent-apps", passed: false });
+    expect(criterion.message).toContain("primary");
+  });
+
+  it("requires five distinct calendar dates for every performance scenario", () => {
+    const evidence = readyEvidence();
+    for (const scenario of [
+      ...Object.values(evidence.performance.summary.browserScenarios),
+      ...Object.values(evidence.performance.summary.jsdomScenarios),
+    ]) {
+      scenario.distinctDateCount = 2;
+    }
+
+    const criterion = evaluateOneZeroReadiness(evidence).criteria[2];
+
+    expect(criterion).toMatchObject({ id: "performance.recent-history", passed: false });
+    expect(criterion.message).toContain("distinct dates");
   });
 
   it("requires both named compatibility baselines", () => {

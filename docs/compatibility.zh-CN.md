@@ -11,20 +11,24 @@
 不得静默移除入口。除非下面的弃用流程已经在 breaking boundary 完成，否则每个受保护
 入口在整个兼容性主线中都必须保持可解析。
 
+`release/public-contract.json` 是入口成熟度的机器可读来源。`pnpm release:contract:check` 要求每个
+package export 都出现在该 manifest 中，并在任何受保护入口仍为 beta 或 experimental 时拒绝 stable
+admission。manifest 检查通过只表示声明边界内部一致，不代表 Solace 已达到 1.0。
+
 ## 受保护的包入口
 
 下面八个 export key 和 import path 是受保护的公共包入口：
 
-| Export key          | Import path                       | Maturity                                                | 范围                                          |
-| ------------------- | --------------------------------- | ------------------------------------------------------- | --------------------------------------------- |
-| `.`                 | `@italone/solace`                 | Stable synchronous runtime；router 和 async API 为 beta | 核心 app、响应式、渲染、组件、store 和 router |
-| `./devtools`        | `@italone/solace/devtools`        | Beta                                                    | instrumentation listener 和 recorder API      |
-| `./jsx-dev-runtime` | `@italone/solace/jsx-dev-runtime` | Stable tooling entry                                    | 开发环境 JSX runtime                          |
-| `./jsx-runtime`     | `@italone/solace/jsx-runtime`     | Stable tooling entry                                    | 自动 JSX runtime                              |
-| `./package.json`    | `@italone/solace/package.json`    | Stable metadata entry                                   | 明确需要包元数据的消费者                      |
-| `./server`          | `@italone/solace/server`          | Stable sync API；async API 为 beta                      | SSR、SSG 和 static asset helpers              |
-| `./sfc`             | `@italone/solace/sfc`             | Experimental                                            | 窄范围 `.solace` TypeScript type shim         |
-| `./vite`            | `@italone/solace/vite`            | Experimental                                            | 窄范围 `.solace` Vite transform plugin        |
+| Export key          | Import path                       | Maturity              | 范围                                          |
+| ------------------- | --------------------------------- | --------------------- | --------------------------------------------- |
+| `.`                 | `@italone/solace`                 | Beta                  | 核心 app、响应式、渲染、组件、store 和 router |
+| `./devtools`        | `@italone/solace/devtools`        | Beta                  | instrumentation listener 和 recorder API      |
+| `./jsx-dev-runtime` | `@italone/solace/jsx-dev-runtime` | Stable tooling entry  | 开发环境 JSX runtime                          |
+| `./jsx-runtime`     | `@italone/solace/jsx-runtime`     | Stable tooling entry  | 自动 JSX runtime                              |
+| `./package.json`    | `@italone/solace/package.json`    | Stable metadata entry | 明确需要包元数据的消费者                      |
+| `./server`          | `@italone/solace/server`          | Beta                  | SSR、SSG 和 static asset helpers              |
+| `./sfc`             | `@italone/solace/sfc`             | Experimental          | 窄范围 `.solace` TypeScript type shim         |
+| `./vite`            | `@italone/solace/vite`            | Experimental          | 窄范围 `.solace` Vite transform plugin        |
 
 ## 成熟度与延期能力
 

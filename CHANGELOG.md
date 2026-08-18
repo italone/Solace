@@ -1,5 +1,14 @@
 # @italone/solace
 
+## Unreleased / 0.1.0-beta.6 candidate
+
+### Patch Changes
+
+- Harden the 1.0 evidence checklist and add a machine-readable public contract gate without
+  promoting beta or experimental entries to stable.
+- Add deterministic browser and jsdom performance regression budgets with distinct-run/date checks.
+- Extract Router contract validation and keyed sequence helpers while preserving runtime behavior.
+
 ## 0.1.0-beta.5
 
 ### Patch Changes

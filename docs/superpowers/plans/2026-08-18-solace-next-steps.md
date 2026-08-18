@@ -33,6 +33,7 @@ This plan touches the following areas. No new runtime subsystems are created; mo
 ## Task 1: Re-sync release baseline and confirm beta.5 gate
 
 **Files:**
+
 - Read: `package.json:3`
 - Read: `docs/project-status.md:9-32`
 - Read: `release/adoption-evidence.md`
@@ -76,6 +77,7 @@ git commit -m "docs: record beta.5 baseline re-validation"
 ## Task 2: Harden JSX/TSX typed component contract
 
 **Files:**
+
 - Modify: `src/jsx-types.ts`
 - Modify: `src/component/define-component.ts`
 - Create: `tests/unit/renderer/jsx-typed-contract-edge.test.tsx`
@@ -91,7 +93,10 @@ import { describe, expectTypeOf, it } from "vitest";
 import { defineComponent, type ComponentSetupContext } from "@italone/solace";
 
 const Card = defineComponent(
-  (_props: object, { slots }: ComponentSetupContext<{ header?: () => unknown; footer?: () => unknown }>) => {
+  (
+    _props: object,
+    { slots }: ComponentSetupContext<{ header?: () => unknown; footer?: () => unknown }>,
+  ) => {
     return () => (
       <div>
         {slots.header?.()}
@@ -104,7 +109,9 @@ const Card = defineComponent(
 
 describe("typed slots", () => {
   it("accepts named slots with correct types", () => {
-    expectTypeOf(<Card v-slots={{ header: () => <header />, footer: () => <footer /> }}>body</Card>).toBeVoid();
+    expectTypeOf(
+      <Card v-slots={{ header: () => <header />, footer: () => <footer /> }}>body</Card>,
+    ).toBeVoid();
   });
 });
 ```
@@ -138,12 +145,15 @@ import { describe, expect, it } from "vitest";
 import { createApp, defineComponent, type ComponentSetupContext } from "@italone/solace";
 import { JSDOM } from "jsdom";
 
-const dom = new JSDOM("<!DOCTYPE html><div id=\"app\"></div>");
+const dom = new JSDOM('<!DOCTYPE html><div id="app"></div>');
 (globalThis as any).document = dom.window.document;
 (globalThis as any).window = dom.window;
 
 const Card = defineComponent(
-  (_props: object, { slots }: ComponentSetupContext<{ header?: () => unknown; footer?: () => unknown }>) => {
+  (
+    _props: object,
+    { slots }: ComponentSetupContext<{ header?: () => unknown; footer?: () => unknown }>,
+  ) => {
     return () => (
       <div>
         {slots.header?.()}
@@ -193,6 +203,7 @@ git commit -m "feat: harden JSX typed named slot contract"
 ## Task 3: Cover router stable-slice edge cases
 
 **Files:**
+
 - Modify: `src/router/router.ts`
 - Modify: `src/router/snapshot.ts`
 - Modify: `tests/integration/router-ssr-hydration.test.ts`
@@ -284,6 +295,7 @@ git commit -m "test: cover router lazy failure and snapshot mismatch boundaries"
 ## Task 4: Harden DevTools extension timeline panel
 
 **Files:**
+
 - Modify: `examples/devtools-extension/src/panel.tsx`
 - Modify: `examples/devtools-extension/manifest.json`
 - Create: `tests/e2e/devtools-extension-store-timeline.spec.ts`
@@ -296,7 +308,11 @@ Modify `examples/devtools-extension/src/panel.tsx` to render a second tab or sec
 Example shape:
 
 ```tsx
-const StoreActions = ({ actions }: { actions: Array<{ type: string; time: number; payload?: unknown }> }) => (
+const StoreActions = ({
+  actions,
+}: {
+  actions: Array<{ type: string; time: number; payload?: unknown }>;
+}) => (
   <ul>
     {actions.map((action, i) => (
       <li key={i}>
@@ -359,6 +375,7 @@ git commit -m "feat: add DevTools store action timeline panel and origin checkli
 ## Task 5: Refresh benchmark history evidence
 
 **Files:**
+
 - Modify: `release/performance-history.json`
 - Read: `docs/performance.md`
 - Read: `docs/release.md`
@@ -397,6 +414,7 @@ git commit -m "docs: refresh benchmark history evidence"
 ## Task 6: Update public contract documentation
 
 **Files:**
+
 - Modify: `docs/project-status.md`
 - Modify: `README.md`
 - Modify: `readme.zh-CN.md`
@@ -431,6 +449,7 @@ git commit -m "docs: sync public contract docs after next-steps work"
 ## Self-Review
 
 **1. Spec coverage:**
+
 - Sync release baseline → Task 1.
 - Harden JSX/TSX typed contract → Task 2.
 - Router stable-slice boundaries → Task 3.
@@ -440,11 +459,13 @@ git commit -m "docs: sync public contract docs after next-steps work"
 - No expansion of deferred scope (streaming SSR, auth, permissions, SFC syntax expansion, production DevTools distribution) is included.
 
 **2. Placeholder scan:**
+
 - No TBD/TODO/fill-in-details steps.
 - Code blocks contain concrete examples.
 - Commands include expected outputs.
 
 **3. Type consistency:**
+
 - `ComponentSetupContext` slot type parameter matches existing usage in `src/component/component.ts`.
 - Router error `type: "lazy-load-failed"` matches existing error contract.
 - DevTools listener shape uses the public subpath contract.
