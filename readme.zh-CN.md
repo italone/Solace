@@ -20,7 +20,9 @@ Solace 聚焦于小型运行时核心：响应式状态、调度渲染、VNode d
 Solace 当前处于 `0.1.0` beta 线。仓库 package build 是已发布的 `0.1.0-beta.5` release。
 npm `latest` 仍是 `0.0.5`，npm `beta` 是 `0.1.0-beta.5`。beta.5 release 增加 typed
 JSX/TSX 组件契约、更完整的 adoption 门禁，以及可组合的 router-aware SSR/hydration primitives，
-但不增加 streaming 或 renderer-owned 直接 router options。
+但不增加 streaming 或 renderer-owned 直接 router options。发布之后 `main` 上的后续加固强化了
+JSX typed 具名 slot 契约、router stable-slice 边界覆盖、DevTools store action timeline 与 QA
+checklist，以及 benchmark history 证据，但没有扩大 beta 契约。
 
 目前可以通过下面的本地开发流程体验框架。需要使用最新稳定线时，可以安装默认 npm package；需要使用 beta 线时，可以安装 `@italone/solace@beta`；需要查看 `main` 上尚未发布的文档或运行时变更时，应直接使用仓库。
 
@@ -284,6 +286,40 @@ const LazyPanel = defineAsyncComponent<{ title: string }>({
   retryDelay: 100,
 });
 ```
+
+当组件通过 `defineComponent<Props, Events, SlotMap>` 声明 slot map 时，可以直接在 JSX 中
+通过 `v-slots` prop 提供具名 slot：
+
+```tsx
+import { defineComponent } from "@italone/solace";
+import type { ComponentEventMap, ComponentSetupContext, VNodeChild } from "@italone/solace";
+
+type CardSlots = {
+  header?: () => VNodeChild;
+  default?: () => VNodeChild;
+  footer?: () => VNodeChild;
+};
+
+const Card = defineComponent<object, ComponentEventMap, CardSlots>(
+  (_props, { slots }: ComponentSetupContext<ComponentEventMap, CardSlots>) =>
+    () => (
+      <section>
+        <header>{slots.header?.()}</header>
+        <main>{slots.default?.()}</main>
+        <footer>{slots.footer?.()}</footer>
+      </section>
+    ),
+);
+
+const App = () => (
+  <Card v-slots={{ header: () => <h2>Title</h2>, footer: () => <small>Fine print</small> }}>
+    Body content
+  </Card>
+);
+```
+
+完整的 typed slot、typed event 和泛型组件契约（包括 `h()` 的 slot object 规则）见
+[docs/api.md](./docs/api.md)。
 
 `provide()` 和 `inject()` 可以在组件树中传递值，避免层层透传 props。组件级 provider 会覆盖
 app-level provider。没有找到 key 时，`inject()` 可以返回 `undefined`，也可以返回传入的默认值。
