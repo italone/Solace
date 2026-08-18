@@ -151,6 +151,12 @@ Migration and rollback procedures and the DevTools manifest permission review al
 structured evidence gate. This readiness result does not publish 1.0 or widen the documented beta
 contract, and no live npm rollback rehearsal is claimed.
 
+The 2026-08-18 beta.5 baseline re-validation reran the full local `pnpm release:check` on the
+published beta.5 state and passed. It recorded 82 Vitest files / 708 tests and coverage of 93.00%
+statements / 88.16% branches / 95.21% functions / 93.28% lines, with the same 24 browser e2e tests
+and 2 DevTools extension e2e tests passing. No source code changed; this run confirms the release
+baseline remains green.
+
 The 2026-08-17 public component regression matrix also verifies required typed slots, typed events,
 and generic components across the automatic JSX runtime, direct `h()` and JSX runtime calls,
 `createApp`, Router records, server rendering sources, and a packed consumer. Runtime containers use
