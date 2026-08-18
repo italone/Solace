@@ -1,5 +1,5 @@
 import type { ComponentEventMap } from "./component/component";
-import type { ComponentType, VNodeChild, VNodeProps } from "./vnode/vnode";
+import type { ComponentType, VNodeChild, VNodeProps, VNodeSlots } from "./vnode/vnode";
 
 export type JSXChild = VNodeChild | number | boolean | null | undefined;
 export type JSXChildren = JSXChild | JSXChild[];
@@ -82,7 +82,11 @@ export type JSXComponentProps<
   Props extends object,
   Events extends ComponentEventMap = ComponentEventMap,
   SlotMap extends object = Record<string, unknown>,
-> = ComponentPropsWithListeners<Props, Events> & JSXSlotChildren<SlotMap>;
+> = ComponentPropsWithListeners<Props, Events> & JSXSlotChildren<SlotMap> & JSXSlotProps<SlotMap>;
+
+type JSXSlotProps<SlotMap extends object> = string extends keyof SlotMap
+  ? { "v-slots"?: VNodeSlots }
+  : { "v-slots"?: Partial<SlotMap> };
 
 type JSXSlotChildren<SlotMap extends object> = string extends keyof SlotMap
   ? { children?: JSXChildren }

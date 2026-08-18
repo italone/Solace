@@ -55,13 +55,21 @@ export function jsxs(type: VNodeType, props: JSXProps | null = null, key?: JSXKe
 }
 
 function createJsxVNode(type: VNodeType, props: JSXProps | null, key?: JSXKey): VNode {
-  const { children, ...restProps } = props ?? {};
+  const { children, "v-slots": vSlots, ...restProps } = (props ?? {}) as Record<string, unknown>;
   const vnodeProps = {
     ...restProps,
     ...(key !== undefined ? { key } : {}),
   };
 
-  return h(type as never, vnodeProps, normalizeChildren(children));
+  if (vSlots !== undefined && vSlots !== null) {
+    const slotChildren: Record<string, unknown> = { ...(vSlots as object) };
+    if (children !== undefined && children !== null) {
+      slotChildren.default ??= () => normalizeChildren(children as JSXChildren);
+    }
+    return h(type as never, vnodeProps, slotChildren as never);
+  }
+
+  return h(type as never, vnodeProps, normalizeChildren(children as JSXChildren));
 }
 
 function normalizeChildren(children: JSXChildren): VNodeChildren {

@@ -646,6 +646,37 @@ incompatible scoped-slot parameters. JSX has no named-slot attribute syntax in t
 slot map retain the permissive legacy producer contract. These checks do not add runtime slot
 metadata or validation.
 
+Typed named slots can also be provided directly in JSX through the `v-slots` prop. Pass a slot
+object matching the declared slot map; JSX children still become `slots.default`:
+
+```tsx
+import { defineComponent } from "@italone/solace";
+import type { ComponentEventMap, ComponentSetupContext } from "@italone/solace";
+
+type CardSlots = {
+  header?: () => VNodeChild;
+  default?: () => VNodeChild;
+  footer?: () => VNodeChild;
+};
+
+const Card = defineComponent<object, ComponentEventMap, CardSlots>(
+  (_props, { slots }: ComponentSetupContext<ComponentEventMap, CardSlots>) =>
+    () => (
+      <section>
+        <header>{slots.header?.()}</header>
+        <main>{slots.default?.()}</main>
+        <footer>{slots.footer?.()}</footer>
+      </section>
+    ),
+);
+
+const App = () => (
+  <Card v-slots={{ header: () => <h2>Title</h2>, footer: () => <small>Fine print</small> }}>
+    Body content
+  </Card>
+);
+```
+
 ### `defineComponent(component)`
 
 Declares a Solace component while preserving the function component contract.
