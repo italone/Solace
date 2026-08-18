@@ -35,4 +35,6 @@ export function createComparisonArtifactPaths(
 
 export function assertCandidateCheckoutRevision(currentSha: string, headSha: string): void;
 
+export function createRevisionCollectionOrder(sampleCount: number): Array<"base" | "head">;
+
 export function parseComparisonArguments(args: string[]): ComparisonArguments;

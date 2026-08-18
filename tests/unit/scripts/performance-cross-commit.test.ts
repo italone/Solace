@@ -117,6 +117,20 @@ describe("cross-commit performance evaluator", () => {
     );
   });
 
+  it("does not fail the ratio limit on sub-microsecond timer precision noise", () => {
+    const result = evaluateCrossCommitPerformance(
+      input({
+        baseBrowser: browserRecords(baseSha, [3, 3, 3]),
+        headBrowser: browserRecords(
+          headSha,
+          [3.600000023841858, 3.600000023841858, 3.600000023841858],
+        ),
+      }),
+    );
+
+    expect(result.valid).toBe(true);
+  });
+
   it("rejects environment fingerprint mismatches", () => {
     const mismatched = browserRecords(headSha).map((record) => ({
       ...record,

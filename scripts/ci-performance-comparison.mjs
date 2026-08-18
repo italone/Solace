@@ -82,6 +82,15 @@ export function assertCandidateCheckoutRevision(currentSha, headSha) {
   }
 }
 
+export function createRevisionCollectionOrder(sampleCount) {
+  if (!Number.isInteger(sampleCount) || sampleCount < 1) {
+    throw new Error("comparison sample count must be a positive integer");
+  }
+  return Array.from({ length: sampleCount }, (_, index) =>
+    index % 2 === 0 ? ["base", "head"] : ["head", "base"],
+  ).flat();
+}
+
 async function main() {
   const options = parseComparisonArguments(process.argv.slice(2));
   if (options.help) {
@@ -118,8 +127,18 @@ async function main() {
     });
     worktreeCreated = true;
 
-    await collectRevision(baseWorktree, revisions.baseSha, paths.baseRecords);
-    await collectRevision(projectRoot, revisions.headSha, paths.headRecords);
+    const collections = {
+      base: { cwd: baseWorktree, sha: revisions.baseSha, recordsPath: paths.baseRecords },
+      head: { cwd: projectRoot, sha: revisions.headSha, recordsPath: paths.headRecords },
+    };
+    await installRevision(collections.base.cwd);
+    await installRevision(collections.head.cwd);
+    for (const label of createRevisionCollectionOrder(3)) {
+      const collection = collections[label];
+      await collectRevisionSample(collection.cwd, collection.sha, collection.recordsPath);
+    }
+    await normalizeCollectedRevision(paths.baseRecords, revisions.baseSha);
+    await normalizeCollectedRevision(paths.headRecords, revisions.headSha);
     await runCommand(
       process.execPath,
       [
@@ -149,20 +168,25 @@ async function main() {
   }
 }
 
-async function collectRevision(cwd, revisionSha, recordsPath) {
+async function installRevision(cwd) {
   await runCommand("pnpm", ["install", "--frozen-lockfile"], { cwd });
+}
+
+async function collectRevisionSample(cwd, revisionSha, recordsPath) {
   const env = {
     ...process.env,
     CI: "true",
     SOLACE_BENCHMARK_COMMIT_SHA: revisionSha,
-    SOLACE_BENCHMARK_SAMPLE_SIZE: "3",
-    SOLACE_BROWSER_BENCHMARK_SAMPLE_SIZE: "3",
+    SOLACE_BENCHMARK_SAMPLE_SIZE: "1",
+    SOLACE_BROWSER_BENCHMARK_SAMPLE_SIZE: "1",
     SOLACE_BENCHMARK_HISTORY_PATH: recordsPath,
     SOLACE_BROWSER_BENCHMARK_HISTORY_PATH: recordsPath,
   };
   await runCommand("pnpm", ["benchmark"], { cwd, env });
   await runCommand("pnpm", ["benchmark:browser"], { cwd, env });
+}
 
+async function normalizeCollectedRevision(recordsPath, revisionSha) {
   const records = await readJsonLines(recordsPath);
   await writeJsonLines(recordsPath, normalizeRevisionRecords(records, revisionSha));
 }

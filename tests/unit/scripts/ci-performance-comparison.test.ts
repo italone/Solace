@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   assertCandidateCheckoutRevision,
   createComparisonArtifactPaths,
+  createRevisionCollectionOrder,
   normalizeRevisionRecords,
   parseComparisonArguments,
   resolveComparisonRevisions,
@@ -120,5 +121,16 @@ describe("CI performance comparison orchestration", () => {
     expect(() => assertCandidateCheckoutRevision(baseSha, headSha)).toThrow(
       `candidate checkout ${baseSha} does not match head revision ${headSha}`,
     );
+  });
+
+  it("alternates base and head collection across three samples", () => {
+    expect(createRevisionCollectionOrder(3)).toEqual([
+      "base",
+      "head",
+      "head",
+      "base",
+      "base",
+      "head",
+    ]);
   });
 });

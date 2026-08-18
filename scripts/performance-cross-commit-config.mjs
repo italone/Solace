@@ -1,4 +1,5 @@
 const SHA_PATTERN = /^[0-9a-f]{40}$/u;
+const RATIO_PRECISION_TOLERANCE = 1e-6;
 
 export function evaluateCrossCommitPerformance({ config, base, head }) {
   const errors = [];
@@ -103,7 +104,7 @@ function evaluateKind({
       const headMedian = median(headValues);
       const ratio = headMedian / baseMedian;
       comparisons.push({ id, baseMedian, headMedian, ratio, limit: maximumRatio });
-      if (ratio > maximumRatio) {
+      if (ratio > maximumRatio + RATIO_PRECISION_TOLERANCE) {
         errors.push(
           `FAIL ${id} base=${baseMedian.toFixed(2)}ms head=${headMedian.toFixed(2)}ms ratio=${ratio.toFixed(3)} limit=${maximumRatio.toFixed(3)}`,
         );
