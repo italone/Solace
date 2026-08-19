@@ -51,11 +51,3 @@ export function unmount(vnode: VNode): void {
     emitRendererElementDevtoolsEvent("unmount", vnode.type as string);
   }
 }
-
-export function getFragmentRoot(vnode: VNode): Element | Text | null {
-  if (!(vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN)) {
-    return null;
-  }
-
-  return ((vnode.children as VNode[])[0]?.el as Element | Text | null | undefined) ?? null;
-}

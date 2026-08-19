@@ -4,6 +4,7 @@ import { hasDevtoolsListeners } from "../devtools/events";
 import { ShapeFlags } from "../shared/flags";
 import type { VNode } from "../vnode/vnode";
 import { insert, setText } from "./dom";
+import { patch } from "./diff";
 import {
   isKeyedReorderMovePathInstrumentationEnabled,
   recordKeyedReorderLisLength,
@@ -18,7 +19,6 @@ import {
 import { getIncreasingSubsequence, hasUniqueKeys } from "./keyed-sequence";
 import { hasEventProps } from "./props";
 import { unmount, unmountChildren } from "./unmount";
-import { mountChildren, patch } from "./diff";
 
 export function patchChildren(
   n1: VNode,
@@ -373,6 +373,26 @@ function mountNewChildren(
 
 export function canBatchMountChildren(children: VNode[], start: number, end: number): boolean {
   return start <= end;
+}
+
+export function mountChildren(
+  children: VNode[],
+  container: Node,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+): void {
+  if (canBatchMountChildren(children, 0, children.length - 1)) {
+    const fragment = document.createDocumentFragment();
+    for (const child of children) {
+      patch(null, child, fragment, null, parentComponent, appProvides);
+    }
+    insert(fragment, container, null);
+    return;
+  }
+
+  for (const child of children) {
+    patch(null, child, container, null, parentComponent, appProvides);
+  }
 }
 
 function unmountChildrenRange(children: VNode[], start: number, end: number): void {

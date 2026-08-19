@@ -38,7 +38,7 @@ export function havePropsChanged(oldProps: VNodeProps | null, newProps: VNodePro
   return false;
 }
 
-export function hasPatchableProps(props: VNodeProps | null): boolean {
+function hasPatchableProps(props: VNodeProps | null): boolean {
   if (props === null) {
     return false;
   }
@@ -52,7 +52,7 @@ export function hasPatchableProps(props: VNodeProps | null): boolean {
   return false;
 }
 
-export function hasOwnProp(props: VNodeProps, key: string): boolean {
+function hasOwnProp(props: VNodeProps, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(props, key);
 }
 
@@ -81,7 +81,7 @@ export function mountInitialProps(el: Element, props: VNodeProps): void {
   }
 }
 
-export function mountInitialClass(el: Element, value: unknown): void {
+function mountInitialClass(el: Element, value: unknown): void {
   if (el instanceof HTMLElement) {
     el.className = String(value);
     return;
@@ -90,7 +90,7 @@ export function mountInitialClass(el: Element, value: unknown): void {
   el.setAttribute("class", String(value));
 }
 
-export function mightBeEventProp(key: string): boolean {
+function mightBeEventProp(key: string): boolean {
   return key.length > 2 && key[0] === "o" && key[1] === "n" && isEventProp(key);
 }
 

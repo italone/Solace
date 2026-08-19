@@ -11,14 +11,14 @@ import { queueJob } from "../scheduler/scheduler";
 import { ShapeFlags } from "../shared/flags";
 import { isThenable } from "../shared/utils";
 import type { VNode } from "../vnode/vnode";
-import { createElement, insert, setText } from "./dom";
+import { isSameVNodeType, mountChildren, patchChildren } from "./children";
 import {
   emitComponentDevtoolsEvent,
   emitRendererElementDevtoolsEvent,
 } from "./devtools-events";
+import { createElement, insert, setText } from "./dom";
 import { havePropsChanged, mountInitialProps, patchProps } from "./props";
-import { getFragmentRoot, unmount } from "./unmount";
-import { canBatchMountChildren, isSameVNodeType, patchChildren } from "./children";
+import { unmount } from "./unmount";
 
 export function patch(
   n1: VNode | null,
@@ -185,24 +185,12 @@ function mountComponent(
   instance.update();
 }
 
-export function mountChildren(
-  children: VNode[],
-  container: Node,
-  parentComponent: ComponentInstance | null,
-  appProvides: Provides | null,
-): void {
-  if (canBatchMountChildren(children, 0, children.length - 1)) {
-    const fragment = document.createDocumentFragment();
-    for (const child of children) {
-      patch(null, child, fragment, null, parentComponent, appProvides);
-    }
-    insert(fragment, container, null);
-    return;
+function getFragmentRoot(vnode: VNode): Element | Text | null {
+  if (!(vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN)) {
+    return null;
   }
 
-  for (const child of children) {
-    patch(null, child, container, null, parentComponent, appProvides);
-  }
+  return ((vnode.children as VNode[])[0]?.el as Element | Text | null | undefined) ?? null;
 }
 
 function updateComponent(n1: VNode, n2: VNode): void {
