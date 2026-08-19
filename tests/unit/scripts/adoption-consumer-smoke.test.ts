@@ -4,7 +4,7 @@ import {
   createAdoptionConsumerPackageJson,
   parseAdoptionSmokeArguments,
   withAdoptionFailureStage,
-} from "../../../scripts/adoption-consumer-smoke-config.mjs";
+} from "../../../scripts/adoption-consumer-smoke.mjs";
 
 describe("adoption consumer smoke", () => {
   it("defaults to the local packed candidate", () => {
