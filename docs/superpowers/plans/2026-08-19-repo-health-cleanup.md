@@ -15,6 +15,7 @@
 ## Task 1: 拆分 diff.ts — props 模块
 
 **Files:**
+
 - Create: `src/renderer/props.ts`
 - Modify: `src/renderer/diff.ts`(删除被移出的函数,改为导入)
 
@@ -30,14 +31,18 @@ Expected: PASS(记录基线用例数)
 ```ts
 import type { VNode, VNodeProps } from "./vnode";
 
-export function havePropsChanged(oldProps: VNodeProps | null, newProps: VNodeProps | null): boolean
-export function hasPatchableProps(props: VNodeProps | null): boolean
-export function hasOwnProp(props: VNodeProps, key: string): boolean
-export function mountInitialProps(el: Element, props: VNodeProps): void
-export function mountInitialClass(el: Element, value: unknown): void
-export function mightBeEventProp(key: string): boolean
-export function patchProps(el: Element, oldProps: VNodeProps | null, newProps: VNodeProps | null): void
-export function hasEventProps(props: VNodeProps | null): boolean
+export function havePropsChanged(oldProps: VNodeProps | null, newProps: VNodeProps | null): boolean;
+export function hasPatchableProps(props: VNodeProps | null): boolean;
+export function hasOwnProp(props: VNodeProps, key: string): boolean;
+export function mountInitialProps(el: Element, props: VNodeProps): void;
+export function mountInitialClass(el: Element, value: unknown): void;
+export function mightBeEventProp(key: string): boolean;
+export function patchProps(
+  el: Element,
+  oldProps: VNodeProps | null,
+  newProps: VNodeProps | null,
+): void;
+export function hasEventProps(props: VNodeProps | null): boolean;
 ```
 
 注意:这些函数内部若调用了 diff.ts 的其他函数(如事件绑定辅助),把那个辅助函数一并移入 props.ts 并导出。
@@ -46,8 +51,12 @@ export function hasEventProps(props: VNodeProps | null): boolean
 
 ```ts
 import {
-  havePropsChanged, hasPatchableProps, mountInitialProps,
-  patchProps, hasEventProps, mightBeEventProp,
+  havePropsChanged,
+  hasPatchableProps,
+  mountInitialProps,
+  patchProps,
+  hasEventProps,
+  mightBeEventProp,
 } from "./props";
 ```
 
@@ -66,6 +75,7 @@ git commit -m "refactor: extract props module from diff"
 ## Task 2: 拆分 diff.ts — unmount 模块
 
 **Files:**
+
 - Create: `src/renderer/unmount.ts`
 - Modify: `src/renderer/diff.ts`
 
@@ -74,9 +84,9 @@ git commit -m "refactor: extract props module from diff"
 移出(diff.ts 行号参考:817-867):
 
 ```ts
-export function unmountChildren(children: VNode[]): void
-export function unmount(vnode: VNode): void
-export function getFragmentRoot(vnode: VNode): Element | Text | null
+export function unmountChildren(children: VNode[]): void;
+export function unmount(vnode: VNode): void;
+export function getFragmentRoot(vnode: VNode): Element | Text | null;
 ```
 
 `unmount` 内部若引用 patch/组件卸载逻辑,通过参数或从 diff.ts 导入的回调注入;优先选择「从 diff.ts import 具体函数」——ESM 函数声明的循环引用是安全的(function hoisting)。若引用了 children 卸载辅助(`unmountChildrenRange` 等),把它们一并移入并导出。
@@ -88,6 +98,7 @@ export function getFragmentRoot(vnode: VNode): Element | Text | null
 ## Task 3: 拆分 diff.ts — children 模块(最大块)
 
 **Files:**
+
 - Create: `src/renderer/children.ts`
 - Modify: `src/renderer/diff.ts`
 
@@ -123,12 +134,13 @@ Expected: 测试全绿;benchmark 与历史基线在噪声范围内(现有 `perfo
 ## Task 4: 拆分 diff.ts — devtools 事件模块 + 收尾
 
 **Files:**
+
 - Create: `src/renderer/devtools-events.ts`
 - Modify: `src/renderer/diff.ts`
 
 - [ ] **Step 1: 移出 `emitComponentDevtoolsEvent`、`emitRendererElementDevtoolsEvent`(diff.ts:869-897)到 `devtools-events.ts`**
 
-- [ ] **Step 2: 确认 diff.ts 最终只剩 patch 主流程 + mount*/updateComponent/isSameVNodeType 等(目标 <350 行),`wc -l src/renderer/*.ts` 记录新行数**
+- [ ] _*Step 2: 确认 diff.ts 最终只剩 patch 主流程 + mount*/updateComponent/isSameVNodeType 等(目标 <350 行),`wc -l src/renderer/*.ts` 记录新行数_*
 
 - [ ] **Step 3: 全量验证**
 
@@ -143,17 +155,17 @@ Expected: 全部 PASS
 
 **合并清单(runner ← config):**
 
-| runner(保留) | 内联后删除 |
-|---|---|
-| `one-zero-readiness.mjs` | `one-zero-readiness-config.mjs`、`one-zero-readiness-config.d.mts` |
-| `performance-cross-commit.mjs` | `performance-cross-commit-config.mjs`、`performance-cross-commit-config.d.mts` |
-| `performance-history-evidence.mjs` | `performance-history-evidence-config.mjs`、`performance-history-evidence-config.d.mts` |
-| `performance-regression-check.mjs` | `performance-regression-config.mjs`、`performance-regression-config.d.mts` |
-| `public-contract-check.mjs` | `public-contract-check-config.mjs`、`public-contract-check-config.d.mts` |
-| `registry-contract-smoke.mjs` | `registry-contract-smoke-config.mjs`、`registry-contract-smoke-config.d.mts` |
-| `adoption-consumer-smoke.mjs` | `adoption-consumer-smoke-config.mjs`、`adoption-consumer-smoke-config.d.mts` |
-| `operations-console-smoke.mjs` | `operations-console-smoke-config.mjs`、`operations-console-smoke-config.d.mts` |
-| (无 runner) | `release-readiness-check-commands.d.mts`(若 release-readiness-check.mjs 已内含命令则直接删) |
+| runner(保留)                       | 内联后删除                                                                                  |
+| ---------------------------------- | ------------------------------------------------------------------------------------------- |
+| `one-zero-readiness.mjs`           | `one-zero-readiness-config.mjs`、`one-zero-readiness-config.d.mts`                          |
+| `performance-cross-commit.mjs`     | `performance-cross-commit-config.mjs`、`performance-cross-commit-config.d.mts`              |
+| `performance-history-evidence.mjs` | `performance-history-evidence-config.mjs`、`performance-history-evidence-config.d.mts`      |
+| `performance-regression-check.mjs` | `performance-regression-config.mjs`、`performance-regression-config.d.mts`                  |
+| `public-contract-check.mjs`        | `public-contract-check-config.mjs`、`public-contract-check-config.d.mts`                    |
+| `registry-contract-smoke.mjs`      | `registry-contract-smoke-config.mjs`、`registry-contract-smoke-config.d.mts`                |
+| `adoption-consumer-smoke.mjs`      | `adoption-consumer-smoke-config.mjs`、`adoption-consumer-smoke-config.d.mts`                |
+| `operations-console-smoke.mjs`     | `operations-console-smoke-config.mjs`、`operations-console-smoke-config.d.mts`              |
+| (无 runner)                        | `release-readiness-check-commands.d.mts`(若 release-readiness-check.mjs 已内含命令则直接删) |
 
 逐组执行,每组:
 
@@ -171,11 +183,12 @@ Expected: PASS
 
 - [ ] **Step 6: 全量验证** `pnpm typecheck && pnpm lint && pnpm test`(注意 tests/unit/scripts 有 15 个测试文件,8 个需改导入路径)
 - [ ] **Step 7: 抽查一个门禁真实可用** `pnpm release:contract:check`
-Expected: 正常输出,行为与合并前一致
+      Expected: 正常输出,行为与合并前一致
 
 ## Task 6: 文档 — 把功能边界表述为定位决策
 
 **Files:**
+
 - Modify: `docs/project-status.md:95-105` 附近、`readme.md:60-68` 附近、`docs/roadmap.md`
 
 - [ ] **Step 1: 在 docs/project-status.md 边界小节开头加一段定位说明(中英文档同步):**
@@ -184,7 +197,7 @@ Expected: 正常输出,行为与合并前一致
 
 - [ ] **Step 2: 确认 docs/roadmap.md 已有对应条目,若无则补一条「Streaming SSR / Suspense / selective hydration — revisit after 1.0, requires design doc」**
 - [ ] **Step 3: 验证文档一致性测试** `pnpm vitest run tests/unit/docs`
-Expected: PASS(docs 内容有测试锁定,若断言失败按测试期望修正表述)
+      Expected: PASS(docs 内容有测试锁定,若断言失败按测试期望修正表述)
 
 - [ ] **Step 4: Commit** `git commit -m "docs: frame feature boundary as deliberate scope"`
 

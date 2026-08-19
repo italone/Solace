@@ -1,7 +1,4 @@
-import {
-  getComponentDevtoolsName,
-  type ComponentInstance,
-} from "../component/component";
+import { getComponentDevtoolsName, type ComponentInstance } from "../component/component";
 import { emitDevtoolsEvent, hasDevtoolsListeners } from "../devtools/events";
 
 export function emitComponentDevtoolsEvent(

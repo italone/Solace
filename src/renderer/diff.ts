@@ -12,10 +12,7 @@ import { ShapeFlags } from "../shared/flags";
 import { isThenable } from "../shared/utils";
 import type { VNode } from "../vnode/vnode";
 import { isSameVNodeType, mountChildren, patchChildren } from "./children";
-import {
-  emitComponentDevtoolsEvent,
-  emitRendererElementDevtoolsEvent,
-} from "./devtools-events";
+import { emitComponentDevtoolsEvent, emitRendererElementDevtoolsEvent } from "./devtools-events";
 import { createElement, insert, setText } from "./dom";
 import { havePropsChanged, mountInitialProps, patchProps } from "./props";
 import { unmount } from "./unmount";

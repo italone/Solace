@@ -3,10 +3,7 @@ import { ShapeFlags } from "../shared/flags";
 import type { VNode } from "../vnode/vnode";
 import type { ComponentInstance } from "../component/component";
 import { remove } from "./dom";
-import {
-  emitComponentDevtoolsEvent,
-  emitRendererElementDevtoolsEvent,
-} from "./devtools-events";
+import { emitComponentDevtoolsEvent, emitRendererElementDevtoolsEvent } from "./devtools-events";
 
 export function unmountChildren(children: VNode[]): void {
   for (const child of children) {

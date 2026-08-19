@@ -2,7 +2,10 @@ import { isEventProp } from "../event/event";
 import type { VNodeProps } from "../vnode/vnode";
 import { patchProp } from "./dom";
 
-export function havePropsChanged(oldProps: VNodeProps | null, newProps: VNodeProps | null): boolean {
+export function havePropsChanged(
+  oldProps: VNodeProps | null,
+  newProps: VNodeProps | null,
+): boolean {
   if (oldProps === newProps) {
     return false;
   }
@@ -94,7 +97,11 @@ function mightBeEventProp(key: string): boolean {
   return key.length > 2 && key[0] === "o" && key[1] === "n" && isEventProp(key);
 }
 
-export function patchProps(el: Element, oldProps: VNodeProps | null, newProps: VNodeProps | null): void {
+export function patchProps(
+  el: Element,
+  oldProps: VNodeProps | null,
+  newProps: VNodeProps | null,
+): void {
   const previousProps = oldProps ?? {};
   const nextProps = newProps ?? {};
 

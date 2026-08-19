@@ -1,7 +1,10 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { isSafeEvidencePath, loadOneZeroReadinessEvidence } from "./one-zero-readiness-evidence.mjs";
+import {
+  isSafeEvidencePath,
+  loadOneZeroReadinessEvidence,
+} from "./one-zero-readiness-evidence.mjs";
 
 const REQUIRED_BASELINES = ["0.1.0-beta.2", "0.1.0-beta.4"];
 const REQUIRED_MIGRATION_FIELDS = ["compatibility", "deprecation", "migration", "rollback"];
