@@ -9,7 +9,7 @@ import {
   createConsumerPackageJson,
   createConsumerTsconfig,
   parseSmokeArguments,
-} from "../../../scripts/operations-console-smoke-config.mjs";
+} from "../../../scripts/operations-console-smoke.mjs";
 
 describe("operations console package smoke", () => {
   it("uses the shell only when spawning pnpm on Windows", () => {
