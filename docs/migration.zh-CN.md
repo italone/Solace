@@ -62,6 +62,34 @@ pnpm stable:app:upgrade
 
 如果命令被跳过、registry 请求失败，或 package 被源码 alias 替代，不得把证据标记为 verified。
 
+对于 `adoption.independent-apps`，机器可读的应用声明必须与加载后的 evidence record 在应用名、
+精确 npm 目标版本、精确升级来源版本、Solace-primary workflows、证据路径、回滚状态和精确回滚目标
+上完全一致。版本范围、`beta` 等 dist-tag、本地 package 标签以及未经演练的回滚目标均不能计入。
+回滚目标必须是演练中实际恢复的精确来源版本。
+
+### 独立采用证据 bundle
+
+当独立维护的应用已经生成并审阅 `baseline`、`candidate` 和 `rollback` 三份 JSON 记录后，可将其
+校验并绑定为一个确定性 bundle：
+
+```bash
+pnpm adoption:evidence -- \
+  --record evidence/app-baseline.json \
+  --record evidence/app-candidate.json \
+  --record evidence/app-rollback.json \
+  --output evidence/app-bundle.json
+```
+
+执行时，adopter evidence 目录必须位于当前工作根目录内；四个参数都必须是互不重复的仓库相对
+`.json` 路径。命令只把记录作为数据解析，不会执行其中的 `argv`、修改 adopter、部署应用或更新
+`release/adoption-evidence.json`。
+
+每个 phase 都必须描述独立维护的 Solace-primary 应用，并包含 clean commit、精确 HTTPS repository
+和 production origin、精确 `@italone/solace` 版本、lockfile SHA-256、全部必要生产 workflows、成功
+命令的结果 digest 和明确 reviewer approval。candidate 与 rollback 记录都绑定 baseline JSON digest；
+candidate 版本必须不同于 baseline，rollback 必须恢复 baseline 的精确版本。即使 bundle 已生成，
+在其 ownership、production origin 和 review 得到独立核验前，也不能作为 1.0 证据。
+
 ## 回滚触发条件
 
 确认以下任一情况后必须停止 rollout 并开始回滚：

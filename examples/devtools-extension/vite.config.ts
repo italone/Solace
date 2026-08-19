@@ -2,7 +2,20 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 
+import {
+  createExtensionManifest,
+  parseConfiguredOrigins,
+} from "../../scripts/devtools-extension-package-config.mjs";
+
 const extensionRoot = new URL("./", import.meta.url);
+const sourceManifest = JSON.parse(
+  readFileSync(new URL("manifest.json", extensionRoot), "utf8"),
+) as Record<string, unknown>;
+const configuredOrigins = parseConfiguredOrigins(process.env.SOLACE_DEVTOOLS_ORIGINS);
+const outputManifest =
+  configuredOrigins === undefined
+    ? sourceManifest
+    : createExtensionManifest(sourceManifest, configuredOrigins);
 
 export default defineConfig({
   base: "./",
@@ -29,7 +42,7 @@ export default defineConfig({
         this.emitFile({
           type: "asset",
           fileName: "manifest.json",
-          source: readFileSync(new URL("manifest.json", extensionRoot), "utf8"),
+          source: `${JSON.stringify(outputManifest, null, 2)}\n`,
         });
       },
     },

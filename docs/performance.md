@@ -191,10 +191,19 @@ history:
 pnpm benchmark:history:evidence -- --output release/performance-history.json
 ```
 
-`release/performance-history.json` records the source paths and SHA-256 digests plus per-scenario
-`recordCount`, `distinctRunCount`, `distinctDateCount`, `firstRunAt`, and `lastRunAt`. Readiness
-requires five distinct `runAt` timestamps for every browser scenario and jsdom task. Calendar-date
-counts and first/last timestamps are audit fields, not separate pass/fail thresholds.
+`release/performance-history.json` records the source paths and SHA-256 digests plus each scenario's
+sorted unique `runAt` timestamps and their derived counts. Readiness recomputes those audit fields,
+requires five distinct timestamps and five distinct UTC dates for every browser scenario and jsdom
+task, rejects future timestamps, and requires the latest scenario evidence to be no older than the
+configured 30-day maximum. Repeated samples from one run or one UTC date do not substitute for
+longitudinal evidence.
+
+GitHub Actions also runs `.github/workflows/performance-history.yml` once per UTC day. The workflow
+restores the latest successful history cache, appends a five-sample jsdom run and a Chromium run,
+then uploads the accumulated JSONL and generated evidence snapshot with 30-day retention. It uses a
+unique cache key per workflow run plus a restore prefix, so successful dates accumulate without
+committing ignored raw history. Promote the resulting evidence only after reviewing at least five
+independent dates; the existence of the schedule alone does not satisfy 1.0 admission.
 
 The distinction matters for older history. Early metadata-only jsdom records remain valid source
 history but do not prove any task-level scenario. A later jsdom record with `sampleSize` greater

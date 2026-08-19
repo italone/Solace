@@ -11,6 +11,7 @@ test-results/
 playwright-report/
 .benchmark-history/
 .performance-artifacts/
+.devtools-artifacts/
 .worktrees/
 
 # Vite and tooling caches

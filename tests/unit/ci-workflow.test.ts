@@ -24,4 +24,32 @@ describe("CI workflow", () => {
     expect(browserE2E).toBeGreaterThan(browserBenchmark);
     expect(devtoolsExtensionE2E).toBeGreaterThan(browserE2E);
   });
+
+  it("runs the packed adoption consumer in routine quality CI", async () => {
+    const workflow = await readFile(".github/workflows/ci.yml", "utf8");
+    const qualityJob = workflow.slice(
+      workflow.indexOf("  quality:"),
+      workflow.indexOf("  browser:"),
+    );
+
+    expect(qualityJob).toContain("name: Adoption consumer smoke");
+    expect(qualityJob).toContain("run: pnpm adoption:smoke");
+  });
+
+  it("accumulates benchmark history across scheduled CI dates", async () => {
+    const workflow = await readFile(".github/workflows/performance-history.yml", "utf8");
+
+    expect(workflow).toContain("schedule:");
+    expect(workflow).toContain('cron: "23 3 * * *"');
+    expect(workflow).toContain("uses: actions/cache/restore@v4");
+    expect(workflow).toContain("uses: actions/cache/save@v4");
+    expect(workflow).toContain("performance-history-${{ runner.os }}-${{ github.run_id }}");
+    expect(workflow).toContain("SOLACE_BENCHMARK_HISTORY_PATH: .benchmark-history/jsdom.jsonl");
+    expect(workflow).toContain(
+      "SOLACE_BROWSER_BENCHMARK_HISTORY_PATH: .benchmark-history/browser.jsonl",
+    );
+    expect(workflow).toContain("SOLACE_BENCHMARK_COMMIT_SHA: ${{ github.sha }}");
+    expect(workflow).toContain("pnpm benchmark:history:evidence -- --output");
+    expect(workflow).toContain("retention-days: 30");
+  });
 });

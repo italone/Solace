@@ -16,7 +16,7 @@
         "ssrHydration": true
       },
       "upgrade": { "verified": true, "fromVersion": "0.1.0-beta.2" },
-      "rollback": { "rehearsed": false },
+      "rollback": { "rehearsed": false, "targetVersion": "0.1.0-beta.2" },
       "evidencePath": "docs/project-status.md",
       "rollbackEvidencePath": "docs/migration.md"
     },
@@ -34,7 +34,7 @@
         "ssrHydration": true
       },
       "upgrade": { "verified": true, "fromVersion": "0.1.0-beta.4" },
-      "rollback": { "rehearsed": false },
+      "rollback": { "rehearsed": false, "targetVersion": "0.1.0-beta.4" },
       "evidencePath": "docs/project-status.md",
       "rollbackEvidencePath": "docs/migration.md"
     },

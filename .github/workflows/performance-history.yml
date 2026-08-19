@@ -1,0 +1,80 @@
+name: Performance history
+
+on:
+  schedule:
+    - cron: "23 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-history-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SOLACE_BENCHMARK_COMMIT_SHA: ${{ github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore accumulated history
+        uses: actions/cache/restore@v4
+        with:
+          path: .benchmark-history/
+          key: performance-history-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            performance-history-${{ runner.os }}-
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Collect jsdom history
+        run: pnpm benchmark
+        env:
+          SOLACE_BENCHMARK_HISTORY_PATH: .benchmark-history/jsdom.jsonl
+          SOLACE_BENCHMARK_SAMPLE_SIZE: 5
+
+      - name: Collect browser history
+        run: pnpm benchmark:browser
+        env:
+          SOLACE_BROWSER_BENCHMARK_HISTORY_PATH: .benchmark-history/browser.jsonl
+
+      - name: Generate history evidence
+        run: pnpm benchmark:history:evidence -- --output .performance-artifacts/performance-history.json
+
+      - name: Save accumulated history
+        uses: actions/cache/save@v4
+        with:
+          path: .benchmark-history/
+          key: performance-history-${{ runner.os }}-${{ github.run_id }}
+
+      - name: Upload dated history evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-history-${{ github.run_id }}
+          path: |
+            .benchmark-history/
+            .performance-artifacts/performance-history.json
+          if-no-files-found: warn
+          retention-days: 30

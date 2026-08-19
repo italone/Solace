@@ -18,11 +18,12 @@ describe("vitest config", () => {
     expect(excludes).toContain("**/node_modules/**");
   });
 
-  it("keeps examples and only the separately executed operations smoke out of coverage", () => {
+  it("keeps examples and only thin separately executed CLI entry points out of coverage", () => {
     const coverageExcludes = config.test?.coverage?.exclude ?? [];
 
     expect(coverageExcludes).toContain("examples/**");
     expect(coverageExcludes).toContain("scripts/operations-console-smoke.mjs");
+    expect(coverageExcludes).toContain("scripts/devtools-extension-package.mjs");
     expect(coverageExcludes).not.toContain("scripts/**");
   });
 });

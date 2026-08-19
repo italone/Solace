@@ -17,7 +17,11 @@
         "ssrHydration": true
       },
       "upgrade": { "verified": true, "fromVersion": "0.1.0-beta.2" },
-      "rollback": { "rehearsed": false, "evidence": "docs/migration.md" },
+      "rollback": {
+        "rehearsed": false,
+        "targetVersion": "0.1.0-beta.2",
+        "evidence": "docs/migration.md"
+      },
       "evidence": "docs/project-status.md",
       "notes": "Repository-owned compatibility fixture; excluded from real adoption count."
     },
@@ -35,7 +39,11 @@
         "ssrHydration": true
       },
       "upgrade": { "verified": true, "fromVersion": "0.1.0-beta.4" },
-      "rollback": { "rehearsed": false, "evidence": "docs/migration.md" },
+      "rollback": {
+        "rehearsed": false,
+        "targetVersion": "0.1.0-beta.4",
+        "evidence": "docs/migration.md"
+      },
       "evidence": "docs/project-status.md",
       "notes": "Packed-package CSR and SSR/hydration fixture; excluded from real adoption count."
     },
@@ -89,6 +97,7 @@
   "performance": {
     "minimumDistinctRuns": 5,
     "minimumDistinctDates": 5,
+    "maximumAgeDays": 30,
     "evidence": "release/performance-history.json"
   },
   "devtools": {

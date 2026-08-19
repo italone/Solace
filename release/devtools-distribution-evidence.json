@@ -5,7 +5,15 @@
   "hostPermissions": ["http://127.0.0.1:6174/*", "http://localhost:6174/*"],
   "productionManifestReviewed": true,
   "broadHostAccessRemoved": true,
+  "originScopedPackagingImplemented": true,
+  "packagingCommand": "pnpm package:devtools-extension -- --origin <https-origin>",
   "distributableManifestVerified": false,
   "testedOrigins": [],
+  "artifactEvidence": null,
+  "qa": {
+    "command": "pnpm test:e2e:devtools-extension",
+    "passed": false,
+    "artifactSha256": null
+  },
   "evidencePath": "release/devtools-distribution-evidence.md"
 }

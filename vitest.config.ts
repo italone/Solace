@@ -55,7 +55,11 @@ export default defineConfig({
     ],
     coverage: {
       provider: "v8",
-      exclude: ["examples/**", "scripts/operations-console-smoke.mjs"],
+      exclude: [
+        "examples/**",
+        "scripts/operations-console-smoke.mjs",
+        "scripts/devtools-extension-package.mjs",
+      ],
       thresholds: {
         statements: 90,
         lines: 90,

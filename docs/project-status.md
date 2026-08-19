@@ -197,11 +197,37 @@ fingerprints in diagnostic artifacts. It does not count toward the five-date 1.0
 The gate does not update `release/performance-history.json` and does not change the current
 `INCOMPLETE` admission result.
 
-The subsequent fresh local verification passed 88 Vitest files / 761 tests, 16 package tests, and
-coverage of 90.08% statements / 85.51% branches / 93.27% functions / 90.62% lines. It also passed
-package and adoption smoke, the packed Operations Console check, jsdom and Chromium benchmarks,
-24 browser E2E tests, and 4 DevTools extension E2E tests. These checks validate the beta.6 candidate;
-they do not supply the missing 1.0 adoption, history, DevTools distribution, or stable-admission evidence.
+The 2026-08-19 verification first exposed a coverage regression after release-script configuration
+was inlined into CLI entry points. Splitting reusable configuration back into testable pure modules
+and keeping the CLI files thin restored the gate. The same cleanup removed the renderer's
+`diff.ts -> children.ts -> diff.ts` circular dependency. A fresh full `pnpm release:check` then passed
+91 Vitest files / 814 tests, 16 package tests, and coverage of 90.40% statements / 86.33% branches /
+93.23% functions / 90.94% lines. It also passed package and adoption smoke, the packed Operations
+Console check, jsdom and Chromium benchmarks, 24 browser E2E tests, and 4 DevTools extension E2E
+tests. This validates the beta.6 candidate gates, but does not supply the missing 1.0 adoption,
+five-date history, DevTools distribution, or stable-admission evidence.
+
+The same 2026-08-19 hardening made the packed adoption consumer a routine check: routine Node 20/22
+CI now runs `pnpm adoption:smoke`. A separate scheduled
+`.github/workflows/performance-history.yml` restores the latest successful history cache and appends
+one jsdom and Chromium collection per UTC day. It still needs successful runs on enough future dates;
+the checked-in browser evidence remains below five dates for six keyed-reorder scenarios. DevTools
+now has `pnpm package:devtools-extension`, which creates a deterministic ZIP for explicit exact HTTPS
+origins, verifies the generated minimal manifest, and reports SHA-256. The command was validated with
+a non-production example origin, but no real production origin has been verified. The two external
+applications remain React-primary compatibility checks, with no Solace-primary upgrade and rollback
+rehearsal, so they still do not count toward independent adoption. The hardened evaluator now requires
+exact npm upgrade and rollback versions, matching evidence records and paths, and a verified rollback
+rehearsal. Performance evidence exposes sorted unique `runAt[]`, rejects future or older-than-30-day
+runs, and recomputes run and UTC-date counts. DevTools evidence binds the ZIP and manifest SHA-256,
+exact HTTPS origins, and QA result to the same artifact digest. These checks prevent unsupported
+claims; they do not manufacture the three missing production evidence sets.
+
+Independent adopters can now bind reviewed baseline, candidate, and rollback records with
+`pnpm adoption:evidence`. The loader rebuilds each declared bundle and verifies its SHA-256; the 1.0
+evaluator independently matches exact versions, application identity, repository, production origin,
+workflows, reviewer approval, and rollback restoration. No current application declares a real
+production bundle, so independent adoption remains 0/2.
 
 The 2026-08-17 public component regression matrix also verifies required typed slots, typed events,
 and generic components across the automatic JSX runtime, direct `h()` and JSX runtime calls,

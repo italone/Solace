@@ -37,4 +37,19 @@ describe("DevTools documentation", () => {
     expect(evidence).toContain("No `.map` files");
     expect(evidence).toContain("Browser-store publication remains deferred");
   });
+
+  test("documents origin-scoped distributable packaging without claiming production verification", async () => {
+    const [docs, evidence] = await Promise.all([
+      readFile("docs/devtools.md", "utf8"),
+      readFile("release/devtools-distribution-evidence.md", "utf8"),
+    ]);
+
+    expect(docs).toContain("pnpm package:devtools-extension -- --origin https://app.example.com");
+    expect(docs).toContain("`.devtools-artifacts/solace-devtools.zip`");
+    expect(docs).toContain("exact HTTPS origin");
+    expect(docs).toContain("SHA-256");
+    expect(docs).toContain("does not prove that a real production origin was exercised");
+    expect(evidence).toContain("origin-scoped ZIP packaging command");
+    expect(evidence).toContain("No real production origin has been verified");
+  });
 });

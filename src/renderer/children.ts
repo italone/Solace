@@ -4,7 +4,6 @@ import { hasDevtoolsListeners } from "../devtools/events";
 import { ShapeFlags } from "../shared/flags";
 import type { VNode } from "../vnode/vnode";
 import { insert, setText } from "./dom";
-import { patch } from "./diff";
 import {
   isKeyedReorderMovePathInstrumentationEnabled,
   recordKeyedReorderLisLength,
@@ -20,12 +19,22 @@ import { getIncreasingSubsequence, hasUniqueKeys } from "./keyed-sequence";
 import { hasEventProps } from "./props";
 import { unmount, unmountChildren } from "./unmount";
 
+type PatchFunction = (
+  n1: VNode | null,
+  n2: VNode,
+  container: Node,
+  anchor: Node | null,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+) => void;
+
 export function patchChildren(
   n1: VNode,
   n2: VNode,
   container: Node,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
+  patch: PatchFunction,
 ): void {
   const oldChildren = n1.children;
   const newChildren = n2.children;
@@ -48,7 +57,7 @@ export function patchChildren(
 
     if (oldShapeFlag & ShapeFlags.TEXT_CHILDREN) {
       setText(container, "");
-      mountChildren(nextChildren, container, parentComponent, appProvides);
+      mountChildren(nextChildren, container, parentComponent, appProvides, patch);
       return;
     }
 
@@ -59,11 +68,12 @@ export function patchChildren(
         container,
         parentComponent,
         appProvides,
+        patch,
       );
       return;
     }
 
-    mountChildren(nextChildren, container, parentComponent, appProvides);
+    mountChildren(nextChildren, container, parentComponent, appProvides, patch);
     return;
   }
 
@@ -80,13 +90,14 @@ function patchArrayChildren(
   container: Node,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
+  patch: PatchFunction,
 ): void {
   if (hasUniqueKeys(oldChildren) && hasUniqueKeys(newChildren)) {
-    patchKeyedChildren(oldChildren, newChildren, container, parentComponent, appProvides);
+    patchKeyedChildren(oldChildren, newChildren, container, parentComponent, appProvides, patch);
     return;
   }
 
-  patchUnkeyedChildren(oldChildren, newChildren, container, parentComponent, appProvides);
+  patchUnkeyedChildren(oldChildren, newChildren, container, parentComponent, appProvides, patch);
 }
 
 function patchUnkeyedChildren(
@@ -95,6 +106,7 @@ function patchUnkeyedChildren(
   container: Node,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
+  patch: PatchFunction,
 ): void {
   const commonLength = Math.min(oldChildren.length, newChildren.length);
 
@@ -111,6 +123,7 @@ function patchUnkeyedChildren(
       null,
       parentComponent,
       appProvides,
+      patch,
     );
     return;
   }
@@ -124,6 +137,7 @@ function patchKeyedChildren(
   container: Node,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
+  patch: PatchFunction,
 ): void {
   let oldStart = 0;
   let newStart = 0;
@@ -167,6 +181,7 @@ function patchKeyedChildren(
       anchor,
       parentComponent,
       appProvides,
+      patch,
     );
     return;
   }
@@ -270,6 +285,7 @@ function patchKeyedChildren(
           anchorNode,
           parentComponent,
           appProvides,
+          patch,
         );
         anchorNode = newChildren[runStart].el ?? anchorNode;
         index = runStart;
@@ -356,6 +372,7 @@ function mountNewChildren(
   anchor: Node | null,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
+  patch: PatchFunction,
 ): void {
   if (canBatchMountChildren(children, start, end)) {
     const fragment = document.createDocumentFragment();
@@ -380,6 +397,7 @@ export function mountChildren(
   container: Node,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
+  patch: PatchFunction,
 ): void {
   if (canBatchMountChildren(children, 0, children.length - 1)) {
     const fragment = document.createDocumentFragment();

@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { evaluatePerformanceRegression } from "../../../scripts/performance-regression-check.mjs";
+import { evaluatePerformanceRegression } from "../../../scripts/performance-regression-config.mjs";
 
 const runs = (count = 5, dates = 5) =>
   Array.from({ length: count }, (_, index) => ({

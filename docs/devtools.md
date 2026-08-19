@@ -161,14 +161,39 @@ pnpm build:devtools-extension
 pnpm test:e2e:devtools-extension
 ```
 
+Create an origin-scoped distributable ZIP only with explicit production origins:
+
+```bash
+pnpm package:devtools-extension -- --origin https://app.example.com
+```
+
+Repeat `--origin` for each reviewed site. The command accepts only an exact HTTPS origin without a
+path, wildcard, credentials, query, or fragment. It applies the same allowlist to `content_scripts`,
+`host_permissions`, and `web_accessible_resources`, rejects extra privileged manifest keys, verifies
+the generated manifest, and writes `.devtools-artifacts/solace-devtools.zip` plus a deterministic
+`.devtools-artifacts/solace-devtools.evidence.json` sidecar. The sidecar binds the repository-relative
+ZIP path, ZIP SHA-256, generated manifest SHA-256, and normalized origins. The artifact directory is
+ignored. Producing these files proves deterministic packaging and permission scope.
+
+The sidecar does not prove that a real production origin was exercised. It also does not prove that
+a browser store accepted the package. Load that exact artifact against every declared origin before
+updating release evidence.
+
 ## Inspected Origin Checklist
 
 Before distributing the extension beyond local demos:
 
 1. Review `manifest.json` `host_permissions`.
-2. Confirm no runtime payload changes are required.
-3. Run `pnpm test:e2e:devtools-extension` on the target origins.
-4. Publish only after explicit maintainer review.
+2. Build the ZIP with explicit `--origin` values and retain its SHA-256 digest.
+3. Confirm no runtime payload changes are required.
+4. Load the exact ZIP on every declared production origin and record the result.
+5. Run `pnpm test:e2e:devtools-extension` as the local regression suite.
+6. Publish only after explicit maintainer review.
+
+For 1.0 evidence, copy the reviewed sidecar fields into the structured distribution record and bind
+the QA result to the same ZIP SHA-256. A passing test from a different build, a digest without its
+manifest digest, a wildcard origin, or packaging against a non-production example origin does not
+satisfy the production distribution criterion.
 
 ## Browser Extension QA Checklist
 

@@ -68,6 +68,9 @@ jobs:
       - name: Package consumer smoke
         run: pnpm package:smoke
 
+      - name: Adoption consumer smoke
+        run: pnpm adoption:smoke
+
       - name: Stable app packed consumer
         run: pnpm stable:app
 

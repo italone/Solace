@@ -69,6 +69,37 @@ Store a release-specific record with these fields:
 Do not mark evidence verified when a command was skipped, a registry request failed, or the package
 was replaced with a source alias.
 
+For `adoption.independent-apps`, the machine-readable application declaration and its loaded evidence
+record must agree on the application name, exact npm target version, exact upgrade source version,
+Solace-primary workflows, evidence paths, rollback status, and exact rollback target. Version ranges,
+dist-tags such as `beta`, local package labels, and an untested rollback target do not count. The
+rollback target must be the exact source version restored by the rehearsal.
+
+### Independent adoption bundle
+
+After an independently owned application has produced reviewed `baseline`, `candidate`, and
+`rollback` JSON records, validate and bind them into one deterministic bundle:
+
+```bash
+pnpm adoption:evidence -- \
+  --record evidence/app-baseline.json \
+  --record evidence/app-candidate.json \
+  --record evidence/app-rollback.json \
+  --output evidence/app-bundle.json
+```
+
+Run the command with the adopter evidence directory inside the current working root. All four paths
+must be distinct repository-relative `.json` paths. The command parses the records as data; it does
+not execute their recorded `argv`, mutate the adopter, deploy an application, or update
+`release/adoption-evidence.json`.
+
+Each phase must describe an independently owned, Solace-primary application with a clean commit,
+exact HTTPS repository and production origin, exact `@italone/solace` version, lockfile SHA-256, all
+required production workflows, successful command result digests, and explicit reviewer approval.
+Candidate and rollback records bind to the baseline JSON digest. The candidate version must differ
+from baseline, and rollback must restore the exact baseline version. A generated bundle does not
+count as 1.0 evidence until its ownership, production origin, and review are independently verified.
+
 ## Rollback Triggers
 
 Stop rollout and begin rollback when any of these conditions is confirmed:

@@ -1,6 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
+import { createEvidenceBundle } from "./adoption-evidence-config.mjs";
+
 export function isSafeEvidencePath(value) {
   return (
     typeof value === "string" &&
@@ -58,19 +60,42 @@ async function loadAdoptionEvidence(root, evidence) {
     throw new Error(`Invalid adoption evidence schema at ${path}`);
   }
   const records = new Map(document.applications.map((record) => [record?.name, record]));
-  return evidence.applications.map((application) => {
-    const record = records.get(application?.name);
-    if (!record) throw new Error(`Missing adoption evidence record: ${String(application?.name)}`);
-    if (record.evidencePath !== application?.evidence) {
-      throw new Error(`Adoption evidence path does not match: ${String(application?.name)}`);
-    }
-    if (record.rollbackEvidencePath !== application?.rollback?.evidence) {
-      throw new Error(
-        `Adoption rollback evidence path does not match: ${String(application?.name)}`,
-      );
-    }
-    return { ...application, evidenceRecord: record };
-  });
+  return Promise.all(
+    evidence.applications.map(async (application) => {
+      const record = records.get(application?.name);
+      if (!record)
+        throw new Error(`Missing adoption evidence record: ${String(application?.name)}`);
+      if (record.evidencePath !== application?.evidence) {
+        throw new Error(`Adoption evidence path does not match: ${String(application?.name)}`);
+      }
+      if (record.rollbackEvidencePath !== application?.rollback?.evidence) {
+        throw new Error(
+          `Adoption rollback evidence path does not match: ${String(application?.name)}`,
+        );
+      }
+      const bundlePath = application?.adoptionEvidenceBundle;
+      if (bundlePath === undefined) return { ...application, evidenceRecord: record };
+      if (!isSafeEvidencePath(bundlePath)) {
+        throw new Error(`Invalid adoption evidence bundle path: ${String(bundlePath)}`);
+      }
+      const bundle = await readJson(root, bundlePath);
+      let rebuilt;
+      try {
+        rebuilt = createEvidenceBundle(bundle?.records);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `Invalid adoption evidence bundle: ${String(application?.name)}: ${message}`,
+        );
+      }
+      if (bundle?.bundleSha256 !== rebuilt.bundleSha256) {
+        throw new Error(
+          `Adoption evidence bundle digest does not match: ${String(application?.name)}`,
+        );
+      }
+      return { ...application, evidenceRecord: record, evidenceBundle: bundle };
+    }),
+  );
 }
 
 async function loadDevtoolsEvidence(root, evidence) {

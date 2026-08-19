@@ -155,11 +155,32 @@ base 与 candidate 的 median，每个 metric 采集三个 samples，并使用 1
 artifacts 中保留 commit 与 environment fingerprint。它不计入 1.0 所需的五个不同日期证据。该门禁
 不会更新 `release/performance-history.json`，也不会改变当前 `INCOMPLETE` 的准入结果。
 
-随后进行的新一轮本地验证通过了 88 个 Vitest 文件 / 761 个测试、16 个 package tests，coverage
-为 90.08% statements / 85.51% branches / 93.27% functions / 90.62% lines。package 和 adoption
-smoke、packed Operations Console 检查、jsdom 与 Chromium benchmark、24 个 browser E2E 测试以及
-4 个 DevTools extension E2E 测试也全部通过。这些检查验证的是 beta.6 candidate，并没有补齐
-1.0 所缺少的 adoption、history、DevTools distribution 或 stable admission 证据。
+2026-08-19 的验证首先暴露出一个覆盖率回归：release scripts 的配置被内联进 CLI 入口后，门禁跌破
+阈值。将可复用配置重新拆为可测试的纯模块，并保持 CLI 文件轻薄后，覆盖率门禁恢复；同一轮清理还
+消除了 renderer 的 `diff.ts -> children.ts -> diff.ts` 循环依赖。随后重新执行的完整
+`pnpm release:check` 通过了 91 个 Vitest 文件 / 814 个测试、16 个 package tests，coverage 为
+90.40% statements / 86.33% branches / 93.23% functions / 90.94% lines。package 和 adoption smoke、
+packed Operations Console 检查、jsdom 与 Chromium benchmark、24 个 browser E2E 测试以及 4 个
+DevTools extension E2E 测试也全部通过。这些结果验证了 beta.6 candidate 的现有门禁，但没有补齐
+1.0 所缺少的 adoption、五个独立日期 history、DevTools distribution 或 stable admission 证据。
+
+同一轮 2026-08-19 加固还把 packed adoption consumer 纳入了日常检查：常规 Node 20/22 CI 现在会执行
+`pnpm adoption:smoke`。独立的定时 `.github/workflows/performance-history.yml` 会恢复最近一次成功的
+history cache，并按 UTC 日期追加 jsdom 与 Chromium 采集；它仍需等待未来日期的成功运行，目前六个
+keyed-reorder browser scenarios 的 checked-in evidence 仍不足五天。DevTools 现在提供
+`pnpm package:devtools-extension`，可针对显式、精确的 HTTPS origins 生成确定性 ZIP，校验生成后的
+最小权限 manifest 并输出 SHA-256。该命令只用非生产示例 origin 做过验证，尚未验证真实生产 origin。
+两个外部应用仍是 React-primary compatibility checks，没有完成 Solace-primary 升级与回滚演练，
+因此仍不能计入独立 adoption。加固后的 evaluator 现在要求精确 npm 升级与回滚版本、相互匹配的
+evidence records 与 paths，以及已验证的回滚演练；performance evidence 会输出排序去重后的
+`runAt[]`，拒绝未来时间或超过 30 天的记录，并重新计算运行次数和 UTC 日期数；DevTools evidence
+则把 ZIP 与 manifest SHA-256、精确 HTTPS origins 和 QA 结果绑定到同一个 artifact digest。这些
+检查用于阻止证据不足的声明，并不会生成当前缺少的三类生产证据。
+
+独立 adopter 现在可以通过 `pnpm adoption:evidence` 绑定已经审阅的 baseline、candidate 和 rollback
+记录。loader 会重建每个声明的 bundle 并验证其 SHA-256；1.0 evaluator 还会独立比对精确版本、应用
+身份、repository、production origin、workflows、reviewer approval 和 rollback restoration。当前没有
+任何应用声明真实 production bundle，因此独立采用仍为 0/2。
 
 2026-08-03 的 router 稳定化工作在加入 initial history navigation pipeline、stale async
 navigation result protection、rejected-guard history recovery、invalid history location recovery、

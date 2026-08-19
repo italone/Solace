@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { createPerformanceHistoryEvidence } from "../../../scripts/performance-history-evidence.mjs";
+import { createPerformanceHistoryEvidence } from "../../../scripts/performance-history-evidence-config.mjs";
 
 function browserRecord({
   runAt,
@@ -77,6 +77,7 @@ describe("performance history readiness evidence", () => {
         distinctDateCount: 1,
         firstRunAt: "2026-07-16T00:00:00.000Z",
         lastRunAt: "2026-07-16T00:00:00.000Z",
+        runAt: ["2026-07-16T00:00:00.000Z"],
       });
       expect(evidence.jsdomScenarios.render).toEqual({
         recordCount: 2,
@@ -84,6 +85,7 @@ describe("performance history readiness evidence", () => {
         distinctDateCount: 2,
         firstRunAt: "2026-07-16T01:00:00.000Z",
         lastRunAt: "2026-07-17T01:00:00.000Z",
+        runAt: ["2026-07-16T01:00:00.000Z", "2026-07-17T01:00:00.000Z"],
       });
     } finally {
       await rm(root, { recursive: true, force: true });
@@ -104,6 +106,28 @@ describe("performance history readiness evidence", () => {
           jsdomPath: "jsdom.jsonl",
         }),
       ).rejects.toThrow("Invalid benchmark runAt at browser.jsonl:1");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects a benchmark timestamp later than the injected current time", async () => {
+    const root = await mkdtemp(join(tmpdir(), "solace-performance-evidence-future-"));
+
+    try {
+      await writeJsonLines(join(root, "browser.jsonl"), [
+        browserRecord({ runAt: "2026-08-20T00:00:00.000Z" }),
+      ]);
+      await writeJsonLines(join(root, "jsdom.jsonl"), [jsdomRecord("2026-08-18T00:00:00.000Z")]);
+
+      await expect(
+        createPerformanceHistoryEvidence({
+          root,
+          browserPath: "browser.jsonl",
+          jsdomPath: "jsdom.jsonl",
+          now: Date.parse("2026-08-19T00:00:00.000Z"),
+        }),
+      ).rejects.toThrow("Future benchmark runAt at browser.jsonl:1");
     } finally {
       await rm(root, { recursive: true, force: true });
     }

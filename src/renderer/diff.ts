@@ -54,7 +54,7 @@ export function patch(
       return;
     }
 
-    patchChildren(n1, n2, container, parentComponent, appProvides);
+    patchChildren(n1, n2, container, parentComponent, appProvides, patch);
     n2.el = getFragmentRoot(n2);
     return;
   }
@@ -118,7 +118,7 @@ function mountElement(
   if (vnode.shapeFlag & ShapeFlags.TEXT_CHILDREN) {
     setText(el, vnode.children as string);
   } else if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-    mountChildren(vnode.children as VNode[], el, parentComponent, appProvides);
+    mountChildren(vnode.children as VNode[], el, parentComponent, appProvides, patch);
   }
 
   insert(el, container, anchor);
@@ -235,7 +235,7 @@ function patchElement(
   }
 
   if (childrenChanged) {
-    patchChildren(n1, n2, el, parentComponent, appProvides);
+    patchChildren(n1, n2, el, parentComponent, appProvides, patch);
   }
 
   emitRendererElementDevtoolsEvent("update", n2.type as string);
