@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import { describe, expect, it } from "vitest";
 
-import { evaluatePublicContract } from "../../../scripts/public-contract-check-config.mjs";
+import { evaluatePublicContract } from "../../../scripts/public-contract-check.mjs";
 
 const packageJson = {
   exports: {
