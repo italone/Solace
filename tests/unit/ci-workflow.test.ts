@@ -12,6 +12,10 @@ describe("CI workflow", () => {
 
   it("keeps browser release gates aligned with the local release check", async () => {
     const workflow = await readFile(".github/workflows/ci.yml", "utf8");
+    expect(workflow).toContain("  browser:\n    needs: quality\n    timeout-minutes: 30");
+    expect(workflow).toContain(
+      "  performance-comparison:\n    needs: quality\n    timeout-minutes: 30",
+    );
     const installBrowsers = workflow.indexOf(
       "run: pnpm exec playwright install --with-deps chromium firefox webkit",
     );
