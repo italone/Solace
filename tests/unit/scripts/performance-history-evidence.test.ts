@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { createPerformanceHistoryEvidence } from "../../../scripts/performance-history-evidence-config.mjs";
+import { createPerformanceHistoryEvidence } from "../../../scripts/performance-history-evidence.mjs";
 
 function browserRecord({
   runAt,
