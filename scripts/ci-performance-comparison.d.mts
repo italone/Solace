@@ -37,4 +37,6 @@ export function assertCandidateCheckoutRevision(currentSha: string, headSha: str
 
 export function createRevisionCollectionOrder(sampleCount: number): Array<"base" | "head">;
 
+export function isRetryableComparisonFailure(error: unknown): boolean;
+
 export function parseComparisonArguments(args: string[]): ComparisonArguments;

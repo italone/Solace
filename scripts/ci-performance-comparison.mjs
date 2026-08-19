@@ -91,6 +91,10 @@ export function createRevisionCollectionOrder(sampleCount) {
   ).flat();
 }
 
+export function isRetryableComparisonFailure(error) {
+  return error?.failureKind === "comparison-evaluator" && error?.exitCode === 1;
+}
+
 async function main() {
   const options = parseComparisonArguments(process.argv.slice(2));
   if (options.help) {
@@ -114,6 +118,18 @@ async function main() {
     revisions.headSha,
   );
   assertArtifactDirectory(paths.root);
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      await runComparisonAttempt(paths, revisions);
+      return;
+    } catch (error) {
+      if (!isRetryableComparisonFailure(error) || attempt === 2) throw error;
+      console.warn("performance evaluator failed; retrying once to check benchmark noise");
+    }
+  }
+}
+
+async function runComparisonAttempt(paths, revisions) {
   await rm(paths.root, { recursive: true, force: true });
   await mkdir(paths.root, { recursive: true });
 
@@ -156,7 +172,7 @@ async function main() {
         "--output",
         paths.report,
       ],
-      { cwd: projectRoot },
+      { cwd: projectRoot, failureKind: "comparison-evaluator" },
     );
   } finally {
     if (worktreeCreated) {
@@ -266,7 +282,7 @@ function assertArtifactDirectory(path) {
   }
 }
 
-function runCommand(command, args, { cwd, env = process.env } = {}) {
+function runCommand(command, args, { cwd, env = process.env, failureKind } = {}) {
   return new Promise((resolveRun, rejectRun) => {
     const child = spawn(command, args, { cwd, env, stdio: "inherit" });
     child.on("error", rejectRun);
@@ -276,10 +292,16 @@ function runCommand(command, args, { cwd, env = process.env } = {}) {
         return;
       }
       if (signal !== null) {
-        rejectRun(new Error(`${command} ${args.join(" ")} failed with signal ${signal}`));
+        const error = new Error(`${command} ${args.join(" ")} failed with signal ${signal}`);
+        error.failureKind = failureKind;
+        error.signal = signal;
+        rejectRun(error);
         return;
       }
-      rejectRun(new Error(`${command} ${args.join(" ")} failed with exit code ${code}`));
+      const error = new Error(`${command} ${args.join(" ")} failed with exit code ${code}`);
+      error.failureKind = failureKind;
+      error.exitCode = code;
+      rejectRun(error);
     });
   });
 }

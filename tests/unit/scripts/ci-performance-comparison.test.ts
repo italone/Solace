@@ -6,6 +6,7 @@ import {
   assertCandidateCheckoutRevision,
   createComparisonArtifactPaths,
   createRevisionCollectionOrder,
+  isRetryableComparisonFailure,
   normalizeRevisionRecords,
   parseComparisonArguments,
   resolveComparisonRevisions,
@@ -114,6 +115,16 @@ describe("CI performance comparison orchestration", () => {
 
   it("accepts the package-manager argument separator before CLI flags", () => {
     expect(parseComparisonArguments(["--", "--help"])).toEqual({ help: true });
+  });
+
+  it("retries only a failed performance evaluator", () => {
+    expect(isRetryableComparisonFailure({ failureKind: "comparison-evaluator", exitCode: 1 })).toBe(
+      true,
+    );
+    expect(isRetryableComparisonFailure({ failureKind: "comparison-evaluator", exitCode: 2 })).toBe(
+      false,
+    );
+    expect(isRetryableComparisonFailure({ failureKind: "benchmark", exitCode: 1 })).toBe(false);
   });
 
   it("rejects a checkout that does not match the candidate revision", () => {

@@ -109,9 +109,6 @@ jobs:
       - name: Browser benchmark
         run: pnpm benchmark:browser
 
-      - name: Performance regression
-        run: pnpm performance:regression
-
       - name: E2E
         run: pnpm test:e2e
 

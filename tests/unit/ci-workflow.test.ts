@@ -29,6 +29,22 @@ describe("CI workflow", () => {
     expect(devtoolsExtensionE2E).toBeGreaterThan(browserE2E);
   });
 
+  it("keeps ignored local performance history out of clean browser CI", async () => {
+    const [workflow, packageJson] = await Promise.all([
+      readFile(".github/workflows/ci.yml", "utf8"),
+      readFile("package.json", "utf8"),
+    ]);
+    const browserJob = workflow.slice(
+      workflow.indexOf("  browser:"),
+      workflow.indexOf("  performance-comparison:"),
+    );
+
+    expect(browserJob).not.toContain("run: pnpm performance:regression");
+    expect(JSON.parse(packageJson).scripts["release:check"]).toContain(
+      "pnpm performance:regression",
+    );
+  });
+
   it("runs the packed adoption consumer in routine quality CI", async () => {
     const workflow = await readFile(".github/workflows/ci.yml", "utf8");
     const qualityJob = workflow.slice(

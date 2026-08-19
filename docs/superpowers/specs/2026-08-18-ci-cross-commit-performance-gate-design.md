@@ -116,9 +116,10 @@ base and candidate worktrees, installs dependencies once per worktree with the l
 uses the already installed browser binaries, executes the comparison command, and uploads the raw
 base/head JSONL plus the comparison report as diagnostic artifacts even on failure.
 
-The existing `browser` job continues to run production browser E2E and the local absolute regression
-gate. The relative comparison job is separate so its doubled benchmark cost and diagnostic artifacts
-remain visible.
+The existing `browser` job continues to run the production browser benchmark and browser E2E, but it
+does not run the local absolute regression gate because ignored `.benchmark-history/` records are not
+available on a clean runner. `pnpm release:check` retains that local gate. The relative comparison job
+is separate so its doubled benchmark cost and diagnostic artifacts remain visible.
 
 ## Testing
 
