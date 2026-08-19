@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { evaluateCrossCommitPerformance } from "../../../scripts/performance-cross-commit-config.mjs";
+import { evaluateCrossCommitPerformance } from "../../../scripts/performance-cross-commit.mjs";
 
 const baseSha = "1111111111111111111111111111111111111111";
 const headSha = "2222222222222222222222222222222222222222";
