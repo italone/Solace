@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export function evaluatePerformanceRegression({ budgets, browserRecords, jsdomRecords }) {
@@ -166,19 +166,24 @@ function isRecord(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-try {
-  const budgets = await readJson(resolve(root, "release/performance-budgets.json"));
-  const browserRecords = await readJsonLines(resolve(root, ".benchmark-history/browser.jsonl"));
-  const jsdomRecords = await readJsonLines(resolve(root, ".benchmark-history/jsdom.jsonl"));
-  const result = evaluatePerformanceRegression({ budgets, browserRecords, jsdomRecords });
-  console.log(`performance regression: ${result.valid ? "PASS" : "FAIL"}`);
-  for (const error of result.errors) console.log(`FAIL ${error}`);
-  if (!result.valid) process.exitCode = 1;
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
+const isMain =
+  process.argv[1] !== undefined && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+
+if (isMain) {
+  try {
+    const budgets = await readJson(resolve(root, "release/performance-budgets.json"));
+    const browserRecords = await readJsonLines(resolve(root, ".benchmark-history/browser.jsonl"));
+    const jsdomRecords = await readJsonLines(resolve(root, ".benchmark-history/jsdom.jsonl"));
+    const result = evaluatePerformanceRegression({ budgets, browserRecords, jsdomRecords });
+    console.log(`performance regression: ${result.valid ? "PASS" : "FAIL"}`);
+    for (const error of result.errors) console.log(`FAIL ${error}`);
+    if (!result.valid) process.exitCode = 1;
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  }
 }
 
 async function readJson(path) {
