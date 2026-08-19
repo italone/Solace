@@ -1,7 +1,14 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import { isSafeEvidencePath } from "./one-zero-readiness-config.mjs";
+export function isSafeEvidencePath(value) {
+  return (
+    typeof value === "string" &&
+    value.trim() !== "" &&
+    !/^[/\\]|^[A-Za-z]:[/\\]/u.test(value) &&
+    !value.split(/[/\\]+/u).includes("..")
+  );
+}
 
 export async function loadOneZeroReadinessEvidence({
   root = process.cwd(),

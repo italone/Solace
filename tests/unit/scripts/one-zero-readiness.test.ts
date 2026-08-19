@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   evaluateOneZeroReadiness,
   parseOneZeroReadinessArguments,
-} from "../../../scripts/one-zero-readiness-config.mjs";
+} from "../../../scripts/one-zero-readiness.mjs";
 
 type ReadinessEvidenceFixture = {
   schemaVersion: number;
