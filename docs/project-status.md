@@ -84,6 +84,8 @@ SSR/hydration now includes buffered async initial rendering, but it is not a ful
 contract. The project is usable and documented today, while these subsystems remain intentionally
 scoped short of streaming, renderer-owned router integration, and async scheduling after initial hydration.
 
+These exclusions are deliberate scope decisions for a readable, teaching-oriented runtime — not incomplete work. Revisit criteria are recorded in `docs/roadmap.md`; each would require a dedicated design doc before implementation.
+
 - Ecosystem capabilities are still thin. There is no first-party UI component library, stable plugin ecosystem, or production-grade DevTools distribution. The large-app adoption guide is still early-stage guidance rather than a field-tested ecosystem layer, and `docs/ecosystem.md` keeps the beta-line UI library and plugin decisions explicit. The checked-in DevTools extension example is now restricted to the local 6174 demo origins; a production distribution still needs explicit inspected-origin review.
 - SFC/Vite remains an optional experimental compiler surface. The current compiler contract covers only
   `@italone/solace/vite`, the `@italone/solace/sfc` type entry, the documented block model, Vite

@@ -69,6 +69,7 @@ output; each requires a separate public API and compatibility review.
 - Production-grade DevTools extension distribution and advanced inspectors.
 - Long-term compatibility guarantees for private internal modules.
 - UI library or plugin marketplace work as a 1.0 admission requirement.
+- Streaming SSR / Suspense / selective hydration — revisit after 1.0, requires dedicated design doc.
 
 ## How to Propose Changes
 

@@ -53,7 +53,9 @@ in-memory SSG through `generateStaticSiteAsync()`, and prepare-then-commit brows
 `hydrateAsync()`. Router-aware SSR/hydration is available through explicit readiness, server-context,
 and snapshot composition. Streaming SSR, direct renderer-owned router options, async update scheduling after initial
 hydration, first-party UI components, production DevTools distribution, and compatibility guarantees
-for internal modules remain outside the frozen production contract.
+for internal modules remain outside the frozen production contract. These exclusions are deliberate
+scope decisions for a readable, teaching-oriented runtime — not incomplete work; revisit criteria are
+recorded in [docs/roadmap.md](./docs/roadmap.md).
 
 ## Public Contract Gate
 
