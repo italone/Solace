@@ -1,19 +1,21 @@
 import {
   createComponentInstance,
-  getComponentDevtoolsName,
   setupComponent,
   updateComponentProps,
   type ComponentInstance,
 } from "../component/component";
 import { callHooks } from "../component/lifecycle";
 import type { Provides } from "../component/provide";
-import { emitDevtoolsEvent, hasDevtoolsListeners } from "../devtools/events";
 import { ReactiveEffect } from "../reactivity/effect";
 import { queueJob } from "../scheduler/scheduler";
 import { ShapeFlags } from "../shared/flags";
 import { isThenable } from "../shared/utils";
 import type { VNode } from "../vnode/vnode";
 import { createElement, insert, setText } from "./dom";
+import {
+  emitComponentDevtoolsEvent,
+  emitRendererElementDevtoolsEvent,
+} from "./devtools-events";
 import { havePropsChanged, mountInitialProps, patchProps } from "./props";
 import { getFragmentRoot, unmount } from "./unmount";
 import { canBatchMountChildren, isSameVNodeType, patchChildren } from "./children";
@@ -271,34 +273,4 @@ function haveElementChildrenChanged(n1: VNode, n2: VNode): boolean {
   }
 
   return false;
-}
-
-export function emitComponentDevtoolsEvent(
-  type: "component:mount" | "component:update" | "component:unmount",
-  instance: ComponentInstance,
-): void {
-  if (!hasDevtoolsListeners()) {
-    return;
-  }
-
-  emitDevtoolsEvent({
-    type,
-    id: instance.devtoolsId,
-    name: getComponentDevtoolsName(instance),
-  });
-}
-
-export function emitRendererElementDevtoolsEvent(
-  operation: "mount" | "update" | "unmount",
-  tag: string,
-): void {
-  if (!hasDevtoolsListeners()) {
-    return;
-  }
-
-  emitDevtoolsEvent({
-    type: "renderer:element",
-    operation,
-    tag,
-  });
 }

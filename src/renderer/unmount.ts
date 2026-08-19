@@ -6,7 +6,7 @@ import { remove } from "./dom";
 import {
   emitComponentDevtoolsEvent,
   emitRendererElementDevtoolsEvent,
-} from "./diff";
+} from "./devtools-events";
 
 export function unmountChildren(children: VNode[]): void {
   for (const child of children) {
