@@ -10,7 +10,7 @@ import {
   createRegistryInstallArguments,
   createRegistryProbeSource,
   parseRegistrySmokeArguments,
-} from "../../../scripts/registry-contract-smoke-config.mjs";
+} from "../../../scripts/registry-contract-smoke.mjs";
 
 const protectedEntries = [
   "@italone/solace",
