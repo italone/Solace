@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
 const SHA_PATTERN = /^[0-9a-f]{40}$/u;
@@ -244,29 +245,34 @@ function isRecord(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-try {
-  const options = parseArguments(process.argv.slice(2));
-  const [config, baseRecords, headRecords] = await Promise.all([
-    readJson(options.config),
-    readJsonLines(options.base),
-    readJsonLines(options.head),
-  ]);
-  const result = evaluateCrossCommitPerformance({
-    config,
-    base: splitRevision(options.baseSha ?? inferRevisionSha(baseRecords), baseRecords),
-    head: splitRevision(options.headSha ?? inferRevisionSha(headRecords), headRecords),
-  });
-  console.log(`performance cross-commit: ${result.valid ? "PASS" : "FAIL"}`);
-  for (const error of result.errors) console.log(error);
-  if (options.output !== undefined) {
-    const outputPath = resolve(options.output);
-    await mkdir(dirname(outputPath), { recursive: true });
-    await writeFile(outputPath, `${JSON.stringify(result, null, 2)}\n`, "utf8");
+const isMain =
+  process.argv[1] !== undefined && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+
+if (isMain) {
+  try {
+    const options = parseArguments(process.argv.slice(2));
+    const [config, baseRecords, headRecords] = await Promise.all([
+      readJson(options.config),
+      readJsonLines(options.base),
+      readJsonLines(options.head),
+    ]);
+    const result = evaluateCrossCommitPerformance({
+      config,
+      base: splitRevision(options.baseSha ?? inferRevisionSha(baseRecords), baseRecords),
+      head: splitRevision(options.headSha ?? inferRevisionSha(headRecords), headRecords),
+    });
+    console.log(`performance cross-commit: ${result.valid ? "PASS" : "FAIL"}`);
+    for (const error of result.errors) console.log(error);
+    if (options.output !== undefined) {
+      const outputPath = resolve(options.output);
+      await mkdir(dirname(outputPath), { recursive: true });
+      await writeFile(outputPath, `${JSON.stringify(result, null, 2)}\n`, "utf8");
+    }
+    if (!result.valid) process.exitCode = 1;
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
   }
-  if (!result.valid) process.exitCode = 1;
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
 }
 
 function parseArguments(rawArgs) {

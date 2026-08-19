@@ -148,26 +148,31 @@ function finalizeScenarios(scenarios) {
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-try {
-  const options = parseArguments(process.argv.slice(2));
-  const evidence = await createPerformanceHistoryEvidence({
-    root,
-    browserPath: options.browserPath,
-    jsdomPath: options.jsdomPath,
-  });
-  const output = `${JSON.stringify(evidence, null, 2)}\n`;
+const isMain =
+  process.argv[1] !== undefined && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
 
-  if (options.outputPath === undefined) {
-    process.stdout.write(output);
-  } else {
-    const resolvedOutputPath = resolve(root, options.outputPath);
-    await mkdir(dirname(resolvedOutputPath), { recursive: true });
-    await writeFile(resolvedOutputPath, output, "utf8");
-    console.log(`Wrote performance history evidence: ${options.outputPath}`);
+if (isMain) {
+  try {
+    const options = parseArguments(process.argv.slice(2));
+    const evidence = await createPerformanceHistoryEvidence({
+      root,
+      browserPath: options.browserPath,
+      jsdomPath: options.jsdomPath,
+    });
+    const output = `${JSON.stringify(evidence, null, 2)}\n`;
+
+    if (options.outputPath === undefined) {
+      process.stdout.write(output);
+    } else {
+      const resolvedOutputPath = resolve(root, options.outputPath);
+      await mkdir(dirname(resolvedOutputPath), { recursive: true });
+      await writeFile(resolvedOutputPath, output, "utf8");
+      console.log(`Wrote performance history evidence: ${options.outputPath}`);
+    }
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
   }
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
 }
 
 function parseArguments(rawArgs) {
