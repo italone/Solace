@@ -13,7 +13,7 @@ import { queueJob } from "../scheduler/scheduler";
 import { ShapeFlags } from "../shared/flags";
 import { isThenable } from "../shared/utils";
 import type { VNode } from "../vnode/vnode";
-import { createElement, insert, remove, setText } from "./dom";
+import { createElement, insert, setText } from "./dom";
 import {
   isKeyedReorderMovePathInstrumentationEnabled,
   recordKeyedReorderLisLength,
@@ -27,6 +27,7 @@ import {
 } from "./keyed-reorder-instrumentation";
 import { getIncreasingSubsequence, hasUniqueKeys } from "./keyed-sequence";
 import { hasEventProps, havePropsChanged, mountInitialProps, patchProps } from "./props";
+import { getFragmentRoot, unmount, unmountChildren } from "./unmount";
 
 export function patch(
   n1: VNode | null,
@@ -692,59 +693,7 @@ function isSameVNodeType(n1: VNode, n2: VNode): boolean {
   return n1.type === n2.type && n1.key === n2.key;
 }
 
-function unmountChildren(children: VNode[]): void {
-  for (const child of children) {
-    unmount(child);
-  }
-}
-
-function unmount(vnode: VNode): void {
-  if (vnode.shapeFlag & ShapeFlags.COMPONENT) {
-    const instance = vnode.component as ComponentInstance | null;
-    if (instance === null) {
-      return;
-    }
-
-    instance.isUnmounted = true;
-    instance.isMounted = false;
-    instance.effect?.stop();
-    instance.effect = null;
-    instance.update = null;
-
-    if (instance.subTree !== null) {
-      unmount(instance.subTree);
-    }
-    callHooks(instance.unmounted);
-    emitComponentDevtoolsEvent("component:unmount", instance);
-    return;
-  }
-
-  if (vnode.shapeFlag & ShapeFlags.FRAGMENT) {
-    if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-      unmountChildren(vnode.children as VNode[]);
-    }
-    return;
-  }
-
-  if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-    unmountChildren(vnode.children as VNode[]);
-  }
-
-  if (vnode.el !== null) {
-    remove(vnode.el);
-    emitRendererElementDevtoolsEvent("unmount", vnode.type as string);
-  }
-}
-
-function getFragmentRoot(vnode: VNode): Element | Text | null {
-  if (!(vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN)) {
-    return null;
-  }
-
-  return ((vnode.children as VNode[])[0]?.el as Element | Text | null | undefined) ?? null;
-}
-
-function emitComponentDevtoolsEvent(
+export function emitComponentDevtoolsEvent(
   type: "component:mount" | "component:update" | "component:unmount",
   instance: ComponentInstance,
 ): void {
@@ -759,7 +708,7 @@ function emitComponentDevtoolsEvent(
   });
 }
 
-function emitRendererElementDevtoolsEvent(
+export function emitRendererElementDevtoolsEvent(
   operation: "mount" | "update" | "unmount",
   tag: string,
 ): void {
