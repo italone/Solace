@@ -33,3 +33,7 @@ yarn-error.log*
 .DS_Store
 .idea/
 .vscode/
+
+# AI workflow logs (kept locally, not versioned)
+solace-project-log/
+solace-project-plan/
