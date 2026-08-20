@@ -17,6 +17,7 @@ const componentMount: DevtoolsEvent = {
   type: "component:mount",
   id: 1,
   name: "Counter",
+  parentId: null,
 };
 
 describe("devtools extension panel state", () => {
@@ -47,6 +48,7 @@ describe("devtools extension panel state", () => {
         type: "component:update",
         id: 1,
         name: "Counter",
+        parentId: null,
       },
       {
         type: "reactivity:trigger",
@@ -97,6 +99,7 @@ describe("devtools extension panel state", () => {
           type: "component:update",
           id: 1,
           name: "Counter",
+          parentId: null,
         } satisfies DevtoolsEvent,
         now: 10,
       },
@@ -105,6 +108,7 @@ describe("devtools extension panel state", () => {
           type: "component:unmount",
           id: 1,
           name: "Counter",
+          parentId: null,
         } satisfies DevtoolsEvent,
         now: 20,
       },
@@ -129,6 +133,7 @@ describe("devtools extension panel state", () => {
         type: "component:update",
         id: 1,
         name: "Counter",
+        parentId: null,
       },
       { now: 2 },
     );
@@ -139,6 +144,7 @@ describe("devtools extension panel state", () => {
         type: "component:unmount",
         id: 1,
         name: "Counter",
+        parentId: null,
       },
       { now: 3 },
     );
@@ -160,11 +166,13 @@ describe("devtools extension panel state", () => {
         type: "component:update",
         id: 1,
         name: "Counter",
+        parentId: null,
       },
       {
         type: "component:unmount",
         id: 1,
         name: "Counter",
+        parentId: null,
       },
     ];
     const state = events.reduce((panelState, event, index) => {
@@ -185,6 +193,7 @@ describe("devtools extension panel state", () => {
         type: "component:update",
         id: 1,
         name: "Counter",
+        parentId: null,
       } satisfies DevtoolsEvent,
     ].reduce((panelState, event, index) => {
       return recordDevtoolsEvent(panelState, event, { now: index + 1 });

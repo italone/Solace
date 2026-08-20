@@ -5,9 +5,9 @@ import { clearDevtoolsListeners, type DevtoolsEvent } from "../../src/devtools/e
 import { h, nextTick, reactive, render } from "../../src/index";
 
 const allowedKeysByType: Record<DevtoolsEvent["type"], string[]> = {
-  "component:mount": ["id", "name", "type"],
-  "component:update": ["id", "name", "type"],
-  "component:unmount": ["id", "name", "type"],
+  "component:mount": ["id", "name", "parentId", "type"],
+  "component:update": ["id", "name", "parentId", "type"],
+  "component:unmount": ["id", "name", "parentId", "type"],
   "component:emit": ["event", "handlerCount", "id", "name", "type"],
   "reactivity:trigger": [
     "effectCount",
@@ -74,8 +74,10 @@ describe("devtools large-list recorder smoke", () => {
           if (key === "type") {
             continue;
           }
-          expect(typeof value).not.toBe("object");
-          expect(typeof value).not.toBe("function");
+          // parentId is null for root components; all other payloads are primitives.
+          expect(
+            value === null || (typeof value !== "object" && typeof value !== "function"),
+          ).toBe(true);
         }
 
         const serialized = JSON.stringify(event);

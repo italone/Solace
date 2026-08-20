@@ -1,7 +1,7 @@
 export type DevtoolsEvent =
-  | { type: "component:mount"; id: number; name: string }
-  | { type: "component:update"; id: number; name: string }
-  | { type: "component:unmount"; id: number; name: string }
+  | { type: "component:mount"; id: number; name: string; parentId: number | null }
+  | { type: "component:update"; id: number; name: string; parentId: number | null }
+  | { type: "component:unmount"; id: number; name: string; parentId: number | null }
   | { type: "component:emit"; id: number; name: string; event: string; handlerCount: number }
   | { type: "scheduler:flush"; queuedJobs: number; dedupedJobs: number; durationMs: number }
   | {
@@ -105,6 +105,7 @@ export function serializeDevtoolsEvent(event: DevtoolsEvent): DevtoolsEvent {
         type: event.type,
         id: event.id,
         name: event.name,
+        parentId: event.parentId,
       };
 
     case "component:emit":

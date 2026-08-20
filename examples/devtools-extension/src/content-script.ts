@@ -207,7 +207,15 @@ function copyDevtoolsEvent(event: unknown): DevtoolsExtensionEventMessage["event
       if (!isNumber(event.id) || !isString(event.name)) {
         return undefined;
       }
-      return { type: event.type, id: event.id, name: event.name };
+      if (event.parentId !== undefined && event.parentId !== null && !isNumber(event.parentId)) {
+        return undefined;
+      }
+      return {
+        type: event.type,
+        id: event.id,
+        name: event.name,
+        parentId: isNumber(event.parentId) ? event.parentId : null,
+      };
 
     case "component:emit":
       if (

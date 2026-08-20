@@ -34,12 +34,14 @@ describe("devtools extension panel transport", () => {
         origin: window.location.origin,
         data: {
           type: "devtools:event",
-          event: { type: "component:update", id: 1, name: "Counter" },
+          event: { type: "component:update", id: 1, name: "Counter", parentId: null },
         },
       }),
     );
     await vi.waitFor(() => {
-      expect(observed).toEqual([{ type: "component:update", id: 1, name: "Counter" }]);
+      expect(observed).toEqual([
+        { type: "component:update", id: 1, name: "Counter", parentId: null },
+      ]);
     });
 
     expect(onDevtoolsEvent).not.toHaveBeenCalled();
@@ -62,7 +64,13 @@ describe("devtools extension panel transport", () => {
         origin: window.location.origin,
         data: {
           type: "devtools:event",
-          event: { type: "component:mount", id: 1, name: "Counter", vnode: { type: "button" } },
+          event: {
+            type: "component:mount",
+            id: 1,
+            name: "Counter",
+            parentId: null,
+            vnode: { type: "button" },
+          },
         },
       }),
     );
@@ -77,7 +85,7 @@ describe("devtools extension panel transport", () => {
       }),
     );
 
-    expect(observed).toEqual([{ type: "component:mount", id: 1, name: "Counter" }]);
+    expect(observed).toEqual([{ type: "component:mount", id: 1, name: "Counter", parentId: null }]);
 
     source.stop();
   });
@@ -97,7 +105,7 @@ describe("devtools extension panel transport", () => {
         origin: "https://example.invalid",
         data: {
           type: "devtools:event",
-          event: { type: "component:mount", id: 1, name: "Counter" },
+          event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
         },
       }),
     );
@@ -107,12 +115,12 @@ describe("devtools extension panel transport", () => {
         origin: window.location.origin,
         data: {
           type: "devtools:event",
-          event: { type: "component:update", id: 1, name: "Counter" },
+          event: { type: "component:update", id: 1, name: "Counter", parentId: null },
         },
       }),
     );
 
-    expect(observed).toEqual([{ type: "component:update", id: 1, name: "Counter" }]);
+    expect(observed).toEqual([{ type: "component:update", id: 1, name: "Counter", parentId: null }]);
 
     source.stop();
   });
@@ -168,12 +176,18 @@ describe("devtools extension panel transport", () => {
       expect(() => listener({ type: "devtools:event" })).not.toThrow();
       listener({
         type: "devtools:event",
-        event: { type: "component:update", id: 1, name: "Counter", target: { count: 1 } },
+        event: {
+          type: "component:update",
+          id: 1,
+          name: "Counter",
+          parentId: null,
+          target: { count: 1 },
+        },
       });
     }
 
     expect(port.postMessage).toHaveBeenCalledWith({ type: "devtools:panel:connect", tabId: 7 });
-    expect(observed).toEqual([{ type: "component:update", id: 1, name: "Counter" }]);
+    expect(observed).toEqual([{ type: "component:update", id: 1, name: "Counter", parentId: null }]);
 
     source.stop();
   });

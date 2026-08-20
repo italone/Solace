@@ -13,6 +13,7 @@ const componentMount: DevtoolsEvent = {
   type: "component:mount",
   id: 1,
   name: "Counter",
+  parentId: null,
 };
 
 const schedulerFlush: DevtoolsEvent = {

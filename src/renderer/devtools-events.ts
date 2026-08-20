@@ -13,6 +13,7 @@ export function emitComponentDevtoolsEvent(
     type,
     id: instance.devtoolsId,
     name: getComponentDevtoolsName(instance),
+    parentId: instance.parent?.devtoolsId ?? null,
   });
 }
 

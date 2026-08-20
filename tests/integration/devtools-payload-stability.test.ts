@@ -12,9 +12,9 @@ import type { StoreGetterContext } from "../../src/index";
 type CounterState = { count: number };
 
 const allowedKeysByType: Record<DevtoolsEvent["type"], string[]> = {
-  "component:mount": ["id", "name", "type"],
-  "component:update": ["id", "name", "type"],
-  "component:unmount": ["id", "name", "type"],
+  "component:mount": ["id", "name", "parentId", "type"],
+  "component:update": ["id", "name", "parentId", "type"],
+  "component:unmount": ["id", "name", "parentId", "type"],
   "component:emit": ["event", "handlerCount", "id", "name", "type"],
   "reactivity:trigger": [
     "effectCount",
@@ -75,6 +75,14 @@ describe("devtools payload stability", () => {
       "renderer:element",
     ]);
 
+    const mountEvents = events.filter(
+      (event): event is Extract<DevtoolsEvent, { type: "component:mount" }> =>
+        event.type === "component:mount",
+    );
+    // Root component reports parentId null.
+    expect(mountEvents.length).toBeGreaterThanOrEqual(1);
+    expect(mountEvents[0]?.parentId).toBeNull();
+
     for (const event of events) {
       expect(Object.keys(event).sort()).toEqual(allowedKeysByType[event.type].sort());
       expect(JSON.parse(JSON.stringify(event))).toEqual(event);
@@ -84,8 +92,10 @@ describe("devtools payload stability", () => {
           continue;
         }
 
-        expect(typeof value).not.toBe("object");
-        expect(typeof value).not.toBe("function");
+        // parentId is null for root components; all other payloads are primitives.
+        expect(value === null || (typeof value !== "object" && typeof value !== "function")).toBe(
+          true,
+        );
       }
     }
   });

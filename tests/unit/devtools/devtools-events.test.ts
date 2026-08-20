@@ -13,6 +13,7 @@ const mountEvent: DevtoolsEvent = {
   type: "component:mount",
   id: 1,
   name: "Counter",
+  parentId: null,
 };
 
 describe("devtools event bus", () => {
@@ -90,6 +91,7 @@ describe("devtools event bus", () => {
       type: "component:unmount",
       id: 999,
       name: "Injected",
+      parentId: null,
     });
 
     recorder.stop();
@@ -97,6 +99,7 @@ describe("devtools event bus", () => {
       type: "component:update",
       id: 1,
       name: "Counter",
+      parentId: null,
     });
 
     expect(firstSnapshot).toEqual([
@@ -105,6 +108,7 @@ describe("devtools event bus", () => {
         type: "component:unmount",
         id: 999,
         name: "Injected",
+        parentId: null,
       },
     ]);
     expect(recorder.snapshot()).toEqual([mountEvent]);
@@ -120,6 +124,7 @@ describe("devtools event bus", () => {
       type: "component:update",
       id: 1,
       name: "Counter",
+      parentId: null,
     });
 
     expect(recorder.snapshot()).toEqual([
@@ -127,6 +132,7 @@ describe("devtools event bus", () => {
         type: "component:update",
         id: 1,
         name: "Counter",
+        parentId: null,
       },
     ]);
     expect(hasDevtoolsListeners()).toBe(true);
@@ -141,16 +147,19 @@ describe("devtools event bus", () => {
       type: "component:mount",
       id: 1,
       name: "First",
+      parentId: null,
     });
     emitDevtoolsEvent({
       type: "component:update",
       id: 1,
       name: "First",
+      parentId: null,
     });
     emitDevtoolsEvent({
       type: "component:unmount",
       id: 1,
       name: "First",
+      parentId: null,
     });
 
     expect(recorder.snapshot()).toEqual([
@@ -158,11 +167,13 @@ describe("devtools event bus", () => {
         type: "component:update",
         id: 1,
         name: "First",
+        parentId: null,
       },
       {
         type: "component:unmount",
         id: 1,
         name: "First",
+        parentId: null,
       },
     ]);
 
