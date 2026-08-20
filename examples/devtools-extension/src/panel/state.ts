@@ -24,6 +24,19 @@ export interface StoreActionEntry {
   durationMs: number;
 }
 
+export interface ComponentTreeNode {
+  id: number;
+  name: string;
+  parentId: number | null;
+  mountedEventId: string;
+  lastUpdateEventId: string | null;
+}
+
+export interface ComponentTreeState {
+  nodes: Map<number, ComponentTreeNode>;
+  collapsed: Set<number>;
+}
+
 export interface PanelState {
   view: PanelView;
   paused: boolean;
@@ -32,6 +45,7 @@ export interface PanelState {
   selectedEventId: string | null;
   events: TimelineRow[];
   nextEventId: number;
+  componentTree: ComponentTreeState;
 }
 
 export interface RecordDevtoolsEventOptions {
@@ -56,6 +70,7 @@ export function createPanelState(options: CreatePanelStateOptions = {}): PanelSt
     selectedEventId: null,
     events: [],
     nextEventId: 1,
+    componentTree: { nodes: new Map(), collapsed: new Set() },
   };
 }
 
@@ -85,6 +100,71 @@ export function recordDevtoolsEvent(
     events: rows,
     selectedEventId,
     nextEventId: state.nextEventId + 1,
+    componentTree: applyComponentTreeEvent(state.componentTree, event, row.id),
+  };
+}
+
+function applyComponentTreeEvent(
+  tree: ComponentTreeState,
+  event: DevtoolsEvent,
+  rowId: string,
+): ComponentTreeState {
+  if (event.type !== "component:mount" && event.type !== "component:update" && event.type !== "component:unmount") {
+    return tree;
+  }
+  const nodes = new Map(tree.nodes);
+  if (event.type === "component:mount") {
+    nodes.set(event.id, { id: event.id, name: event.name, parentId: event.parentId, mountedEventId: rowId, lastUpdateEventId: null });
+  } else if (event.type === "component:update") {
+    const existing = nodes.get(event.id);
+    if (existing !== undefined) {
+      nodes.set(event.id, { ...existing, lastUpdateEventId: rowId });
+    }
+  } else {
+    removeSubtree(nodes, event.id);
+  }
+  return { nodes, collapsed: tree.collapsed };
+}
+
+function removeSubtree(nodes: Map<number, ComponentTreeNode>, rootId: number): void {
+  for (const [id, node] of nodes) {
+    if (node.parentId === rootId) {
+      removeSubtree(nodes, id);
+    }
+  }
+  nodes.delete(rootId);
+}
+
+export function getComponentTreeNodes(state: PanelState): Array<ComponentTreeNode & { depth: number }> {
+  const byParent = new Map<number | null, ComponentTreeNode[]>();
+  for (const node of state.componentTree.nodes.values()) {
+    const siblings = byParent.get(node.parentId) ?? [];
+    siblings.push(node);
+    byParent.set(node.parentId, siblings);
+  }
+  const ordered: Array<ComponentTreeNode & { depth: number }> = [];
+  const walk = (parentId: number | null, depth: number): void => {
+    for (const node of byParent.get(parentId) ?? []) {
+      ordered.push({ ...node, depth });
+      if (!state.componentTree.collapsed.has(node.id)) {
+        walk(node.id, depth + 1);
+      }
+    }
+  };
+  walk(null, 0);
+  return ordered;
+}
+
+export function toggleComponentNode(state: PanelState, nodeId: number): PanelState {
+  const collapsed = new Set(state.componentTree.collapsed);
+  if (collapsed.has(nodeId)) {
+    collapsed.delete(nodeId);
+  } else {
+    collapsed.add(nodeId);
+  }
+  return {
+    ...state,
+    componentTree: { nodes: state.componentTree.nodes, collapsed },
   };
 }
 
@@ -165,6 +245,7 @@ export function clearTimeline(state: PanelState): PanelState {
     ...state,
     events: [],
     selectedEventId: null,
+    componentTree: { nodes: new Map(), collapsed: new Set() },
   };
 }
 

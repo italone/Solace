@@ -5,6 +5,7 @@ import {
   clearTimeline,
   createPanelState,
   filterTimeline,
+  getComponentTreeNodes,
   getSelectedTimelineRow,
   recordDevtoolsEvent,
   selectTimelineEvent,
@@ -294,5 +295,45 @@ describe("devtools extension panel state", () => {
         selectedEventId: "timeline-1",
       }),
     ).toBeUndefined();
+  });
+});
+
+describe("component tree state", () => {
+  it("builds a tree from mount events using parentId", () => {
+    let state = createPanelState();
+    state = recordDevtoolsEvent(state, { type: "component:mount", id: 1, name: "App", parentId: null });
+    state = recordDevtoolsEvent(state, { type: "component:mount", id: 2, name: "Child", parentId: 1 });
+
+    const nodes = getComponentTreeNodes(state);
+    expect(nodes).toHaveLength(2);
+    expect(nodes[0]).toMatchObject({ id: 1, name: "App", depth: 0 });
+    expect(nodes[1]).toMatchObject({ id: 2, name: "Child", depth: 1 });
+  });
+
+  it("removes a subtree on unmount and keeps the tree after timeline trimming", () => {
+    let state = createPanelState({ limit: 2 });
+    state = recordDevtoolsEvent(state, { type: "component:mount", id: 1, name: "App", parentId: null });
+    state = recordDevtoolsEvent(state, { type: "component:mount", id: 2, name: "Child", parentId: 1 });
+    state = recordDevtoolsEvent(state, { type: "component:mount", id: 3, name: "Grandchild", parentId: 2 });
+    state = recordDevtoolsEvent(state, { type: "store:action", name: "x", status: "success", durationMs: 1 });
+
+    expect(state.events).toHaveLength(2);
+    expect(getComponentTreeNodes(state)).toHaveLength(3);
+
+    state = recordDevtoolsEvent(state, { type: "component:unmount", id: 2, name: "Child", parentId: 1 });
+    const remaining = getComponentTreeNodes(state);
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0]).toMatchObject({ id: 1, name: "App" });
+  });
+
+  it("marks updated nodes and clears the tree on Clear", () => {
+    let state = createPanelState();
+    state = recordDevtoolsEvent(state, { type: "component:mount", id: 1, name: "App", parentId: null });
+    state = recordDevtoolsEvent(state, { type: "component:update", id: 1, name: "App", parentId: null });
+
+    expect(getComponentTreeNodes(state)[0]?.lastUpdateEventId).toBeTypeOf("string");
+
+    state = clearTimeline(state);
+    expect(getComponentTreeNodes(state)).toHaveLength(0);
   });
 });
