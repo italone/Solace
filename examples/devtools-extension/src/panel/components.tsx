@@ -3,6 +3,7 @@ import type { PanelState, StoreActionEntry, TimelineFamily } from "./state";
 import {
   clearTimeline,
   filterTimeline,
+  getComponentTreeNodes,
   getSelectedTimelineRow,
   getStoreActionEntries,
   selectTimelineEvent,
@@ -10,6 +11,7 @@ import {
   setPanelView,
   setRecorderLimit,
   setTimelineFilter,
+  toggleComponentNode,
 } from "./state";
 
 export interface TimelinePanelProps {
@@ -88,7 +90,7 @@ export function TimelinePanel(props: TimelinePanelProps) {
           "data-testid": "panel-tabs",
           "aria-label": "Panel views",
         },
-        (["timeline", "store"] as const).map((view) =>
+        (["timeline", "components", "store"] as const).map((view) =>
           h(
             "button",
             {
@@ -97,11 +99,17 @@ export function TimelinePanel(props: TimelinePanelProps) {
               "aria-pressed": state.view === view,
               onClick: () => onStateChange(setPanelView(state, view)),
             },
-            view === "timeline" ? "Timeline" : "Store",
+            view === "timeline" ? "Timeline" : view === "components" ? "Components" : "Store",
           ),
         ),
       ),
-      ...(state.view === "store"
+      ...(state.view === "components"
+        ? [
+            h("section", { class: "tree-pane", "aria-label": "Component tree" }, [
+              ComponentTree({ state, onStateChange }),
+            ]),
+          ]
+        : state.view === "store"
         ? [
             h("section", { class: "store-pane", "aria-label": "Store actions" }, [
               StoreActions({ actions: storeActions }),
@@ -172,6 +180,38 @@ export function TimelinePanel(props: TimelinePanelProps) {
           ]),
     ]);
   };
+}
+
+export function ComponentTree(props: { state: PanelState; onStateChange(nextState: PanelState): void }) {
+  const { state, onStateChange } = props;
+  const nodes = getComponentTreeNodes(state);
+  return h(
+    "ol",
+    { class: "component-tree", "data-testid": "component-tree", "aria-label": "Component tree" },
+    nodes.map((node) =>
+      h(
+        "li",
+        {
+          key: `component-${node.id}`,
+          class:
+            node.lastUpdateEventId !== null
+              ? "component-node component-node-updated"
+              : "component-node",
+          style: { paddingLeft: `${node.depth * 16}px` },
+        },
+        h(
+          "button",
+          {
+            class: "component-node-toggle",
+            type: "button",
+            "aria-expanded": String(!state.componentTree.collapsed.has(node.id)),
+            onClick: () => onStateChange(toggleComponentNode(state, node.id)),
+          },
+          `${node.name} #${node.id}`,
+        ),
+      ),
+    ),
+  );
 }
 
 export function StoreActions(props: { actions: StoreActionEntry[] }) {

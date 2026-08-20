@@ -2,7 +2,7 @@ import type { DevtoolsEvent } from "@italone/solace/devtools";
 
 export type TimelineFamily = "component" | "scheduler" | "reactivity" | "renderer" | "store";
 
-export type PanelView = "timeline" | "store";
+export type PanelView = "timeline" | "components" | "store";
 
 export interface TimelineFilter {
   family?: TimelineFamily;

@@ -20,6 +20,7 @@ function replacePanelState(nextState: PanelState): void {
   panelState.selectedEventId = nextState.selectedEventId;
   panelState.events = nextState.events;
   panelState.nextEventId = nextState.nextEventId;
+  panelState.componentTree = nextState.componentTree;
 
   if (wasPaused !== nextState.paused) {
     eventSource.setPaused(nextState.paused);

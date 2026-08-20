@@ -5,7 +5,9 @@ import type { DevtoolsEvent } from "@italone/solace/devtools";
 import { TimelinePanel } from "../../../examples/devtools-extension/src/panel/components";
 import {
   createPanelState,
+  getComponentTreeNodes,
   recordDevtoolsEvent,
+  toggleComponentNode,
   type PanelState,
 } from "../../../examples/devtools-extension/src/panel/state";
 
@@ -119,12 +121,69 @@ describe("devtools extension timeline panel", () => {
     expect(getTimelineRows(container)).toEqual([]);
     expect(getDetailsText(container)).toBe("");
   });
+
+  it("renders the Components tab tree with update highlights", async () => {
+    let state = createPanelState();
+    state = recordDevtoolsEvent(state, { type: "component:mount", id: 1, name: "App", parentId: null });
+    state = recordDevtoolsEvent(state, { type: "component:mount", id: 2, name: "Child", parentId: 1 });
+    state = recordDevtoolsEvent(state, { type: "component:update", id: 2, name: "Child", parentId: 1 });
+
+    const { container } = renderPanel(state);
+
+    expect(container.querySelector("[data-testid='panel-tabs']")?.textContent).toContain("Components");
+
+    findButton(container, "Components")?.click();
+    await nextTick();
+
+    const tree = container.querySelector("[data-testid='component-tree']");
+    expect(tree?.textContent).toContain("App");
+    expect(tree?.textContent).toContain("Child");
+    expect(tree?.querySelector(".component-node-updated")).not.toBeNull();
+  });
+
+  it("collapses and expands tree nodes", async () => {
+    let state = createPanelState();
+    state = recordDevtoolsEvent(state, { type: "component:mount", id: 1, name: "App", parentId: null });
+    state = recordDevtoolsEvent(state, { type: "component:mount", id: 2, name: "Child", parentId: 1 });
+
+    const states: PanelState[] = [];
+    const container = document.createElement("div");
+    const reactiveState = reactive(state);
+    render(
+      h(TimelinePanel, {
+        state: reactiveState,
+        onStateChange: (next: PanelState) => {
+          states.push(next);
+          reactiveState.view = next.view;
+          reactiveState.componentTree = next.componentTree;
+        },
+      }),
+      container,
+    );
+
+    findButton(container, "Components")?.click();
+    await nextTick();
+
+    const collapseButtons = container.querySelectorAll(".component-node-toggle");
+    expect(collapseButtons).toHaveLength(2);
+    collapseButtons[0]?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await nextTick();
+
+    const collapsedState = states[states.length - 1];
+    expect(collapsedState).toBeDefined();
+    expect(getComponentTreeNodes(collapsedState)).toHaveLength(1);
+
+    const expanded = toggleComponentNode(collapsedState, 1);
+    expect(getComponentTreeNodes(expanded)).toHaveLength(2);
+  });
 });
 
 function renderPanel(initialState: PanelState): { container: HTMLDivElement; state: PanelState } {
   const container = document.createElement("div");
   const state = reactive(initialState);
   const replaceState = (nextState: PanelState): void => {
+    state.view = nextState.view;
+    state.componentTree = nextState.componentTree;
     state.paused = nextState.paused;
     state.limit = nextState.limit;
     state.filter = nextState.filter;
