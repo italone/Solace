@@ -187,8 +187,9 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toMatch(/95\.54%\s+functions/);
     expect(projectStatusZh).toMatch(/92\.73%\s+lines/);
     expect(projectStatus).toContain("pnpm performance:compare:ci");
-    expect(projectStatus).toContain("three samples per metric");
+    expect(projectStatus).toContain("best-of-three samples");
     expect(projectStatus).toContain("1.2 maximum ratio");
+    expect(projectStatus).toContain("absoluteDeltaFloorMs");
     expect(projectStatus).toContain("does not count toward the five-date 1.0 evidence requirement");
     expect(projectStatus).toContain("91 Vitest files / 814 tests");
     expect(projectStatus).toContain("90.40% statements");
@@ -196,8 +197,9 @@ describe("public contract documentation", () => {
     expect(projectStatus).toContain("93.23% functions");
     expect(projectStatus).toContain("90.94% lines");
     expect(projectStatusZh).toContain("pnpm performance:compare:ci");
-    expect(projectStatusZh).toContain("每个 metric 采集三个 samples");
+    expect(projectStatusZh).toContain("best-of-three samples");
     expect(projectStatusZh).toContain("1.2 最大 ratio");
+    expect(projectStatusZh).toContain("absoluteDeltaFloorMs");
     expect(projectStatusZh).toContain("不计入 1.0 所需的五个不同日期证据");
     expect(projectStatusZh).toMatch(/91 个 Vitest 文件 \/ 814 个测试/);
     expect(projectStatusZh).toMatch(/90\.40%\s+statements/);

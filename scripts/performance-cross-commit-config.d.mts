@@ -1,9 +1,12 @@
 export type CrossCommitComparison = {
   id: string;
+  baseMin: number;
+  headMin: number;
   baseMedian: number;
   headMedian: number;
   ratio: number;
   limit: number;
+  absoluteDeltaFloorMs: number;
 };
 
 export function median(values: number[]): number;

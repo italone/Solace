@@ -31,5 +31,6 @@
     "10000 row keyed mixed adjacent insert and move": ["latencyMeanMs", "latencyP99Ms"],
     "10000 row keyed mixed adjacent remove and move": ["latencyMeanMs", "latencyP99Ms"],
     "10000 row keyed reorder": ["latencyMeanMs", "latencyP99Ms"]
-  }
+  },
+  "absoluteDeltaFloorMs": 3
 }

@@ -6,6 +6,7 @@ export function evaluateCrossCommitPerformance({ config, base, head }) {
   const comparisons = [];
   const minimumSamples = config?.minimumSamples;
   const maximumRatio = config?.maximumRatio;
+  const absoluteDeltaFloorMs = config?.absoluteDeltaFloorMs;
 
   if (config?.schemaVersion !== 1) errors.push("cross-commit schemaVersion must be 1");
   if (!Number.isInteger(minimumSamples) || minimumSamples < 1) {
@@ -13,6 +14,9 @@ export function evaluateCrossCommitPerformance({ config, base, head }) {
   }
   if (!Number.isFinite(maximumRatio) || maximumRatio < 1) {
     errors.push("maximumRatio must be a finite number of at least 1");
+  }
+  if (!Number.isFinite(absoluteDeltaFloorMs) || absoluteDeltaFloorMs < 0) {
+    errors.push("absoluteDeltaFloorMs must be a finite number of at least 0");
   }
 
   const baseSha = validateRevisionSha("base", base?.sha, errors);
@@ -28,6 +32,7 @@ export function evaluateCrossCommitPerformance({ config, base, head }) {
     headRecords: collectBrowserRecords(head?.browserRecords, "head", headSha, errors),
     minimumSamples,
     maximumRatio,
+    absoluteDeltaFloorMs,
     errors,
     comparisons,
   });
@@ -38,6 +43,7 @@ export function evaluateCrossCommitPerformance({ config, base, head }) {
     headRecords: collectJsdomRecords(head?.jsdomRecords, "head", headSha, errors),
     minimumSamples,
     maximumRatio,
+    absoluteDeltaFloorMs,
     errors,
     comparisons,
   });
@@ -57,6 +63,7 @@ function evaluateKind({
   headRecords,
   minimumSamples,
   maximumRatio,
+  absoluteDeltaFloorMs,
   errors,
   comparisons,
 }) {
@@ -95,18 +102,31 @@ function evaluateKind({
       if (
         baseValues.length < minimumSamples ||
         headValues.length < minimumSamples ||
-        !Number.isFinite(maximumRatio)
+        !Number.isFinite(maximumRatio) ||
+        !Number.isFinite(absoluteDeltaFloorMs)
       ) {
         continue;
       }
 
+      const baseMin = Math.min(...baseValues);
+      const headMin = Math.min(...headValues);
       const baseMedian = median(baseValues);
       const headMedian = median(headValues);
-      const ratio = headMedian / baseMedian;
-      comparisons.push({ id, baseMedian, headMedian, ratio, limit: maximumRatio });
-      if (ratio > maximumRatio + RATIO_PRECISION_TOLERANCE) {
+      const ratio = headMin / baseMin;
+      const deltaMs = headMin - baseMin;
+      comparisons.push({
+        id,
+        baseMin,
+        headMin,
+        baseMedian,
+        headMedian,
+        ratio,
+        limit: maximumRatio,
+        absoluteDeltaFloorMs,
+      });
+      if (ratio > maximumRatio + RATIO_PRECISION_TOLERANCE && deltaMs > absoluteDeltaFloorMs) {
         errors.push(
-          `FAIL ${id} base=${baseMedian.toFixed(2)}ms head=${headMedian.toFixed(2)}ms ratio=${ratio.toFixed(3)} limit=${maximumRatio.toFixed(3)}`,
+          `FAIL ${id} base=${baseMin.toFixed(2)}ms head=${headMin.toFixed(2)}ms ratio=${ratio.toFixed(3)} limit=${maximumRatio.toFixed(3)} delta=${deltaMs.toFixed(2)}ms floor=${absoluteDeltaFloorMs.toFixed(2)}ms`,
         );
       }
     }

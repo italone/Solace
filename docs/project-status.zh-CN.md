@@ -151,7 +151,9 @@ stable contract admission。该记录写入时本地 Git 超前 `origin/main`；
 提交已于 2026-08-20 推送，`origin/main` 现已同步，该发布阻塞已解除，但证据类阻塞仍然存在。
 
 CI 跨提交性能门禁现已通过 `pnpm performance:compare:ci` 配置完成。它会在同一 runner 上比较
-base 与 candidate 的 median，每个 metric 采集三个 samples，并使用 1.2 最大 ratio，同时在诊断
+base 与 candidate 的最小值（best-of-three samples）。改用最小值是因为毫秒级短指标的 median 会因
+调度器与 GC 抖动在源码完全相同的提交对上误报。门禁使用 1.2 最大 ratio，外加 3ms 的
+`absoluteDeltaFloorMs` 下限保护微型指标的亚下限绝对差，同时会在诊断
 artifacts 中保留 commit 与 environment fingerprint。它不计入 1.0 所需的五个不同日期证据。该门禁
 不会更新 `release/performance-history.json`，也不会改变当前 `INCOMPLETE` 的准入结果。
 

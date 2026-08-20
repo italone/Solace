@@ -192,9 +192,11 @@ DevTools packaging-gate docs commits were pushed on 2026-08-20 and `origin/main`
 synchronized, so that publish blocker is cleared while the evidence blockers remain.
 
 The CI cross-commit performance gate is now configured through
-`pnpm performance:compare:ci`. It compares base and candidate medians on the same runner.
-It uses three samples per metric. The gate enforces a 1.2 maximum ratio and retains commit and environment
-fingerprints in diagnostic artifacts. It does not count toward the five-date 1.0 evidence requirement.
+`pnpm performance:compare:ci`. It compares base and candidate minimums (best-of-three samples) on the
+same runner, because medians of short millisecond-scale metrics false-positived on scheduler and GC
+jitter even for identical source trees. The gate enforces a 1.2 maximum ratio plus a 3ms
+`absoluteDeltaFloorMs` guard so sub-floor absolute deltas on micro-metrics cannot fail the gate, and
+it retains commit and environment fingerprints in diagnostic artifacts. It does not count toward the five-date 1.0 evidence requirement.
 The gate does not update `release/performance-history.json` and does not change the current
 `INCOMPLETE` admission result.
 

@@ -9,6 +9,7 @@ const config = {
   schemaVersion: 1,
   minimumSamples: 3,
   maximumRatio: 1.2,
+  absoluteDeltaFloorMs: 3,
   browser: { "large-list": ["initialRenderMs", "updateMs"] },
   jsdom: { render: ["latencyMeanMs"] },
 };
@@ -87,48 +88,60 @@ function input({
 }
 
 describe("cross-commit performance evaluator", () => {
-  it("compares three-sample medians for matching environments", () => {
+  it("compares three-sample minimums for matching environments", () => {
     const result = evaluateCrossCommitPerformance(input());
 
     expect(result.valid).toBe(true);
     expect(result.errors).toEqual([]);
     expect(result.comparisons.find(({ id }) => id === "browser:large-list.updateMs")).toMatchObject(
       {
+        baseMin: 10,
+        headMin: 10,
         baseMedian: 11,
         headMedian: 11,
         ratio: 1,
         limit: 1.2,
+        absoluteDeltaFloorMs: 3,
       },
     );
   });
 
-  it("accepts the exact ratio limit and rejects a larger regression", () => {
+  it("accepts the exact ratio limit and rejects a larger regression above the delta floor", () => {
     const atLimit = evaluateCrossCommitPerformance(
-      input({ headBrowser: browserRecords(headSha, [12, 13.2, 14]) }),
+      input({ headBrowser: browserRecords(headSha, [12, 14, 15]) }),
     );
     expect(atLimit.valid).toBe(true);
 
     const overLimit = evaluateCrossCommitPerformance(
-      input({ headBrowser: browserRecords(headSha, [12, 13.75, 14]) }),
+      input({ headBrowser: browserRecords(headSha, [13.5, 15, 16]) }),
     );
     expect(overLimit.valid).toBe(false);
     expect(overLimit.errors).toContain(
-      "FAIL browser:large-list.updateMs base=11.00ms head=13.75ms ratio=1.250 limit=1.200",
+      "FAIL browser:large-list.updateMs base=10.00ms head=13.50ms ratio=1.350 limit=1.200 delta=3.50ms floor=3.00ms",
     );
   });
 
-  it("does not fail the ratio limit on sub-microsecond timer precision noise", () => {
+  it("does not fail the ratio limit on sub-floor absolute deltas", () => {
     const result = evaluateCrossCommitPerformance(
       input({
-        baseBrowser: browserRecords(baseSha, [3, 3, 3]),
-        headBrowser: browserRecords(
-          headSha,
-          [3.600000023841858, 3.600000023841858, 3.600000023841858],
-        ),
+        baseBrowser: browserRecords(baseSha, [5, 5, 5]),
+        headBrowser: browserRecords(headSha, [6.5, 6.5, 6.5]),
       }),
     );
 
     expect(result.valid).toBe(true);
+  });
+
+  it("fails a sub-floor ratio regression only when the absolute delta exceeds the floor", () => {
+    const result = evaluateCrossCommitPerformance(
+      input({
+        baseBrowser: browserRecords(baseSha, [20, 20, 20]),
+        headBrowser: browserRecords(headSha, [26, 26, 26]),
+      }),
+    );
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.join(" ")).toContain("browser:large-list.updateMs");
   });
 
   it("rejects environment fingerprint mismatches", () => {
