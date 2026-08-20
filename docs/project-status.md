@@ -187,8 +187,9 @@ they do not count toward independent Solace-primary adoption. Likewise,
 manifest permissions, but deliberately records no production distribution or tested production
 origins. `pnpm release:one-zero:check` therefore remains `INCOMPLETE` for independent adoption,
 five distinct dates per keyed browser scenario, distributable DevTools evidence, and stable contract
-admission. Publishable readiness remains blocked by local Git being ahead of `origin/main`; the
-local beta.6 candidate is release-checked but not publishable.
+admission. Local Git was ahead of `origin/main` when that record was written; the two
+DevTools packaging-gate docs commits were pushed on 2026-08-20 and `origin/main` is now
+synchronized, so that publish blocker is cleared while the evidence blockers remain.
 
 The CI cross-commit performance gate is now configured through
 `pnpm performance:compare:ci`. It compares base and candidate medians on the same runner.
@@ -206,6 +207,15 @@ and keeping the CLI files thin restored the gate. The same cleanup removed the r
 Console check, jsdom and Chromium benchmarks, 24 browser E2E tests, and 4 DevTools extension E2E
 tests. This validates the beta.6 candidate gates, but does not supply the missing 1.0 adoption,
 five-date history, DevTools distribution, or stable-admission evidence.
+
+The 2026-08-20 baseline refresh pushed the two outstanding DevTools packaging-gate docs commits to
+`origin/main` (synchronizing `main` with the remote) and reran the full `pnpm release:check` on the
+synchronized tree. The gate passed: 91 Vitest files / 816 tests, 16 package tests, coverage of
+90.10% statements / 86.22% branches / 93.12% functions / 90.66% lines, package and adoption smoke,
+the packed Operations Console check, jsdom and Chromium benchmarks (performance regression: PASS),
+24 browser E2E tests across Chromium, Firefox, and WebKit, and 4 DevTools extension E2E tests. No
+runtime code changed; the 1.0 evidence blockers (independent adoption, five-date history, DevTools
+distribution, stable admission) are unchanged.
 
 The same 2026-08-19 hardening made the packed adoption consumer a routine check: routine Node 20/22
 CI now runs `pnpm adoption:smoke`. A separate scheduled

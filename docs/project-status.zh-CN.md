@@ -147,8 +147,8 @@ React/Vite 应用仍只是 compatibility-only，不计入独立的 Solace-primar
 `release/devtools-distribution-evidence.json` 将本地 extension 记录绑定到已检查的 manifest
 permissions，但明确没有生产分发或已测试的生产 origins。因此，`pnpm release:one-zero:check` 仍为
 `INCOMPLETE`：缺少独立采用、每个 keyed browser scenario 五个不同日期、可分发 DevTools 证据和
-stable contract admission。publishable readiness 仍因本地 Git 超前 `origin/main` 被阻断；该 beta.6
-candidate 已完成 release check，但不可发布。
+stable contract admission。该记录写入时本地 Git 超前 `origin/main`；两个 DevTools 打包门禁 docs
+提交已于 2026-08-20 推送，`origin/main` 现已同步，该发布阻塞已解除，但证据类阻塞仍然存在。
 
 CI 跨提交性能门禁现已通过 `pnpm performance:compare:ci` 配置完成。它会在同一 runner 上比较
 base 与 candidate 的 median，每个 metric 采集三个 samples，并使用 1.2 最大 ratio，同时在诊断
@@ -163,6 +163,14 @@ artifacts 中保留 commit 与 environment fingerprint。它不计入 1.0 所需
 packed Operations Console 检查、jsdom 与 Chromium benchmark、24 个 browser E2E 测试以及 4 个
 DevTools extension E2E 测试也全部通过。这些结果验证了 beta.6 candidate 的现有门禁，但没有补齐
 1.0 所缺少的 adoption、五个独立日期 history、DevTools distribution 或 stable admission 证据。
+
+2026-08-20 的基线刷新将两个待推送的 DevTools 打包门禁 docs 提交推送到 `origin/main`（本地与远端
+同步），并在同步后的工作树上重新执行了完整 `pnpm release:check`。门禁通过：91 个 Vitest 文件 /
+816 个测试、16 个 package tests，coverage 为 90.10% statements / 86.22% branches / 93.12%
+functions / 90.66% lines，package 与 adoption smoke、packed Operations Console 检查、jsdom 与
+Chromium benchmark（性能回归 PASS）、24 个 browser E2E 测试以及 4 个 DevTools extension E2E
+测试也全部通过。没有改动运行时代码；1.0 证据阻塞（独立 adoption、五个日期 history、DevTools
+distribution、stable admission）保持不变。
 
 同一轮 2026-08-19 加固还把 packed adoption consumer 纳入了日常检查：常规 Node 20/22 CI 现在会执行
 `pnpm adoption:smoke`。独立的定时 `.github/workflows/performance-history.yml` 会恢复最近一次成功的
