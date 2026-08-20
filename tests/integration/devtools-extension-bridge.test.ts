@@ -102,7 +102,10 @@ describe("devtools extension bridge", () => {
     } as DevtoolsEvent);
 
     expect(messages).toEqual([
-      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter", parentId: null } },
+      {
+        type: "devtools:event",
+        event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
+      },
     ]);
     expect(JSON.stringify(messages)).not.toContain("node");
     expect(JSON.stringify(messages)).not.toContain("vnode");
@@ -133,7 +136,10 @@ describe("devtools extension bridge", () => {
     firstSession.emit(mountEvent);
 
     expect(firstMessages).toEqual([
-      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter", parentId: null } },
+      {
+        type: "devtools:event",
+        event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
+      },
     ]);
     expect(secondMessages).toEqual([]);
   });
@@ -163,7 +169,10 @@ describe("devtools extension bridge", () => {
     });
 
     expect(messages).toEqual([
-      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter", parentId: null } },
+      {
+        type: "devtools:event",
+        event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
+      },
     ]);
   });
 
@@ -230,7 +239,10 @@ describe("devtools extension bridge", () => {
     session.emit({ type: "component:update", id: 1, name: "Counter", parentId: null });
 
     expect(messages).toEqual([
-      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter", parentId: null } },
+      {
+        type: "devtools:event",
+        event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
+      },
     ]);
 
     bridge.disconnect();
@@ -323,7 +335,10 @@ describe("devtools extension bridge", () => {
     }
 
     expect(messages).toEqual([
-      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter", parentId: null } },
+      {
+        type: "devtools:event",
+        event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
+      },
     ]);
 
     stop();
@@ -486,7 +501,10 @@ describe("devtools extension bridge", () => {
     contentPort.emit({ type: "devtools:event", event: { type: "component:mount" } } as never);
 
     expect(panelPort.messages).toEqual([
-      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter", parentId: null } },
+      {
+        type: "devtools:event",
+        event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
+      },
     ]);
   });
 
@@ -523,7 +541,10 @@ describe("devtools extension bridge", () => {
 
     expect(() => contentPort.emit({ type: "devtools:event", event: mountEvent })).not.toThrow();
     expect(panelPort.messages).toEqual([
-      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter", parentId: null } },
+      {
+        type: "devtools:event",
+        event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
+      },
     ]);
   });
 
@@ -564,8 +585,14 @@ describe("devtools extension bridge", () => {
     expect(brokenPanelPort.messages).toEqual([]);
     expect(brokenPostMessage).toHaveBeenCalledTimes(1);
     expect(healthyPanelPort.messages).toEqual([
-      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter", parentId: null } },
-      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter", parentId: null } },
+      {
+        type: "devtools:event",
+        event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
+      },
+      {
+        type: "devtools:event",
+        event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
+      },
     ]);
   });
 
@@ -648,7 +675,10 @@ describe("devtools extension bridge", () => {
     ]);
     expect(secondContentPort.messages).toEqual([{ type: "devtools:content:connect" }]);
     expect(panelPort.messages).toEqual([
-      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter", parentId: null } },
+      {
+        type: "devtools:event",
+        event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
+      },
     ]);
   });
 
@@ -753,7 +783,10 @@ describe("devtools extension bridge", () => {
 
     expect(contentPort.messages).toEqual([{ type: "devtools:content:connect" }]);
     expect(panelPort.messages).toEqual([
-      { type: "devtools:event", event: { type: "component:mount", id: 1, name: "Counter", parentId: null } },
+      {
+        type: "devtools:event",
+        event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
+      },
     ]);
   });
 

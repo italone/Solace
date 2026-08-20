@@ -75,9 +75,9 @@ describe("devtools large-list recorder smoke", () => {
             continue;
           }
           // parentId is null for root components; all other payloads are primitives.
-          expect(
-            value === null || (typeof value !== "object" && typeof value !== "function"),
-          ).toBe(true);
+          expect(value === null || (typeof value !== "object" && typeof value !== "function")).toBe(
+            true,
+          );
         }
 
         const serialized = JSON.stringify(event);

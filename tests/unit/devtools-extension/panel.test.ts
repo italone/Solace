@@ -124,13 +124,30 @@ describe("devtools extension timeline panel", () => {
 
   it("renders the Components tab tree with update highlights", async () => {
     let state = createPanelState();
-    state = recordDevtoolsEvent(state, { type: "component:mount", id: 1, name: "App", parentId: null });
-    state = recordDevtoolsEvent(state, { type: "component:mount", id: 2, name: "Child", parentId: 1 });
-    state = recordDevtoolsEvent(state, { type: "component:update", id: 2, name: "Child", parentId: 1 });
+    state = recordDevtoolsEvent(state, {
+      type: "component:mount",
+      id: 1,
+      name: "App",
+      parentId: null,
+    });
+    state = recordDevtoolsEvent(state, {
+      type: "component:mount",
+      id: 2,
+      name: "Child",
+      parentId: 1,
+    });
+    state = recordDevtoolsEvent(state, {
+      type: "component:update",
+      id: 2,
+      name: "Child",
+      parentId: 1,
+    });
 
     const { container } = renderPanel(state);
 
-    expect(container.querySelector("[data-testid='panel-tabs']")?.textContent).toContain("Components");
+    expect(container.querySelector("[data-testid='panel-tabs']")?.textContent).toContain(
+      "Components",
+    );
 
     findButton(container, "Components")?.click();
     await nextTick();
@@ -143,8 +160,18 @@ describe("devtools extension timeline panel", () => {
 
   it("collapses and expands tree nodes", async () => {
     let state = createPanelState();
-    state = recordDevtoolsEvent(state, { type: "component:mount", id: 1, name: "App", parentId: null });
-    state = recordDevtoolsEvent(state, { type: "component:mount", id: 2, name: "Child", parentId: 1 });
+    state = recordDevtoolsEvent(state, {
+      type: "component:mount",
+      id: 1,
+      name: "App",
+      parentId: null,
+    });
+    state = recordDevtoolsEvent(state, {
+      type: "component:mount",
+      id: 2,
+      name: "Child",
+      parentId: 1,
+    });
 
     const states: PanelState[] = [];
     const container = document.createElement("div");

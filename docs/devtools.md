@@ -59,9 +59,9 @@ public integrations subscribe through `@italone/solace/devtools`. The package ro
 
 ```ts
 type DevtoolsEvent =
-  | { type: "component:mount"; id: number; name: string }
-  | { type: "component:update"; id: number; name: string }
-  | { type: "component:unmount"; id: number; name: string }
+  | { type: "component:mount"; id: number; name: string; parentId: number | null }
+  | { type: "component:update"; id: number; name: string; parentId: number | null }
+  | { type: "component:unmount"; id: number; name: string; parentId: number | null }
   | { type: "component:emit"; id: number; name: string; event: string; handlerCount: number }
   | { type: "scheduler:flush"; queuedJobs: number; dedupedJobs: number; durationMs: number }
   | {
@@ -125,6 +125,10 @@ The initial panel scope is intentionally narrow:
   transport.
 - Tab-scoped activation: content scripts open a runtime port, but the page bridge is injected only
   after a Solace panel connects for that browser tab.
+- A Components tab that incrementally builds the inspected page's component tree from
+  `component:mount`/`update`/`unmount` events, highlighting updated nodes, pruning unmounted
+  subtrees, and supporting node collapse. The tree is derived from event summaries only
+  (`id`, `name`, `parentId`); it does not read component instances, props, state, or DOM.
 
 The extension does not change runtime payloads. It does not inspect component instances, DOM nodes,
 VNodes, props, store state, reactive targets, user content, stack traces, action arguments, or action
@@ -149,8 +153,10 @@ Run the example locally with:
 pnpm dev:devtools-extension
 ```
 
-The panel offers a `Timeline` view for all recorded event families and a `Store` view listing
-recorded `store:action` summaries as `{ time, type, status, durationMs }` entries. The
+The panel offers a `Timeline` view for all recorded event families, a `Store` view listing
+recorded `store:action` summaries as `{ time, type, status, durationMs }` entries, and a
+`Components` view building the component tree from `parentId`-extended component event summaries.
+The
 `store-timeline.html` demo page in the example builds a Solace app with a store and dispatches an
 `increment` action so the panel can record it.
 
@@ -241,7 +247,8 @@ automatic updates, or a production-wide inspected-origin policy.
 1. **Event model design**: completed for initial component and scheduler summary events.
 2. **Development-only event bus**: internal event bus exists in `src/devtools/events.ts`.
 3. **Scheduler flush and dedupe summary**: `scheduler:flush` reports executed jobs, deduped queue attempts, and duration.
-4. **Component lifecycle summaries**: component mount/update/unmount summaries emit id and name only.
+4. **Component lifecycle summaries**: component mount/update/unmount summaries emit id, name, and
+   `parentId: number | null` only.
 5. **Component emit summaries**: `component:emit` is emitted with event name and callable handler count only.
 6. **Store action summaries**: `store:action` is emitted after action success or error without raw values.
 7. **Reactivity trigger summaries**: `reactivity:trigger` is emitted without raw targets, keys, or values.

@@ -120,7 +120,9 @@ describe("devtools extension panel transport", () => {
       }),
     );
 
-    expect(observed).toEqual([{ type: "component:update", id: 1, name: "Counter", parentId: null }]);
+    expect(observed).toEqual([
+      { type: "component:update", id: 1, name: "Counter", parentId: null },
+    ]);
 
     source.stop();
   });
@@ -187,7 +189,9 @@ describe("devtools extension panel transport", () => {
     }
 
     expect(port.postMessage).toHaveBeenCalledWith({ type: "devtools:panel:connect", tabId: 7 });
-    expect(observed).toEqual([{ type: "component:update", id: 1, name: "Counter", parentId: null }]);
+    expect(observed).toEqual([
+      { type: "component:update", id: 1, name: "Counter", parentId: null },
+    ]);
 
     source.stop();
   });

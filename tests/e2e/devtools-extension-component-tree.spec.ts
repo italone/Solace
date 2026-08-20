@@ -12,10 +12,7 @@ test("panel Components tab renders a relayed component tree with updates", async
 
   const relay = (event: Record<string, unknown>) =>
     page.evaluate((payload) => {
-      window.postMessage(
-        { type: "devtools:event", event: payload },
-        window.location.origin,
-      );
+      window.postMessage({ type: "devtools:event", event: payload }, window.location.origin);
     }, event);
 
   await relay({ type: "component:mount", id: 1, name: "App", parentId: null });

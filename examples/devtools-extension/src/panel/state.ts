@@ -109,12 +109,22 @@ function applyComponentTreeEvent(
   event: DevtoolsEvent,
   rowId: string,
 ): ComponentTreeState {
-  if (event.type !== "component:mount" && event.type !== "component:update" && event.type !== "component:unmount") {
+  if (
+    event.type !== "component:mount" &&
+    event.type !== "component:update" &&
+    event.type !== "component:unmount"
+  ) {
     return tree;
   }
   const nodes = new Map(tree.nodes);
   if (event.type === "component:mount") {
-    nodes.set(event.id, { id: event.id, name: event.name, parentId: event.parentId, mountedEventId: rowId, lastUpdateEventId: null });
+    nodes.set(event.id, {
+      id: event.id,
+      name: event.name,
+      parentId: event.parentId,
+      mountedEventId: rowId,
+      lastUpdateEventId: null,
+    });
   } else if (event.type === "component:update") {
     const existing = nodes.get(event.id);
     if (existing !== undefined) {
@@ -135,7 +145,9 @@ function removeSubtree(nodes: Map<number, ComponentTreeNode>, rootId: number): v
   nodes.delete(rootId);
 }
 
-export function getComponentTreeNodes(state: PanelState): Array<ComponentTreeNode & { depth: number }> {
+export function getComponentTreeNodes(
+  state: PanelState,
+): Array<ComponentTreeNode & { depth: number }> {
   const byParent = new Map<number | null, ComponentTreeNode[]>();
   for (const node of state.componentTree.nodes.values()) {
     const siblings = byParent.get(node.parentId) ?? [];

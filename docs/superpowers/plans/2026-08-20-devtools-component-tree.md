@@ -15,6 +15,7 @@
 ### Task 1: Runtime event payload — `parentId` on component events
 
 **Files:**
+
 - Modify: `src/devtools/events.ts:1-4` (union), `src/devtools/events.ts:99-108` (serialize)
 - Modify: `src/renderer/devtools-events.ts:12-16` (emit helper)
 - Test: `tests/integration/devtools-payload-stability.test.ts:15-17` (allowed keys)
@@ -33,13 +34,13 @@ In `tests/integration/devtools-payload-stability.test.ts`, change lines 15-17 to
 Then extend the same file's integrated test: after `render(h(Counter, { onChange }), container)`, add a nested child render and assert the child mount event carries the parent's id. Append inside the existing `it("serializes integrated runtime events...")` body, after the initial assertions on captured events:
 
 ```ts
-    const mountEvents = events.filter(
-      (event): event is Extract<DevtoolsEvent, { type: "component:mount" }> =>
-        event.type === "component:mount",
-    );
-    // Root component reports parentId null.
-    expect(mountEvents.length).toBeGreaterThanOrEqual(1);
-    expect(mountEvents[0]?.parentId).toBeNull();
+const mountEvents = events.filter(
+  (event): event is Extract<DevtoolsEvent, { type: "component:mount" }> =>
+    event.type === "component:mount",
+);
+// Root component reports parentId null.
+expect(mountEvents.length).toBeGreaterThanOrEqual(1);
+expect(mountEvents[0]?.parentId).toBeNull();
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -76,12 +77,12 @@ In `serializeDevtoolsEvent` (lines 101-108), add `parentId` to the returned obje
 In `src/renderer/devtools-events.ts`, update `emitComponentDevtoolsEvent`:
 
 ```ts
-  emitDevtoolsEvent({
-    type,
-    id: instance.devtoolsId,
-    name: getComponentDevtoolsName(instance),
-    parentId: instance.parent?.devtoolsId ?? null,
-  });
+emitDevtoolsEvent({
+  type,
+  id: instance.devtoolsId,
+  name: getComponentDevtoolsName(instance),
+  parentId: instance.parent?.devtoolsId ?? null,
+});
 ```
 
 - [ ] **Step 5: Run tests to verify they pass**
@@ -101,6 +102,7 @@ git commit -m "feat: add parentId to component DevTools events"
 ### Task 2: Panel state — incremental component tree
 
 **Files:**
+
 - Modify: `examples/devtools-extension/src/panel/state.ts`
 - Test: `tests/unit/devtools-extension/state.test.ts`
 
@@ -114,8 +116,18 @@ Append to `tests/unit/devtools-extension/state.test.ts`:
 describe("component tree state", () => {
   it("builds a tree from mount events using parentId", () => {
     let state = createPanelState();
-    state = recordDevtoolsEvent(state, { type: "component:mount", id: 1, name: "App", parentId: null });
-    state = recordDevtoolsEvent(state, { type: "component:mount", id: 2, name: "Child", parentId: 1 });
+    state = recordDevtoolsEvent(state, {
+      type: "component:mount",
+      id: 1,
+      name: "App",
+      parentId: null,
+    });
+    state = recordDevtoolsEvent(state, {
+      type: "component:mount",
+      id: 2,
+      name: "Child",
+      parentId: 1,
+    });
 
     const nodes = getComponentTreeNodes(state);
     expect(nodes).toHaveLength(2);
@@ -125,16 +137,41 @@ describe("component tree state", () => {
 
   it("removes a subtree on unmount and keeps the tree after timeline trimming", () => {
     let state = createPanelState({ limit: 2 });
-    state = recordDevtoolsEvent(state, { type: "component:mount", id: 1, name: "App", parentId: null });
-    state = recordDevtoolsEvent(state, { type: "component:mount", id: 2, name: "Child", parentId: 1 });
-    state = recordDevtoolsEvent(state, { type: "component:mount", id: 3, name: "Grandchild", parentId: 2 });
+    state = recordDevtoolsEvent(state, {
+      type: "component:mount",
+      id: 1,
+      name: "App",
+      parentId: null,
+    });
+    state = recordDevtoolsEvent(state, {
+      type: "component:mount",
+      id: 2,
+      name: "Child",
+      parentId: 1,
+    });
+    state = recordDevtoolsEvent(state, {
+      type: "component:mount",
+      id: 3,
+      name: "Grandchild",
+      parentId: 2,
+    });
     // Limit 2 evicts the mount rows, but the tree must survive.
-    state = recordDevtoolsEvent(state, { type: "store:action", name: "x", status: "success", durationMs: 1 });
+    state = recordDevtoolsEvent(state, {
+      type: "store:action",
+      name: "x",
+      status: "success",
+      durationMs: 1,
+    });
 
     expect(state.events).toHaveLength(2);
     expect(getComponentTreeNodes(state)).toHaveLength(3);
 
-    state = recordDevtoolsEvent(state, { type: "component:unmount", id: 2, name: "Child", parentId: 1 });
+    state = recordDevtoolsEvent(state, {
+      type: "component:unmount",
+      id: 2,
+      name: "Child",
+      parentId: 1,
+    });
     const remaining = getComponentTreeNodes(state);
     expect(remaining).toHaveLength(1);
     expect(remaining[0]).toMatchObject({ id: 1, name: "App" });
@@ -142,8 +179,18 @@ describe("component tree state", () => {
 
   it("marks updated nodes and clears the tree on Clear", () => {
     let state = createPanelState();
-    state = recordDevtoolsEvent(state, { type: "component:mount", id: 1, name: "App", parentId: null });
-    state = recordDevtoolsEvent(state, { type: "component:update", id: 1, name: "App", parentId: null });
+    state = recordDevtoolsEvent(state, {
+      type: "component:mount",
+      id: 1,
+      name: "App",
+      parentId: null,
+    });
+    state = recordDevtoolsEvent(state, {
+      type: "component:update",
+      id: 1,
+      name: "App",
+      parentId: null,
+    });
 
     expect(getComponentTreeNodes(state)[0]?.lastUpdateEventId).toBeTypeOf("string");
 
@@ -245,14 +292,14 @@ function removeSubtree(nodes: Map<number, ComponentTreeNode>, rootId: number): v
 Call it inside `recordDevtoolsEvent` (note: paused state returns early, as today):
 
 ```ts
-  const componentTree = applyComponentTreeEvent(state.componentTree, event, row.id);
-  return {
-    ...state,
-    events: rows,
-    selectedEventId,
-    nextEventId: state.nextEventId + 1,
-    componentTree,
-  };
+const componentTree = applyComponentTreeEvent(state.componentTree, event, row.id);
+return {
+  ...state,
+  events: rows,
+  selectedEventId,
+  nextEventId: state.nextEventId + 1,
+  componentTree,
+};
 ```
 
 (Construct `row` before this call so `row.id` is available.)
@@ -301,6 +348,7 @@ git commit -m "feat: track component tree in DevTools panel state"
 ### Task 3: Panel UI — Components tab
 
 **Files:**
+
 - Modify: `examples/devtools-extension/src/panel/components.tsx`
 - Modify: `examples/devtools-extension/src/panel/main.tsx:19-22` (copy `componentTree` into reactive state)
 - Modify: `examples/devtools-extension/src/panel/styles.css` (indentation + highlight styles)
@@ -345,7 +393,10 @@ In `state.ts`, extend `PanelView` to `"timeline" | "store" | "components"`. In `
 - Import `getComponentTreeNodes` from `./state` and add, alongside the store pane branch:
 
 ```tsx
-export function ComponentTree(props: { state: PanelState; onStateChange(nextState: PanelState): void }) {
+export function ComponentTree(props: {
+  state: PanelState;
+  onStateChange(nextState: PanelState): void;
+}) {
   return () => {
     const nodes = getComponentTreeNodes(props.state);
     return h(
@@ -356,7 +407,10 @@ export function ComponentTree(props: { state: PanelState; onStateChange(nextStat
           "li",
           {
             key: `component-${node.id}`,
-            class: node.lastUpdateEventId !== null ? "component-node component-node-updated" : "component-node",
+            class:
+              node.lastUpdateEventId !== null
+                ? "component-node component-node-updated"
+                : "component-node",
             style: { paddingLeft: `${node.depth * 16}px` },
           },
           h(
@@ -383,9 +437,18 @@ In `main.tsx` `replacePanelState`, add `panelState.componentTree = nextState.com
 In `styles.css` add:
 
 ```css
-.component-tree { list-style: none; margin: 0; padding: 0; font-family: var(--panel-font, monospace); }
-.component-node { padding-block: 2px; }
-.component-node-updated { background: rgba(255, 191, 0, 0.25); }
+.component-tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--panel-font, monospace);
+}
+.component-node {
+  padding-block: 2px;
+}
+.component-node-updated {
+  background: rgba(255, 191, 0, 0.25);
+}
 ```
 
 - [ ] **Step 4: Run tests to verify they pass**
@@ -405,6 +468,7 @@ git commit -m "feat: add Components tree tab to DevTools panel"
 ### Task 4: Extension e2e test
 
 **Files:**
+
 - Test: `tests/e2e/devtools-extension-component-tree.spec.ts`
 
 - [ ] **Step 1: Write the e2e test**
@@ -426,10 +490,7 @@ test("panel Components tab renders a relayed component tree with updates", async
 
   const relay = (event: Record<string, unknown>) =>
     page.evaluate((payload) => {
-      window.postMessage(
-        { type: "devtools:event", event: payload },
-        window.location.origin,
-      );
+      window.postMessage({ type: "devtools:event", event: payload }, window.location.origin);
     }, event);
 
   await relay({ type: "component:mount", id: 1, name: "App", parentId: null });
@@ -472,6 +533,7 @@ git commit -m "test: cover DevTools panel component tree e2e"
 ### Task 5: Docs, project log, and quality gates
 
 **Files:**
+
 - Modify: `docs/devtools.md` (event union ~line 72, panel section)
 - Modify: `docs/project-status.md`, `docs/project-status.zh-CN.md` (DevTools row / next-steps note)
 - Create: `solace-project-log/` entry following existing naming convention (check directory for the current date-prefix pattern)
