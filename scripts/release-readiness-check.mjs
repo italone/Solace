@@ -33,6 +33,7 @@ requireScript("quality");
 requireScript("package:smoke");
 requireScript("adoption:smoke");
 requireScript("stable:app");
+requireScript("package:devtools-extension:smoke");
 requireScript("release:check");
 requireScript("release:contract:check");
 requireScript("release:one-zero:check");
@@ -44,6 +45,7 @@ requireReleaseCheckCommand("pnpm release:readiness");
 requireReleaseCheckCommand("pnpm package:smoke");
 requireReleaseCheckCommand("pnpm adoption:smoke");
 requireReleaseCheckCommand("pnpm stable:app");
+requireReleaseCheckCommand("pnpm package:devtools-extension:smoke");
 requireReleaseCheckCommand("pnpm test:e2e");
 requireReleaseCheckCommand("pnpm test:e2e:devtools-extension");
 requireReleaseCheckCommand("pnpm benchmark:browser");
@@ -52,6 +54,7 @@ requireScriptCommand("quality", "pnpm release:contract:check");
 requireScriptCommand("release:publish", "pnpm release:one-zero:check");
 requireScriptCommand("release:publish", "pnpm release:contract:check");
 requireGitignorePattern(".benchmark-history/");
+requireGitignorePattern(".devtools-artifacts/");
 
 if (changesetConfig.access !== "public") {
   failures.push('.changeset/config.json access must be "public" before public publishing.');
@@ -108,7 +111,7 @@ if (failures.length > 0) {
   console.log(`changeset access: ${changesetConfig.access}`);
   console.log(`mode: ${options.publishable ? "publishable" : "default"}`);
   console.log(
-    "public API gates: pnpm release:readiness, pnpm release:contract:check, pnpm package:smoke, pnpm adoption:smoke, pnpm stable:app, pnpm performance:regression, pnpm test:e2e, pnpm test:e2e:devtools-extension",
+    "public API gates: pnpm release:readiness, pnpm release:contract:check, pnpm package:smoke, pnpm adoption:smoke, pnpm stable:app, pnpm package:devtools-extension:smoke, pnpm performance:regression, pnpm test:e2e, pnpm test:e2e:devtools-extension",
   );
   console.log("benchmark history: .benchmark-history/ ignored local JSONL artifacts");
   if (options.publishable) {
