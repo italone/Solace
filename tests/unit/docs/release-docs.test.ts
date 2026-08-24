@@ -45,6 +45,8 @@ describe("release documentation", () => {
     expect(release).toContain("public `DevtoolsEvent` summaries");
     expect(release).toContain("production browser-store distribution");
     expect(release).toContain("SSR/SSG/hydration inspector");
+    expect(release).toContain("pnpm package:devtools-extension:smoke");
+    expect(release).toContain("does not satisfy production DevTools distribution evidence");
   });
 
   it("records additive async rendering compatibility", async () => {

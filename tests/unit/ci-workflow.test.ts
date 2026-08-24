@@ -29,6 +29,22 @@ describe("CI workflow", () => {
     expect(devtoolsExtensionE2E).toBeGreaterThan(browserE2E);
   });
 
+  it("smokes DevTools distribution packaging between build and browser installation", async () => {
+    const workflow = await readFile(".github/workflows/ci.yml", "utf8");
+    const browserJob = workflow.slice(
+      workflow.indexOf("  browser:"),
+      workflow.indexOf("  performance-comparison:"),
+    );
+    const packageBuild = browserJob.indexOf("run: pnpm build");
+    const devtoolsPackageSmoke = browserJob.indexOf("run: pnpm package:devtools-extension:smoke");
+    const installBrowsers = browserJob.indexOf(
+      "run: pnpm exec playwright install --with-deps chromium firefox webkit",
+    );
+
+    expect(devtoolsPackageSmoke).toBeGreaterThan(packageBuild);
+    expect(installBrowsers).toBeGreaterThan(devtoolsPackageSmoke);
+  });
+
   it("keeps ignored local performance history out of clean browser CI", async () => {
     const [workflow, packageJson] = await Promise.all([
       readFile(".github/workflows/ci.yml", "utf8"),

@@ -49,6 +49,9 @@ describe("DevTools documentation", () => {
     expect(docs).toContain("exact HTTPS origin");
     expect(docs).toContain("SHA-256");
     expect(docs).toContain("does not prove that a real production origin was exercised");
+    expect(docs).toContain("pnpm package:devtools-extension:smoke");
+    expect(docs).toContain("https://devtools-smoke.invalid");
+    expect(docs).toContain("never counts as a tested production origin");
     expect(evidence).toContain("origin-scoped ZIP packaging command");
     expect(evidence).toContain("No real production origin has been verified");
   });

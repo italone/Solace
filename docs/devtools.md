@@ -167,6 +167,11 @@ pnpm build:devtools-extension
 pnpm test:e2e:devtools-extension
 ```
 
+`pnpm package:devtools-extension:smoke` runs the real distributable build with the reserved
+`https://devtools-smoke.invalid` origin and writes an ignored ZIP plus evidence sidecar. It verifies
+packaging and manifest permission consistency only. The `.invalid` origin never counts as a tested production origin
+and the smoke output must not be copied into checked-in release evidence.
+
 Create an origin-scoped distributable ZIP only with explicit production origins:
 
 ```bash
