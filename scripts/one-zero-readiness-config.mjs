@@ -240,6 +240,7 @@ function isExactHttpsOrigin(value) {
   if (typeof value !== "string" || value.includes("*")) return false;
   try {
     const url = new URL(value);
+    const hostname = url.hostname.toLowerCase();
     return (
       url.protocol === "https:" &&
       url.username === "" &&
@@ -247,7 +248,9 @@ function isExactHttpsOrigin(value) {
       url.pathname === "/" &&
       url.search === "" &&
       url.hash === "" &&
-      url.origin === value
+      url.origin === value &&
+      hostname !== "invalid" &&
+      !hostname.endsWith(".invalid")
     );
   } catch {
     return false;
