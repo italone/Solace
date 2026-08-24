@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { defineAsyncComponent, Fragment, h } from "../../../src";
+import { defineAsyncComponent, Fragment, h, useStyle } from "../../../src";
 import { renderToStream } from "../../../src/server";
 import { renderToString, renderToStringAsync } from "../../../src/server/render-to-string";
 
@@ -154,5 +154,54 @@ describe("renderToStream async trees", () => {
   it("rejects the stream when an async component fails to load", async () => {
     const Bad = defineAsyncComponent(() => Promise.reject(new Error("load failed")));
     await expect(collectStream(renderToStream(h(Bad)))).rejects.toThrow("load failed");
+  });
+});
+
+describe("renderToStream styles", () => {
+  it("emits each style tag inline exactly once, before the component subtree", async () => {
+    const Styled = () => {
+      useStyle("card", ".card{color:red}");
+      return h("div", { class: "card" }, "x");
+    };
+    const streamed = await collectStream(renderToStream(h(Styled)));
+    const tags = streamed.match(/<style [^>]*>[\s\S]*?<\/style>/g) ?? [];
+    expect(tags).toHaveLength(1);
+    expect(tags[0]).toContain('data-s-id="card"');
+    expect(streamed.indexOf("<style")).toBeLessThan(streamed.indexOf("<div"));
+  });
+
+  it("dedupes repeated style registrations across sibling components", async () => {
+    const Styled = () => {
+      useStyle("card", ".card{color:red}");
+      return h("div", null, "x");
+    };
+    const streamed = await collectStream(
+      renderToStream(h(Fragment, null, [h(Styled), h(Styled)])),
+    );
+    expect(streamed.match(/<style /g)).toHaveLength(1);
+  });
+
+  it("rejects conflicting style registrations for the same scope id", async () => {
+    const A = () => {
+      useStyle("card", ".a{}");
+      return h("i", null, "a");
+    };
+    const B = () => {
+      useStyle("card", ".b{}");
+      return h("i", null, "b");
+    };
+    await expect(collectStream(renderToStream(h(Fragment, null, [h(A), h(B)])))).rejects.toThrow(
+      "Style conflict for card",
+    );
+  });
+
+  it("keeps non-style bytes identical to renderToStringAsync html", async () => {
+    const Styled = () => {
+      useStyle("card", ".card{color:red}");
+      return h("div", null, "x");
+    };
+    const tree = h(Fragment, null, [h(Styled), h("p", null, "tail")]);
+    const streamed = stripStyleTags(await collectStream(renderToStream(tree)));
+    expect(streamed).toBe((await renderToStringAsync(tree)).html);
   });
 });
