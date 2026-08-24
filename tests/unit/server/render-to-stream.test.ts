@@ -88,7 +88,7 @@ describe("renderToStream synchronous trees", () => {
     expect(streamed).toBe((await renderToStringAsync(tree)).html);
   });
 
-  it("skips promised children, unlike renderToStringAsync which awaits them", async () => {
+  it("rejects promised children, unlike renderToStringAsync which awaits them", async () => {
     const promisedChild = Promise.resolve(h("i", null, "later"));
     const bufferedTree = h("section", null, [h("b", null, "sync"), promisedChild] as never);
     const streamedTree = h("section", null, [h("b", null, "sync"), promisedChild] as never);
@@ -98,9 +98,19 @@ describe("renderToStream synchronous trees", () => {
       "<section><b>sync</b><i>later</i></section>",
     );
 
-    // Streaming: promised children are not part of the contract; they are skipped.
-    const streamed = await collectStream(renderToStream(streamedTree));
-    expect(streamed).toBe("<section><b>sync</b></section>");
+    // Streaming: promised children are rejected with a field-specific TypeError
+    // rather than being silently skipped.
+    await expect(collectStream(renderToStream(streamedTree))).rejects.toThrow(TypeError);
+    await expect(collectStream(renderToStream(streamedTree))).rejects.toThrow(
+      "renderToStream() does not accept promised children",
+    );
+
+    // A promise used directly as children is rejected the same way.
+    const directChildren = h("section", null, Promise.resolve(h("i", null, "later")) as never);
+    await expect(collectStream(renderToStream(directChildren))).rejects.toThrow(TypeError);
+    await expect(collectStream(renderToStream(directChildren))).rejects.toThrow(
+      "renderToStream() does not accept promised children",
+    );
   });
 
   it("rejects with a TypeError when an async render resolves to a non-VNode", async () => {

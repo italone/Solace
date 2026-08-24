@@ -280,8 +280,8 @@ Suspense/selective hydration remain deferred; async update scheduling remains de
 `renderToStream()` returns a `ReadableStream<Uint8Array>` of UTF-8 HTML for VNodes, component
 functions, promised roots, and async components. Unlike the buffered `renderToStringAsync()`, it
 does not accept VNodes with promised children — async boundaries must be expressed as async
-components (or a promised root), and promised children are skipped rather than awaited. For the
-sources it supports, byte order is identical to `renderToStringAsync().html`; rendering streams
+components (or a promised root), and promised children are rejected with a `TypeError` rather than
+awaited. For the sources it supports, byte order is identical to `renderToStringAsync().html`; rendering streams
 sequentially, flushing each completed prefix before an unresolved async component is awaited, so
 consumers receive earlier markup first. Styles registered with `useStyle()` are emitted inline at
 first registration (deduplicated by style id; conflicting registrations for the same id throw), not

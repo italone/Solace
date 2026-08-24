@@ -12,7 +12,14 @@ import { escapeHtml } from "../shared/html";
 import { isThenable } from "../shared/utils";
 import type { VNode } from "../vnode/vnode";
 import type { RenderToStringAsyncSource } from "./render-to-string";
-import { assertSafeHtmlName, hasOwn, isPlainObject, isVNode, normalizeSource, renderAttributes } from "./render-shared";
+import {
+  assertSafeHtmlName,
+  hasOwn,
+  isPlainObject,
+  isVNode,
+  normalizeSource,
+  renderAttributes,
+} from "./render-shared";
 
 // Synchronous chunks are given this many microtask turns to arrive before the
 // buffer is flushed; sync chains longer than this are treated as suspended and
@@ -101,6 +108,9 @@ function normalizeSync(source: unknown): VNode {
   throw new TypeError("SSR source must be a VNode or component function");
 }
 
+const PROMISED_CHILDREN_ERROR =
+  "renderToStream() does not accept promised children; wrap async content in async components or use a promised root source.";
+
 async function* streamVNode(
   vnode: VNode,
   parentComponent: ComponentInstance | null,
@@ -108,6 +118,10 @@ async function* streamVNode(
   sink: ServerStyleSink,
   styles: StyleDrain,
 ): AsyncGenerator<string> {
+  if (isThenable(vnode as unknown)) {
+    throw new TypeError(PROMISED_CHILDREN_ERROR);
+  }
+
   if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
     const tag = String(vnode.type);
     assertSafeHtmlName(tag, "element");
@@ -157,9 +171,7 @@ async function* streamChildren(
   }
 
   if (isThenable(children)) {
-    throw new TypeError(
-      "Async SSR is deferred; renderToStream() currently accepts synchronous render trees only.",
-    );
+    throw new TypeError(PROMISED_CHILDREN_ERROR);
   }
 
   return;

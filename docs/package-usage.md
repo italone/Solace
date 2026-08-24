@@ -304,7 +304,7 @@ scheduling remain deferred.
 The sequential streaming server entry is `renderToStream()`. It accepts VNodes, component
 functions, promised roots, and async components — but, unlike the buffered async entries, not
 VNodes with promised children (async must go through async components or a promised root; promised
-children are skipped). It returns a `ReadableStream<Uint8Array>` whose byte order matches
+children are rejected with a `TypeError`). It returns a `ReadableStream<Uint8Array>` whose byte order matches
 `renderToStringAsync().html` for the sources it supports. Completed prefixes are flushed before
 unresolved async components are
 awaited, `useStyle()` styles are emitted inline at first registration (deduplicated by style id;
