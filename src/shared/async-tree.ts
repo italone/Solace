@@ -254,7 +254,7 @@ function isVNode(value: unknown): value is VNode {
   );
 }
 
-function runWithInstance(instance: ComponentInstance, render: ComponentRender): VNode {
+export function runWithInstance(instance: ComponentInstance, render: ComponentRender): VNode {
   const previousInstance = getCurrentInstance();
   setCurrentInstance(instance);
   try {

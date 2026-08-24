@@ -95,6 +95,14 @@ describe("renderToStream synchronous trees", () => {
       "Async component must resolve to a VNode or render function",
     );
   });
+
+  it("rejects when a thenable-resolved render function returns another thenable", async () => {
+    const Bad = () => Promise.resolve(() => Promise.resolve(h("p", null, "nope"))) as never;
+    await expect(collectStream(renderToStream(h(Bad, null)))).rejects.toThrow(TypeError);
+    await expect(collectStream(renderToStream(h(Bad, null)))).rejects.toThrow(
+      "Async component render functions must return a synchronous VNode",
+    );
+  });
 });
 
 describe("renderToStream async trees", () => {

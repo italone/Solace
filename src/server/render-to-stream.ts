@@ -4,15 +4,21 @@ import {
   type ComponentInstance,
 } from "../component/component";
 import { getAsyncComponentMetadata } from "../component/async-component";
-import { getCurrentInstance, setCurrentInstance } from "../component/lifecycle";
 import type { Provides } from "../component/provide";
 import { createServerStyleSink, withStyleSink, type ServerStyleSink } from "../component/style";
+import { runWithInstance } from "../shared/async-tree";
 import { ShapeFlags } from "../shared/flags";
 import { escapeHtml } from "../shared/html";
 import { isThenable } from "../shared/utils";
 import type { VNode } from "../vnode/vnode";
 import type { RenderToStringAsyncSource } from "./render-to-string";
 import { assertSafeHtmlName, hasOwn, isPlainObject, isVNode, normalizeSource, renderAttributes } from "./render-shared";
+
+// Synchronous chunks are given this many microtask turns to arrive before the
+// buffer is flushed; sync chains longer than this are treated as suspended and
+// flushed early. This only affects chunk granularity, never byte order or
+// correctness.
+const MAX_SYNCHRONOUS_MICROTASK_ROUNDS = 10;
 
 export interface RenderToStreamOptions {
   context?: Record<string, unknown>;
@@ -50,7 +56,7 @@ export function renderToStream(
 
           // Give synchronously-produced chunks a few microtask turns to arrive;
           // a generator suspended on a real await will not settle within them.
-          for (let turn = 0; turn < 10 && !settled; turn += 1) {
+          for (let turn = 0; turn < MAX_SYNCHRONOUS_MICROTASK_ROUNDS && !settled; turn += 1) {
             await null;
           }
 
@@ -203,19 +209,6 @@ async function* streamComponent(
 
   instance.subTree = rendered;
   yield* streamVNode(rendered, instance, instance.appProvides, sink, styles);
-}
-
-function runWithInstance(
-  instance: ComponentInstance,
-  render: () => ReturnType<NonNullable<ComponentInstance["render"]>>,
-) {
-  const previousInstance = getCurrentInstance();
-  setCurrentInstance(instance);
-  try {
-    return render();
-  } finally {
-    setCurrentInstance(previousInstance);
-  }
 }
 
 interface StyleDrain {
