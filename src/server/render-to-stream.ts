@@ -3,6 +3,8 @@ import {
   setupComponent,
   type ComponentInstance,
 } from "../component/component";
+import { getAsyncComponentMetadata } from "../component/async-component";
+import { getCurrentInstance, setCurrentInstance } from "../component/lifecycle";
 import type { Provides } from "../component/provide";
 import { createServerStyleSink, withStyleSink, type ServerStyleSink } from "../component/style";
 import { ShapeFlags } from "../shared/flags";
@@ -29,8 +31,43 @@ export function renderToStream(
       try {
         const sink = createServerStyleSink();
         const styles = createStyleDrain();
-        for await (const chunk of streamSource(source, options.provides ?? null, sink, styles)) {
-          controller.enqueue(encoder.encode(chunk));
+        const iterator = streamSource(source, options.provides ?? null, sink, styles)[
+          Symbol.asyncIterator
+        ]();
+        let buffer = "";
+
+        for (;;) {
+          const nextPromise = iterator.next();
+          let settled = false;
+          void nextPromise.then(
+            () => {
+              settled = true;
+            },
+            () => {
+              settled = true;
+            },
+          );
+
+          // Give synchronously-produced chunks a few microtask turns to arrive;
+          // a generator suspended on a real await will not settle within them.
+          for (let turn = 0; turn < 10 && !settled; turn += 1) {
+            await null;
+          }
+
+          if (!settled && buffer !== "") {
+            controller.enqueue(encoder.encode(buffer));
+            buffer = "";
+          }
+
+          const result = await nextPromise;
+          if (result.done) {
+            break;
+          }
+          buffer += result.value;
+        }
+
+        if (buffer !== "") {
+          controller.enqueue(encoder.encode(buffer));
         }
         controller.close();
       } catch (error) {
@@ -129,11 +166,31 @@ async function* streamComponent(
   sink: ServerStyleSink,
   styles: StyleDrain,
 ): AsyncGenerator<string> {
+  const metadata = getAsyncComponentMetadata(vnode.type);
+  if (metadata !== undefined) {
+    await metadata.load();
+  }
+
   const instance = createComponentInstance(vnode, parentComponent, appProvides);
   vnode.component = instance;
   setupComponent(instance);
 
-  const rendered = withStyleSink(sink, () => instance.render()) as unknown;
+  let rendered = withStyleSink(sink, () => instance.render()) as unknown;
+
+  if (isThenable(rendered)) {
+    const resolved = await rendered;
+    if (typeof resolved === "function") {
+      const renderWithInstance = () => runWithInstance(instance, resolved as () => VNode);
+      instance.render = renderWithInstance;
+      rendered = withStyleSink(sink, renderWithInstance);
+    } else if (isVNode(resolved)) {
+      instance.render = () => resolved;
+      rendered = resolved;
+    } else {
+      throw new TypeError("Async component must resolve to a VNode or render function");
+    }
+  }
+
   if (isThenable(rendered)) {
     throw new TypeError("Async component render functions must return a synchronous VNode");
   }
@@ -146,6 +203,19 @@ async function* streamComponent(
 
   instance.subTree = rendered;
   yield* streamVNode(rendered, instance, instance.appProvides, sink, styles);
+}
+
+function runWithInstance(
+  instance: ComponentInstance,
+  render: () => ReturnType<NonNullable<ComponentInstance["render"]>>,
+) {
+  const previousInstance = getCurrentInstance();
+  setCurrentInstance(instance);
+  try {
+    return render();
+  } finally {
+    setCurrentInstance(previousInstance);
+  }
 }
 
 interface StyleDrain {

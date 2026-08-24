@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { Fragment, h } from "../../../src";
+import { defineAsyncComponent, Fragment, h } from "../../../src";
 import { renderToStream } from "../../../src/server";
 import { renderToString, renderToStringAsync } from "../../../src/server/render-to-string";
 
-import { collectStream } from "./stream-test-utils";
+import { collectStream, stripStyleTags } from "./stream-test-utils";
 
 describe("renderToStream options", () => {
   it("rejects non-object options", () => {
@@ -80,11 +80,71 @@ describe("renderToStream synchronous trees", () => {
     expect(streamed).toBe(buffered);
   });
 
-  it("rejects with a TypeError when a component render returns a Promise", async () => {
+  it("awaits a thenable render result like renderToStringAsync does", async () => {
     const Async = () => Promise.resolve(h("p", null, "later")) as never;
-    await expect(collectStream(renderToStream(h(Async, null)))).rejects.toThrow(TypeError);
-    await expect(collectStream(renderToStream(h(Async, null)))).rejects.toThrow(
-      "Async component render functions must return a synchronous VNode",
+    const tree = h(Async, null);
+    const streamed = await collectStream(renderToStream(tree));
+    expect(streamed).toBe("<p>later</p>");
+    expect(streamed).toBe((await renderToStringAsync(tree)).html);
+  });
+
+  it("rejects with a TypeError when an async render resolves to a non-VNode", async () => {
+    const Bad = () => Promise.resolve(42) as never;
+    await expect(collectStream(renderToStream(h(Bad, null)))).rejects.toThrow(TypeError);
+    await expect(collectStream(renderToStream(h(Bad, null)))).rejects.toThrow(
+      "Async component must resolve to a VNode or render function",
     );
+  });
+});
+
+describe("renderToStream async trees", () => {
+  it("flushes the completed prefix before an async component resolves", async () => {
+    let release: (() => void) | undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const AsyncPart = defineAsyncComponent(async () => {
+      await gate;
+      return () => h("em", null, "late");
+    });
+
+    const stream = renderToStream(h(Fragment, null, [h("p", null, "first"), h(AsyncPart)]));
+    const reader = stream.getReader();
+    const decoder = new TextDecoder();
+
+    const firstRead = await reader.read();
+    const prefix = decoder.decode(firstRead.value ?? new Uint8Array());
+    expect(prefix).toContain("<p>first</p>");
+    expect(prefix).not.toContain("<em>");
+
+    release!();
+    let rest = "";
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      rest += decoder.decode(value, { stream: true });
+    }
+    expect(rest + decoder.decode()).toContain("<em>late</em>");
+  });
+
+  it("matches renderToStringAsync html for async trees (styles stripped from the stream)", async () => {
+    const AsyncPart = defineAsyncComponent(async () => () => h("em", null, "late"));
+    const tree = h(Fragment, null, [h("p", null, "first"), h(AsyncPart)]);
+
+    const streamed = stripStyleTags(await collectStream(renderToStream(tree)));
+    const buffered = (await renderToStringAsync(tree)).html;
+    expect(streamed).toBe(buffered);
+  });
+
+  it("accepts a promise-wrapped source", async () => {
+    const streamed = await collectStream(
+      renderToStream(Promise.resolve(h("p", null, "lazy src"))),
+    );
+    expect(streamed).toBe("<p>lazy src</p>");
+  });
+
+  it("rejects the stream when an async component fails to load", async () => {
+    const Bad = defineAsyncComponent(() => Promise.reject(new Error("load failed")));
+    await expect(collectStream(renderToStream(h(Bad)))).rejects.toThrow("load failed");
   });
 });
