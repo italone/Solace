@@ -225,6 +225,7 @@ describe("package exports", () => {
       "generateStaticSite",
       "generateStaticSiteAsync",
       "parseRouterSnapshot",
+      "renderToStream",
       "renderToString",
       "renderToStringAsync",
       "resolveStaticAssets",
@@ -236,6 +237,7 @@ describe("package exports", () => {
     expect(server.createStaticRoutesFromRouter).toEqual(expect.any(Function));
     expect(server.generateStaticSite).toEqual(expect.any(Function));
     expect(server.generateStaticSiteAsync).toEqual(expect.any(Function));
+    expect(server.renderToStream).toEqual(expect.any(Function));
     expect(server.renderToString).toEqual(expect.any(Function));
     expect(server.renderToStringAsync).toEqual(expect.any(Function));
     expect(server.resolveStaticAssets).toEqual(expect.any(Function));
@@ -513,6 +515,7 @@ describe("package exports", () => {
       "generateStaticSite",
       "generateStaticSiteAsync",
       "parseRouterSnapshot",
+      "renderToStream",
       "renderToString",
       "renderToStringAsync",
       "resolveStaticAssets",
@@ -526,6 +529,7 @@ describe("package exports", () => {
     expect(server.generateStaticSite).toEqual(expect.any(Function));
     expect(server.generateStaticSiteAsync).toEqual(expect.any(Function));
     expect(server.parseRouterSnapshot).toEqual(expect.any(Function));
+    expect(server.renderToStream).toEqual(expect.any(Function));
     expect(server.renderToString).toEqual(expect.any(Function));
     expect(server.renderToStringAsync).toEqual(expect.any(Function));
     expect(server.resolveStaticAssets).toEqual(expect.any(Function));

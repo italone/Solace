@@ -68,8 +68,9 @@ event snapshots 的示例，或运行 `examples/devtools-extension` 浏览器 De
 ## Deferred Beta 边界
 
 当前公共契约会主动拒绝仍处于 deferred 状态的集成入口，而不是静默接受 Solace 尚未实现的
-options。Router auth、permissions、router-aware SSR、router-aware hydration、streaming SSR、
-Suspense/selective hydration 和 async update scheduling 仍不属于 beta 契约。Route `meta` 是给
+options。Router auth、permissions、router-aware SSR、router-aware hydration、乱序 streaming SSR、
+Suspense/selective hydration 和 async update scheduling 仍不属于 beta 契约。`renderToStream()`
+提供的顺序流式（sequential）streaming SSR 已作为 beta server entry 提供，见下文章节。Route `meta` 是给
 应用代码和示例使用的开发者自定义数据，不是认证或权限执行机制。使用 `auth` 或 `permissions`
 字段的 router options 或 route records 会被明确的 deferred-boundary 错误拒绝；本地 UX routing
 应使用应用自己的 guards，真正的 enforcement 应由后端授权承担。任何扩大这些边界的公共 API
@@ -179,6 +180,7 @@ import {
   createStaticRoutesFromRouter,
   generateStaticSite,
   generateStaticSiteAsync,
+  renderToStream,
   renderToString,
   renderToStringAsync,
   resolveStaticAssets,
@@ -231,9 +233,38 @@ Async setup 在 initial preparation 中采用 setup-once 语义。解析为同�
 `hydrateAsync()` 之后仍支持后续响应式更新；直接解析为 VNode 时，它是固定 initial result；
 promised children 是 one-shot values。`provide()`、`inject()`、lifecycle registration 和
 `useStyle()` 可在第一次 suspension 前，以及解析后的同步 render function 内使用；它们不属于
-`await` 之后 continuation code 的 ambient component-instance API 契约。Streaming SSR、
-Streaming SSR、SSR/hydration 上的直接 router option、Suspense/selective hydration 仍保持
+`await` 之后 continuation code 的 ambient component-instance API 契约。顺序流式（sequential）
+Streaming SSR 已通过 `renderToStream()` 提供；乱序 streaming、SSR/hydration 上的直接 router
+option、Suspense/selective hydration 仍保持
 deferred；async update scheduling 仍保持 deferred。
+
+### `renderToStream(source, options?)`
+
+`renderToStream()` 返回 UTF-8 HTML 的 `ReadableStream<Uint8Array>`，接受 VNode、组件函数、
+promised root 和 async components。与缓冲式的 `renderToStringAsync()` 不同，它不接受带
+promised children 的 VNode —— 异步边界必须通过 async components（或 promised root）表达，
+promised children 会抛出 `TypeError` 被显式拒绝，而不是被 await。对于它支持的 source，字节顺序与
+`renderToStringAsync().html` 完全一致；渲染按顺序
+流式输出，在等待未解析的 async component 之前先刷新已完成的前缀，因此消费者会先收到较早
+的标记。`useStyle()` 注册的样式在首次注册处内联发射（按 style id 去重；同一 id 的冲突注册
+会抛错），而不是最后统一收集。
+
+```tsx
+import { h } from "@italone/solace";
+import type { AsyncComponentType } from "@italone/solace";
+import { renderToStream } from "@italone/solace/server";
+
+const AsyncMessage: AsyncComponentType = async () => () => <strong>ready</strong>;
+const stream = renderToStream(h("section", null, h(AsyncMessage)));
+return new Response(stream, { headers: { "content-type": "text/html; charset=utf-8" } });
+```
+
+`renderToStream()` 被调用时渲染立即开始（eager start）；本切片返回的流不处理消费者
+backpressure。options 只接受 `context` 和 `provides`；未知自有字段 —— 包括 `manifest`、
+`clientEntry` 和 `router` —— 会抛出带字段名的 `TypeError`。渲染错误会通过
+`controller.error()` 拒绝流，此时部分字节可能已经发射。乱序 streaming、
+Suspense/selective hydration、renderer-owned 直接 router options 和消费者 backpressure 均未
+实现。
 
 ### Router-aware SSR 与 hydration 组合
 

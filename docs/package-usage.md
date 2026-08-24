@@ -217,6 +217,7 @@ import {
   createStaticRoutesFromRouter,
   generateStaticSite,
   generateStaticSiteAsync,
+  renderToStream,
   renderToString,
   renderToStringAsync,
   resolveStaticAssets,
@@ -300,6 +301,24 @@ reactive updates after `hydrateAsync()`; one that resolves directly to a VNode i
 preparation, and promise children are one-shot. Ambient instance APIs after `await` and async update
 scheduling remain deferred.
 
+The sequential streaming server entry is `renderToStream()`. It accepts VNodes, component
+functions, promised roots, and async components — but, unlike the buffered async entries, not
+VNodes with promised children (async must go through async components or a promised root; promised
+children are rejected with a `TypeError`). It returns a `ReadableStream<Uint8Array>` whose byte order matches
+`renderToStringAsync().html` for the sources it supports. Completed prefixes are flushed before
+unresolved async components are
+awaited, `useStyle()` styles are emitted inline at first registration (deduplicated by style id;
+conflicting registrations for the same id throw), rendering starts eagerly when the API is called,
+and consumer backpressure is not handled in this slice. Options accept only `context` and
+`provides`; unknown fields throw a `TypeError` naming the field. Render errors reject the stream,
+possibly after partial bytes were emitted.
+
+```ts
+import { renderToStream } from "@italone/solace/server";
+const stream = renderToStream(App);
+return new Response(stream, { headers: { "content-type": "text/html; charset=utf-8" } });
+```
+
 Router-aware SSR and hydration use explicit composition rather than a renderer option. The server
 creates one request-scoped context, renders with its injection map, and serializes the canonical
 snapshot. This provides router-aware SSR and router-aware hydration while direct renderer options
@@ -347,7 +366,8 @@ serialization escapes script-sensitive characters, parsing validates the exact v
 and `RouterHydrationError` fails closed on the first route mismatch. Application code owns any fresh
 mount recovery. Existing `{ recover: true }` remains limited to DOM hydration mismatch.
 
-The public loop does not include streaming SSR, filesystem SSG output, route crawling, direct
+The public loop includes sequential streaming SSR through `renderToStream()`. It does not include
+out-of-order streaming, filesystem SSG output, route crawling, direct
 renderer-owned router options, Suspense/selective hydration, or automatic router snapshot recovery.
 
 Passing only one of `manifest` or `clientEntry` to `generateStaticSite()` throws a `TypeError`; pass
@@ -473,7 +493,7 @@ guards, route `meta`, route names, aliases, route props, named locations, `creat
 `lazyRoute()` route components, `RouterLink`, `RouterView`, and `scrollBehavior` after successful
 navigations. It also exposes `router.isReady()` plus canonical route snapshot primitives for explicit
 SSR/hydration composition. The beta router still defers auth, permissions, direct renderer-owned
-router options, streaming SSR, and Suspense/selective hydration. `props: true`
+router options, out-of-order streaming SSR, and Suspense/selective hydration. `props: true`
 passes route params, plain object props are used as-is, and function props are evaluated from the
 matched route. Named locations preserve canonical path generation, and alias URLs preserve canonical
 matched/name behavior.

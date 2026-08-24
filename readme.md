@@ -51,7 +51,9 @@ positioned as a full replacement for React, Vue, Svelte, or other mature product
 beta line includes buffered async initial rendering through `renderToStringAsync()`, sequential
 in-memory SSG through `generateStaticSiteAsync()`, and prepare-then-commit browser hydration through
 `hydrateAsync()`. Router-aware SSR/hydration is available through explicit readiness, server-context,
-and snapshot composition. Streaming SSR, direct renderer-owned router options, async update scheduling after initial
+and snapshot composition. Sequential streaming SSR is available as a beta server entry through
+`renderToStream()`, which streams the exact `renderToStringAsync().html` byte order with inline
+first-registration styles, eager start, and no consumer backpressure. Out-of-order streaming, direct renderer-owned router options, async update scheduling after initial
 hydration, first-party UI components, production DevTools distribution, and compatibility guarantees
 for internal modules remain outside the frozen production contract. These exclusions are deliberate
 scope decisions for a readable, teaching-oriented runtime — not incomplete work; revisit criteria are
@@ -62,9 +64,10 @@ recorded in [docs/roadmap.md](./docs/roadmap.md).
 Public API changes should keep README, project-status, API, package-usage, package exports, and
 consumer smoke coverage aligned before release. The beta contract now exposes composable
 router-aware SSR and router-aware hydration through `router.isReady()`, canonical snapshots, and
-`createRouterServerContext()`. It still defers auth, permissions, direct renderer-owned router
-options, streaming SSR, Suspense/selective hydration, and async update scheduling after initial
-hydration.
+`createRouterServerContext()`, and sequential streaming SSR through `renderToStream()`. It still
+defers auth, permissions, direct renderer-owned router
+options, out-of-order streaming SSR, Suspense/selective hydration, and async update scheduling after
+initial hydration.
 Router `auth` and `permissions` options or route record fields are explicitly rejected instead of
 being treated as implicit client authorization.
 SSR, hydration, and SSG option objects also reject unknown own fields with a field-specific

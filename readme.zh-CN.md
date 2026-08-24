@@ -45,16 +45,19 @@ Solace 当前适合用于学习 JSX/TSX-first 的小型前端运行时、实验�
 验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。beta 线已经
 提供 `renderToStringAsync()` 的 buffered async initial rendering、`generateStaticSiteAsync()` 的
 sequential in-memory SSG，以及 `hydrateAsync()` 的 prepare-then-commit 浏览器 hydration。
-Router-aware SSR/hydration 已通过显式 readiness、server context 和 snapshot 组合提供。Streaming
-SSR、renderer-owned 直接 router options、initial hydration 之后的 async update scheduling、
+Router-aware SSR/hydration 已通过显式 readiness、server context 和 snapshot 组合提供。顺序流式
+（sequential）streaming SSR 已作为 beta server entry 通过 `renderToStream()` 提供：字节顺序与
+`renderToStringAsync().html` 一致，样式在首次注册处内联发射，渲染 eager 启动且不处理消费者
+backpressure。乱序 streaming、renderer-owned 直接 router options、initial hydration 之后的 async update scheduling、
 一方 UI 组件、生产级 DevTools 发布形态和内部模块兼容性承诺仍不在冻结后的生产契约内。上述排除项是面向可读性/教学定位的刻意范围决策，而非未完成工作；重新评估标准见 [docs/roadmap.md](./docs/roadmap.md)。
 
 ## 公开契约门禁
 
 公共 API 变更在发布前需要保持 README、project-status、API、package-usage、package exports
 和 consumer smoke 覆盖同步。当前 beta 契约已通过 `router.isReady()`、canonical snapshots 和
-`createRouterServerContext()` 提供可组合的 router-aware SSR 与 router-aware hydration；仍推迟
-auth、permissions、renderer-owned 直接 router options、streaming SSR、Suspense/selective
+`createRouterServerContext()` 提供可组合的 router-aware SSR 与 router-aware hydration，并通过
+`renderToStream()` 提供顺序流式 streaming SSR；仍推迟
+auth、permissions、renderer-owned 直接 router options、乱序 streaming SSR、Suspense/selective
 hydration，以及 initial hydration 之后的 async update scheduling。Router `auth` 和
 `permissions` options 或 route
 record fields 会被明确拒绝，不会被当作隐式客户端授权能力。
