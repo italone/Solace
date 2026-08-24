@@ -113,9 +113,13 @@ async function* streamChildren(
     return;
   }
 
-  throw new TypeError(
-    "Async children must be modeled as async components; renderToStream() does not accept raw promise children.",
-  );
+  if (isThenable(children)) {
+    throw new TypeError(
+      "Async SSR is deferred; renderToStream() currently accepts synchronous render trees only.",
+    );
+  }
+
+  return;
 }
 
 async function* streamComponent(
@@ -130,8 +134,6 @@ async function* streamComponent(
   setupComponent(instance);
 
   const rendered = withStyleSink(sink, () => instance.render()) as unknown;
-  yield* styles.drain(sink);
-
   if (isThenable(rendered)) {
     throw new TypeError("Async component render functions must return a synchronous VNode");
   }
@@ -139,6 +141,8 @@ async function* streamComponent(
   if (!isVNode(rendered)) {
     throw new TypeError("Component render must return a VNode");
   }
+
+  yield* styles.drain(sink);
 
   instance.subTree = rendered;
   yield* streamVNode(rendered, instance, instance.appProvides, sink, styles);

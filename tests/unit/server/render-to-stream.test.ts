@@ -71,4 +71,20 @@ describe("renderToStream synchronous trees", () => {
     const streamed = await collectStream(renderToStream(tree));
     expect(streamed).toBe((await renderToStringAsync(tree)).html);
   });
+
+  it("ignores unknown children types exactly like renderToString", async () => {
+    const tree = h("p", null, 42 as never);
+    const buffered = renderToString(tree).html;
+    expect(buffered).toBe("<p></p>");
+    const streamed = await collectStream(renderToStream(tree));
+    expect(streamed).toBe(buffered);
+  });
+
+  it("rejects with a TypeError when a component render returns a Promise", async () => {
+    const Async = () => Promise.resolve(h("p", null, "later")) as never;
+    await expect(collectStream(renderToStream(h(Async, null)))).rejects.toThrow(TypeError);
+    await expect(collectStream(renderToStream(h(Async, null)))).rejects.toThrow(
+      "Async component render functions must return a synchronous VNode",
+    );
+  });
 });
