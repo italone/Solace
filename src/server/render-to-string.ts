@@ -7,9 +7,17 @@ import type { Provides } from "../component/provide";
 import { createServerStyleSink, withStyleSink } from "../component/style";
 import { ShapeFlags } from "../shared/flags";
 import { prepareAsyncSource, type PreparedVNode } from "../shared/async-tree";
-import { escapeAttribute, escapeHtml } from "../shared/html";
-import { h } from "../vnode/h";
-import type { AsyncComponentType, ComponentTransport, VNode, VNodeProps } from "../vnode/vnode";
+import { escapeHtml } from "../shared/html";
+import { isThenable } from "../shared/utils";
+import type { AsyncComponentType, ComponentTransport, VNode } from "../vnode/vnode";
+import {
+  assertSafeHtmlName,
+  hasOwn,
+  isPlainObject,
+  isVNode,
+  normalizeSource,
+  renderAttributes,
+} from "./render-shared";
 
 export interface RenderToStringOptions {
   context?: Record<string, unknown>;
@@ -59,18 +67,6 @@ export async function renderToStringAsync(
     html: renderPreparedVNodeToString(prepared.root),
     styles: prepared.styles,
   };
-}
-
-function normalizeSource(source: RenderToStringSource): VNode {
-  if (isVNode(source)) {
-    return source;
-  }
-
-  if (typeof source === "function") {
-    return h(source as ComponentTransport);
-  }
-
-  throw new TypeError("SSR source must be a VNode or component function");
 }
 
 function renderVNodeToString(
@@ -181,61 +177,12 @@ function renderChildrenToString(
   return "";
 }
 
-function renderAttributes(props: VNodeProps | null): string {
-  if (props === null) {
-    return "";
-  }
-
-  const rendered: string[] = [];
-  for (const [key, value] of Object.entries(props)) {
-    if (
-      key === "key" ||
-      isEventProp(key) ||
-      value === null ||
-      value === undefined ||
-      value === false
-    ) {
-      continue;
-    }
-
-    assertSafeHtmlName(key, "attribute");
-    rendered.push(`${key}="${escapeAttribute(String(value))}"`);
-  }
-
-  return rendered.length === 0 ? "" : ` ${rendered.join(" ")}`;
-}
-
-function isVNode(value: unknown): value is VNode {
-  return value !== null && typeof value === "object" && "shapeFlag" in value && "type" in value;
-}
-
 function assertNoAsyncSSRSource(value: unknown): void {
   if (isThenable(value)) {
     throw new TypeError(
       "Async SSR is deferred; renderToString() currently accepts synchronous render trees only.",
     );
   }
-}
-
-function isThenable(value: unknown): value is PromiseLike<unknown> {
-  return (
-    (typeof value === "object" || typeof value === "function") &&
-    value !== null &&
-    "then" in value &&
-    typeof (value as { then?: unknown }).then === "function"
-  );
-}
-
-function isEventProp(key: string): boolean {
-  return /^on[A-Z]/.test(key);
-}
-
-function assertSafeHtmlName(name: string, kind: "attribute" | "element"): void {
-  if (/^[A-Za-z][A-Za-z0-9:-]*$/.test(name)) {
-    return;
-  }
-
-  throw new TypeError(`Invalid SSR ${kind} name: ${name}`);
 }
 
 function assertNoDeferredIntegrationOptions(options: RenderToStringOptions): void {
@@ -277,15 +224,3 @@ function assertNoDeferredIntegrationOptions(options: RenderToStringOptions): voi
   }
 }
 
-function hasOwn(value: object, key: string): boolean {
-  return Object.prototype.hasOwnProperty.call(value, key);
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (value === null || typeof value !== "object" || Array.isArray(value)) {
-    return false;
-  }
-
-  const prototype = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
-}
