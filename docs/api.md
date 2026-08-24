@@ -94,8 +94,10 @@ beta and SFC/Vite APIs experimental without silently removing their documented e
 
 The current public contract intentionally rejects still-deferred integration surfaces instead of
 silently accepting options that Solace does not implement. Router auth, permissions,
-direct router options on SSR/hydration, streaming SSR, Suspense/selective hydration, and async update
-scheduling remain outside the beta contract. Composable router readiness, server context, and route
+direct router options on SSR/hydration, out-of-order streaming SSR, Suspense/selective hydration, and
+async update scheduling remain outside the beta contract. Sequential streaming SSR through
+`renderToStream()` is available as a beta server entry; see its section below. Composable router
+readiness, server context, and route
 snapshot primitives are available without widening those renderer options. Route `meta` is developer-authored data for
 application code and examples; it is not an authentication or permission enforcement mechanism.
 Router options or route records that use `auth` or `permissions` fields are rejected with explicit
@@ -213,6 +215,7 @@ import {
   createRouterServerContext,
   generateStaticSite,
   generateStaticSiteAsync,
+  renderToStream,
   renderToString,
   renderToStringAsync,
   resolveStaticAssets,
@@ -268,8 +271,37 @@ function enables later reactive updates after `hydrateAsync()`; resolving direct
 fixed initial result, and promised children are one-shot values. `provide()`, `inject()`, lifecycle
 registration, and `useStyle()` are supported before the first suspension and inside the resolved
 synchronous render function. Ambient component-instance APIs in continuation code after `await` are
-outside the beta.4 contract. Streaming SSR, direct router options on SSR/hydration, and
+outside the beta.4 contract. Sequential streaming SSR is available through `renderToStream()`;
+out-of-order streaming, direct router options on SSR/hydration, and
 Suspense/selective hydration remain deferred; async update scheduling remains deferred.
+
+### `renderToStream(source, options?)`
+
+`renderToStream()` returns a `ReadableStream<Uint8Array>` of UTF-8 HTML for the same sources as
+`renderToStringAsync()` — VNodes, component functions, promised roots, async components, and VNodes
+with promised children. Byte order is identical to `renderToStringAsync().html`; rendering streams
+sequentially, flushing each completed prefix before an unresolved async component is awaited, so
+consumers receive earlier markup first. Styles registered with `useStyle()` are emitted inline at
+first registration (deduplicated by style id; conflicting registrations for the same id throw), not
+collected at the end.
+
+```tsx
+import { h } from "@italone/solace";
+import type { AsyncComponentType } from "@italone/solace";
+import { renderToStream } from "@italone/solace/server";
+
+const AsyncMessage: AsyncComponentType = async () => () => <strong>ready</strong>;
+const stream = renderToStream(h("section", null, h(AsyncMessage)));
+return new Response(stream, { headers: { "content-type": "text/html; charset=utf-8" } });
+```
+
+Rendering starts eagerly when `renderToStream()` is called; the returned stream does not support
+consumer backpressure in this slice. Options accept only `context` and `provides`; unknown own option
+fields — including `manifest`, `clientEntry`, and `router` — throw a `TypeError` naming the field.
+Render errors reject the stream (the underlying `ReadableStream` errors via `controller.error()`),
+which may surface after partial bytes have already been emitted. Out-of-order streaming,
+Suspense/selective hydration, direct renderer-owned router options, and consumer backpressure are
+not implemented.
 
 ### Router-aware SSR and hydration composition
 

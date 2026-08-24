@@ -24,16 +24,16 @@ is ready.
 
 The following eight export keys and import paths are protected public package entries:
 
-| Export key          | Import path                       | Maturity              | Scope                                                          |
-| ------------------- | --------------------------------- | --------------------- | -------------------------------------------------------------- |
-| `.`                 | `@italone/solace`                 | Beta                  | Core app, reactivity, rendering, components, store, and router |
-| `./devtools`        | `@italone/solace/devtools`        | Beta                  | Instrumentation listener and recorder APIs                     |
-| `./jsx-dev-runtime` | `@italone/solace/jsx-dev-runtime` | Stable tooling entry  | Development JSX runtime                                        |
-| `./jsx-runtime`     | `@italone/solace/jsx-runtime`     | Stable tooling entry  | Automatic JSX runtime                                          |
-| `./package.json`    | `@italone/solace/package.json`    | Stable metadata entry | Package metadata consumers explicitly need                     |
-| `./server`          | `@italone/solace/server`          | Beta                  | SSR, SSG, and static asset helpers                             |
-| `./sfc`             | `@italone/solace/sfc`             | Experimental          | Narrow `.solace` TypeScript type shim                          |
-| `./vite`            | `@italone/solace/vite`            | Experimental          | Narrow `.solace` Vite transform plugin                         |
+| Export key          | Import path                       | Maturity              | Scope                                                                                           |
+| ------------------- | --------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------- |
+| `.`                 | `@italone/solace`                 | Beta                  | Core app, reactivity, rendering, components, store, and router                                  |
+| `./devtools`        | `@italone/solace/devtools`        | Beta                  | Instrumentation listener and recorder APIs                                                      |
+| `./jsx-dev-runtime` | `@italone/solace/jsx-dev-runtime` | Stable tooling entry  | Development JSX runtime                                                                         |
+| `./jsx-runtime`     | `@italone/solace/jsx-runtime`     | Stable tooling entry  | Automatic JSX runtime                                                                           |
+| `./package.json`    | `@italone/solace/package.json`    | Stable metadata entry | Package metadata consumers explicitly need                                                      |
+| `./server`          | `@italone/solace/server`          | Beta                  | SSR (buffered async and sequential `renderToStream()` streaming), SSG, and static asset helpers |
+| `./sfc`             | `@italone/solace/sfc`             | Experimental          | Narrow `.solace` TypeScript type shim                                                           |
+| `./vite`            | `@italone/solace/vite`            | Experimental          | Narrow `.solace` Vite transform plugin                                                          |
 
 ## Frozen Public Maturity Boundary
 

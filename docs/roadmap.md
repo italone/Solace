@@ -37,14 +37,19 @@ output; each requires a separate public API and compatibility review.
 4. **Mandatory public API gates** — keep package export tests, packed-consumer smoke, browser e2e, and release readiness required for public API changes; these are completed stable prerequisites.
 5. **SSR / hydration minimum loop** — implemented through `@italone/solace/server` and
    `createApp(App).hydrate(container)` for synchronous VNode/component trees, including
-   server-side style collection and hydration-safe style dedupe; continue hardening mismatch policy,
-   async boundaries, streaming, full pipeline automation, and integration tests before widening the
-   contract.
+   server-side style collection and hydration-safe style dedupe; the sequential streaming slice is
+   implemented as `renderToStream()`; continue hardening mismatch policy,
+   async boundaries, out-of-order streaming, full pipeline automation, and integration tests before
+   widening the contract.
 6. **SSG core** — implemented on top of `renderToString()` via `generateStaticSite()`; keep
    filesystem output and route crawling deferred while preserving collected `renderToString()`
    styles, production asset tags, and explicit-path router records through the shell contract.
 7. **SSR/SSG/hydration next phase** — the composable router-aware slice now settles request routers,
-   serializes canonical snapshots, and verifies before hydration. Keep streaming, Suspense/selective
+   serializes canonical snapshots, and verifies before hydration. The sequential streaming SSR slice
+   is implemented as `renderToStream()` on `@italone/solace/server`: it streams the exact
+   `renderToStringAsync().html` byte order, flushes completed prefixes before async components
+   resolve, emits `useStyle()` styles inline at first registration, starts rendering eagerly, and
+   does not handle consumer backpressure. Keep out-of-order streaming, Suspense/selective
    hydration, route crawling, filesystem output, and direct renderer-owned router options deferred.
 8. **Browser DevTools extension UI** — the first example panel is implemented under
    `examples/devtools-extension`; continue hardening extension packaging, the browser extension QA
@@ -69,7 +74,8 @@ output; each requires a separate public API and compatibility review.
 - Production-grade DevTools extension distribution and advanced inspectors.
 - Long-term compatibility guarantees for private internal modules.
 - UI library or plugin marketplace work as a 1.0 admission requirement.
-- Streaming SSR / Suspense / selective hydration — revisit after 1.0, requires dedicated design doc.
+- Out-of-order streaming SSR (sequential streaming is implemented as `renderToStream()`) /
+  Suspense / selective hydration — revisit after 1.0, requires dedicated design doc.
 
 ## How to Propose Changes
 
