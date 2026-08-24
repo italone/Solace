@@ -166,6 +166,10 @@ consumes public `DevtoolsEvent` summaries. Do not describe it as a
 production browser-store distribution, persisted capture workflow, telemetry workflow, component
 tree inspector, dependency graph, flame chart, or SSR/SSG/hydration inspector.
 
+Routine browser CI and `pnpm release:check` run `pnpm package:devtools-extension:smoke` before browser
+tests. This validates the real ZIP and manifest-generation path, but the reserved `.invalid` origin
+and ignored artifact output does not satisfy production DevTools distribution evidence.
+
 ## 1.0 Admission Report
 
 The beta evidence file is `release/one-zero-readiness.json`. Inspect every current criterion without

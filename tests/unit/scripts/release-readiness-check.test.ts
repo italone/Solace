@@ -15,7 +15,7 @@ describe("release readiness check CLI", () => {
 
     expect(stderr).toBe("");
     expect(stdout).toContain(
-      "public API gates: pnpm release:readiness, pnpm release:contract:check, pnpm package:smoke, pnpm adoption:smoke, pnpm stable:app, pnpm performance:regression, pnpm test:e2e, pnpm test:e2e:devtools-extension",
+      "public API gates: pnpm release:readiness, pnpm release:contract:check, pnpm package:smoke, pnpm adoption:smoke, pnpm stable:app, pnpm package:devtools-extension:smoke, pnpm performance:regression, pnpm test:e2e, pnpm test:e2e:devtools-extension",
     );
     expect(stdout).toContain(
       "benchmark history: .benchmark-history/ ignored local JSONL artifacts",
@@ -105,6 +105,9 @@ describe("release readiness check CLI", () => {
 
     expect(packageJson.version).not.toMatch(/^0\.0\./);
     expect(packageJson.scripts?.["stable:app"]).toBe("node scripts/operations-console-smoke.mjs");
+    expect(packageJson.scripts?.["package:devtools-extension:smoke"]).toBe(
+      "pnpm package:devtools-extension -- --origin https://devtools-smoke.invalid --output .devtools-artifacts/solace-devtools-smoke.zip",
+    );
     expect(releaseCheck?.split(" && ")).toEqual([
       "pnpm release:readiness",
       "pnpm quality",
@@ -112,6 +115,7 @@ describe("release readiness check CLI", () => {
       "pnpm package:smoke",
       "pnpm adoption:smoke",
       "pnpm stable:app",
+      "pnpm package:devtools-extension:smoke",
       "pnpm benchmark",
       "pnpm benchmark:browser",
       "pnpm performance:regression",

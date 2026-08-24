@@ -66,6 +66,7 @@
     "build": "rollup -c",
     "build:devtools-extension": "vite build examples/devtools-extension",
     "package:devtools-extension": "node scripts/devtools-extension-package.mjs",
+    "package:devtools-extension:smoke": "pnpm package:devtools-extension -- --origin https://devtools-smoke.invalid --output .devtools-artifacts/solace-devtools-smoke.zip",
     "build:operations": "vite build examples/operations-console",
     "typecheck": "tsc --noEmit",
     "typecheck:jsxdev": "tsc --noEmit -p tsconfig.jsxdev.json",
@@ -99,7 +100,7 @@
     "performance:compare:ci": "node scripts/ci-performance-comparison.mjs",
     "release:version": "changeset version",
     "release:candidate:check": "pnpm release:readiness -- --publishable && pnpm stable:app:upgrade && pnpm release:check",
-    "release:check": "pnpm release:readiness && pnpm quality && pnpm test:coverage && pnpm package:smoke && pnpm adoption:smoke && pnpm stable:app && pnpm benchmark && pnpm benchmark:browser && pnpm performance:regression && pnpm test:e2e && pnpm test:e2e:devtools-extension",
+    "release:check": "pnpm release:readiness && pnpm quality && pnpm test:coverage && pnpm package:smoke && pnpm adoption:smoke && pnpm stable:app && pnpm package:devtools-extension:smoke && pnpm benchmark && pnpm benchmark:browser && pnpm performance:regression && pnpm test:e2e && pnpm test:e2e:devtools-extension",
     "release:publish:beta": "pnpm release:check && changeset publish --tag beta",
     "release:publish": "pnpm release:one-zero:check && pnpm release:contract:check && pnpm release:check && changeset publish",
     "quality": "pnpm format:check && pnpm release:contract:check && pnpm build && pnpm typecheck && pnpm build:operations && pnpm typecheck:jsxdev && pnpm lint && pnpm test && pnpm test:package"

@@ -103,6 +103,9 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Package DevTools extension smoke
+        run: pnpm package:devtools-extension:smoke
+
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium firefox webkit
 

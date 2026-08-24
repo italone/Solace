@@ -490,6 +490,18 @@ describe("1.0 readiness evaluation", () => {
     expect(criterion).toMatchObject({ id: "devtools.production-permissions", passed: false });
   });
 
+  it("rejects reserved .invalid DevTools smoke origins", () => {
+    const evidence = readyEvidence();
+    const smokeOrigin = "https://devtools-smoke.invalid";
+    evidence.devtools.testedOrigins = [smokeOrigin];
+    evidence.devtools.evidenceRecord!.testedOrigins = [smokeOrigin];
+    evidence.devtools.evidenceRecord!.artifactEvidence.origins = [smokeOrigin];
+
+    const criterion = evaluateOneZeroReadiness(evidence).criteria[3];
+
+    expect(criterion).toMatchObject({ id: "devtools.production-permissions", passed: false });
+  });
+
   it("requires five distinct calendar dates for every performance scenario", () => {
     const evidence = readyEvidence();
     for (const scenario of [
