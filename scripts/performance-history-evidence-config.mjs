@@ -78,6 +78,9 @@ function summarizeBrowserScenarios(records, path, now) {
       throw new Error(`Invalid browser benchmark scenario at ${path}:${line}`);
     }
     const shape = record.summary?.shape;
+    // The shapeless keyed-reorder variant was retired from the browser benchmark
+    // suite; its historical records must not create unmeetable scenario gates.
+    if (scenario === "keyed-reorder" && (shape === undefined || shape === null)) continue;
     const key =
       typeof shape === "string" && shape.trim() !== "" ? `${scenario}:${shape}` : scenario;
     addRun(scenarios, key, readCanonicalRunAt(record.summary?.metadata?.runAt, path, line, now));

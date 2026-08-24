@@ -193,6 +193,34 @@ describe("performance history readiness evidence", () => {
     }
   });
 
+  it("drops retired shapeless keyed-reorder records from scenario summaries", async () => {
+    const root = await mkdtemp(join(tmpdir(), "solace-performance-evidence-retired-"));
+
+    try {
+      await writeJsonLines(join(root, "browser.jsonl"), [
+        browserRecord({ scenario: "keyed-reorder", runAt: "2026-07-21T00:00:00.000Z" }),
+        browserRecord({
+          scenario: "keyed-reorder",
+          shape: "shuffle",
+          runAt: "2026-08-24T00:00:00.000Z",
+        }),
+      ]);
+      await writeJsonLines(join(root, "jsdom.jsonl"), [jsdomRecord("2026-07-21T01:00:00.000Z")]);
+
+      const evidence = await createPerformanceHistoryEvidence({
+        root,
+        browserPath: "browser.jsonl",
+        jsdomPath: "jsdom.jsonl",
+        now: Date.parse("2026-08-24T02:00:00.000Z"),
+      });
+
+      expect(Object.keys(evidence.browserScenarios)).toEqual(["keyed-reorder:shuffle"]);
+      expect(evidence.sources.browser).toMatchObject({ path: "browser.jsonl", recordCount: 2 });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("produces identical evidence for unchanged input", async () => {
     const root = await mkdtemp(join(tmpdir(), "solace-performance-evidence-stable-"));
 
