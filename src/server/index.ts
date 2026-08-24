@@ -43,3 +43,4 @@ export {
   type RenderToStringAsyncSource,
   type RenderToStringSource,
 } from "./render-to-string";
+export { renderToStream, type RenderToStreamOptions } from "./render-to-stream";
