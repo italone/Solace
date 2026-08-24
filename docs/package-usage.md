@@ -301,9 +301,12 @@ reactive updates after `hydrateAsync()`; one that resolves directly to a VNode i
 preparation, and promise children are one-shot. Ambient instance APIs after `await` and async update
 scheduling remain deferred.
 
-The sequential streaming server entry is `renderToStream()`. It accepts the same sources as
-`renderToStringAsync()` and returns a `ReadableStream<Uint8Array>` whose byte order matches
-`renderToStringAsync().html`. Completed prefixes are flushed before unresolved async components are
+The sequential streaming server entry is `renderToStream()`. It accepts VNodes, component
+functions, promised roots, and async components — but, unlike the buffered async entries, not
+VNodes with promised children (async must go through async components or a promised root; promised
+children are skipped). It returns a `ReadableStream<Uint8Array>` whose byte order matches
+`renderToStringAsync().html` for the sources it supports. Completed prefixes are flushed before
+unresolved async components are
 awaited, `useStyle()` styles are emitted inline at first registration (deduplicated by style id;
 conflicting registrations for the same id throw), rendering starts eagerly when the API is called,
 and consumer backpressure is not handled in this slice. Options accept only `context` and

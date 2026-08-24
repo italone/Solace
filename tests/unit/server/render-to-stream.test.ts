@@ -88,6 +88,21 @@ describe("renderToStream synchronous trees", () => {
     expect(streamed).toBe((await renderToStringAsync(tree)).html);
   });
 
+  it("skips promised children, unlike renderToStringAsync which awaits them", async () => {
+    const promisedChild = Promise.resolve(h("i", null, "later"));
+    const bufferedTree = h("section", null, [h("b", null, "sync"), promisedChild] as never);
+    const streamedTree = h("section", null, [h("b", null, "sync"), promisedChild] as never);
+
+    // Buffered: the promised child is awaited and rendered.
+    expect((await renderToStringAsync(bufferedTree)).html).toBe(
+      "<section><b>sync</b><i>later</i></section>",
+    );
+
+    // Streaming: promised children are not part of the contract; they are skipped.
+    const streamed = await collectStream(renderToStream(streamedTree));
+    expect(streamed).toBe("<section><b>sync</b></section>");
+  });
+
   it("rejects with a TypeError when an async render resolves to a non-VNode", async () => {
     const Bad = () => Promise.resolve(42) as never;
     await expect(collectStream(renderToStream(h(Bad, null)))).rejects.toThrow(TypeError);
@@ -145,9 +160,7 @@ describe("renderToStream async trees", () => {
   });
 
   it("accepts a promise-wrapped source", async () => {
-    const streamed = await collectStream(
-      renderToStream(Promise.resolve(h("p", null, "lazy src"))),
-    );
+    const streamed = await collectStream(renderToStream(Promise.resolve(h("p", null, "lazy src"))));
     expect(streamed).toBe("<p>lazy src</p>");
   });
 
@@ -175,9 +188,7 @@ describe("renderToStream styles", () => {
       useStyle("card", ".card{color:red}");
       return h("div", null, "x");
     };
-    const streamed = await collectStream(
-      renderToStream(h(Fragment, null, [h(Styled), h(Styled)])),
-    );
+    const streamed = await collectStream(renderToStream(h(Fragment, null, [h(Styled), h(Styled)])));
     expect(streamed.match(/<style /g)).toHaveLength(1);
   });
 

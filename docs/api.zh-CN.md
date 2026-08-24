@@ -240,9 +240,11 @@ deferred；async update scheduling 仍保持 deferred。
 
 ### `renderToStream(source, options?)`
 
-`renderToStream()` 返回 UTF-8 HTML 的 `ReadableStream<Uint8Array>`，接受的 source 与
-`renderToStringAsync()` 相同 —— VNode、组件函数、promised root、async components 和带
-promised children 的 VNode。字节顺序与 `renderToStringAsync().html` 完全一致；渲染按顺序
+`renderToStream()` 返回 UTF-8 HTML 的 `ReadableStream<Uint8Array>`，接受 VNode、组件函数、
+promised root 和 async components。与缓冲式的 `renderToStringAsync()` 不同，它不接受带
+promised children 的 VNode —— 异步边界必须通过 async components（或 promised root）表达，
+promised children 会被跳过而不是被 await。对于它支持的 source，字节顺序与
+`renderToStringAsync().html` 完全一致；渲染按顺序
 流式输出，在等待未解析的 async component 之前先刷新已完成的前缀，因此消费者会先收到较早
 的标记。`useStyle()` 注册的样式在首次注册处内联发射（按 style id 去重；同一 id 的冲突注册
 会抛错），而不是最后统一收集。
