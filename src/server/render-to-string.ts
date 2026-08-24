@@ -223,4 +223,3 @@ function assertNoDeferredIntegrationOptions(options: RenderToStringOptions): voi
     throw new TypeError(`Unknown SSR option: ${String(unknownKey)}`);
   }
 }
-

@@ -34,9 +34,7 @@ function stripStyleTags(html: string): string {
 
 async function renderStreamedRoute(url: string, routes: RouteRecord[]) {
   const context = await createRouterServerContext({ url, routes, identifyRecord });
-  const html = await collectStream(
-    renderToStream(RouterApp, { provides: context.provides }),
-  );
+  const html = await collectStream(renderToStream(RouterApp, { provides: context.provides }));
 
   return { context, html };
 }
