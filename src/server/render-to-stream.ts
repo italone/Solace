@@ -30,6 +30,7 @@ const MAX_SYNCHRONOUS_MICROTASK_ROUNDS = 10;
 export interface RenderToStreamOptions {
   context?: Record<string, unknown>;
   provides?: Provides;
+  mode?: "ordered" | "out-of-order";
 }
 
 export function renderToStream(
@@ -42,6 +43,7 @@ export function renderToStream(
   return new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
+        assertStreamMode(options);
         const sink = createServerStyleSink();
         const styles = createStyleDrain();
         const iterator = streamSource(source, options.provides ?? null, sink, styles)[
@@ -265,9 +267,22 @@ function assertStreamOptions(options: RenderToStreamOptions): void {
   }
 
   const unknownKey = Reflect.ownKeys(options).find(
-    (key) => key !== "context" && key !== "provides",
+    (key) => key !== "context" && key !== "provides" && key !== "mode",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown SSR streaming option: ${String(unknownKey)}`);
+  }
+}
+
+// Mode is validated lazily (through the stream) so callers that never read the
+// stream still get a rejected-promise contract consistent with other stream
+// errors.
+function assertStreamMode(options: RenderToStreamOptions): void {
+  if (
+    options.mode !== undefined &&
+    options.mode !== "ordered" &&
+    options.mode !== "out-of-order"
+  ) {
+    throw new TypeError('SSR streaming mode must be "ordered" or "out-of-order"');
   }
 }
