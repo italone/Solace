@@ -19,6 +19,7 @@
 Pure refactor, no behavior change. Existing suites must stay green before any new code.
 
 **Files:**
+
 - Create: `src/server/render-shared.ts`
 - Modify: `src/server/render-to-string.ts`
 
@@ -129,6 +130,7 @@ git commit -m "refactor: extract shared SSR render helpers"
 ### Task 2: `renderToStream` skeleton with option validation (TDD)
 
 **Files:**
+
 - Create: `src/server/render-to-stream.ts`
 - Modify: `src/server/index.ts`
 - Test: `tests/unit/server/render-to-stream.test.ts`
@@ -319,6 +321,7 @@ git commit -m "feat: add renderToStream option validation skeleton"
 ### Task 3: Synchronous tree streaming with byte equality (TDD)
 
 **Files:**
+
 - Modify: `src/server/render-to-stream.ts`
 - Test: `tests/unit/server/render-to-stream.test.ts`
 
@@ -345,15 +348,17 @@ describe("renderToStream synchronous trees", () => {
 
   it("escapes attributes and omits event props", async () => {
     const streamed = await collectStream(
-      renderToStream(h("button", { title: '5 > "4"', onClick: () => undefined }, "Save & continue")),
+      renderToStream(
+        h("button", { title: '5 > "4"', onClick: () => undefined }, "Save & continue"),
+      ),
     );
     expect(streamed).toBe('<button title="5 &gt; &quot;4&quot;">Save &amp; continue</button>');
   });
 
   it("rejects unsafe element and attribute names through stream errors", async () => {
-    await expect(collectStream(renderToStream(h("div onclick=alert(1)", null, "bad")))).rejects.toThrow(
-      TypeError,
-    );
+    await expect(
+      collectStream(renderToStream(h("div onclick=alert(1)", null, "bad"))),
+    ).rejects.toThrow(TypeError);
   });
 
   it("matches renderToStringAsync for sync trees", async () => {
@@ -374,18 +379,17 @@ Expected: new tests FAIL (stream currently yields only `""`)
 Replace the placeholder `streamSource` and add:
 
 ```ts
-import { createComponentInstance, setupComponent, type ComponentInstance } from "../component/component";
+import {
+  createComponentInstance,
+  setupComponent,
+  type ComponentInstance,
+} from "../component/component";
 import { createServerStyleSink, withStyleSink, type ServerStyleSink } from "../component/style";
 import { ShapeFlags } from "../shared/flags";
 import { escapeHtml } from "../shared/html";
 import { isThenable } from "../shared/utils";
 import type { VNode, VNodeChild } from "../vnode/vnode";
-import {
-  assertSafeHtmlName,
-  isVNode,
-  normalizeSource,
-  renderAttributes,
-} from "./render-shared";
+import { assertSafeHtmlName, isVNode, normalizeSource, renderAttributes } from "./render-shared";
 
 async function* streamSource(
   source: RenderToStringAsyncSource,
@@ -544,6 +548,7 @@ git commit -m "feat: stream synchronous SSR trees with byte-equality to renderTo
 ### Task 4: Ordered async streaming (TDD)
 
 **Files:**
+
 - Modify: `src/server/render-to-stream.ts`
 - Test: `tests/unit/server/render-to-stream.test.ts`
 
@@ -686,6 +691,7 @@ git commit -m "feat: stream async SSR trees with ordered prefix flushing"
 ### Task 5: Inline style emission with dedupe (TDD)
 
 **Files:**
+
 - Test: `tests/unit/server/render-to-stream.test.ts`
 
 No new production code expected — `withStyleSink` + `styles.drain` already emit inline at first registration; this task locks the contract with tests.
@@ -713,9 +719,7 @@ describe("renderToStream styles", () => {
       useStyle("card", ".card{color:red}");
       return h("div", null, "x");
     };
-    const streamed = await collectStream(
-      renderToStream(h(Fragment, null, [h(Styled), h(Styled)])),
-    );
+    const streamed = await collectStream(renderToStream(h(Fragment, null, [h(Styled), h(Styled)])));
     expect(streamed.match(/<style /g)).toHaveLength(1);
   });
 
@@ -762,6 +766,7 @@ git commit -m "test: lock inline style emission contract for renderToStream"
 ### Task 6: Package export gate
 
 **Files:**
+
 - Modify: `tests/integration/package-exports.test.ts:217-246`
 
 - [ ] **Step 1: Update the server subpath export assertion**
@@ -769,7 +774,7 @@ git commit -m "test: lock inline style emission contract for renderToStream"
 Add `renderToStream` to the expected `Object.keys(server).sort()` array (alphabetical position) and add:
 
 ```ts
-    expect(server.renderToStream).toEqual(expect.any(Function));
+expect(server.renderToStream).toEqual(expect.any(Function));
 ```
 
 - [ ] **Step 2: Build and run the gate**
@@ -794,6 +799,7 @@ git commit -m "test: gate renderToStream in server package exports"
 ### Task 7: Router-aware streaming integration test
 
 **Files:**
+
 - Test: `tests/integration/router-ssr-streaming.test.ts`
 
 - [ ] **Step 1: Write the integration test, following the composition pattern in `tests/integration/router-ssr-hydration.test.ts`**
@@ -836,6 +842,7 @@ git commit -m "test: cover router-aware streaming SSR with hydration"
 ### Task 8: Documentation and docs-contract gates
 
 **Files:**
+
 - Modify: `docs/api.md`, `docs/api.zh-CN.md`, `docs/package-usage.md`, `docs/project-status.md`, `docs/project-status.zh-CN.md`, `docs/roadmap.md`, `readme.md`, `readme.zh-CN.md`, `docs/compatibility.md` (only if it enumerates server exports)
 
 - [ ] **Step 1: Add a `renderToStream` section to `docs/api.md` and `docs/api.zh-CN.md`**
