@@ -5,18 +5,22 @@ import {
 } from "../component/component";
 import { getAsyncComponentMetadata } from "../component/async-component";
 import type { Provides } from "../component/provide";
+import { h } from "../vnode/h";
 import { createServerStyleSink, withStyleSink, type ServerStyleSink } from "../component/style";
 import { runWithInstance } from "../shared/async-tree";
 import {
   boundaryEndMarker,
+  boundaryFailureMarker,
   boundaryStartMarker,
+  buildReplacementScript,
   createPendingBoundary,
   type PendingBoundary,
+  replacementScriptMarker,
 } from "./stream-boundary";
 import { ShapeFlags } from "../shared/flags";
 import { escapeHtml } from "../shared/html";
 import { isThenable } from "../shared/utils";
-import type { VNode } from "../vnode/vnode";
+import type { ComponentType, VNode } from "../vnode/vnode";
 import type { RenderToStringAsyncSource } from "./render-to-string";
 import {
   assertSafeHtmlName,
@@ -289,7 +293,43 @@ async function* streamLoadedComponent(
 }
 
 async function* flushPendingBoundaries(ctx: StreamContext): AsyncGenerator<string> {
-  await Promise.all(ctx.pending.map((boundary) => boundary.ready));
+  const remaining = new Set(ctx.pending);
+
+  while (remaining.size > 0) {
+    const winner = await racePending(remaining);
+    remaining.delete(winner);
+
+    if (winner.error !== null) {
+      yield boundaryFailureMarker(
+        winner.id,
+        escapeHtml(winner.error instanceof Error ? winner.error.message : String(winner.error)),
+      );
+      continue;
+    }
+
+    yield replacementScriptMarker(winner.id);
+    const html = await collectBoundaryHtml(winner, ctx);
+    yield buildReplacementScript(winner.id, html);
+  }
+}
+
+function racePending(remaining: Set<PendingBoundary>): Promise<PendingBoundary> {
+  return new Promise((resolve) => {
+    for (const boundary of remaining) {
+      void boundary.ready.then(() => resolve(boundary));
+    }
+  });
+}
+
+async function collectBoundaryHtml(boundary: PendingBoundary, ctx: StreamContext): Promise<string> {
+  // Render the loaded component through the standard component pipeline so the
+  // shared style sink is active (useStyle) and new styles drain into the html.
+  const vnode = h(boundary.component as ComponentType);
+  let html = "";
+  for await (const chunk of streamLoadedComponent(vnode, null, ctx.appProvides, ctx)) {
+    html += chunk;
+  }
+  return html;
 }
 
 interface StyleDrain {

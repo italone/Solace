@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { defineAsyncComponent, Fragment, h } from "../../../src";
+import { defineAsyncComponent, Fragment, h, useStyle } from "../../../src";
 import { renderToStream } from "../../../src/server";
+import { buildReplacementScript } from "../../../src/server/stream-boundary";
 import { collectStream } from "./stream-test-utils";
 
 describe("renderToStream mode option", () => {
@@ -89,5 +90,77 @@ describe("renderToStream out-of-order boundaries", () => {
     });
     const streamed = await collectStream(renderToStream(h(AsyncPart)));
     expect(streamed).toBe("<em>late</em>");
+  });
+});
+
+describe("renderToStream out-of-order replacement", () => {
+  it("emits an inline replacement script after the document, in resolution order", async () => {
+    const order: string[] = [];
+    const first = new Promise<void>((resolve) => setTimeout(resolve, 20));
+    const Slow = defineAsyncComponent({
+      loader: () => first.then(() => Promise.resolve(() => h("em", null, "slow"))),
+      fallback: h("p", null, "slow…"),
+    });
+    const Fast = defineAsyncComponent(async () => () => h("strong", null, "fast"));
+
+    const streamed = await collectStream(
+      renderToStream(h(Fragment, null, [h(Slow), h(Fast)]), { mode: "out-of-order" }),
+    );
+
+    expect(streamed).toContain("so:b:1");
+    expect(streamed).toContain("so:b:2");
+    const fastScriptIndex = streamed.indexOf("so:r:2");
+    const slowScriptIndex = streamed.indexOf("so:r:1");
+    expect(fastScriptIndex).toBeGreaterThan(-1);
+    expect(slowScriptIndex).toBeGreaterThan(fastScriptIndex);
+    expect(streamed.slice(slowScriptIndex)).toContain("<em>slow</em>");
+  });
+
+  it("keeps fallback and emits a failure comment when a boundary rejects", async () => {
+    const Bad = defineAsyncComponent({
+      loader: () => Promise.reject(new Error("load failed")),
+      fallback: h("p", null, "loading…"),
+    });
+    const streamed = await collectStream(
+      renderToStream(h(Fragment, null, [h("b", null, "ok"), h(Bad)]), { mode: "out-of-order" }),
+    );
+    expect(streamed).toContain("<b>ok</b>");
+    expect(streamed).toContain("<p>loading…</p>");
+    expect(streamed).toContain("failed:load failed");
+    expect(streamed).not.toContain("so:r:1");
+  });
+
+  it("does not reject the stream when a boundary rejects", async () => {
+    const Bad = defineAsyncComponent(() => Promise.reject(new Error("boom")));
+    const streamed = await collectStream(renderToStream(h(Bad), { mode: "out-of-order" }));
+    expect(typeof streamed).toBe("string");
+  });
+
+  it("embeds style tags registered inside the boundary subtree", async () => {
+    const Styled = defineAsyncComponent(async () => {
+      return () => {
+        useStyle("card", ".card{color:red}");
+        return h("div", { class: "card" }, "x");
+      };
+    });
+    const streamed = await collectStream(
+      renderToStream(h(Fragment, null, [h(Styled), h("p", null, "tail")]), {
+        mode: "out-of-order",
+      }),
+    );
+    expect(streamed).toContain("so:r:1");
+    expect(streamed).toContain('data-s-id="card"');
+  });
+
+  it("neutralizes closing script sequences in embedded content", async () => {
+    const Tricky = defineAsyncComponent(async () => () => h("p", null, "</script>"));
+    const streamed = await collectStream(renderToStream(h(Tricky), { mode: "out-of-order" }));
+    // Text children are entity-escaped by the streamer, so no raw sequence leaks.
+    expect(streamed).not.toContain("</script></script>");
+    expect(streamed).toContain("&lt;/script&gt;");
+    // Raw closing sequences in the collected HTML are neutralized in the payload.
+    const script = buildReplacementScript(1, "<p></script></p>");
+    expect(script).toContain("<\\/script>");
+    expect(script).not.toContain("</script><");
   });
 });
