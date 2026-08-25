@@ -95,7 +95,6 @@ describe("renderToStream out-of-order boundaries", () => {
 
 describe("renderToStream out-of-order replacement", () => {
   it("emits an inline replacement script after the document, in resolution order", async () => {
-    const order: string[] = [];
     const first = new Promise<void>((resolve) => setTimeout(resolve, 20));
     const Slow = defineAsyncComponent({
       loader: () => first.then(() => Promise.resolve(() => h("em", null, "slow"))),
