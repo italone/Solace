@@ -22,9 +22,9 @@ describe("renderToStream mode option", () => {
     expect(streamed).toBe("<p>x</p>");
   });
 
-  it("rejects invalid mode values", async () => {
-    await expect(
-      collectStream(renderToStream(h("p", null, "x"), { mode: "concurrent" as never })),
-    ).rejects.toThrow('SSR streaming mode must be "ordered" or "out-of-order"');
+  it("rejects invalid mode values", () => {
+    expect(() => renderToStream(h("p", null, "x"), { mode: "concurrent" as never })).toThrow(
+      'SSR streaming mode must be "ordered" or "out-of-order"',
+    );
   });
 });

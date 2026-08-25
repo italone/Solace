@@ -43,7 +43,6 @@ export function renderToStream(
   return new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        assertStreamMode(options);
         const sink = createServerStyleSink();
         const styles = createStyleDrain();
         const iterator = streamSource(source, options.provides ?? null, sink, styles)[
@@ -254,6 +253,14 @@ function assertStreamOptions(options: RenderToStreamOptions): void {
     throw new TypeError("SSR provides must be a Map");
   }
 
+  if (
+    options.mode !== undefined &&
+    options.mode !== "ordered" &&
+    options.mode !== "out-of-order"
+  ) {
+    throw new TypeError('SSR streaming mode must be "ordered" or "out-of-order"');
+  }
+
   if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
     throw new TypeError(
       "SSR manifest integration is deferred; compose assets in an app-local shell or adapter.",
@@ -271,18 +278,5 @@ function assertStreamOptions(options: RenderToStreamOptions): void {
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown SSR streaming option: ${String(unknownKey)}`);
-  }
-}
-
-// Mode is validated lazily (through the stream) so callers that never read the
-// stream still get a rejected-promise contract consistent with other stream
-// errors.
-function assertStreamMode(options: RenderToStreamOptions): void {
-  if (
-    options.mode !== undefined &&
-    options.mode !== "ordered" &&
-    options.mode !== "out-of-order"
-  ) {
-    throw new TypeError('SSR streaming mode must be "ordered" or "out-of-order"');
   }
 }
