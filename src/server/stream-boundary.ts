@@ -11,7 +11,7 @@ export function boundaryFailureMarker(id: number, message: string): string {
 }
 
 export function replacementScriptMarker(id: number): string {
-  return `so:r:${id}`;
+  return `<!--so:r:${id}-->`;
 }
 
 export function buildReplacementScript(id: number, html: string): string {

@@ -46,10 +46,10 @@ describe("out-of-order streaming hydration", () => {
     const container = document.createElement("div");
     // Strip script tags (jsdom will not execute them from innerHTML; we run
     // them explicitly below with the container already attached) and the
-    // `so:r:N` observability text chunks, which are stream telemetry, not DOM.
+    // `<!--so:r:N-->` observability comments, which are stream telemetry.
     container.innerHTML = html
       .replace(/<script>[\s\S]*?<\/script>/gu, "")
-      .replace(/so:r:\d+/gu, "");
+      .replace(/<!--so:r:\d+-->/gu, "");
     document.body.appendChild(container);
 
     executeInlineScripts(html);
