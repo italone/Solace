@@ -1,6 +1,6 @@
 import { getCurrentInstance } from "./lifecycle";
 import { h } from "../vnode/h";
-import { Fragment, type ComponentType, type VNodeChildren } from "../vnode/vnode";
+import { Fragment, type ComponentType, type VNode, type VNodeChildren } from "../vnode/vnode";
 
 export type AsyncComponentLoader<Props extends object> = () => Promise<ComponentType<Props>>;
 
@@ -12,6 +12,7 @@ export interface AsyncComponentOptions<Props extends object> {
   timeout?: number;
   retry?: number;
   retryDelay?: number;
+  fallback?: VNode | (() => VNode);
 }
 
 export type AsyncComponentSource<Props extends object> =
@@ -20,6 +21,7 @@ export type AsyncComponentSource<Props extends object> =
 export interface AsyncComponentMetadata {
   load(): Promise<ComponentType<never>>;
   peek(): ComponentType<never> | null;
+  getFallback(): VNode | null;
 }
 
 const asyncComponentMetadata = new WeakMap<object, AsyncComponentMetadata>();
@@ -73,6 +75,11 @@ export function defineAsyncComponent<Props extends object>(
   asyncComponentMetadata.set(component, {
     load: loadForPreparation as () => Promise<ComponentType<never>>,
     peek: () => resolvedComponent as ComponentType<never> | null,
+    getFallback: () => {
+      const fallback = options.fallback;
+      if (fallback === undefined) return null;
+      return typeof fallback === "function" ? fallback() : fallback;
+    },
   });
 
   return component;
