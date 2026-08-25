@@ -30,7 +30,7 @@ No package export map, public API, devtools payload, or unkeyed diff semantics s
 
 - Modify: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Add a move-counting keyed reorder test**
+- [x] **Step 1: Add a move-counting keyed reorder test**
 
 Add this test near the existing keyed-children cases:
 
@@ -77,7 +77,7 @@ it("minimizes DOM moves for keyed reorders with a stable subsequence", () => {
 });
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run:
 
@@ -96,17 +96,17 @@ Expected: fails because the current keyed diff moves every keyed child in the mi
 
 - Modify: `src/renderer/diff.ts`
 
-- [ ] **Step 1: Add keyed index tracking and LIS helper**
+- [x] **Step 1: Add keyed index tracking and LIS helper**
 
 Extend `patchKeyedChildren` so the keyed unique-key middle segment records the matched old index for each new child.
 Add a small LIS helper that returns the positions of the stable subsequence in the middle segment.
 
-- [ ] **Step 2: Move only non-LIS nodes**
+- [x] **Step 2: Move only non-LIS nodes**
 
 After patching/mounting and unmounting unmatched nodes, walk the middle segment from right to left. Mount new nodes at
 their anchor and move existing nodes only when their position is not part of the LIS.
 
-- [ ] **Step 3: Verify GREEN**
+- [x] **Step 3: Verify GREEN**
 
 Run:
 
@@ -126,7 +126,7 @@ Expected: exits with code 0 and the keyed reorder test reports two `insertBefore
 - Add: `solace-project-log/solace-entries/2026-07-15-006-renderer-keyed-children-lis.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update architecture docs**
+- [x] **Step 1: Update architecture docs**
 
 Change the keyed children sentence from:
 
@@ -141,12 +141,12 @@ Children diff favors correctness and DOM reuse. Keyed children support insert, d
 keyed-middle path uses LIS optimization to avoid unnecessary DOM moves.
 ```
 
-- [ ] **Step 2: Add the project log entry**
+- [x] **Step 2: Add the project log entry**
 
 Create `solace-project-log/solace-entries/2026-07-15-006-renderer-keyed-children-lis.md` with the observed validation
 results after final checks.
 
-- [ ] **Step 3: Update the project log index**
+- [x] **Step 3: Update the project log index**
 
 Add this row after `005` in the `2026-07-15` section:
 
@@ -162,7 +162,7 @@ Add this row after `005` in the `2026-07-15` section:
 
 - All changed files
 
-- [ ] **Step 1: Format changed files**
+- [x] **Step 1: Format changed files**
 
 Run:
 
@@ -172,7 +172,7 @@ pnpm exec prettier --write src/renderer/diff.ts tests/unit/renderer/diff.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run targeted renderer tests**
+- [x] **Step 2: Run targeted renderer tests**
 
 Run:
 
@@ -182,7 +182,7 @@ pnpm exec vitest run tests/unit/renderer/diff.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run full tests**
+- [x] **Step 3: Run full tests**
 
 Run:
 
@@ -192,7 +192,7 @@ pnpm test
 
 Expected: exits with code 0.
 
-- [ ] **Step 4: Run typecheck**
+- [x] **Step 4: Run typecheck**
 
 Run:
 
@@ -202,7 +202,7 @@ pnpm typecheck
 
 Expected: exits with code 0.
 
-- [ ] **Step 5: Run lint**
+- [x] **Step 5: Run lint**
 
 Run:
 
@@ -212,7 +212,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Run build**
+- [x] **Step 6: Run build**
 
 Run:
 
@@ -222,7 +222,7 @@ pnpm build
 
 Expected: exits with code 0.
 
-- [ ] **Step 7: Run format check**
+- [x] **Step 7: Run format check**
 
 Run:
 
@@ -232,7 +232,7 @@ pnpm format:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 Run:
 

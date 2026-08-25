@@ -30,7 +30,7 @@ No package publishability flag, package version, package exports, or runtime sou
 
 - Create: `scripts/release-readiness-check.mjs`
 
-- [ ] **Step 1: Create the script**
+- [x] **Step 1: Create the script**
 
 Create `scripts/release-readiness-check.mjs` with:
 
@@ -148,7 +148,7 @@ function requireScript(name) {
 }
 ```
 
-- [ ] **Step 2: Run script directly in default mode**
+- [x] **Step 2: Run script directly in default mode**
 
 Run:
 
@@ -162,7 +162,7 @@ Expected:
 - Output includes `release readiness check passed`.
 - Output includes `note: package.json has "private": true`.
 
-- [ ] **Step 3: Run script directly in publishable mode**
+- [x] **Step 3: Run script directly in publishable mode**
 
 Run:
 
@@ -184,7 +184,7 @@ Expected:
 
 - Modify: `package.json`
 
-- [ ] **Step 1: Add release readiness script**
+- [x] **Step 1: Add release readiness script**
 
 In `package.json`, add this script near the other release scripts:
 
@@ -202,7 +202,7 @@ The release script group should include:
 "release:publish": "pnpm release:check && changeset publish",
 ```
 
-- [ ] **Step 2: Run package script in default mode**
+- [x] **Step 2: Run package script in default mode**
 
 Run:
 
@@ -216,7 +216,7 @@ Expected:
 - Output includes `release readiness check passed`.
 - Output includes `publishability: skipped`.
 
-- [ ] **Step 3: Run package script in publishable mode**
+- [x] **Step 3: Run package script in publishable mode**
 
 Run:
 
@@ -240,7 +240,7 @@ Expected:
 - Modify: `docs/package-usage.md`
 - Modify: `readme.md`
 
-- [ ] **Step 1: Add release readiness section to release docs**
+- [x] **Step 1: Add release readiness section to release docs**
 
 In `docs/release.md`, add this section after "Local Release Gate":
 
@@ -268,7 +268,7 @@ While `"private": true` remains set, publishable mode is expected to fail.
 
 ````
 
-- [ ] **Step 2: Replace publish paragraph with checklist**
+- [x] **Step 2: Replace publish paragraph with checklist**
 
 In `docs/release.md`, replace the first paragraph under `## Publish` with:
 
@@ -287,7 +287,7 @@ Before removing or changing that field, explicitly confirm:
 
 Keep the existing `pnpm release:publish` command block after the checklist.
 
-- [ ] **Step 3: Update package usage install note**
+- [x] **Step 3: Update package usage install note**
 
 In `docs/package-usage.md`, replace:
 
@@ -301,7 +301,7 @@ with:
 Before that release decision, run `pnpm release:readiness` to check local release metadata and validate package consumption with the packed-consumer smoke test described below.
 ```
 
-- [ ] **Step 4: Update README future recommendation**
+- [x] **Step 4: Update README future recommendation**
 
 In `readme.md`, under `## 14. 后续建议`, replace:
 
@@ -324,7 +324,7 @@ with:
 - Add: `solace-project-log/solace-entries/2026-07-14-001-release-publish-readiness.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Add project log entry**
+- [x] **Step 1: Add project log entry**
 
 Create `solace-project-log/solace-entries/2026-07-14-001-release-publish-readiness.md` with:
 
@@ -381,7 +381,7 @@ Solace 已有 Changesets 和 release gate，但发布策略仍停留在文档说
 - 真正发布前仍需人工确认 npm 包名、访问权限、Changesets version 和是否移除或调整 `"private": true`。
 ```
 
-- [ ] **Step 2: Add project log index section**
+- [x] **Step 2: Add project log index section**
 
 In `solace-project-log/index.md`, add a new section before `## 维护说明`:
 
@@ -402,7 +402,7 @@ In `solace-project-log/index.md`, add a new section before `## 维护说明`:
 - Modify after validation: `solace-project-log/solace-entries/2026-07-14-001-release-publish-readiness.md`
 - Modify if formatting changes are needed: all files touched in Tasks 1-4
 
-- [ ] **Step 1: Format touched files**
+- [x] **Step 1: Format touched files**
 
 Run:
 
@@ -412,7 +412,7 @@ pnpm exec prettier --write scripts/release-readiness-check.mjs package.json docs
 
 Expected: Prettier exits with code 0.
 
-- [ ] **Step 2: Run default readiness check**
+- [x] **Step 2: Run default readiness check**
 
 Run:
 
@@ -426,7 +426,7 @@ Expected:
 - Output includes `release readiness check passed`.
 - Output includes `package.json has "private": true`.
 
-- [ ] **Step 3: Run publishable readiness check**
+- [x] **Step 3: Run publishable readiness check**
 
 Run:
 
@@ -440,7 +440,7 @@ Expected:
 - Output includes `release readiness check failed`.
 - Output includes `package.json still has "private": true`.
 
-- [ ] **Step 4: Run typecheck**
+- [x] **Step 4: Run typecheck**
 
 Run:
 
@@ -450,7 +450,7 @@ pnpm typecheck
 
 Expected: `tsc --noEmit` exits with code 0.
 
-- [ ] **Step 5: Run lint**
+- [x] **Step 5: Run lint**
 
 Run:
 
@@ -460,7 +460,7 @@ pnpm lint
 
 Expected: `eslint .` exits with code 0.
 
-- [ ] **Step 6: Run format check**
+- [x] **Step 6: Run format check**
 
 Run:
 
@@ -470,7 +470,7 @@ pnpm format:check
 
 Expected: `All matched files use Prettier code style!`
 
-- [ ] **Step 7: Update project log validation table**
+- [x] **Step 7: Update project log validation table**
 
 In `solace-project-log/solace-entries/2026-07-14-001-release-publish-readiness.md`, replace:
 
@@ -504,7 +504,7 @@ with:
 | 格式检查 | `pnpm format:check` | 通过，所有匹配文件符合 Prettier 风格 |
 ```
 
-- [ ] **Step 8: Run final format check**
+- [x] **Step 8: Run final format check**
 
 Run:
 
@@ -514,7 +514,7 @@ pnpm format:check
 
 Expected: `All matched files use Prettier code style!`
 
-- [ ] **Step 9: Confirm publish state did not change**
+- [x] **Step 9: Confirm publish state did not change**
 
 Run:
 

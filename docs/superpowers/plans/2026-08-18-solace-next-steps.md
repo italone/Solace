@@ -39,7 +39,7 @@ This plan touches the following areas. No new runtime subsystems are created; mo
 - Read: `release/adoption-evidence.md`
 - Read: `release/one-zero-readiness.json`
 
-- [ ] **Step 1: Fetch remote main and verify local/remote state**
+- [x] **Step 1: Fetch remote main and verify local/remote state**
 
 Run:
 
@@ -53,7 +53,7 @@ git for-each-ref refs/tags/v0.1.0-beta.5
 
 Expected: working tree clean; local `main` is not ahead of `origin/main`; local tag `v0.1.0-beta.5` exists and points to commit `afe459e` or the documented beta.5 release commit. Remote tag verification is noted as pending in `docs/project-status.md:216`.
 
-- [ ] **Step 2: Re-run the full release gate to confirm baseline**
+- [x] **Step 2: Re-run the full release gate to confirm baseline**
 
 Run:
 
@@ -63,7 +63,7 @@ pnpm release:check
 
 Expected: command exits 0. Record the final coverage numbers and test counts for comparison with `docs/project-status.md:139-152` (beta.5 recorded 81 Vitest files / 702 tests, 92.97% statements / 88.11% branches / 95.21% functions / 93.25% lines).
 
-- [ ] **Step 3: Commit baseline evidence update if numbers changed**
+- [x] **Step 3: Commit baseline evidence update if numbers changed**
 
 If the gate passes with different numbers, update `docs/project-status.md` Validation Coverage section with the new date and counts.
 
@@ -84,7 +84,7 @@ git commit -m "docs: record beta.5 baseline re-validation"
 - Modify: `tests/unit/renderer/jsx-runtime-public-contract-types.test.tsx`
 - Modify: `docs/api.md`
 
-- [ ] **Step 1: Add failing type tests for typed slot edge cases**
+- [x] **Step 1: Add failing type tests for typed slot edge cases**
 
 Create `tests/unit/renderer/jsx-typed-contract-edge.test.tsx`:
 
@@ -124,7 +124,7 @@ pnpm typecheck
 
 Expected: FAIL with a JSX type error (the test asserts `toBeVoid` but TypeScript may reject the slot shape).
 
-- [ ] **Step 2: Adjust JSX types to accept named slot objects**
+- [x] **Step 2: Adjust JSX types to accept named slot objects**
 
 Modify `src/jsx-types.ts` to ensure the automatic JSX runtime accepts component slot type parameters. Keep the change minimal and preserve existing generic component tests.
 
@@ -136,7 +136,7 @@ pnpm typecheck
 
 Expected: PASS.
 
-- [ ] **Step 3: Add runtime behavior test for named slots via JSX**
+- [x] **Step 3: Add runtime behavior test for named slots via JSX**
 
 Add to `tests/unit/renderer/jsx-typed-contract-edge.test.tsx`:
 
@@ -187,11 +187,11 @@ pnpm test tests/unit/renderer/jsx-typed-contract-edge.test.tsx
 
 Expected: PASS.
 
-- [ ] **Step 4: Update API docs with named slot example**
+- [x] **Step 4: Update API docs with named slot example**
 
 Modify `docs/api.md` Components section to include a typed named slot example similar to the test above.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/jsx-types.ts tests/unit/renderer/jsx-typed-contract-edge.test.tsx docs/api.md
@@ -209,7 +209,7 @@ git commit -m "feat: harden JSX typed named slot contract"
 - Modify: `tests/integration/router-ssr-hydration.test.ts`
 - Modify: `docs/api.md`
 
-- [ ] **Step 1: Add failing integration test for lazy-route failure after navigation**
+- [x] **Step 1: Add failing integration test for lazy-route failure after navigation**
 
 Modify `tests/integration/router-ssr-hydration.test.ts` to add:
 
@@ -243,7 +243,7 @@ pnpm test tests/integration/router-ssr-hydration.test.ts -t "lazy route failure 
 
 Expected: PASS if already implemented; if FAIL, note the missing field and fix in Step 2.
 
-- [ ] **Step 2: Ensure lazy-load-failed errors carry active route location**
+- [x] **Step 2: Ensure lazy-load-failed errors carry active route location**
 
 Modify `src/router/router.ts` lazy route handling so the error object includes `to` with the attempted location. Keep the existing error contract intact.
 
@@ -255,7 +255,7 @@ pnpm test tests/integration/router-ssr-hydration.test.ts -t "lazy route failure 
 
 Expected: PASS.
 
-- [ ] **Step 3: Add integration test for snapshot mismatch during hydration**
+- [x] **Step 3: Add integration test for snapshot mismatch during hydration**
 
 Add to `tests/integration/router-ssr-hydration.test.ts`:
 
@@ -283,7 +283,7 @@ pnpm test tests/integration/router-ssr-hydration.test.ts -t "router snapshot hyd
 
 Expected: PASS if mismatch detection is already strict; if FAIL, adjust `src/server/router-context.ts` or `src/renderer/hydration.ts` to surface the mismatch.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/router/router.ts tests/integration/router-ssr-hydration.test.ts docs/api.md
@@ -301,7 +301,7 @@ git commit -m "test: cover router lazy failure and snapshot mismatch boundaries"
 - Create: `tests/e2e/devtools-extension-store-timeline.spec.ts`
 - Modify: `docs/devtools.md`
 
-- [ ] **Step 1: Add store action timeline view to panel**
+- [x] **Step 1: Add store action timeline view to panel**
 
 Modify `examples/devtools-extension/src/panel.tsx` to render a second tab or section that lists recorded store actions. Use the public `@italone/solace/devtools` listener API.
 
@@ -323,7 +323,7 @@ const StoreActions = ({
 );
 ```
 
-- [ ] **Step 2: Add e2e test for store action timeline**
+- [x] **Step 2: Add e2e test for store action timeline**
 
 Create `tests/e2e/devtools-extension-store-timeline.spec.ts`:
 
@@ -348,7 +348,7 @@ pnpm test:e2e:devtools-extension
 
 Expected: PASS after panel implementation. If the demo page does not exist, add `examples/devtools-extension/store-timeline.html` and route first.
 
-- [ ] **Step 3: Document inspected-origin review checklist**
+- [x] **Step 3: Document inspected-origin review checklist**
 
 Modify `docs/devtools.md` to add a section:
 
@@ -363,7 +363,7 @@ Before distributing the extension beyond local demos:
 4. Publish only after explicit maintainer review.
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add examples/devtools-extension/ tests/e2e/devtools-extension-store-timeline.spec.ts docs/devtools.md
@@ -380,7 +380,7 @@ git commit -m "feat: add DevTools store action timeline panel and origin checkli
 - Read: `docs/performance.md`
 - Read: `docs/release.md`
 
-- [ ] **Step 1: Regenerate benchmark history with distinct run timestamps**
+- [x] **Step 1: Regenerate benchmark history with distinct run timestamps**
 
 Run:
 
@@ -392,7 +392,7 @@ pnpm benchmark:history:evidence -- --output release/performance-history.json
 
 Expected: `release/performance-history.json` is updated and contains 5 distinct `runAt` timestamps for every current jsdom task and every browser scenario.
 
-- [ ] **Step 2: Verify history satisfies threshold rules**
+- [x] **Step 2: Verify history satisfies threshold rules**
 
 Run:
 
@@ -402,7 +402,7 @@ pnpm benchmark:history -- --min-browser-count 5 --min-jsdom-count 5
 
 Expected: PASS with no threshold failures.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add release/performance-history.json
@@ -419,15 +419,15 @@ git commit -m "docs: refresh benchmark history evidence"
 - Modify: `README.md`
 - Modify: `readme.zh-CN.md`
 
-- [ ] **Step 1: Update project status with new validation dates**
+- [x] **Step 1: Update project status with new validation dates**
 
 After Tasks 1-5 pass, update `docs/project-status.md` Summary and Validation Coverage sections with the current date, test counts, coverage numbers, and any completed gaps.
 
-- [ ] **Step 2: Sync README and Chinese README**
+- [x] **Step 2: Sync README and Chinese README**
 
 Mirror any public API example changes from `docs/api.md` into `README.md` and `readme.zh-CN.md`. Do not add new promises beyond the existing beta contract.
 
-- [ ] **Step 3: Run quality gate**
+- [x] **Step 3: Run quality gate**
 
 Run:
 
@@ -437,7 +437,7 @@ pnpm quality
 
 Expected: PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add docs/project-status.md README.md readme.zh-CN.md

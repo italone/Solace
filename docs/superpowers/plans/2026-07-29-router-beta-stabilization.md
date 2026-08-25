@@ -30,7 +30,7 @@
 - Modify: `tests/unit/router/query.test.ts`
 - Modify: `src/router/query.ts`
 
-- [ ] **Step 1: Write the failing query boundary tests**
+- [x] **Step 1: Write the failing query boundary tests**
 
 In `tests/unit/router/query.test.ts`, append these tests inside `describe("router query helpers", () => { ... })`:
 
@@ -56,7 +56,7 @@ it("stringifies encoded keys and skips nullish array entries", () => {
 });
 ```
 
-- [ ] **Step 2: Run query tests to verify RED**
+- [x] **Step 2: Run query tests to verify RED**
 
 Run:
 
@@ -66,7 +66,7 @@ pnpm vitest run tests/unit/router/query.test.ts
 
 Expected: the malformed percent encoding test fails because `decodeURIComponent()` currently throws `URIError`, not the documented router `TypeError`.
 
-- [ ] **Step 3: Implement stable query decode errors**
+- [x] **Step 3: Implement stable query decode errors**
 
 In `src/router/query.ts`, replace the two direct `decodeURIComponent()` calls in `parseQuery()`:
 
@@ -98,7 +98,7 @@ function decodeQueryComponent(value: string): string {
 }
 ```
 
-- [ ] **Step 4: Run query tests to verify GREEN**
+- [x] **Step 4: Run query tests to verify GREEN**
 
 Run:
 
@@ -108,7 +108,7 @@ pnpm vitest run tests/unit/router/query.test.ts
 
 Expected: all query tests pass.
 
-- [ ] **Step 5: Commit query stabilization**
+- [x] **Step 5: Commit query stabilization**
 
 Run:
 
@@ -125,7 +125,7 @@ git commit -m "fix: stabilize router query boundaries"
 
 - Modify: `tests/unit/router/history.test.ts`
 
-- [ ] **Step 1: Write hash normalization and cleanup tests**
+- [x] **Step 1: Write hash normalization and cleanup tests**
 
 In `tests/unit/router/history.test.ts`, append these tests inside `describe("router history", () => { ... })`:
 
@@ -155,7 +155,7 @@ it("cleans up hash history listeners", () => {
 });
 ```
 
-- [ ] **Step 2: Run history tests**
+- [x] **Step 2: Run history tests**
 
 Run:
 
@@ -165,7 +165,7 @@ pnpm vitest run tests/unit/router/history.test.ts
 
 Expected: tests pass if existing hash normalization and cleanup behavior is already stable. If a test fails, inspect the first failing assertion and make the minimal change in `src/router/history.ts` only.
 
-- [ ] **Step 3: Commit history coverage**
+- [x] **Step 3: Commit history coverage**
 
 Run:
 
@@ -182,7 +182,7 @@ git commit -m "test: cover router history boundaries"
 
 - Modify: `tests/unit/router/router.test.ts`
 
-- [ ] **Step 1: Add listener-count support to the memory-like history helper**
+- [x] **Step 1: Add listener-count support to the memory-like history helper**
 
 In `tests/unit/router/router.test.ts`, change the helper signature:
 
@@ -206,7 +206,7 @@ Then add `listenerCount()` to the returned object:
     },
 ```
 
-- [ ] **Step 2: Write router normalization and repeated-install tests**
+- [x] **Step 2: Write router normalization and repeated-install tests**
 
 In `tests/unit/router/router.test.ts`, append these tests inside `describe("createRouter", () => { ... })`:
 
@@ -254,7 +254,7 @@ it("replaces the previous history listener on repeated install", () => {
 });
 ```
 
-- [ ] **Step 3: Run router tests**
+- [x] **Step 3: Run router tests**
 
 Run:
 
@@ -264,7 +264,7 @@ pnpm vitest run tests/unit/router/router.test.ts
 
 Expected: tests pass if existing router normalization and install cleanup are stable. If a test fails, make the minimal change in `src/router/router.ts` or `src/router/matcher.ts` only.
 
-- [ ] **Step 4: Commit router core coverage**
+- [x] **Step 4: Commit router core coverage**
 
 Run:
 
@@ -281,7 +281,7 @@ git commit -m "test: cover router normalization boundaries"
 
 - Modify: `tests/integration/router-component.test.ts`
 
-- [ ] **Step 1: Widen the integration memory-like history helper**
+- [x] **Step 1: Widen the integration memory-like history helper**
 
 In `tests/integration/router-component.test.ts`, change the helper signature:
 
@@ -325,7 +325,7 @@ Finally expose the arrays at the end of the returned object:
     replacedPaths,
 ```
 
-- [ ] **Step 2: Write RouterLink click-boundary tests**
+- [x] **Step 2: Write RouterLink click-boundary tests**
 
 In `tests/integration/router-component.test.ts`, append these tests inside `describe("router components", () => { ... })`:
 
@@ -391,7 +391,7 @@ it("uses replace navigation when RouterLink replace is true", async () => {
 });
 ```
 
-- [ ] **Step 3: Run router component integration tests**
+- [x] **Step 3: Run router component integration tests**
 
 Run:
 
@@ -401,7 +401,7 @@ pnpm vitest run tests/integration/router-component.test.ts
 
 Expected: tests pass if existing `RouterLink` click boundaries and `replace` behavior are stable. If a test fails, make the minimal change in `src/router/components.ts` only.
 
-- [ ] **Step 4: Commit RouterLink coverage**
+- [x] **Step 4: Commit RouterLink coverage**
 
 Run:
 
@@ -420,7 +420,7 @@ git commit -m "test: cover router link boundaries"
 - Modify: `docs/api.zh-CN.md`
 - Modify: `docs/package-usage.md`
 
-- [ ] **Step 1: Update English API router documentation**
+- [x] **Step 1: Update English API router documentation**
 
 In `docs/api.md`, in the Router section after the paragraph under `### createRouter({ history, routes })`, add:
 
@@ -431,7 +431,7 @@ object values, keep `+` as a literal plus sign, and throw a `TypeError` for malf
 encoding.
 ```
 
-- [ ] **Step 2: Update Chinese API router documentation**
+- [x] **Step 2: Update Chinese API router documentation**
 
 In `docs/api.zh-CN.md`, in the Router section after the paragraph under `### createRouter({ history, routes })`, add:
 
@@ -441,7 +441,7 @@ location 会解析为 `/`。query string 对数组使用重复 key，跳过 obje
 值，将 `+` 保持为字面加号；percent encoding 非法时会抛出 `TypeError`。
 ```
 
-- [ ] **Step 3: Update package usage router note**
+- [x] **Step 3: Update package usage router note**
 
 In `docs/package-usage.md`, after the paragraph that begins `The current router supports path matching`, add:
 
@@ -450,7 +450,7 @@ Supported path locations normalize to a leading slash and trim trailing slashes 
 malformed query percent encoding throws a `TypeError`.
 ```
 
-- [ ] **Step 4: Format changed docs**
+- [x] **Step 4: Format changed docs**
 
 Run:
 
@@ -460,7 +460,7 @@ pnpm exec prettier --write docs/api.md docs/api.zh-CN.md docs/package-usage.md
 
 Expected: Prettier exits with code 0 and only these docs are formatted.
 
-- [ ] **Step 5: Commit docs**
+- [x] **Step 5: Commit docs**
 
 Run:
 
@@ -482,7 +482,7 @@ git commit -m "docs: clarify router beta normalization"
 - Validate: `docs/api.zh-CN.md`
 - Validate: `docs/package-usage.md`
 
-- [ ] **Step 1: Run all router unit tests**
+- [x] **Step 1: Run all router unit tests**
 
 Run:
 
@@ -492,7 +492,7 @@ pnpm vitest run tests/unit/router
 
 Expected: all router unit tests pass.
 
-- [ ] **Step 2: Run router component integration test**
+- [x] **Step 2: Run router component integration test**
 
 Run:
 
@@ -502,7 +502,7 @@ pnpm vitest run tests/integration/router-component.test.ts
 
 Expected: router component integration tests pass.
 
-- [ ] **Step 3: Run typecheck**
+- [x] **Step 3: Run typecheck**
 
 Run:
 
@@ -512,7 +512,7 @@ pnpm typecheck
 
 Expected: TypeScript exits with code 0.
 
-- [ ] **Step 4: Run router e2e smoke**
+- [x] **Step 4: Run router e2e smoke**
 
 Run:
 
@@ -522,7 +522,7 @@ pnpm test:e2e -- router-basic
 
 Expected: Playwright router-basic e2e test passes.
 
-- [ ] **Step 5: Inspect final diff and status**
+- [x] **Step 5: Inspect final diff and status**
 
 Run:
 

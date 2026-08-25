@@ -33,7 +33,7 @@
 - Modify: `src/compiler/index.ts`
 - Test: `tests/unit/compiler/compile.test.ts`
 
-- [ ] **Step 1: Write failing tests for compile diagnostics**
+- [x] **Step 1: Write failing tests for compile diagnostics**
 
 Append these tests to `tests/unit/compiler/compile.test.ts` inside the existing `describe("compile", () => { ... })` block:
 
@@ -77,7 +77,7 @@ it("throws SolaceCompileError with source location for parse errors", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -87,7 +87,7 @@ pnpm vitest run tests/unit/compiler/compile.test.ts
 
 Expected: fails because `SolaceCompileError`, `code`, `filename`, and `loc` are not implemented.
 
-- [ ] **Step 3: Add diagnostic types**
+- [x] **Step 3: Add diagnostic types**
 
 Add this to `src/compiler/types.ts` after `SFCDescriptor`:
 
@@ -110,7 +110,7 @@ export interface SolaceCompileErrorOptions {
 }
 ```
 
-- [ ] **Step 4: Implement `SolaceCompileError` and error wrapping**
+- [x] **Step 4: Implement `SolaceCompileError` and error wrapping**
 
 In `src/compiler/index.ts`, replace the imports with:
 
@@ -200,7 +200,7 @@ function wrapCompileStep<T>(
 }
 ```
 
-- [ ] **Step 5: Run test and capture next failure**
+- [x] **Step 5: Run test and capture next failure**
 
 Run:
 
@@ -210,7 +210,7 @@ pnpm vitest run tests/unit/compiler/compile.test.ts
 
 Expected: still fails because `SFCDescriptor.templateOffset`, `parseTemplate(template, offset, source)`, and parse locations are not implemented yet.
 
-- [ ] **Step 6: Commit diagnostic type scaffold**
+- [x] **Step 6: Commit diagnostic type scaffold**
 
 Do not commit yet if tests do not pass. This task commits after Task 2 makes the tests pass.
 
@@ -225,7 +225,7 @@ Do not commit yet if tests do not pass. This task commits after Task 2 makes the
 - Test: `tests/unit/compiler/parse.test.ts`
 - Test: `tests/unit/compiler/compile.test.ts`
 
-- [ ] **Step 1: Write failing parser location tests**
+- [x] **Step 1: Write failing parser location tests**
 
 Append these tests to `tests/unit/compiler/parse.test.ts`:
 
@@ -265,7 +265,7 @@ expect(result.scriptOffset).toBeGreaterThan(0);
 expect(result.styleOffset).toBeGreaterThan(0);
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run:
 
@@ -275,7 +275,7 @@ pnpm vitest run tests/unit/compiler/parse.test.ts tests/unit/compiler/compile.te
 
 Expected: fails because offsets and `loc` fields are missing.
 
-- [ ] **Step 3: Add offsets to descriptor type**
+- [x] **Step 3: Add offsets to descriptor type**
 
 Update `SFCDescriptor` in `src/compiler/types.ts` to:
 
@@ -290,7 +290,7 @@ export interface SFCDescriptor {
 }
 ```
 
-- [ ] **Step 4: Implement `ParseError` and location helpers**
+- [x] **Step 4: Implement `ParseError` and location helpers**
 
 In `src/compiler/parse.ts`, change the import to:
 
@@ -327,7 +327,7 @@ function createParseError(source: string, offset: number, message: string): Pars
 }
 ```
 
-- [ ] **Step 5: Track block offsets in `parseSFC`**
+- [x] **Step 5: Track block offsets in `parseSFC`**
 
 Replace `parseSFC` and `extractBlock` with:
 
@@ -374,7 +374,7 @@ function extractBlock(
 }
 ```
 
-- [ ] **Step 6: Add source-aware parser parameters**
+- [x] **Step 6: Add source-aware parser parameters**
 
 Change `parseTemplate` signature to:
 
@@ -418,7 +418,7 @@ function parseAttribute(
 ): { attribute: Attribute; index: number };
 ```
 
-- [ ] **Step 7: Replace parser throws with located errors**
+- [x] **Step 7: Replace parser throws with located errors**
 
 Use these replacements in `src/compiler/parse.ts`:
 
@@ -450,7 +450,7 @@ throw createParseError(
 );
 ```
 
-- [ ] **Step 8: Run parser and compiler tests**
+- [x] **Step 8: Run parser and compiler tests**
 
 Run:
 
@@ -460,7 +460,7 @@ pnpm vitest run tests/unit/compiler/parse.test.ts tests/unit/compiler/compile.te
 
 Expected: all tests in both files pass.
 
-- [ ] **Step 9: Commit diagnostics and locations**
+- [x] **Step 9: Commit diagnostics and locations**
 
 Run:
 
@@ -478,7 +478,7 @@ git commit -m "feat: add SFC compiler diagnostics"
 - Modify: `src/vite/index.ts`
 - Create: `tests/unit/vite/solace-plugin.test.ts`
 
-- [ ] **Step 1: Write failing Vite plugin tests**
+- [x] **Step 1: Write failing Vite plugin tests**
 
 Create `tests/unit/vite/solace-plugin.test.ts` with:
 
@@ -524,7 +524,7 @@ describe("solacePlugin", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -534,7 +534,7 @@ pnpm vitest run tests/unit/vite/solace-plugin.test.ts
 
 Expected: fails because Vite plugin diagnostics are not formatted with file, line, and column.
 
-- [ ] **Step 3: Implement Vite diagnostic formatting**
+- [x] **Step 3: Implement Vite diagnostic formatting**
 
 Replace `src/vite/index.ts` with:
 
@@ -580,7 +580,7 @@ function formatViteCompileError(error: SolaceCompileError): string {
 export default solacePlugin;
 ```
 
-- [ ] **Step 4: Run Vite plugin tests**
+- [x] **Step 4: Run Vite plugin tests**
 
 Run:
 
@@ -590,7 +590,7 @@ pnpm vitest run tests/unit/vite/solace-plugin.test.ts
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Commit Vite plugin contract**
+- [x] **Step 5: Commit Vite plugin contract**
 
 Run:
 
@@ -608,7 +608,7 @@ git commit -m "test: cover SFC Vite plugin contract"
 - Modify: `tests/integration/package-exports.test.ts`
 - Modify: `scripts/package-consumer-smoke.mjs`
 
-- [ ] **Step 1: Write failing package export assertions**
+- [x] **Step 1: Write failing package export assertions**
 
 In `tests/integration/package-exports.test.ts`, update the first test name to `builds root, JSX runtime, DevTools, and Vite artifacts` and add these assertions before the test ends:
 
@@ -644,7 +644,7 @@ expect(vite.default).toEqual(expect.any(Function));
 expect(vite.solacePlugin).toEqual(expect.any(Function));
 ```
 
-- [ ] **Step 2: Run package export tests to verify current coverage**
+- [x] **Step 2: Run package export tests to verify current coverage**
 
 Run:
 
@@ -654,7 +654,7 @@ pnpm build && pnpm vitest run --config vitest.package.config.ts tests/integratio
 
 Expected: pass if current build already emits the Vite subpath; if it fails, fix `rollup.config.mjs` entry points before continuing.
 
-- [ ] **Step 3: Extend consumer smoke TypeScript coverage**
+- [x] **Step 3: Extend consumer smoke TypeScript coverage**
 
 In `scripts/package-consumer-smoke.mjs`, add this import to the generated `src/main.tsx` string:
 
@@ -672,7 +672,7 @@ if (vitePlugin.name !== "solace-sfc" || namedVitePlugin.name !== "solace-sfc") {
 }
 ```
 
-- [ ] **Step 4: Run package smoke**
+- [x] **Step 4: Run package smoke**
 
 Run:
 
@@ -682,7 +682,7 @@ pnpm package:smoke
 
 Expected: package consumer smoke passes.
 
-- [ ] **Step 5: Commit export coverage**
+- [x] **Step 5: Commit export coverage**
 
 Run:
 
@@ -704,7 +704,7 @@ git commit -m "test: cover Vite plugin package exports"
 - Modify: `readme.md`
 - Modify: `readme.zh-CN.md`
 
-- [ ] **Step 1: Update package usage docs**
+- [x] **Step 1: Update package usage docs**
 
 In `docs/package-usage.md`, add this section after `## Use JSX`:
 
@@ -748,7 +748,7 @@ diagnostics through Vite transform errors, injects scoped styles at runtime, and
 `map: null` to match the package policy of not publishing production source maps.
 ````
 
-- [ ] **Step 2: Update API docs**
+- [x] **Step 2: Update API docs**
 
 In `docs/api.md`, add this section after the public tooling entry points and before `## DevTools Subpath`:
 
@@ -767,7 +767,7 @@ ids untouched. Compiler failures are reported as Vite transform errors that incl
 code, filename, line, and column when available.
 ````
 
-- [ ] **Step 3: Update Chinese API docs**
+- [x] **Step 3: Update Chinese API docs**
 
 In `docs/api.zh-CN.md`, add this section after the public tooling entry points and before `## DevTools 子路径`:
 
@@ -783,7 +783,7 @@ import solace, { solacePlugin } from "@italone/solace/vite";
 默认导出和具名 `solacePlugin` 导出会创建同一个 Vite plugin。该 plugin 只转换以 `.solace` 结尾的文件，返回 JavaScript component module，并保持其他文件 id 不变。Compiler failure 会作为 Vite transform error 抛出，并在可用时包含 diagnostic code、filename、line 和 column。
 ````
 
-- [ ] **Step 4: Update examples docs and READMEs**
+- [x] **Step 4: Update examples docs and READMEs**
 
 In `docs/examples.md`, add the SFC example to the examples list with:
 
@@ -803,7 +803,7 @@ In `readme.zh-CN.md`, add the matching sentence under `## 示例`:
 `examples/sfc-counter` 应用演示 alpha `.solace` compiler 和 Vite plugin。
 ```
 
-- [ ] **Step 5: Format touched docs**
+- [x] **Step 5: Format touched docs**
 
 Run:
 
@@ -813,7 +813,7 @@ pnpm exec prettier --write docs/package-usage.md docs/api.md docs/api.zh-CN.md d
 
 Expected: files are formatted.
 
-- [ ] **Step 6: Run docs-relevant quality checks**
+- [x] **Step 6: Run docs-relevant quality checks**
 
 Run:
 
@@ -824,7 +824,7 @@ pnpm test tests/unit/devtools/devtools-docs.test.ts
 
 Expected: both commands pass.
 
-- [ ] **Step 7: Commit docs**
+- [x] **Step 7: Commit docs**
 
 Run:
 
@@ -841,7 +841,7 @@ git commit -m "docs: document alpha SFC compiler usage"
 
 - No code edits unless a prior validation failure identifies a concrete bug.
 
-- [ ] **Step 1: Run targeted compiler and Vite tests**
+- [x] **Step 1: Run targeted compiler and Vite tests**
 
 Run:
 
@@ -851,7 +851,7 @@ pnpm vitest run tests/unit/compiler/parse.test.ts tests/unit/compiler/compile.te
 
 Expected: all targeted tests pass.
 
-- [ ] **Step 2: Run quality gate**
+- [x] **Step 2: Run quality gate**
 
 Run:
 
@@ -861,7 +861,7 @@ pnpm quality
 
 Expected: format check, typecheck, JSX dev typecheck, lint, unit/integration tests, build, and package export tests pass.
 
-- [ ] **Step 3: Run package smoke**
+- [x] **Step 3: Run package smoke**
 
 Run:
 
@@ -871,7 +871,7 @@ pnpm package:smoke
 
 Expected: packed consumer smoke passes and validates `@italone/solace/vite` ESM/CJS imports plus TypeScript usage.
 
-- [ ] **Step 4: Record final status**
+- [x] **Step 4: Record final status**
 
 Run:
 

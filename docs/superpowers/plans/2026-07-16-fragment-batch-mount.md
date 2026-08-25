@@ -28,7 +28,7 @@ No public API, package export map, DevTools payload shape, keyed diff semantics,
 
 - Modify: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Import `Fragment`**
+- [x] **Step 1: Import `Fragment`**
 
 Change the renderer import to include `Fragment`:
 
@@ -36,7 +36,7 @@ Change the renderer import to include `Fragment`:
 import { Fragment, h, render } from "../../../src/index";
 ```
 
-- [ ] **Step 2: Add the parent insertion-count test**
+- [x] **Step 2: Add the parent insertion-count test**
 
 Add this test near the existing child diff tests:
 
@@ -63,7 +63,7 @@ it("batches root Fragment element insertion into the parent container", () => {
 });
 ```
 
-- [ ] **Step 3: Verify RED**
+- [x] **Step 3: Verify RED**
 
 Run:
 
@@ -81,7 +81,7 @@ Expected: the new test fails because the current Fragment mount path inserts eac
 
 - Modify: `src/renderer/diff.ts`
 
-- [ ] **Step 1: Widen insert-only renderer container types**
+- [x] **Step 1: Widen insert-only renderer container types**
 
 Change the `container` parameter type from `Element` to `Node` for helpers that only need node insertion, removal, or text operations:
 
@@ -99,7 +99,7 @@ export function patch(
 Apply the same `Node` container type to `mountFragment()`, `mountElement()`, `mountComponent()`, `patchChildren()`,
 `mountChildren()`, `patchArrayChildren()`, `patchUnkeyedChildren()`, and `patchKeyedChildren()`.
 
-- [ ] **Step 2: Add the batch mount guard**
+- [x] **Step 2: Add the batch mount guard**
 
 Add this helper near the Fragment helpers:
 
@@ -111,7 +111,7 @@ function canBatchMountFragment(children: VNode[]): boolean {
 }
 ```
 
-- [ ] **Step 3: Batch all-element Fragment initial mounts**
+- [x] **Step 3: Batch all-element Fragment initial mounts**
 
 Update `mountFragment()` so all-element Fragment children mount into a `DocumentFragment` first:
 
@@ -145,7 +145,7 @@ function mountFragment(
 }
 ```
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run:
 
@@ -165,7 +165,7 @@ Expected: exits with code 0 and the Fragment insertion-count test passes.
 - Add: `solace-project-log/solace-entries/2026-07-16-002-fragment-batch-mount.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update performance docs**
+- [x] **Step 1: Update performance docs**
 
 In `docs/performance.md`, update the current conclusion bullet from:
 
@@ -179,11 +179,11 @@ to:
 - The latest renderer follow-up batches all-element Fragment initial mounts through a `DocumentFragment`; next optimization work should focus on component update batching under larger trees and additional browser trend samples.
 ```
 
-- [ ] **Step 2: Add the project log entry**
+- [x] **Step 2: Add the project log entry**
 
 Create `solace-project-log/solace-entries/2026-07-16-002-fragment-batch-mount.md` with the observed validation rows after final checks.
 
-- [ ] **Step 3: Update the project log index**
+- [x] **Step 3: Update the project log index**
 
 Add this row after `001` in the `2026-07-16` section:
 
@@ -199,7 +199,7 @@ Add this row after `001` in the `2026-07-16` section:
 
 - All changed files
 
-- [ ] **Step 1: Format changed files**
+- [x] **Step 1: Format changed files**
 
 Run:
 
@@ -209,7 +209,7 @@ pnpm exec prettier --write src/renderer/diff.ts tests/unit/renderer/diff.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run targeted renderer tests**
+- [x] **Step 2: Run targeted renderer tests**
 
 Run:
 
@@ -219,7 +219,7 @@ pnpm exec vitest run tests/unit/renderer/diff.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run Fragment benchmark**
+- [x] **Step 3: Run Fragment benchmark**
 
 Run:
 
@@ -229,7 +229,7 @@ pnpm exec vitest run --config vitest.benchmark.config.ts tests/performance/fragm
 
 Expected: exits with code 0 and logs the three Fragment benchmark tasks.
 
-- [ ] **Step 4: Run full tests**
+- [x] **Step 4: Run full tests**
 
 Run:
 
@@ -239,7 +239,7 @@ pnpm test
 
 Expected: exits with code 0.
 
-- [ ] **Step 5: Run typecheck**
+- [x] **Step 5: Run typecheck**
 
 Run:
 
@@ -249,7 +249,7 @@ pnpm typecheck
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Run lint**
+- [x] **Step 6: Run lint**
 
 Run:
 
@@ -259,7 +259,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 7: Run build**
+- [x] **Step 7: Run build**
 
 Run:
 
@@ -269,7 +269,7 @@ pnpm build
 
 Expected: exits with code 0.
 
-- [ ] **Step 8: Run format check**
+- [x] **Step 8: Run format check**
 
 Run:
 
@@ -279,7 +279,7 @@ pnpm format:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 Run:
 

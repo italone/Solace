@@ -16,7 +16,7 @@
 
 - Modify: `tests/unit/component/component.test.ts`
 
-- [ ] **Step 1: Add multiple named slots test**
+- [x] **Step 1: Add multiple named slots test**
 
 ```ts
 it("renders named slot children", () => {
@@ -45,7 +45,7 @@ it("renders named slot children", () => {
 });
 ```
 
-- [ ] **Step 2: Add missing named slot test**
+- [x] **Step 2: Add missing named slot test**
 
 ```ts
 it("omits missing named slots", () => {
@@ -69,7 +69,7 @@ it("omits missing named slots", () => {
 });
 ```
 
-- [ ] **Step 3: Add named slot update test**
+- [x] **Step 3: Add named slot update test**
 
 ```ts
 it("updates named slot children when component children change", () => {
@@ -105,7 +105,7 @@ it("updates named slot children when component children change", () => {
 });
 ```
 
-- [ ] **Step 4: Run RED**
+- [x] **Step 4: Run RED**
 
 Run: `pnpm test tests/unit/component/component.test.ts`
 
@@ -120,29 +120,29 @@ Expected: FAIL because component children do not accept or preserve named slot m
 - Modify: `src/component/component.ts`
 - Modify: `src/index.ts`
 
-- [ ] **Step 1: Add slot child types**
+- [x] **Step 1: Add slot child types**
 
 In `src/vnode/vnode.ts`, add `VNodeSlots = Record<string, () => VNodeChildren>` and
 `ComponentVNodeChildren = VNodeChildren | VNodeSlots`.
 
-- [ ] **Step 2: Accept slot maps for component VNodes**
+- [x] **Step 2: Accept slot maps for component VNodes**
 
 Update component `createVNode()` and `h()` overloads so component children can be
 `ComponentVNodeChildren`.
 
-- [ ] **Step 3: Preserve component slot maps**
+- [x] **Step 3: Preserve component slot maps**
 
 In `createVNode()`, detect non-null plain object children for component vnodes and leave the object
 unchanged instead of wrapping it in an array.
 
-- [ ] **Step 4: Copy named slots into component instances**
+- [x] **Step 4: Copy named slots into component instances**
 
 In `initSlots()`, clear every previous slot key, then:
 
 - If children is a slot map, copy function-valued keys to `instance.slots`.
 - Otherwise, keep the existing behavior of assigning `children` to `slots.default`.
 
-- [ ] **Step 5: Run GREEN**
+- [x] **Step 5: Run GREEN**
 
 Run: `pnpm test tests/unit/component/component.test.ts`
 
@@ -158,20 +158,20 @@ Expected: PASS.
 - Add: `solace-project-log/solace-entries/2026-07-13-011-named-slots.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Add named slot usage to package smoke**
+- [x] **Step 1: Add named slot usage to package smoke**
 
 Change the consumer `Panel` usage to pass `{ header, default }` slot functions and update `Panel` to
 read `slots.header?.()`.
 
-- [ ] **Step 2: Document named slots**
+- [x] **Step 2: Document named slots**
 
 Update `docs/api.md` component examples to show `slots.header?.()` and `h(Panel, null, { ... })`.
 
-- [ ] **Step 3: Update README candidate list**
+- [x] **Step 3: Update README candidate list**
 
 Remove `named slots` from future candidates while keeping `slot props` as future work.
 
-- [ ] **Step 4: Add project log entry and index row**
+- [x] **Step 4: Add project log entry and index row**
 
 Record changed files and validation results.
 
@@ -181,31 +181,31 @@ Record changed files and validation results.
 
 - No source edits expected.
 
-- [ ] **Step 1: Run targeted component tests**
+- [x] **Step 1: Run targeted component tests**
 
 Run: `pnpm test tests/unit/component/component.test.ts`
 
 Expected: PASS.
 
-- [ ] **Step 2: Run typecheck**
+- [x] **Step 2: Run typecheck**
 
 Run: `pnpm typecheck`
 
 Expected: PASS.
 
-- [ ] **Step 3: Run package smoke**
+- [x] **Step 3: Run package smoke**
 
 Run: `pnpm package:smoke`
 
 Expected: PASS and print `package consumer smoke passed`.
 
-- [ ] **Step 4: Run full quality gate**
+- [x] **Step 4: Run full quality gate**
 
 Run: `pnpm quality`
 
 Expected: PASS.
 
-- [ ] **Step 5: Run format check**
+- [x] **Step 5: Run format check**
 
 Run: `pnpm format:check`
 

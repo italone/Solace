@@ -34,7 +34,7 @@ Do not modify `package.json` exports or `rollup.config.mjs`. This instrumentatio
 - Create: `src/renderer/keyed-reorder-instrumentation.ts`
 - Modify: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Create the internal instrumentation module with a zero-value API**
+- [x] **Step 1: Create the internal instrumentation module with a zero-value API**
 
 Create `src/renderer/keyed-reorder-instrumentation.ts` with this exact initial content:
 
@@ -120,7 +120,7 @@ export function recordKeyedReorderAnchorLookup(): void {
 }
 ```
 
-- [ ] **Step 2: Add imports to the renderer diff test**
+- [x] **Step 2: Add imports to the renderer diff test**
 
 In `tests/unit/renderer/diff.test.ts`, add this import below the devtools import:
 
@@ -144,7 +144,7 @@ afterEach(() => {
 });
 ```
 
-- [ ] **Step 3: Add the disabled-default test**
+- [x] **Step 3: Add the disabled-default test**
 
 Add this test after `spyOnGlobalSetAllocations()`:
 
@@ -183,7 +183,7 @@ it("keeps keyed reorder move-path counters disabled by default", () => {
 });
 ```
 
-- [ ] **Step 4: Add the full reverse move-path RED test**
+- [x] **Step 4: Add the full reverse move-path RED test**
 
 Add this test near the existing keyed reorder tests:
 
@@ -232,7 +232,7 @@ it("records keyed full reverse move-path counters when enabled", () => {
 });
 ```
 
-- [ ] **Step 5: Add the mixed insert/remove/move RED test**
+- [x] **Step 5: Add the mixed insert/remove/move RED test**
 
 Add this test after the full reverse counter test:
 
@@ -278,7 +278,7 @@ it("records keyed mixed mount remove and move counters when enabled", () => {
 });
 ```
 
-- [ ] **Step 6: Run renderer RED tests**
+- [x] **Step 6: Run renderer RED tests**
 
 Run:
 
@@ -288,7 +288,7 @@ pnpm vitest run tests/unit/renderer/diff.test.ts
 
 Expected: fails because the new counter tests expect renderer increments that `patchKeyedChildren()` does not record yet. The disabled-default test may pass.
 
-- [ ] **Step 7: Keep RED changes uncommitted until Task 2 passes**
+- [x] **Step 7: Keep RED changes uncommitted until Task 2 passes**
 
 Run:
 
@@ -308,7 +308,7 @@ Do not commit this failing RED state; commit the tests together with the passing
 - Modify: `src/renderer/diff.ts`
 - Test: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Add instrumentation imports**
+- [x] **Step 1: Add instrumentation imports**
 
 In `src/renderer/diff.ts`, add this import after the DOM import:
 
@@ -326,7 +326,7 @@ import {
 } from "./keyed-reorder-instrumentation";
 ```
 
-- [ ] **Step 2: Add a local instrumentation flag in `patchKeyedChildren()`**
+- [x] **Step 2: Add a local instrumentation flag in `patchKeyedChildren()`**
 
 Inside `patchKeyedChildren()`, immediately before creating `oldKeyedChildren`, insert:
 
@@ -352,7 +352,7 @@ if (newStart > newEnd) {
 }
 ```
 
-- [ ] **Step 3: Record matched and removed children**
+- [x] **Step 3: Record matched and removed children**
 
 Inside the loop that patches matched keyed children, update the existing match branch to:
 
@@ -386,7 +386,7 @@ if (matchedOldCount < oldEnd - oldStart + 1) {
 }
 ```
 
-- [ ] **Step 4: Record LIS length**
+- [x] **Step 4: Record LIS length**
 
 Immediately after:
 
@@ -402,7 +402,7 @@ if (shouldRecordMovePath) {
 }
 ```
 
-- [ ] **Step 5: Record mount and anchor lookup branches in the reverse loop**
+- [x] **Step 5: Record mount and anchor lookup branches in the reverse loop**
 
 In the `newIndexToOldIndexMap[index - newStart] === 0` branch, update the batched mount call from:
 
@@ -466,7 +466,7 @@ patch(
 );
 ```
 
-- [ ] **Step 6: Record stable skips, moves, and move anchors**
+- [x] **Step 6: Record stable skips, moves, and move anchors**
 
 Update the stable-position branch from:
 
@@ -497,7 +497,7 @@ if (shouldRecordMovePath) {
 insert(childEl, container, getAnchor(newChildren, index + 1));
 ```
 
-- [ ] **Step 7: Run renderer tests**
+- [x] **Step 7: Run renderer tests**
 
 Run:
 
@@ -507,7 +507,7 @@ pnpm vitest run tests/unit/renderer/diff.test.ts
 
 Expected: exits with code 0. The new full reverse test should report `anchorLookups: 3`; the mixed test should report `anchorLookups: 3`.
 
-- [ ] **Step 8: Commit renderer instrumentation and tests**
+- [x] **Step 8: Commit renderer instrumentation and tests**
 
 Run:
 
@@ -528,7 +528,7 @@ Expected: one focused commit containing the instrumentation runtime and passing 
 - Modify: `tests/unit/scripts/browser-benchmark-history.test.ts`
 - Modify: `tests/e2e/browser-benchmark.spec.ts`
 
-- [ ] **Step 1: Add the history `MovePathCounts` type**
+- [x] **Step 1: Add the history `MovePathCounts` type**
 
 In `tests/e2e/browser-benchmark-history.ts`, add this type after `DomMutationCounts`:
 
@@ -551,7 +551,7 @@ Then add the field to the keyed reorder branch:
 movePathCounts: MovePathCounts;
 ```
 
-- [ ] **Step 2: Update the unit fixture with move-path counts**
+- [x] **Step 2: Update the unit fixture with move-path counts**
 
 In `tests/unit/scripts/browser-benchmark-history.test.ts`, update `keyedReorderSummary` to include:
 
@@ -570,7 +570,7 @@ In `tests/unit/scripts/browser-benchmark-history.test.ts`, update `keyedReorderS
 
 Place it immediately after `domMutationCounts`.
 
-- [ ] **Step 3: Assert history preserves move-path counts**
+- [x] **Step 3: Assert history preserves move-path counts**
 
 In the `appends a keyed reorder browser benchmark history record` test, extend the existing `toMatchObject` with:
 
@@ -587,7 +587,7 @@ In the `appends a keyed reorder browser benchmark history record` test, extend t
         },
 ```
 
-- [ ] **Step 4: Import the browser move-path type in the Playwright spec**
+- [x] **Step 4: Import the browser move-path type in the Playwright spec**
 
 In `tests/e2e/browser-benchmark.spec.ts`, update the import from `./browser-benchmark-history` to include:
 
@@ -595,7 +595,7 @@ In `tests/e2e/browser-benchmark.spec.ts`, update the import from `./browser-benc
   type MovePathCounts,
 ```
 
-- [ ] **Step 5: Add shape assertions for browser move-path counts**
+- [x] **Step 5: Add shape assertions for browser move-path counts**
 
 In `tests/e2e/browser-benchmark.spec.ts`, add this helper after `expectDomMutationCounts()`:
 
@@ -626,7 +626,7 @@ expect(result.movePathCounts.movedExistingChildren).toBe(9999);
 expect(result.movePathCounts.anchorLookups).toBeGreaterThanOrEqual(9999);
 ```
 
-- [ ] **Step 6: Run browser history RED test**
+- [x] **Step 6: Run browser history RED test**
 
 Run:
 
@@ -636,7 +636,7 @@ pnpm vitest run tests/unit/scripts/browser-benchmark-history.test.ts
 
 Expected: exits with code 0 because JSON serialization preserves the widened fixture field without runtime benchmark changes.
 
-- [ ] **Step 7: Run browser benchmark RED test**
+- [x] **Step 7: Run browser benchmark RED test**
 
 Run:
 
@@ -646,7 +646,7 @@ pnpm benchmark:browser
 
 Expected: fails in the keyed reorder branch because the browser result does not include `movePathCounts` yet.
 
-- [ ] **Step 8: Keep browser RED changes uncommitted until Task 4 passes**
+- [x] **Step 8: Keep browser RED changes uncommitted until Task 4 passes**
 
 Run:
 
@@ -667,7 +667,7 @@ with the passing browser wiring in Task 4.
 - Test: `tests/e2e/browser-benchmark.spec.ts`
 - Test: `tests/unit/scripts/browser-benchmark-history.test.ts`
 
-- [ ] **Step 1: Import the internal instrumentation helpers**
+- [x] **Step 1: Import the internal instrumentation helpers**
 
 In `examples/performance-benchmark/src/main.tsx`, keep the public runtime import and add this internal source import below it:
 
@@ -683,7 +683,7 @@ import {
 
 The Vite benchmark config aliases `@italone/solace` to `src/index.ts`, so this internal import shares the same source module instance as the renderer import path. Do not add this helper to package root exports.
 
-- [ ] **Step 2: Add the browser result type field**
+- [x] **Step 2: Add the browser result type field**
 
 In `examples/performance-benchmark/src/main.tsx`, add:
 
@@ -697,7 +697,7 @@ Then add this field to the `keyed-reorder` branch of `BrowserBenchmarkResult`:
 movePathCounts: MovePathCounts;
 ```
 
-- [ ] **Step 3: Add a measured-window helper**
+- [x] **Step 3: Add a measured-window helper**
 
 Add this function below `measureDomMutations()`:
 
@@ -721,7 +721,7 @@ async function measureKeyedReorderMovePath<T>(run: () => Promise<T>): Promise<{
 }
 ```
 
-- [ ] **Step 4: Wrap the reorder update with both instruments**
+- [x] **Step 4: Wrap the reorder update with both instruments**
 
 Replace the existing keyed reorder measurement:
 
@@ -752,7 +752,7 @@ const {
 
 This keeps `domMutationCounts` and `movePathCounts` scoped to the same reorder update window.
 
-- [ ] **Step 5: Attach `movePathCounts` to the keyed result**
+- [x] **Step 5: Attach `movePathCounts` to the keyed result**
 
 In the keyed reorder result object, add:
 
@@ -762,7 +762,7 @@ In the keyed reorder result object, add:
 
 Place it immediately after `domMutationCounts`.
 
-- [ ] **Step 6: Run focused checks**
+- [x] **Step 6: Run focused checks**
 
 Run:
 
@@ -780,7 +780,7 @@ pnpm benchmark:browser
 
 Expected: exits with code 0 and logs `keyed-reorder` summaries that include both `domMutationCounts` and `movePathCounts`.
 
-- [ ] **Step 7: Commit browser result wiring**
+- [x] **Step 7: Commit browser result wiring**
 
 Run:
 
@@ -984,7 +984,7 @@ Expected: final commit includes docs/log updates and no `.benchmark-history/**` 
 - Add: `solace-project-log/solace-entries/2026-07-21-015-browser-keyed-reorder-move-path-trend-refresh.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Run a five-sample browser benchmark refresh**
+- [x] **Step 1: Run a five-sample browser benchmark refresh**
 
 Run:
 
@@ -994,7 +994,7 @@ SOLACE_BROWSER_BENCHMARK_HISTORY_PATH=.benchmark-history/browser.jsonl SOLACE_BR
 
 Expected: exits with code 0 and appends five `large-list` and five `keyed-reorder` records to local ignored history.
 
-- [ ] **Step 2: Summarize the latest browser window**
+- [x] **Step 2: Summarize the latest browser window**
 
 Run:
 
@@ -1004,7 +1004,7 @@ pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
 
 Expected: exits with code 0 and reports fresh `large-list` and `keyed-reorder` browser groups.
 
-- [ ] **Step 3: Update performance docs with the observed latest-window values**
+- [x] **Step 3: Update performance docs with the observed latest-window values**
 
 In `docs/performance.md`, update the browser benchmark trend section with the observed latest five `keyed-reorder` timing values and include a short diagnostic note in this form:
 
@@ -1016,7 +1016,7 @@ fixture is dominated by required DOM placements rather than prop/text/remove wri
 
 If the observed `anchorLookups` value is `9999`, write `9,999 move-loop anchor lookups`. If the observed value differs, write the exact observed value and preserve the explanation that anchor lookups are measured rather than guessed.
 
-- [ ] **Step 4: Add the trend refresh project log**
+- [x] **Step 4: Add the trend refresh project log**
 
 Create `solace-project-log/solace-entries/2026-07-21-015-browser-keyed-reorder-move-path-trend-refresh.md` with:
 
@@ -1066,7 +1066,7 @@ move-path instrumentation 已接入 browser benchmark。需要用新样本确认
 - 基于新 trend window 选择下一轮性能切片：anchor lookup、move-loop branching，或新增 reorder shape benchmark。
 ```
 
-- [ ] **Step 5: Add the trend refresh row to the log index**
+- [x] **Step 5: Add the trend refresh row to the log index**
 
 In `solace-project-log/index.md`, add:
 
@@ -1074,7 +1074,7 @@ In `solace-project-log/index.md`, add:
 | 015 | 刷新 keyed reorder move-path 趋势样本 | browser benchmark、本地 history、性能文档、项目日志 | `docs/performance.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-21-015-browser-keyed-reorder-move-path-trend-refresh.md) |
 ```
 
-- [ ] **Step 6: Format and validate docs**
+- [x] **Step 6: Format and validate docs**
 
 Run:
 
@@ -1100,7 +1100,7 @@ git diff --check
 
 Expected: exits with code 0.
 
-- [ ] **Step 7: Commit trend refresh**
+- [x] **Step 7: Commit trend refresh**
 
 Run:
 
