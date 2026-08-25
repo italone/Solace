@@ -29,7 +29,7 @@ No runtime source, benchmark scenario, package export, or publishability state s
 
 - Modify: `package.json`
 
-- [ ] **Step 1: Add browser benchmark to release:check**
+- [x] **Step 1: Add browser benchmark to release:check**
 
 In `package.json`, replace:
 
@@ -51,7 +51,7 @@ with:
 
 - Modify: `scripts/release-readiness-check.mjs`
 
-- [ ] **Step 1: Add script coverage validation**
+- [x] **Step 1: Add script coverage validation**
 
 After `requireScript("release:publish");`, add:
 
@@ -71,7 +71,7 @@ function requireReleaseCheckCommand(command) {
 }
 ```
 
-- [ ] **Step 2: Run readiness check**
+- [x] **Step 2: Run readiness check**
 
 Run:
 
@@ -92,7 +92,7 @@ Expected: exits with code 0.
 - Add: `solace-project-log/solace-entries/2026-07-14-004-release-browser-benchmark-gate.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update release docs**
+- [x] **Step 1: Update release docs**
 
 In `docs/release.md`, update the Local Release Gate description so it includes browser production benchmark:
 
@@ -100,7 +100,7 @@ In `docs/release.md`, update the Local Release Gate description so it includes b
 This runs format check, typecheck, JSX dev typecheck, lint, default tests, package exports tests, coverage thresholds, package consumer smoke, jsdom benchmark smoke, Chromium production browser benchmark, and browser e2e tests.
 ```
 
-- [ ] **Step 2: Update README current capability**
+- [x] **Step 2: Update README current capability**
 
 In `readme.md`, update the release gate bullet to include browser production benchmark:
 
@@ -108,11 +108,11 @@ In `readme.md`, update the release gate bullet to include browser production ben
 - 发布门禁：`pnpm release:check`、format check、coverage thresholds、package consumer smoke、jsdom benchmark smoke、Chromium production browser benchmark、Changesets versioning。
 ```
 
-- [ ] **Step 3: Add project log entry**
+- [x] **Step 3: Add project log entry**
 
 Create `solace-project-log/solace-entries/2026-07-14-004-release-browser-benchmark-gate.md` with status `验证中`, affected files, and pending validation rows.
 
-- [ ] **Step 4: Add project log index row**
+- [x] **Step 4: Add project log index row**
 
 Add a 2026-07-14 `004` row for release browser benchmark gate.
 
@@ -124,7 +124,7 @@ Add a 2026-07-14 `004` row for release browser benchmark gate.
 
 - All touched files.
 
-- [ ] **Step 1: Format touched files**
+- [x] **Step 1: Format touched files**
 
 Run:
 
@@ -134,7 +134,7 @@ pnpm exec prettier --write package.json scripts/release-readiness-check.mjs docs
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run readiness check**
+- [x] **Step 2: Run readiness check**
 
 Run:
 
@@ -144,7 +144,7 @@ pnpm release:readiness
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run browser benchmark**
+- [x] **Step 3: Run browser benchmark**
 
 Run:
 
@@ -154,7 +154,7 @@ pnpm benchmark:browser
 
 Expected: exits with code 0 and logs `browser benchmark summary`.
 
-- [ ] **Step 4: Run release check**
+- [x] **Step 4: Run release check**
 
 Run:
 
@@ -164,7 +164,7 @@ pnpm release:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 5: Run typecheck**
+- [x] **Step 5: Run typecheck**
 
 Run:
 
@@ -174,7 +174,7 @@ pnpm typecheck
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Run lint**
+- [x] **Step 6: Run lint**
 
 Run:
 
@@ -184,7 +184,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 7: Run format check**
+- [x] **Step 7: Run format check**
 
 Run:
 
@@ -194,7 +194,7 @@ pnpm format:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 8: Confirm private state**
+- [x] **Step 8: Confirm private state**
 
 Run:
 
@@ -204,11 +204,11 @@ node -e "const pkg = require('./package.json'); if (pkg.private !== true) proces
 
 Expected: exits with code 0.
 
-- [ ] **Step 9: Update project log validation table**
+- [x] **Step 9: Update project log validation table**
 
 Set log status to `已完成` and replace pending validation rows with observed results.
 
-- [ ] **Step 10: Run final format check**
+- [x] **Step 10: Run final format check**
 
 Run:
 

@@ -27,7 +27,7 @@ No runtime source, package scripts, package exports, tests, or CI workflow shoul
 
 - Add: `docs/devtools.md`
 
-- [ ] **Step 1: Create documentation**
+- [x] **Step 1: Create documentation**
 
 Create `docs/devtools.md` with sections for goals, non-goals, candidate panels, hook boundaries, privacy/performance risks, and phased roadmap.
 
@@ -41,15 +41,15 @@ Create `docs/devtools.md` with sections for goals, non-goals, candidate panels, 
 - Add: `solace-project-log/solace-entries/2026-07-14-007-devtools-evaluation.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Link DevTools docs in README**
+- [x] **Step 1: Link DevTools docs in README**
 
 Add `docs/devtools.md` near existing docs links and update the DevTools next-step bullet.
 
-- [ ] **Step 2: Add project log entry**
+- [x] **Step 2: Add project log entry**
 
 Create the project log entry with status `验证中`.
 
-- [ ] **Step 3: Add index row**
+- [x] **Step 3: Add index row**
 
 Add a `007` row under the `2026-07-14` project log index.
 
@@ -61,7 +61,7 @@ Add a `007` row under the `2026-07-14` project log index.
 
 - All touched files.
 
-- [ ] **Step 1: Format touched files**
+- [x] **Step 1: Format touched files**
 
 Run:
 
@@ -71,7 +71,7 @@ pnpm exec prettier --write docs/devtools.md readme.md docs/superpowers/specs/202
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run format check**
+- [x] **Step 2: Run format check**
 
 Run:
 
@@ -81,7 +81,7 @@ pnpm format:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run lint**
+- [x] **Step 3: Run lint**
 
 Run:
 
@@ -91,7 +91,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 4: Run build**
+- [x] **Step 4: Run build**
 
 Run:
 
@@ -101,11 +101,11 @@ pnpm build
 
 Expected: exits with code 0.
 
-- [ ] **Step 5: Update project log validation table**
+- [x] **Step 5: Update project log validation table**
 
 Set log status to `已完成` and replace pending validation rows with observed results.
 
-- [ ] **Step 6: Run final format check**
+- [x] **Step 6: Run final format check**
 
 Run:
 

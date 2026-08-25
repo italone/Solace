@@ -29,7 +29,7 @@ No runtime source, package exports, package scripts, or benchmark fixture app fi
 
 - Modify: `tests/e2e/browser-benchmark.spec.ts`
 
-- [ ] **Step 1: Add Node and OS imports**
+- [x] **Step 1: Add Node and OS imports**
 
 At the top of `tests/e2e/browser-benchmark.spec.ts`, replace:
 
@@ -46,7 +46,7 @@ import { arch, cpus, platform, release, totalmem } from "node:os";
 import { expect, test } from "@playwright/test";
 ```
 
-- [ ] **Step 2: Add metadata types**
+- [x] **Step 2: Add metadata types**
 
 After `BrowserBenchmarkResult`, add:
 
@@ -78,7 +78,7 @@ type PackageMetadata = {
 };
 ```
 
-- [ ] **Step 3: Change the test fixture signature**
+- [x] **Step 3: Change the test fixture signature**
 
 Replace:
 
@@ -98,7 +98,7 @@ test("measures large-list render, update, and unmount in a production browser bu
 }, testInfo) => {
 ```
 
-- [ ] **Step 4: Build and assert the combined summary**
+- [x] **Step 4: Build and assert the combined summary**
 
 Replace:
 
@@ -120,7 +120,7 @@ expectBrowserBenchmarkSummary(summary);
 console.log(`browser benchmark summary: ${JSON.stringify(summary)}`);
 ```
 
-- [ ] **Step 5: Add metadata helpers and assertions**
+- [x] **Step 5: Add metadata helpers and assertions**
 
 After `expectBrowserBenchmarkResult`, add:
 
@@ -187,7 +187,7 @@ function readPackageMetadata(): PackageMetadata {
 }
 ```
 
-- [ ] **Step 6: Run the browser benchmark**
+- [x] **Step 6: Run the browser benchmark**
 
 Run:
 
@@ -211,7 +211,7 @@ Expected:
 
 - Modify: `playwright.config.ts`
 
-- [ ] **Step 1: Exclude the benchmark-only spec**
+- [x] **Step 1: Exclude the benchmark-only spec**
 
 In `playwright.config.ts`, add `testIgnore` next to `testDir`:
 
@@ -222,7 +222,7 @@ export default defineConfig({
   webServer: [
 ```
 
-- [ ] **Step 2: Run default e2e**
+- [x] **Step 2: Run default e2e**
 
 Run:
 
@@ -245,7 +245,7 @@ Expected:
 - Modify: `docs/performance.md`
 - Modify: `readme.md`
 
-- [ ] **Step 1: Update browser benchmark docs**
+- [x] **Step 1: Update browser benchmark docs**
 
 In `docs/performance.md`, after:
 
@@ -274,7 +274,7 @@ The summary also includes reproducibility metadata:
 for trend context, not statistical claims.
 ```
 
-- [ ] **Step 2: Update README next-step wording**
+- [x] **Step 2: Update README next-step wording**
 
 In `readme.md`, under `## 14. 后续建议`, replace:
 
@@ -297,7 +297,7 @@ with:
 - Add: `solace-project-log/solace-entries/2026-07-14-002-benchmark-metadata.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Add project log entry**
+- [x] **Step 1: Add project log entry**
 
 Create `solace-project-log/solace-entries/2026-07-14-002-benchmark-metadata.md` with:
 
@@ -354,7 +354,7 @@ Create `solace-project-log/solace-entries/2026-07-14-002-benchmark-metadata.md` 
 - 后续可评估 jsdom Tinybench 自定义 reporter 或历史结果文件，但本次不引入。
 ```
 
-- [ ] **Step 2: Add project log index row**
+- [x] **Step 2: Add project log index row**
 
 In `solace-project-log/index.md`, add this row under the existing `2026-07-14` table:
 
@@ -371,7 +371,7 @@ In `solace-project-log/index.md`, add this row under the existing `2026-07-14` t
 - Modify after validation: `solace-project-log/solace-entries/2026-07-14-002-benchmark-metadata.md`
 - Modify if formatting changes are needed: all touched files
 
-- [ ] **Step 1: Format touched files**
+- [x] **Step 1: Format touched files**
 
 Run:
 
@@ -381,7 +381,7 @@ pnpm exec prettier --write tests/e2e/browser-benchmark.spec.ts playwright.config
 
 Expected: Prettier exits with code 0.
 
-- [ ] **Step 2: Run browser benchmark**
+- [x] **Step 2: Run browser benchmark**
 
 Run:
 
@@ -391,9 +391,9 @@ pnpm benchmark:browser
 
 Expected: exits with code 0 and logs `browser benchmark summary:` containing `metadata`.
 
-- [ ] **Step 3: Run typecheck**
+- [x] **Step 3: Run typecheck**
 
-- [ ] **Step 3: Run tests**
+- [x] **Step 3: Run tests**
 
 Run:
 
@@ -403,7 +403,7 @@ pnpm test
 
 Expected: exits with code 0.
 
-- [ ] **Step 4: Run e2e**
+- [x] **Step 4: Run e2e**
 
 Run:
 
@@ -413,7 +413,7 @@ pnpm test:e2e
 
 Expected: exits with code 0 and runs the ordinary example specs only.
 
-- [ ] **Step 5: Run typecheck**
+- [x] **Step 5: Run typecheck**
 
 Run:
 
@@ -423,7 +423,7 @@ pnpm typecheck
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Run lint**
+- [x] **Step 6: Run lint**
 
 Run:
 
@@ -433,7 +433,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 7: Run format check**
+- [x] **Step 7: Run format check**
 
 Run:
 
@@ -443,11 +443,11 @@ pnpm format:check
 
 Expected: exits with code 0 and reports all matched files use Prettier code style.
 
-- [ ] **Step 8: Update project log validation table**
+- [x] **Step 8: Update project log validation table**
 
 In `solace-project-log/solace-entries/2026-07-14-002-benchmark-metadata.md`, replace `状态：验证中` with `状态：已完成`, and replace each `待执行` result with the observed validation result.
 
-- [ ] **Step 9: Run final format check**
+- [x] **Step 9: Run final format check**
 
 Run:
 

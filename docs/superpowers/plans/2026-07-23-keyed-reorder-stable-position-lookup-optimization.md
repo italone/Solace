@@ -26,7 +26,7 @@
 
 - Modify: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Add a RED test for a shuffle-like high-movement reorder**
+- [x] **Step 1: Add a RED test for a shuffle-like high-movement reorder**
 
 Add this test after the existing keyed reorder move-path tests (around line 473):
 
@@ -86,7 +86,7 @@ it("records keyed high-movement shuffle move-path counters with zero anchor look
 });
 ```
 
-- [ ] **Step 2: Run renderer RED tests**
+- [x] **Step 2: Run renderer RED tests**
 
 Run:
 
@@ -97,7 +97,7 @@ pnpm vitest run tests/unit/renderer/diff.test.ts
 
 Expected: the new test passes (it only asserts behavior, not the optimization). Existing tests still pass. This confirms the fixture is valid before changing implementation.
 
-- [ ] **Step 3: Keep RED changes uncommitted until Task 2 passes**
+- [x] **Step 3: Keep RED changes uncommitted until Task 2 passes**
 
 Run:
 
@@ -117,7 +117,7 @@ Expected: `tests/unit/renderer/diff.test.ts` is modified locally. Do not commit 
 - Modify: `src/renderer/diff.ts`
 - Test: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Replace stable-index tracking with a boolean lookup table**
+- [x] **Step 1: Replace stable-index tracking with a boolean lookup table**
 
 In `patchKeyedChildren()`, replace the block:
 
@@ -146,7 +146,7 @@ for (const position of stablePositions) {
 let anchorNode = getAnchor(newChildren, newEnd + 1);
 ```
 
-- [ ] **Step 2: Update the move-loop stability check**
+- [x] **Step 2: Update the move-loop stability check**
 
 Replace the stable/move branch in the move loop from:
 
@@ -195,7 +195,7 @@ insert(childEl, container, anchorNode);
 anchorNode = childEl;
 ```
 
-- [ ] **Step 3: Run renderer tests**
+- [x] **Step 3: Run renderer tests**
 
 Run:
 
@@ -206,7 +206,7 @@ pnpm vitest run tests/unit/renderer/diff.test.ts
 
 Expected: all tests pass, including the new high-movement shuffle test and all existing tests.
 
-- [ ] **Step 4: Commit renderer optimization and tests**
+- [x] **Step 4: Commit renderer optimization and tests**
 
 Run:
 
@@ -228,7 +228,7 @@ Expected: one focused commit containing the optimization and passing renderer te
 - Create: `solace-project-log/solace-entries/2026-07-23-003-keyed-reorder-stable-position-lookup-optimization.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Run a five-sample browser benchmark refresh**
+- [x] **Step 1: Run a five-sample browser benchmark refresh**
 
 Run:
 
@@ -239,7 +239,7 @@ SOLACE_BROWSER_BENCHMARK_HISTORY_PATH=.benchmark-history/browser.jsonl SOLACE_BR
 
 Expected: passes and appends five samples per shape to local ignored history.
 
-- [ ] **Step 2: Summarize the latest window**
+- [x] **Step 2: Summarize the latest window**
 
 Run:
 
@@ -250,7 +250,7 @@ pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
 
 Expected: passes and reports groups for `large-list`, `keyed-reorder:reverse`, `keyed-reorder:sorted`, `keyed-reorder:swap-neighbors`, `keyed-reorder:shuffle`, and `keyed-reorder:shift-window`.
 
-- [ ] **Step 3: Update `docs/performance.md` latest window**
+- [x] **Step 3: Update `docs/performance.md` latest window**
 
 Replace the previous latest-window section with the observed fresh values. Keep the structure used in the existing section. Include a short note:
 
@@ -259,7 +259,7 @@ After replacing the LIS stable-position index scan with a boolean lookup table,
 every keyed-reorder shape continues to report `movePathCounts.anchorLookups: 0`.
 ```
 
-- [ ] **Step 4: Create implementation log entry**
+- [x] **Step 4: Create implementation log entry**
 
 Create `solace-project-log/solace-entries/2026-07-23-003-keyed-reorder-stable-position-lookup-optimization.md` matching the structure of previous entries. Include:
 
@@ -272,7 +272,7 @@ Create `solace-project-log/solace-entries/2026-07-23-003-keyed-reorder-stable-po
 
 Include the full captured JSON summary from Step 2 in a markdown code block under a "Raw summary" section.
 
-- [ ] **Step 5: Update log index**
+- [x] **Step 5: Update log index**
 
 In `solace-project-log/index.md`, add a row for 2026-07-23 entry 003. Use English commas and spaces between file paths to match existing rows.
 
@@ -280,7 +280,7 @@ In `solace-project-log/index.md`, add a row for 2026-07-23 entry 003. Use Englis
 | 003 | 优化 keyed reorder 稳定位置查找表 | renderer performance、browser benchmark、性能文档、项目日志 | `src/renderer/diff.ts`, `tests/unit/renderer/diff.test.ts`, `docs/performance.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-23-003-keyed-reorder-stable-position-lookup-optimization.md) |
 ```
 
-- [ ] **Step 6: Format and validate**
+- [x] **Step 6: Format and validate**
 
 Run:
 
@@ -297,7 +297,7 @@ git diff --check
 
 Expected: all pass.
 
-- [ ] **Step 7: Commit documentation and trend refresh**
+- [x] **Step 7: Commit documentation and trend refresh**
 
 Run:
 

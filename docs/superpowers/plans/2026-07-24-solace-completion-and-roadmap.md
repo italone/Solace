@@ -51,7 +51,7 @@
 
 - Create: `docs/superpowers/plans/2026-07-24-solace-completion-and-roadmap.md`（本文件）
 
-- [ ] **Step 1: 运行完整发布门禁并捕获输出**
+- [x] **Step 1: 运行完整发布门禁并捕获输出**
 
 Run:
 
@@ -61,7 +61,7 @@ pnpm release:check
 
 Expected: 所有子命令通过，最终输出包含 `release:check passed` 或等价成功提示。
 
-- [ ] **Step 2: 运行发布就绪检查（发布模式）**
+- [x] **Step 2: 运行发布就绪检查（发布模式）**
 
 Run:
 
@@ -71,7 +71,7 @@ pnpm release:readiness -- --publishable
 
 Expected: 通过，`--publishable` 模式下不提示阻塞项。
 
-- [ ] **Step 3: 记录 Git 状态**
+- [x] **Step 3: 记录 Git 状态**
 
 Run:
 
@@ -82,7 +82,7 @@ git log --oneline -5
 
 Expected: working tree clean，当前为 `main` 分支，最近 5 条提交包含 release-preparation 相关提交。
 
-- [ ] **Step 4: 记录 npm 包版本与 private 状态**
+- [x] **Step 4: 记录 npm 包版本与 private 状态**
 
 Run:
 
@@ -92,7 +92,7 @@ cat package.json | grep -E '"version"|"private"'
 
 Expected: `"version": "0.0.3"`，`"private": false`。
 
-- [ ] **Step 5: 提交本计划文件**
+- [x] **Step 5: 提交本计划文件**
 
 ```bash
 git add docs/superpowers/plans/2026-07-24-solace-completion-and-roadmap.md
@@ -107,7 +107,7 @@ git commit -m "docs: add Solace completion assessment and roadmap plan"
 
 - Modify: `docs/project-status.md`
 
-- [ ] **Step 1: 更新 Summary 与本地状态**
+- [x] **Step 1: 更新 Summary 与本地状态**
 
 将 `docs/project-status.md` 中 `Current local repository state` 区块替换为：
 
@@ -122,7 +122,7 @@ Current local repository state:
 - Publishing phase: ready for intentional release on user approval
 ```
 
-- [ ] **Step 2: 将 Recommended Next Work 改为可执行任务列表**
+- [x] **Step 2: 将 Recommended Next Work 改为可执行任务列表**
 
 替换为：
 
@@ -137,7 +137,7 @@ Current local repository state:
 6. **Add a public roadmap document** for beta priorities (compiler/router/SSR/DevTools UI) once alpha is tagged.
 ```
 
-- [ ] **Step 3: 运行 quality 确认文档变更无破坏**
+- [x] **Step 3: 运行 quality 确认文档变更无破坏**
 
 Run:
 
@@ -147,7 +147,7 @@ pnpm quality
 
 Expected: 通过。
 
-- [ ] **Step 4: 提交**
+- [x] **Step 4: 提交**
 
 ```bash
 git add docs/project-status.md
@@ -163,7 +163,7 @@ git commit -m "docs: update project status with current completion baseline"
 - Modify: `readme.md`
 - Modify: `readme.zh-CN.md`
 
-- [ ] **Step 1: 检查 README 中的版本号**
+- [x] **Step 1: 检查 README 中的版本号**
 
 Run:
 
@@ -173,11 +173,11 @@ grep -n "0\.0" readme.md readme.zh-CN.md
 
 Expected: 找到所有出现的版本号，确认是否与 `package.json` 的 `0.0.3` 一致。
 
-- [ ] **Step 2: 统一版本号**
+- [x] **Step 2: 统一版本号**
 
 若不一致，将所有 `readme.md` 与 `readme.zh-CN.md` 中的版本号替换为 `0.0.3`。
 
-- [ ] **Step 3: 检查 README 中的 private/发布描述**
+- [x] **Step 3: 检查 README 中的 private/发布描述**
 
 Run:
 
@@ -187,7 +187,7 @@ grep -n -i "private\|publish\|npm" readme.md readme.zh-CN.md
 
 Expected: 描述与 `"private": false`、可发布状态一致；若仍有“未发布/私有”描述，更新为“已准备发布，需显式批准”。
 
-- [ ] **Step 4: 运行 quality 确认无破坏**
+- [x] **Step 4: 运行 quality 确认无破坏**
 
 Run:
 
@@ -197,7 +197,7 @@ pnpm quality
 
 Expected: 通过。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add readme.md readme.zh-CN.md
@@ -212,7 +212,7 @@ git commit -m "docs: sync README version and publish readiness state"
 
 - 无仓库文件变更。
 
-- [ ] **Step 1: 确认远程状态**
+- [x] **Step 1: 确认远程状态**
 
 Run:
 
@@ -222,7 +222,7 @@ git status
 
 Expected: `Your branch is ahead of 'origin/main' by 2 commits`。
 
-- [ ] **Step 2: 推送提交**
+- [x] **Step 2: 推送提交**
 
 Run:
 
@@ -232,7 +232,7 @@ git push origin main
 
 Expected: 推送成功，本地与 `origin/main` 一致。
 
-- [ ] **Step 3: 验证远程状态**
+- [x] **Step 3: 验证远程状态**
 
 Run:
 
@@ -250,7 +250,7 @@ Expected: `Your branch is up to date with 'origin/main'`。
 
 - Create: `docs/roadmap.md`
 
-- [ ] **Step 1: 创建路线图文档**
+- [x] **Step 1: 创建路线图文档**
 
 写入 `docs/roadmap.md`：
 
@@ -285,7 +285,7 @@ Planned work, in rough priority order:
 Open an issue or discussion on the project repository with the problem, proposed API, and affected public surface.
 ```
 
-- [ ] **Step 2: 在 README 中链接路线图**
+- [x] **Step 2: 在 README 中链接路线图**
 
 在 `readme.md` 与 `readme.zh-CN.md` 的合适位置（例如“文档”列表后）添加：
 
@@ -293,7 +293,7 @@ Open an issue or discussion on the project repository with the problem, proposed
 - [Roadmap](./docs/roadmap.md)
 ```
 
-- [ ] **Step 3: 运行 quality 确认无破坏**
+- [x] **Step 3: 运行 quality 确认无破坏**
 
 Run:
 
@@ -303,7 +303,7 @@ pnpm quality
 
 Expected: 通过。
 
-- [ ] **Step 4: 提交**
+- [x] **Step 4: 提交**
 
 ```bash
 git add docs/roadmap.md readme.md readme.zh-CN.md
@@ -318,7 +318,7 @@ git commit -m "docs: add beta roadmap and link from README"
 
 - 无仓库文件变更，仅运行命令并记录结果。
 
-- [ ] **Step 1: 运行浏览器基准测试**
+- [x] **Step 1: 运行浏览器基准测试**
 
 Run:
 
@@ -328,7 +328,7 @@ pnpm benchmark:browser
 
 Expected: 测试通过，输出包含 keyed reorder 与 large-list 的基准数据。
 
-- [ ] **Step 2: 保存基准结果到本地日志**
+- [x] **Step 2: 保存基准结果到本地日志**
 
 将输出复制到 `solace-project-log/` 下的新文件，例如 `solace-project-log/2026-07-24-browser-benchmark.md`。
 
@@ -345,7 +345,7 @@ Expected: 测试通过，输出包含 keyed reorder 与 large-list 的基准数�
 （粘贴 pnpm benchmark:browser 的完整输出）
 ```
 
-- [ ] **Step 3: 提交**
+- [x] **Step 3: 提交**
 
 ```bash
 git add solace-project-log/2026-07-24-browser-benchmark.md
@@ -360,7 +360,7 @@ git commit -m "chore: record browser benchmark history"
 
 - Modify: `CHANGELOG.md`（添加发布日期）
 
-- [ ] **Step 1: 确认 npm 认证与权限**
+- [x] **Step 1: 确认 npm 认证与权限**
 
 Run:
 
@@ -370,7 +370,7 @@ npm whoami
 
 Expected: 输出已登录用户名，且具备 `@italone` 组织的 publish 权限。
 
-- [ ] **Step 2: 运行发布前 dry-run**
+- [x] **Step 2: 运行发布前 dry-run**
 
 Run:
 
@@ -380,7 +380,7 @@ npm publish --dry-run --access public --cache /private/tmp/npm-cache
 
 Expected: dry-run 成功，包内容与版本号正确。
 
-- [ ] **Step 3: 发布到 npm**
+- [x] **Step 3: 发布到 npm**
 
 Run:
 
@@ -390,7 +390,7 @@ npm publish --access public
 
 Expected: 发布成功，返回新包版本 `@italone/solace@0.0.3`。
 
-- [ ] **Step 4: 更新 CHANGELOG**
+- [x] **Step 4: 更新 CHANGELOG**
 
 在 `CHANGELOG.md` 顶部添加：
 
@@ -402,7 +402,7 @@ Expected: 发布成功，返回新包版本 `@italone/solace@0.0.3`。
 - Full test coverage and release gates passing.
 ```
 
-- [ ] **Step 5: 提交并推送**
+- [x] **Step 5: 提交并推送**
 
 ```bash
 git add CHANGELOG.md

@@ -27,7 +27,7 @@
 - Modify: `readme.md`
 - Modify: `readme.zh-CN.md`
 
-- [ ] **Step 1: Replace the stale English README paragraph**
+- [x] **Step 1: Replace the stale English README paragraph**
 
 In `readme.md`, replace:
 
@@ -41,7 +41,7 @@ With:
 Solace is suitable today for studying a compact frontend runtime, experimenting with reactive rendering, and validating framework implementation ideas in small examples. It is not yet positioned as a full replacement for React, Vue, Svelte, or other mature production frameworks. The current alpha includes an alpha `.solace` compiler, `@italone/solace/vite` plugin, and beta first-party router slice; it does not yet include SSR/SSG runtime, hydration, first-party UI components, browser extension DevTools, or a compatibility guarantee for internal modules.
 ```
 
-- [ ] **Step 2: Replace the stale Chinese README paragraph**
+- [x] **Step 2: Replace the stale Chinese README paragraph**
 
 In `readme.zh-CN.md`, replace:
 
@@ -55,7 +55,7 @@ With:
 Solace 当前适合用于学习小型前端运行时、实验响应式渲染，以及在小示例中验证框架实现思路。它还不是 React、Vue、Svelte 或其他成熟生产框架的完整替代品。当前 alpha 已包含 alpha `.solace` compiler、`@italone/solace/vite` plugin 和 beta 一方 router slice；它还不包含 SSR/SSG runtime、hydration、一方 UI 组件、浏览器扩展 DevTools，也不为内部模块提供兼容性承诺。
 ```
 
-- [ ] **Step 3: Verify the stale wording is gone**
+- [x] **Step 3: Verify the stale wording is gone**
 
 Run:
 
@@ -65,7 +65,7 @@ rg -n "does not include a compiler, router|不包含 compiler、router" readme.m
 
 Expected: no matches and exit code `1`.
 
-- [ ] **Step 4: Format the README files**
+- [x] **Step 4: Format the README files**
 
 Run:
 
@@ -75,7 +75,7 @@ pnpm exec prettier --write readme.md readme.zh-CN.md
 
 Expected: Prettier completes without errors.
 
-- [ ] **Step 5: Commit README drift fix**
+- [x] **Step 5: Commit README drift fix**
 
 Run:
 
@@ -94,7 +94,7 @@ Expected: commit succeeds.
 
 - Modify: `tests/unit/scripts/release-readiness-check.test.ts`
 
-- [ ] **Step 1: Add package JSON reader import**
+- [x] **Step 1: Add package JSON reader import**
 
 Change the first filesystem import from:
 
@@ -108,7 +108,7 @@ To:
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 ```
 
-- [ ] **Step 2: Add the release gate drift test**
+- [x] **Step 2: Add the release gate drift test**
 
 Append this test inside `describe("release readiness check CLI", () => { ... })`:
 
@@ -131,7 +131,7 @@ test("keeps release:check ordered around mandatory public API gates", async () =
 });
 ```
 
-- [ ] **Step 3: Run the targeted script tests**
+- [x] **Step 3: Run the targeted script tests**
 
 Run:
 
@@ -141,7 +141,7 @@ pnpm vitest run tests/unit/scripts/release-readiness-check.test.ts
 
 Expected: all release readiness CLI tests pass.
 
-- [ ] **Step 4: Commit release gate contract test**
+- [x] **Step 4: Commit release gate contract test**
 
 Run:
 
@@ -160,7 +160,7 @@ Expected: commit succeeds.
 
 - Modify: `tests/integration/package-exports.test.ts`
 
-- [ ] **Step 1: Add the package export allowlist test**
+- [x] **Step 1: Add the package export allowlist test**
 
 Append this test after `it("builds root, JSX runtime, DevTools, and Vite artifacts", () => { ... })`:
 
@@ -182,7 +182,7 @@ it("keeps package exports limited to documented public entries", () => {
 });
 ```
 
-- [ ] **Step 2: Add router beta/deferred API boundary assertions**
+- [x] **Step 2: Add router beta/deferred API boundary assertions**
 
 In `it("exports the public root API", async () => { ... })`, after the existing `expect(api).toMatchObject({ ... })` block, add:
 
@@ -193,7 +193,7 @@ expect(api).not.toHaveProperty("RouteMeta");
 expect(api).not.toHaveProperty("createSSRRouter");
 ```
 
-- [ ] **Step 3: Run package export tests**
+- [x] **Step 3: Run package export tests**
 
 Run:
 
@@ -204,7 +204,7 @@ pnpm vitest run --config vitest.package.config.ts tests/integration/package-expo
 
 Expected: build succeeds and package export tests pass.
 
-- [ ] **Step 4: Commit package boundary tests**
+- [x] **Step 4: Commit package boundary tests**
 
 Run:
 
@@ -230,7 +230,7 @@ Expected: commit succeeds.
 - Validate: `tests/integration/router-component.test.ts`
 - Validate: `tests/integration/package-exports.test.ts`
 
-- [ ] **Step 1: Run SFC/Vite unit and integration checks**
+- [x] **Step 1: Run SFC/Vite unit and integration checks**
 
 Run:
 
@@ -240,7 +240,7 @@ pnpm vitest run tests/unit/compiler/parse.test.ts tests/unit/compiler/compile.te
 
 Expected: all SFC compiler and Vite plugin tests pass.
 
-- [ ] **Step 2: Run router beta checks**
+- [x] **Step 2: Run router beta checks**
 
 Run:
 
@@ -250,7 +250,7 @@ pnpm vitest run tests/unit/router/query.test.ts tests/unit/router/matcher.test.t
 
 Expected: all router beta tests pass.
 
-- [ ] **Step 3: Run release readiness**
+- [x] **Step 3: Run release readiness**
 
 Run:
 
@@ -260,7 +260,7 @@ pnpm release:readiness
 
 Expected: prints `release readiness check passed` and reports `public API gates: pnpm release:readiness, pnpm package:smoke, pnpm test:e2e`.
 
-- [ ] **Step 4: Run package consumer smoke**
+- [x] **Step 4: Run package consumer smoke**
 
 Run:
 
@@ -270,7 +270,7 @@ pnpm package:smoke
 
 Expected: packed consumer install, typecheck, ESM/CJS imports, and Vite `.solace` production build pass.
 
-- [ ] **Step 5: Run browser e2e**
+- [x] **Step 5: Run browser e2e**
 
 Run:
 
@@ -280,7 +280,7 @@ pnpm test:e2e
 
 Expected: Playwright e2e tests pass, including `router-basic` and `sfc-counter`.
 
-- [ ] **Step 6: Run full quality**
+- [x] **Step 6: Run full quality**
 
 Run:
 
@@ -301,7 +301,7 @@ Expected: format check, typecheck, JSX dev typecheck, lint, unit/integration tes
 - Validate: package build artifacts through the release script
 - Validate: examples and browser benchmark through the release script
 
-- [ ] **Step 1: Run the full release gate**
+- [x] **Step 1: Run the full release gate**
 
 Run:
 
@@ -311,7 +311,7 @@ pnpm release:check
 
 Expected: `release:readiness`, `quality`, `test:coverage`, `package:smoke`, `benchmark`, `benchmark:browser`, and `test:e2e` all pass.
 
-- [ ] **Step 2: Confirm final Git state**
+- [x] **Step 2: Confirm final Git state**
 
 Run:
 
@@ -321,6 +321,6 @@ git status --short --branch
 
 Expected: `main...origin/main [ahead N]` with no changed files. The ahead count must be reported because push to GitHub may still be blocked by network.
 
-- [ ] **Step 3: Do not publish from an unsynchronized branch**
+- [x] **Step 3: Do not publish from an unsynchronized branch**
 
 If `git status --short --branch` reports `[ahead N]`, do not run `npm publish`. Report that the local branch must either be synchronized with `origin/main` or the team must explicitly accept releasing the local commits.

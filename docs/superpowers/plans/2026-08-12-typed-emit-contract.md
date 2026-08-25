@@ -50,7 +50,7 @@ Git release tags.
 - Modify: `tests/unit/renderer/jsx-runtime-public-contract-types.test.tsx`
 - Modify: `scripts/package-consumer-smoke.mjs`
 
-- [ ] **Step 1: Add the failing source TypeScript contract**
+- [x] **Step 1: Add the failing source TypeScript contract**
 
 Change the root imports in `tests/unit/renderer/jsx-runtime-public-contract-types.test.tsx` to import
 `defineComponent` and the new type:
@@ -116,7 +116,7 @@ const UntypedEmitter = defineComponent((_props: object, { emit }) => {
 This intentionally keeps the listener examples broad. Do not add a negative listener-payload case;
 precise JSX listener inference is outside this slice.
 
-- [ ] **Step 2: Run source typecheck and verify RED**
+- [x] **Step 2: Run source typecheck and verify RED**
 
 Run:
 
@@ -128,7 +128,7 @@ Expected: FAIL because `ComponentEventMap` is not exported, `ComponentSetupConte
 and current `defineComponent` does not accept `Props, Events`. Confirm that at least one
 `@ts-expect-error` is also reported unused under the old permissive `emit` type.
 
-- [ ] **Step 3: Add the failing packed-consumer type contract**
+- [x] **Step 3: Add the failing packed-consumer type contract**
 
 In the generated `main.tsx` import at `scripts/package-consumer-smoke.mjs`, add
 `ComponentEventMap` to the type-only root import:
@@ -177,7 +177,7 @@ Add `<TypedButton value={1} onChange={(value: number) => String(value)} />;` bes
 type expressions. Do not replace the existing untyped `Button`; it is the backward-compatibility
 case.
 
-- [ ] **Step 4: Run packed consumer and verify RED**
+- [x] **Step 4: Run packed consumer and verify RED**
 
 Run:
 
@@ -189,7 +189,7 @@ Expected: FAIL in the generated consumer TypeScript check because the packed dec
 export `ComponentEventMap` and does not support the typed component signature. The local tarball may
 build and install before the expected TypeScript failure.
 
-- [ ] **Step 5: Keep the worktree uncommitted for the GREEN implementation**
+- [x] **Step 5: Keep the worktree uncommitted for the GREEN implementation**
 
 Do not commit a deliberately failing tree. Confirm only the two approved test-contract files changed:
 
@@ -218,7 +218,7 @@ M tests/unit/renderer/jsx-runtime-public-contract-types.test.tsx
 - Test: `tests/unit/renderer/jsx-runtime-public-contract-types.test.tsx`
 - Test: `scripts/package-consumer-smoke.mjs`
 
-- [ ] **Step 1: Add the event map, generic emit, and generic setup context**
+- [x] **Step 1: Add the event map, generic emit, and generic setup context**
 
 Replace the current `EmitFn` and `ComponentSetupContext` declarations in
 `src/component/component.ts` with:
@@ -255,7 +255,7 @@ export interface ComponentSetupContext<Events extends ComponentEventMap = Compon
 Leave `ComponentInstance.emit`, the runtime `emit()` function, event-name camelization, listener-array
 dispatch, and DevTools summaries unchanged. They continue to use the permissive default `EmitFn`.
 
-- [ ] **Step 2: Carry the event type through ComponentType and VNode creation**
+- [x] **Step 2: Carry the event type through ComponentType and VNode creation**
 
 Update the type import in `src/vnode/vnode.ts`:
 
@@ -291,7 +291,7 @@ export function createVNode<Props extends object, Events extends ComponentEventM
 
 Do not alter `createVNode()` runtime logic.
 
-- [ ] **Step 3: Make defineComponent preserve Props and Events**
+- [x] **Step 3: Make defineComponent preserve Props and Events**
 
 Replace `src/component/define-component.ts` with:
 
@@ -310,7 +310,7 @@ export function defineComponent<
 This deliberately returns `ComponentType<Props, Events>` instead of exposing a third result generic.
 Existing direct-VNode and render-function returns are already part of `ComponentType`.
 
-- [ ] **Step 4: Preserve Events in h and JSX factory overloads**
+- [x] **Step 4: Preserve Events in h and JSX factory overloads**
 
 Import `ComponentEventMap` as a type in `src/vnode/h.ts` and change only the synchronous component
 overload:
@@ -353,7 +353,7 @@ export function jsxDEV<Props extends object, Events extends ComponentEventMap>(
 Do not change `createJsxVNode`, JSX child normalization, `JSXComponentProps`, `IntrinsicAttributes`, or
 runtime casts. Precise listener inference remains deferred.
 
-- [ ] **Step 5: Export ComponentEventMap from the existing root entry**
+- [x] **Step 5: Export ComponentEventMap from the existing root entry**
 
 Change the component type export in `src/index.ts` to:
 
@@ -370,7 +370,7 @@ export type {
 
 Do not modify `package.json` exports; this is an additive type on the existing root entry.
 
-- [ ] **Step 6: Run typecheck and resolve only event-propagation errors**
+- [x] **Step 6: Run typecheck and resolve only event-propagation errors**
 
 Run:
 
@@ -383,7 +383,7 @@ there with `any`; do not weaken `EmitFn<Events>`, remove a negative test, or add
 inference. If the error occurs in a public `h`/JSX overload, preserve the `Events` generic instead of
 erasing it.
 
-- [ ] **Step 7: Run focused runtime and type-contract tests**
+- [x] **Step 7: Run focused runtime and type-contract tests**
 
 Run:
 
@@ -394,7 +394,7 @@ pnpm exec vitest run tests/unit/renderer/jsx-runtime-public-contract-types.test.
 Expected: both files pass; existing listener functions, listener arrays, kebab-case resolution, and
 DevTools summaries remain unchanged.
 
-- [ ] **Step 8: Verify generated declarations and packed consumer GREEN**
+- [x] **Step 8: Verify generated declarations and packed consumer GREEN**
 
 Run:
 
@@ -406,7 +406,7 @@ pnpm package:smoke
 Expected: the package test inventory passes and the packed TypeScript consumer accepts valid typed
 events while consuming every new `@ts-expect-error` case.
 
-- [ ] **Step 9: Commit the type contract**
+- [x] **Step 9: Commit the type contract**
 
 ```bash
 git add src/component/component.ts src/component/define-component.ts src/vnode/vnode.ts src/vnode/h.ts src/jsx-runtime.ts src/jsx-dev-runtime.ts src/index.ts tests/unit/renderer/jsx-runtime-public-contract-types.test.tsx scripts/package-consumer-smoke.mjs
@@ -422,7 +422,7 @@ git commit -m "feat: add typed component emit contract"
 - Modify: `docs/api.zh-CN.md`
 - Modify: `docs/package-usage.md`
 
-- [ ] **Step 1: Add a failing documentation contract**
+- [x] **Step 1: Add a failing documentation contract**
 
 In the existing `keeps release gates and deferred beta boundaries aligned` test in
 `tests/unit/docs/public-contract-docs.test.ts`, add these assertions after the current documentation
@@ -442,7 +442,7 @@ expect(apiZh).toContain("默认保持宽松");
 expect(apiZh).toContain("不会推导精确的 `onXxx` listener payload");
 ```
 
-- [ ] **Step 2: Run the documentation test and verify RED**
+- [x] **Step 2: Run the documentation test and verify RED**
 
 Run:
 
@@ -452,7 +452,7 @@ pnpm exec vitest run tests/unit/docs/public-contract-docs.test.ts
 
 Expected: FAIL because the three documents do not yet contain the typed emit contract.
 
-- [ ] **Step 3: Update the English API component section**
+- [x] **Step 3: Update the English API component section**
 
 After the existing event-name resolution paragraph in `docs/api.md`, add:
 
@@ -484,7 +484,7 @@ contract.
 
 Keep the existing runtime camelization paragraph and `defineComponent(component)` section.
 
-- [ ] **Step 4: Update the Chinese API component section**
+- [x] **Step 4: Update the Chinese API component section**
 
 After the corresponding event-name paragraph in `docs/api.zh-CN.md`, add:
 
@@ -512,7 +512,7 @@ const Counter = defineComponent<{ count: number }, CounterEvents>((props, { emit
 
 ````
 
-- [ ] **Step 5: Update package usage with the packed-consumer form**
+- [x] **Step 5: Update package usage with the packed-consumer form**
 
 Replace the current component-event example in `docs/package-usage.md` with the same typed counter
 shape and add this paragraph immediately after it:
@@ -526,7 +526,7 @@ or an array of functions, matching runtime dispatch.
 
 Keep the existing DOM-handler sentence.
 
-- [ ] **Step 6: Run documentation and focused contract tests GREEN**
+- [x] **Step 6: Run documentation and focused contract tests GREEN**
 
 Run:
 
@@ -536,7 +536,7 @@ pnpm exec vitest run tests/unit/docs/public-contract-docs.test.ts tests/unit/ren
 
 Expected: both files pass.
 
-- [ ] **Step 7: Commit documentation**
+- [x] **Step 7: Commit documentation**
 
 ```bash
 git add tests/unit/docs/public-contract-docs.test.ts docs/api.md docs/api.zh-CN.md docs/package-usage.md
@@ -550,7 +550,7 @@ git commit -m "docs: explain typed component emits"
 - Create: `solace-project-log/solace-entries/2026-08-12-003-typed-emit-contract.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Run the complete local quality gate**
+- [x] **Step 1: Run the complete local quality gate**
 
 Run:
 
@@ -562,7 +562,7 @@ Expected: format, build, runtime typecheck, JSX dev typecheck, lint, complete Vi
 package tests all pass. Record the fresh Vitest file/test totals and package test totals from this
 exact execution.
 
-- [ ] **Step 2: Re-run the packed consumer and focused contract**
+- [x] **Step 2: Re-run the packed consumer and focused contract**
 
 Run:
 
@@ -573,7 +573,7 @@ pnpm exec vitest run tests/unit/docs/public-contract-docs.test.ts tests/unit/ren
 
 Expected: packed consumer passes and all three focused files pass. Record the fresh focused counts.
 
-- [ ] **Step 3: Verify the frozen public/release scope**
+- [x] **Step 3: Verify the frozen public/release scope**
 
 Run:
 
@@ -593,7 +593,7 @@ Expected:
   plan, and project-log paths;
 - diff check passes.
 
-- [ ] **Step 4: Write the project-log evidence**
+- [x] **Step 4: Write the project-log evidence**
 
 Create `solace-project-log/solace-entries/2026-08-12-003-typed-emit-contract.md`:
 
@@ -634,7 +634,7 @@ inside existing tests without adding an `it()` block. Before saving the log, rep
 fresh command output if the inventory changed during implementation. Add index row `003` under
 `2026-08-12` pointing to the new entry.
 
-- [ ] **Step 5: Format and verify the evidence files**
+- [x] **Step 5: Format and verify the evidence files**
 
 Run:
 
@@ -646,14 +646,14 @@ git diff --check
 
 Expected: formatting and diff checks pass.
 
-- [ ] **Step 6: Commit evidence**
+- [x] **Step 6: Commit evidence**
 
 ```bash
 git add solace-project-log/index.md solace-project-log/solace-entries/2026-08-12-003-typed-emit-contract.md
 git commit -m "docs: record typed emit contract"
 ```
 
-- [ ] **Step 7: Final no-publish status review**
+- [x] **Step 7: Final no-publish status review**
 
 Run:
 

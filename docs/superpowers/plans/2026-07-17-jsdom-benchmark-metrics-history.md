@@ -32,7 +32,7 @@ Do not modify runtime source, public package exports, Rollup config, DevTools pu
 
 - Modify: `tests/unit/scripts/benchmark-history-summary.test.ts`
 
-- [ ] **Step 1: Add a richer jsdom history summary type**
+- [x] **Step 1: Add a richer jsdom history summary type**
 
 In `tests/unit/scripts/benchmark-history-summary.test.ts`, replace the `BenchmarkHistorySummary` type with:
 
@@ -50,7 +50,7 @@ type BenchmarkHistorySummary = {
 };
 ```
 
-- [ ] **Step 2: Add a jsdom metric summary test**
+- [x] **Step 2: Add a jsdom metric summary test**
 
 Add this test after `summarizes browser timing metrics and jsdom record counts`:
 
@@ -131,7 +131,7 @@ test("summarizes jsdom task timing metrics", async () => {
 });
 ```
 
-- [ ] **Step 3: Update `createJsdomRecord()` to support tasks**
+- [x] **Step 3: Update `createJsdomRecord()` to support tasks**
 
 Replace the current `createJsdomRecord()` helper with:
 
@@ -158,7 +158,7 @@ function createJsdomRecord(options?: {
 }
 ```
 
-- [ ] **Step 4: Run the summary test to verify RED**
+- [x] **Step 4: Run the summary test to verify RED**
 
 Run:
 
@@ -176,7 +176,7 @@ Expected: fails because jsdom task metrics are not summarized yet. Acceptable fa
 
 - Modify: `tests/unit/scripts/run-benchmark.test.ts`
 
-- [ ] **Step 1: Extend the benchmark runner record type**
+- [x] **Step 1: Extend the benchmark runner record type**
 
 In `tests/unit/scripts/run-benchmark.test.ts`, replace the local parsed `record` type in `appends a benchmark history record after successful samples` with:
 
@@ -198,7 +198,7 @@ const record = JSON.parse(line) as {
 };
 ```
 
-- [ ] **Step 2: Assert the record includes task metrics**
+- [x] **Step 2: Assert the record includes task metrics**
 
 After `expect(record.metadata.sampleSize).toBe(1);`, add:
 
@@ -215,7 +215,7 @@ expect(record.summary?.tasks?.[0]).toMatchObject({
 });
 ```
 
-- [ ] **Step 3: Run the runner test to verify RED**
+- [x] **Step 3: Run the runner test to verify RED**
 
 Run:
 
@@ -234,7 +234,7 @@ Expected: fails because current history records do not include `summary.tasks`.
 - Create: `tests/performance/benchmark-report.ts`
 - Modify: all files under `tests/performance/*.bench.ts`
 
-- [ ] **Step 1: Create the shared report helper**
+- [x] **Step 1: Create the shared report helper**
 
 Create `tests/performance/benchmark-report.ts`:
 
@@ -295,7 +295,7 @@ function normalizeFilePath(fileUrl: string): string {
 }
 ```
 
-- [ ] **Step 2: Replace duplicated report helpers**
+- [x] **Step 2: Replace duplicated report helpers**
 
 In each file below, remove the local `function report(bench: Bench): void { ... }`, keep the `Bench` import for construction, and add:
 
@@ -323,7 +323,7 @@ Files:
 - `tests/performance/component-update.bench.ts`
 - `tests/performance/memory.bench.ts`
 
-- [ ] **Step 3: Run benchmark tests to verify helper compiles**
+- [x] **Step 3: Run benchmark tests to verify helper compiles**
 
 Run:
 
@@ -341,7 +341,7 @@ Expected: exits with code 0.
 
 - Modify: `scripts/run-benchmark.mjs`
 
-- [ ] **Step 1: Import temporary filesystem helpers**
+- [x] **Step 1: Import temporary filesystem helpers**
 
 In `scripts/run-benchmark.mjs`, replace:
 
@@ -358,7 +358,7 @@ import { dirname, join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 ```
 
-- [ ] **Step 2: Create metrics artifact only when history is enabled**
+- [x] **Step 2: Create metrics artifact only when history is enabled**
 
 In `main()`, after `const metadata = await createBenchmarkMetadata(plan.sampleSize);`, add:
 
@@ -366,7 +366,7 @@ In `main()`, after `const metadata = await createBenchmarkMetadata(plan.sampleSi
 const metricsPath = plan.historyPath === undefined ? undefined : await createBenchmarkMetricsPath();
 ```
 
-- [ ] **Step 3: Pass metrics path to child process**
+- [x] **Step 3: Pass metrics path to child process**
 
 Replace:
 
@@ -380,7 +380,7 @@ with:
 await runCommand(plan.command, plan.args, { metricsPath });
 ```
 
-- [ ] **Step 4: Read metrics before appending history**
+- [x] **Step 4: Read metrics before appending history**
 
 Replace the current `appendBenchmarkHistory()` call in `main()`:
 
@@ -410,7 +410,7 @@ await appendBenchmarkHistory(plan.historyPath, {
 });
 ```
 
-- [ ] **Step 5: Clean up metrics artifact**
+- [x] **Step 5: Clean up metrics artifact**
 
 After the `if (plan.historyPath !== undefined) { ... }` block in `main()`, add:
 
@@ -420,7 +420,7 @@ if (metricsPath !== undefined) {
 }
 ```
 
-- [ ] **Step 6: Add metrics helper functions**
+- [x] **Step 6: Add metrics helper functions**
 
 Add these functions before `appendBenchmarkHistory()`:
 
@@ -450,7 +450,7 @@ async function readBenchmarkMetrics(metricsPath) {
 }
 ```
 
-- [ ] **Step 7: Update `runCommand()` to inject env**
+- [x] **Step 7: Update `runCommand()` to inject env**
 
 Replace:
 
@@ -478,7 +478,7 @@ function runCommand(command, args, { metricsPath } = {}) {
     });
 ```
 
-- [ ] **Step 8: Run runner test to verify GREEN**
+- [x] **Step 8: Run runner test to verify GREEN**
 
 Run:
 
@@ -496,7 +496,7 @@ Expected: exits with code 0.
 
 - Modify: `scripts/summarize-benchmark-history.mjs`
 
-- [ ] **Step 1: Route jsdom task metrics into groups**
+- [x] **Step 1: Route jsdom task metrics into groups**
 
 Replace `collectMetricValues(group.metricValues, record);` inside `createSummaryGroups()` with:
 
@@ -504,7 +504,7 @@ Replace `collectMetricValues(group.metricValues, record);` inside `createSummary
 collectMetricValues(group.metricValues, record, groupKey);
 ```
 
-- [ ] **Step 2: Expand group keys for jsdom tasks**
+- [x] **Step 2: Expand group keys for jsdom tasks**
 
 Replace the jsdom branch in `getGroupKey(record)` with:
 
@@ -545,7 +545,7 @@ function getJsdomTaskGroupKeys(record) {
 }
 ```
 
-- [ ] **Step 3: Include task groups while keeping old environment group**
+- [x] **Step 3: Include task groups while keeping old environment group**
 
 In `createSummaryGroups(records)`, after the existing per-record group creation block, add:
 
@@ -566,7 +566,7 @@ for (const taskGroupKey of getJsdomTaskGroupKeys(record)) {
 }
 ```
 
-- [ ] **Step 4: Preserve task in summary output**
+- [x] **Step 4: Preserve task in summary output**
 
 In the return object from `createSummaryGroups()`, add:
 
@@ -576,7 +576,7 @@ In the return object from `createSummaryGroups()`, add:
 
 next to the existing `scenario` and `environment` spreads.
 
-- [ ] **Step 5: Update `collectMetricValues()` signature and add jsdom collector**
+- [x] **Step 5: Update `collectMetricValues()` signature and add jsdom collector**
 
 Replace:
 
@@ -616,7 +616,7 @@ function collectJsdomTaskMetricValues(metricValues, task) {
 }
 ```
 
-- [ ] **Step 6: Run history summary test to verify GREEN**
+- [x] **Step 6: Run history summary test to verify GREEN**
 
 Run:
 
@@ -636,7 +636,7 @@ Expected: exits with code 0.
 - Add: `solace-project-log/solace-entries/2026-07-17-020-jsdom-benchmark-metrics-history.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update performance docs**
+- [x] **Step 1: Update performance docs**
 
 In `docs/performance.md`, replace:
 
@@ -654,7 +654,7 @@ benchmark runner. `pnpm benchmark:history -- --json` summarizes those jsdom task
 variance while still accepting older metadata-only records.
 ```
 
-- [ ] **Step 2: Add implementation log**
+- [x] **Step 2: Add implementation log**
 
 Create `solace-project-log/solace-entries/2026-07-17-020-jsdom-benchmark-metrics-history.md`:
 
@@ -718,7 +718,7 @@ browser history 已能汇总 timing metrics，但 jsdom history 之前只记录 
 - 后续可基于 jsdom task metrics 选择下一轮 renderer/Fragment/component 性能切片；仍不要加入绝对 timing threshold。
 ```
 
-- [ ] **Step 3: Add project log rows**
+- [x] **Step 3: Add project log rows**
 
 Add implementation row `020` under `2026-07-17` in `solace-project-log/index.md`:
 
@@ -734,7 +734,7 @@ Add implementation row `020` under `2026-07-17` in `solace-project-log/index.md`
 
 - All changed files
 
-- [ ] **Step 1: Format touched files**
+- [x] **Step 1: Format touched files**
 
 Run:
 
@@ -744,7 +744,7 @@ pnpm exec prettier --write scripts/run-benchmark.mjs scripts/summarize-benchmark
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run focused script tests**
+- [x] **Step 2: Run focused script tests**
 
 Run:
 
@@ -754,7 +754,7 @@ pnpm vitest run tests/unit/scripts/run-benchmark.test.ts tests/unit/scripts/benc
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run benchmark smoke and history summary**
+- [x] **Step 3: Run benchmark smoke and history summary**
 
 Run:
 
@@ -765,7 +765,7 @@ pnpm benchmark:history -- --json
 
 Expected: both commands exit with code 0. `pnpm benchmark:history -- --json` should include jsdom task groups when local ignored history contains a new metrics record.
 
-- [ ] **Step 4: Run full quality checks**
+- [x] **Step 4: Run full quality checks**
 
 Run:
 
@@ -780,7 +780,7 @@ git diff --check
 
 Expected: every command exits with code 0.
 
-- [ ] **Step 5: Skip package checks unless package boundaries changed**
+- [x] **Step 5: Skip package checks unless package boundaries changed**
 
 If `package.json`, `rollup.config.mjs`, package exports tests, `src/devtools/index.ts`, or public entry points changed, run:
 
@@ -793,11 +793,11 @@ Expected: both commands exit with code 0.
 
 If none of those files changed, skip this step and record that package checks were not required because public package boundaries were unchanged.
 
-- [ ] **Step 6: Update implementation log validation table**
+- [x] **Step 6: Update implementation log validation table**
 
 Replace each `待最终验证` in `solace-project-log/solace-entries/2026-07-17-020-jsdom-benchmark-metrics-history.md` with observed results.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 Run:
 

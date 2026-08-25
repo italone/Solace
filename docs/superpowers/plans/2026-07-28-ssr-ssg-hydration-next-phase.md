@@ -30,7 +30,7 @@
 - Modify: `docs/roadmap.md`
 - Create: `docs/superpowers/specs/2026-07-28-ssr-ssg-hydration-next-phase-design.md`
 
-- [ ] **Step 1: Confirm local/remote state**
+- [x] **Step 1: Confirm local/remote state**
 
 Run:
 
@@ -47,13 +47,13 @@ Expected:
 0	18
 ```
 
-- [ ] **Step 2: Record baseline**
+- [x] **Step 2: Record baseline**
 
 Update project status to say that `git push origin main` failed because the environment could not
 connect to `github.com:443`, and the 18 local commits are the current working release baseline until
 push succeeds.
 
-- [ ] **Step 3: Update sequencing**
+- [x] **Step 3: Update sequencing**
 
 Update roadmap ordering so it says:
 
@@ -62,7 +62,7 @@ Update roadmap ordering so it says:
 - SSR/SSG/hydration next-phase design and hardening comes before DevTools extension UI.
 - `pnpm release:readiness`, `pnpm package:smoke`, and `pnpm test:e2e` stay mandatory for public API changes.
 
-- [ ] **Step 4: Format docs**
+- [x] **Step 4: Format docs**
 
 Run:
 
@@ -72,7 +72,7 @@ pnpm exec prettier --write docs/project-status.md docs/project-status.zh-CN.md d
 
 Expected: all files are formatted without errors.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Run:
 
@@ -90,7 +90,7 @@ Expected: one documentation commit.
 - Modify: `tests/unit/renderer/hydration.test.ts`
 - Modify: `src/renderer/hydration.ts`
 
-- [ ] **Step 1: Write failing diagnostics tests**
+- [x] **Step 1: Write failing diagnostics tests**
 
 Add tests that assert hydration mismatch errors include:
 
@@ -105,7 +105,7 @@ expect(() => hydrate(h("section"), container)).toThrow(/expected.*section/i);
 expect(() => hydrate(h("section"), container)).toThrow(/actual.*div/i);
 ```
 
-- [ ] **Step 2: Run focused tests**
+- [x] **Step 2: Run focused tests**
 
 Run:
 
@@ -115,12 +115,12 @@ pnpm vitest run tests/unit/renderer/hydration.test.ts
 
 Expected: new diagnostics tests fail before implementation.
 
-- [ ] **Step 3: Implement diagnostic enrichment**
+- [x] **Step 3: Implement diagnostic enrichment**
 
 Keep throw-on-mismatch behavior. Add diagnostic message fields without adding recovery or DOM
 replacement.
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Run:
 
@@ -131,7 +131,7 @@ pnpm quality
 
 Expected: all focused and quality checks pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Run:
 
@@ -151,7 +151,7 @@ Expected: one focused diagnostics commit.
 - Modify: `docs/api.zh-CN.md`
 - Modify: `docs/package-usage.md`
 
-- [ ] **Step 1: Add shell preservation tests**
+- [x] **Step 1: Add shell preservation tests**
 
 Add a unit test that uses a component with `useStyle()` and asserts `generateStaticSite()` passes
 serialized style tags to `shell` unchanged.
@@ -162,7 +162,7 @@ Expected style shape:
 ['<style data-s-id="page">.page { color: blue; }</style>'];
 ```
 
-- [ ] **Step 2: Run focused tests**
+- [x] **Step 2: Run focused tests**
 
 Run:
 
@@ -172,12 +172,12 @@ pnpm vitest run tests/unit/server/generate-static-site.test.ts tests/unit/style/
 
 Expected: tests pass after the current style collection implementation is exercised.
 
-- [ ] **Step 3: Document shell placement**
+- [x] **Step 3: Document shell placement**
 
 Document `styles.join("")` placement in `<head>` and keep filesystem output and manifest injection
 deferred.
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Run:
 
@@ -189,7 +189,7 @@ pnpm package:smoke
 
 Expected: docs format, quality, and packed consumer smoke pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Run:
 
@@ -210,17 +210,17 @@ Expected: one focused SSG contract commit.
 - Modify: `docs/api.md`
 - Modify: `docs/api.zh-CN.md`
 
-- [ ] **Step 1: Add SFC no-expansion assertions**
+- [x] **Step 1: Add SFC no-expansion assertions**
 
 Add tests that assert unsupported extra `.solace` blocks still fail through Vite transform
 diagnostics, and generated scoped style output still routes through `useStyle()`.
 
-- [ ] **Step 2: Add router boundary assertions**
+- [x] **Step 2: Add router boundary assertions**
 
 Add tests only for current beta behavior. Do not add nested routes, guards, redirects, lazy route
 components, scroll behavior, memory history, auth, or permissions.
 
-- [ ] **Step 3: Run focused tests**
+- [x] **Step 3: Run focused tests**
 
 Run:
 
@@ -230,7 +230,7 @@ pnpm vitest run tests/unit/vite/solace-plugin.test.ts tests/unit/compiler/parse.
 
 Expected: focused tests pass.
 
-- [ ] **Step 4: Verify public API gates**
+- [x] **Step 4: Verify public API gates**
 
 Run:
 
@@ -242,7 +242,7 @@ pnpm test:e2e
 
 Expected: all three public API hard gates pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Run:
 
@@ -261,7 +261,7 @@ Expected: one boundary regression commit.
 - Modify: `docs/roadmap.md`
 - Create: `docs/superpowers/specs/2026-07-28-devtools-extension-ui-design.md`
 
-- [ ] **Step 1: Confirm SSR/SSG/hydration boundary**
+- [x] **Step 1: Confirm SSR/SSG/hydration boundary**
 
 Run:
 
@@ -271,12 +271,12 @@ rg -n "SSR/SSG/hydration|DevTools extension|browser DevTools" docs/roadmap.md do
 
 Expected: docs say DevTools extension UI starts after SSR/SSG/hydration planning.
 
-- [ ] **Step 2: Draft DevTools UI design only after Task 1-4 are complete**
+- [x] **Step 2: Draft DevTools UI design only after Task 1-4 are complete**
 
 Design the UI around the existing `@italone/solace/devtools` event API. Do not change runtime event
 payloads in the same task.
 
-- [ ] **Step 3: Verify docs**
+- [x] **Step 3: Verify docs**
 
 Run:
 
@@ -287,7 +287,7 @@ git diff --check
 
 Expected: docs format and diff check pass.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 Run:
 

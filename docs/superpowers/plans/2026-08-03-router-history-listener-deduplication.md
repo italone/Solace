@@ -23,11 +23,11 @@
 
 **Files:** `tests/unit/router/history.test.ts`
 
-- [ ] **Step 1: Update the existing web listener test to change the URL before dispatching `popstate`.**
+- [x] **Step 1: Update the existing web listener test to change the URL before dispatching `popstate`.**
 
 Use `window.history.pushState(null, "", "/changed")` before the first dispatch, keep the cleanup call, and retain the expectation that only the first changed event is observed after cleanup.
 
-- [ ] **Step 2: Add a web duplicate-event test.**
+- [x] **Step 2: Add a web duplicate-event test.**
 
 Add:
 
@@ -46,11 +46,11 @@ it("ignores repeated popstate events for the same location", () => {
 });
 ```
 
-- [ ] **Step 3: Add a hash duplicate-event and later-location test.**
+- [x] **Step 3: Add a hash duplicate-event and later-location test.**
 
 Replace the current hash cleanup event sequence with a test that starts at `/#/start`, registers a listener, changes to `/#/next`, dispatches one `popstate` and one `hashchange`, then changes to `/#/final` and dispatches another `hashchange`. Expect exactly two callbacks. After calling cleanup, dispatch both event types again and expect no additional callbacks.
 
-- [ ] **Step 4: Run the focused tests and verify the new tests fail for the missing deduplication behavior.**
+- [x] **Step 4: Run the focused tests and verify the new tests fail for the missing deduplication behavior.**
 
 Run:
 
@@ -64,7 +64,7 @@ Expected: the existing adapter tests pass, while the new web duplicate-event and
 
 **Files:** `src/router/history.ts`
 
-- [ ] **Step 1: Add an internal listener wrapper.**
+- [x] **Step 1: Add an internal listener wrapper.**
 
 Implement a private helper with this behavior:
 
@@ -84,7 +84,7 @@ function createLocationChangeListener(location: () => string, listener: () => vo
 }
 ```
 
-- [ ] **Step 2: Wrap `createWebHistory()` listeners.**
+- [x] **Step 2: Wrap `createWebHistory()` listeners.**
 
 Define the adapter's `location` function in a local variable before returning the object, pass that
 variable to `createLocationChangeListener(location, listener)` inside `listen(listener)`, register the
@@ -92,11 +92,11 @@ wrapped callback for `popstate`, and remove that exact callback in cleanup. Do n
 because the adapter methods are object-literal functions and the helper must receive an explicit
 function reference.
 
-- [ ] **Step 3: Wrap `createWebHashHistory()` listeners.**
+- [x] **Step 3: Wrap `createWebHashHistory()` listeners.**
 
 Create one wrapped callback from the hash adapter's `location` function and register that same callback for both `popstate` and `hashchange`. Cleanup must remove the same callback from both event types.
 
-- [ ] **Step 4: Run the focused tests and verify they pass.**
+- [x] **Step 4: Run the focused tests and verify they pass.**
 
 Run:
 
@@ -110,19 +110,19 @@ Expected: all history tests pass, including one callback for a changed location 
 
 **Files:** `docs/api.md`, `docs/api.zh-CN.md`, `docs/project-status.md`, `docs/project-status.zh-CN.md`
 
-- [ ] **Step 1: Update the English API section.**
+- [x] **Step 1: Update the English API section.**
 
 In the `createWebHistory()` / `createWebHashHistory()` section, state that `listen()` notifies on normalized location changes and suppresses repeated native events for the same location; `push()` and `replace()` do not invoke listeners directly.
 
-- [ ] **Step 2: Mirror the API statement in Chinese.**
+- [x] **Step 2: Mirror the API statement in Chinese.**
 
 Use the same semantics: listener callbacks are based on normalized location changes, duplicate native events are suppressed, and `push()` / `replace()` do not directly call listeners.
 
-- [ ] **Step 3: Update both project status files.**
+- [x] **Step 3: Update both project status files.**
 
 Add history listener deduplication to the Router completion evidence and the 2026-08-03 stabilization note. Do not remove or expand the existing deferred Router list.
 
-- [ ] **Step 4: Format and check documentation.**
+- [x] **Step 4: Format and check documentation.**
 
 Run:
 
@@ -135,7 +135,7 @@ git diff --check
 
 **Files:** all files modified above
 
-- [ ] **Step 1: Run Router regression tests.**
+- [x] **Step 1: Run Router regression tests.**
 
 Run:
 
@@ -145,7 +145,7 @@ pnpm vitest run tests/unit/router tests/integration/router-component.test.ts
 
 Expected: all Router unit and integration tests pass.
 
-- [ ] **Step 2: Run the repository quality gate.**
+- [x] **Step 2: Run the repository quality gate.**
 
 Run:
 
@@ -155,7 +155,7 @@ pnpm quality
 
 Expected: format check, build, both typechecks, lint, full Vitest suite, and package tests all exit successfully.
 
-- [ ] **Step 3: Review the final diff.**
+- [x] **Step 3: Review the final diff.**
 
 Run:
 
@@ -167,14 +167,14 @@ git diff --stat
 
 Confirm only the intended source, test, and documentation files changed.
 
-- [ ] **Step 4: Commit the implementation.**
+- [x] **Step 4: Commit the implementation.**
 
 ```bash
 git add src/router/history.ts tests/unit/router/history.test.ts docs/api.md docs/api.zh-CN.md docs/project-status.md docs/project-status.zh-CN.md
 git commit -m "fix(router): dedupe browser history listener events"
 ```
 
-- [ ] **Step 5: Push and verify synchronization.**
+- [x] **Step 5: Push and verify synchronization.**
 
 ```bash
 git -c http.version=HTTP/1.1 push

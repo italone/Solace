@@ -28,7 +28,7 @@ Do not modify public package exports, scheduler ordering semantics, DevTools pay
 
 - Modify: `tests/unit/component/component.test.ts`
 
-- [ ] **Step 1: Add the RED test**
+- [x] **Step 1: Add the RED test**
 
 Add this test after `it("calls direct VNode function components once during initial mount", () => { ... })`:
 
@@ -57,7 +57,7 @@ it("batches initial mount of component children into one parent insert", () => {
 });
 ```
 
-- [ ] **Step 2: Run the component test to verify RED**
+- [x] **Step 2: Run the component test to verify RED**
 
 Run:
 
@@ -75,7 +75,7 @@ Expected: the new test fails because initial component children still insert one
 
 - Modify: `src/renderer/diff.ts`
 
-- [ ] **Step 1: Broaden the batching predicate and reuse it in both mount paths**
+- [x] **Step 1: Broaden the batching predicate and reuse it in both mount paths**
 
 In `src/renderer/diff.ts`, replace the current element-only guard with a general initial-mount guard:
 
@@ -107,7 +107,7 @@ function canBatchMountChildren(children: VNode[], start: number, end: number): b
 
 Update `mountFragment()` to use the same batching predicate for its initial child mount path.
 
-- [ ] **Step 2: Run the component test to verify GREEN**
+- [x] **Step 2: Run the component test to verify GREEN**
 
 Run:
 
@@ -127,7 +127,7 @@ Expected: exits with code 0, and the new test passes with the existing component
 - Add: `solace-project-log/solace-entries/2026-07-20-005-component-child-batch-mount.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update the performance note**
+- [x] **Step 1: Update the performance note**
 
 In `docs/performance.md`, add a short sentence near the current renderer follow-up summary that says component initial mounts now batch child inserts through a `DocumentFragment`.
 
@@ -139,7 +139,7 @@ The component initial mount path also batches child inserts through a `DocumentF
 
 Keep the existing browser-trend and renderer summary text intact.
 
-- [ ] **Step 2: Add the implementation log entry**
+- [x] **Step 2: Add the implementation log entry**
 
 Create `solace-project-log/solace-entries/2026-07-20-005-component-child-batch-mount.md` with the same structure as the other 2026-07-20 log entries:
 
@@ -181,7 +181,7 @@ Create `solace-project-log/solace-entries/2026-07-20-005-component-child-batch-m
 | Diff whitespace          | `git diff --check`                                                                                           | 通过 |
 ```
 
-- [ ] **Step 3: Add the log index row**
+- [x] **Step 3: Add the log index row**
 
 Add a `2026-07-20` row to `solace-project-log/index.md`:
 
@@ -197,7 +197,7 @@ Add a `2026-07-20` row to `solace-project-log/index.md`:
 
 - All changed files
 
-- [ ] **Step 1: Format touched files**
+- [x] **Step 1: Format touched files**
 
 Run:
 
@@ -207,7 +207,7 @@ pnpm exec prettier --write src/renderer/diff.ts tests/unit/component/component.t
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run the focused component test**
+- [x] **Step 2: Run the focused component test**
 
 Run:
 
@@ -217,7 +217,7 @@ pnpm vitest run tests/unit/component/component.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run the component benchmark**
+- [x] **Step 3: Run the component benchmark**
 
 Run:
 
@@ -227,7 +227,7 @@ pnpm exec vitest run --config vitest.benchmark.config.ts tests/performance/rende
 
 Expected: exits with code 0 and reports the `1000 component initial render` task.
 
-- [ ] **Step 4: Refresh the local jsdom benchmark smoke**
+- [x] **Step 4: Refresh the local jsdom benchmark smoke**
 
 Run:
 
@@ -237,7 +237,7 @@ SOLACE_BENCHMARK_HISTORY_PATH=.benchmark-history/jsdom.jsonl SOLACE_BENCHMARK_SA
 
 Expected: exits with code 0 and reports the existing jsdom benchmark tasks, including `1000 component initial render`.
 
-- [ ] **Step 5: Run the full validation set**
+- [x] **Step 5: Run the full validation set**
 
 Run:
 
@@ -252,7 +252,7 @@ git diff --check
 
 Expected: all commands exit with code 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 Run:
 

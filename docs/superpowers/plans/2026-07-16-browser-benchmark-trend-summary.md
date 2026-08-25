@@ -28,7 +28,7 @@ No source code, generated benchmark history, benchmark scripts, package exports,
 
 - Modify: `docs/performance.md`
 
-- [ ] **Step 1: Add local browser trend summary**
+- [x] **Step 1: Add local browser trend summary**
 
 Add a short section after the `benchmark:history` paragraph that records the 2026-07-16 local summary:
 
@@ -62,11 +62,11 @@ p95 is the slowest observed sample and should be treated as trend context only, 
 - Add: `solace-project-log/solace-entries/2026-07-16-004-browser-benchmark-trend-summary.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Add log entry**
+- [x] **Step 1: Add log entry**
 
 Create the log entry with observed validation rows for jsdom benchmark, browser benchmark samples, history summary, ignored status, and format check.
 
-- [ ] **Step 2: Add index row**
+- [x] **Step 2: Add index row**
 
 Add this row after `003`:
 
@@ -82,7 +82,7 @@ Add this row after `003`:
 
 - All changed files
 
-- [ ] **Step 1: Format changed files**
+- [x] **Step 1: Format changed files**
 
 Run:
 
@@ -92,7 +92,7 @@ pnpm exec prettier --write docs/performance.md docs/superpowers/specs/2026-07-16
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run format check**
+- [x] **Step 2: Run format check**
 
 Run:
 
@@ -102,7 +102,7 @@ pnpm format:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Confirm generated history stays ignored**
+- [x] **Step 3: Confirm generated history stays ignored**
 
 Run:
 
@@ -112,7 +112,7 @@ git status --short --branch --ignored=matching
 
 Expected: `.benchmark-history/` appears as ignored (`!!`), not as tracked or untracked (`??`).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 Run:
 

@@ -37,7 +37,7 @@
 - Create: `src/server/index.ts`
 - Test: `tests/unit/server/render-to-string.test.ts`
 
-- [ ] **Step 1: Write failing server renderer tests**
+- [x] **Step 1: Write failing server renderer tests**
 
 Create `tests/unit/server/render-to-string.test.ts`:
 
@@ -103,7 +103,7 @@ describe("renderToString", () => {
 });
 ```
 
-- [ ] **Step 2: Run server renderer tests to verify RED**
+- [x] **Step 2: Run server renderer tests to verify RED**
 
 Run:
 
@@ -113,7 +113,7 @@ pnpm vitest run tests/unit/server/render-to-string.test.ts
 
 Expected: fails because `src/server` does not exist.
 
-- [ ] **Step 3: Implement server renderer**
+- [x] **Step 3: Implement server renderer**
 
 Create `src/server/render-to-string.ts`:
 
@@ -293,7 +293,7 @@ export {
 } from "./render-to-string";
 ```
 
-- [ ] **Step 4: Run server renderer tests to verify GREEN**
+- [x] **Step 4: Run server renderer tests to verify GREEN**
 
 Run:
 
@@ -303,7 +303,7 @@ pnpm vitest run tests/unit/server/render-to-string.test.ts
 
 Expected: all server renderer tests pass.
 
-- [ ] **Step 5: Commit server renderer**
+- [x] **Step 5: Commit server renderer**
 
 Run:
 
@@ -324,7 +324,7 @@ Expected: commit succeeds.
 - Modify: `src/renderer/renderer.ts`
 - Test: `tests/unit/renderer/hydration.test.ts`
 
-- [ ] **Step 1: Write failing hydration core tests**
+- [x] **Step 1: Write failing hydration core tests**
 
 Create `tests/unit/renderer/hydration.test.ts`:
 
@@ -370,7 +370,7 @@ describe("hydrate", () => {
 });
 ```
 
-- [ ] **Step 2: Run hydration tests to verify RED**
+- [x] **Step 2: Run hydration tests to verify RED**
 
 Run:
 
@@ -380,7 +380,7 @@ pnpm vitest run tests/unit/renderer/hydration.test.ts
 
 Expected: fails because `hydrate` and `SolaceHydrationError` are not exported from `src/renderer/renderer.ts`.
 
-- [ ] **Step 3: Implement hydration core**
+- [x] **Step 3: Implement hydration core**
 
 Create `src/renderer/hydration.ts`:
 
@@ -599,7 +599,7 @@ function normalizeHydrationSource(source: HydrationSource): VNode {
 }
 ```
 
-- [ ] **Step 4: Run hydration tests to verify GREEN**
+- [x] **Step 4: Run hydration tests to verify GREEN**
 
 Run:
 
@@ -609,7 +609,7 @@ pnpm vitest run tests/unit/renderer/hydration.test.ts
 
 Expected: all hydration core tests pass.
 
-- [ ] **Step 5: Commit hydration core**
+- [x] **Step 5: Commit hydration core**
 
 Run:
 
@@ -629,7 +629,7 @@ Expected: commit succeeds.
 - Modify: `src/app.ts`
 - Test: `tests/unit/app/create-app.test.ts`
 
-- [ ] **Step 1: Write failing app hydration tests**
+- [x] **Step 1: Write failing app hydration tests**
 
 Append this test to `tests/unit/app/create-app.test.ts`:
 
@@ -652,7 +652,7 @@ it("hydrates the root component into existing DOM", async () => {
 
 Ensure the test file imports `nextTick` and `ref` from `../../../src` if they are not already imported.
 
-- [ ] **Step 2: Run app tests to verify RED**
+- [x] **Step 2: Run app tests to verify RED**
 
 Run:
 
@@ -662,7 +662,7 @@ pnpm vitest run tests/unit/app/create-app.test.ts
 
 Expected: fails because `App` does not have `hydrate`.
 
-- [ ] **Step 3: Add `App.hydrate()`**
+- [x] **Step 3: Add `App.hydrate()`**
 
 Modify `src/app.ts`:
 
@@ -681,7 +681,7 @@ hydrate(container: Element): void {
 },
 ```
 
-- [ ] **Step 4: Run app tests to verify GREEN**
+- [x] **Step 4: Run app tests to verify GREEN**
 
 Run:
 
@@ -691,7 +691,7 @@ pnpm vitest run tests/unit/app/create-app.test.ts tests/unit/renderer/hydration.
 
 Expected: app and hydration tests pass.
 
-- [ ] **Step 5: Commit app hydration API**
+- [x] **Step 5: Commit app hydration API**
 
 Run:
 
@@ -710,7 +710,7 @@ Expected: commit succeeds.
 
 - Create: `tests/integration/ssr-hydration.test.ts`
 
-- [ ] **Step 1: Write failing integration tests**
+- [x] **Step 1: Write failing integration tests**
 
 Create `tests/integration/ssr-hydration.test.ts`:
 
@@ -756,7 +756,7 @@ describe("SSR hydration integration", () => {
 });
 ```
 
-- [ ] **Step 2: Run integration tests to verify behavior**
+- [x] **Step 2: Run integration tests to verify behavior**
 
 Run:
 
@@ -766,7 +766,7 @@ pnpm vitest run tests/integration/ssr-hydration.test.ts
 
 Expected: tests pass after Tasks 1-3. If provide/inject fails in server rendering, fix server component instance parent/provides propagation so it matches DOM component setup behavior.
 
-- [ ] **Step 3: Commit integration tests**
+- [x] **Step 3: Commit integration tests**
 
 Run:
 
@@ -787,7 +787,7 @@ Expected: commit succeeds.
 - Modify: `rollup.config.mjs`
 - Modify: `tests/integration/package-exports.test.ts`
 
-- [ ] **Step 1: Write failing package export tests**
+- [x] **Step 1: Write failing package export tests**
 
 In `tests/integration/package-exports.test.ts`, update the artifact test to assert:
 
@@ -824,7 +824,7 @@ expect(Object.keys(server).sort()).toEqual(["renderToString"]);
 expect(server.renderToString).toEqual(expect.any(Function));
 ```
 
-- [ ] **Step 2: Run package export tests to verify RED**
+- [x] **Step 2: Run package export tests to verify RED**
 
 Run:
 
@@ -835,7 +835,7 @@ pnpm vitest run --config vitest.package.config.ts tests/integration/package-expo
 
 Expected: fails because `./server` is not in package exports and build input.
 
-- [ ] **Step 3: Add package export and Rollup input**
+- [x] **Step 3: Add package export and Rollup input**
 
 In `package.json`, add:
 
@@ -853,7 +853,7 @@ In both Rollup input maps in `rollup.config.mjs`, add:
 server: "src/server/index.ts",
 ```
 
-- [ ] **Step 4: Run package export tests to verify GREEN**
+- [x] **Step 4: Run package export tests to verify GREEN**
 
 Run:
 
@@ -864,7 +864,7 @@ pnpm vitest run --config vitest.package.config.ts tests/integration/package-expo
 
 Expected: build succeeds and package export tests pass.
 
-- [ ] **Step 5: Commit package export**
+- [x] **Step 5: Commit package export**
 
 Run:
 
@@ -883,7 +883,7 @@ Expected: commit succeeds.
 
 - Modify: `scripts/package-consumer-smoke.mjs`
 
-- [ ] **Step 1: Write failing packed consumer smoke checks**
+- [x] **Step 1: Write failing packed consumer smoke checks**
 
 In `scripts/package-consumer-smoke.mjs`, add this import to the generated `src/main.tsx`:
 
@@ -924,7 +924,7 @@ and fail when:
 !server.renderToString;
 ```
 
-- [ ] **Step 2: Run package smoke**
+- [x] **Step 2: Run package smoke**
 
 Run:
 
@@ -934,7 +934,7 @@ pnpm package:smoke
 
 Expected: packed consumer smoke passes after Task 5.
 
-- [ ] **Step 3: Commit package smoke**
+- [x] **Step 3: Commit package smoke**
 
 Run:
 
@@ -960,7 +960,7 @@ Expected: commit succeeds.
 - Modify: `readme.md`
 - Modify: `readme.zh-CN.md`
 
-- [ ] **Step 1: Document the server subpath in API docs**
+- [x] **Step 1: Document the server subpath in API docs**
 
 In `docs/api.md`, add `@italone/solace/server` to the public entries table and add a section:
 
@@ -981,7 +981,7 @@ integration, and hydration mismatch recovery remain deferred.
 
 Add equivalent Chinese content to `docs/api.zh-CN.md`.
 
-- [ ] **Step 2: Document package usage**
+- [x] **Step 2: Document package usage**
 
 In `docs/package-usage.md`, add:
 
@@ -1003,7 +1003,7 @@ Use `createApp(App).hydrate(container)` in the browser to attach behavior to mat
 Hydration throws on structural mismatches instead of silently replacing incompatible DOM.
 ````
 
-- [ ] **Step 3: Update status and roadmap**
+- [x] **Step 3: Update status and roadmap**
 
 Update `docs/project-status.md` and `docs/project-status.zh-CN.md`:
 
@@ -1015,11 +1015,11 @@ Update `docs/roadmap.md`:
 - Move SSR/hydration from "planned" to "minimum loop complete".
 - Keep SSG and DevTools extension UI as next items.
 
-- [ ] **Step 4: Update READMEs**
+- [x] **Step 4: Update READMEs**
 
 Add `@italone/solace/server` to package entries in both READMEs and mention the minimum SSR/hydration loop in the alpha scope paragraph.
 
-- [ ] **Step 5: Format docs**
+- [x] **Step 5: Format docs**
 
 Run:
 
@@ -1029,7 +1029,7 @@ pnpm exec prettier --write docs/api.md docs/api.zh-CN.md docs/package-usage.md d
 
 Expected: Prettier completes without errors.
 
-- [ ] **Step 6: Commit docs**
+- [x] **Step 6: Commit docs**
 
 Run:
 
@@ -1048,7 +1048,7 @@ Expected: commit succeeds.
 
 - Validate all changed source, package, tests, and docs.
 
-- [ ] **Step 1: Run targeted SSR/hydration checks**
+- [x] **Step 1: Run targeted SSR/hydration checks**
 
 Run:
 
@@ -1058,7 +1058,7 @@ pnpm vitest run tests/unit/server/render-to-string.test.ts tests/unit/renderer/h
 
 Expected: targeted SSR/hydration tests pass.
 
-- [ ] **Step 2: Run package export checks**
+- [x] **Step 2: Run package export checks**
 
 Run:
 
@@ -1069,7 +1069,7 @@ pnpm vitest run --config vitest.package.config.ts tests/integration/package-expo
 
 Expected: build and package export tests pass.
 
-- [ ] **Step 3: Run mandatory public API gates**
+- [x] **Step 3: Run mandatory public API gates**
 
 Run:
 
@@ -1081,7 +1081,7 @@ pnpm test:e2e
 
 Expected: release readiness, packed consumer smoke, and browser e2e pass.
 
-- [ ] **Step 4: Run quality and full release gate**
+- [x] **Step 4: Run quality and full release gate**
 
 Run:
 
@@ -1092,7 +1092,7 @@ pnpm release:check
 
 Expected: all quality and release checks pass.
 
-- [ ] **Step 5: Confirm final Git state and push**
+- [x] **Step 5: Confirm final Git state and push**
 
 Run:
 

@@ -33,7 +33,7 @@ The workspace is not currently a Git repository, so omit commit steps unless Git
 
 - Modify: `tests/integration/package-exports.test.ts`
 
-- [ ] **Step 1: Replace the missing subpath assertion with public ESM subpath assertions**
+- [x] **Step 1: Replace the missing subpath assertion with public ESM subpath assertions**
 
 Replace this test:
 
@@ -62,7 +62,7 @@ it("exports the public DevTools subpath without internal emit helpers", async ()
 });
 ```
 
-- [ ] **Step 2: Extend the CommonJS package exports test**
+- [x] **Step 2: Extend the CommonJS package exports test**
 
 In the `"supports CommonJS package exports"` test, add the DevTools require:
 
@@ -81,7 +81,7 @@ expect(devtools.hasDevtoolsListeners).toBeUndefined();
 expect(devtools.serializeDevtoolsEvent).toBeUndefined();
 ```
 
-- [ ] **Step 3: Verify RED**
+- [x] **Step 3: Verify RED**
 
 Run:
 
@@ -101,7 +101,7 @@ Expected: fails because `solace/devtools` is not currently exported from `packag
 - Modify: `package.json`
 - Modify: `rollup.config.mjs`
 
-- [ ] **Step 1: Create the public DevTools barrel**
+- [x] **Step 1: Create the public DevTools barrel**
 
 Create `src/devtools/index.ts`:
 
@@ -115,7 +115,7 @@ export type {
 } from "./events";
 ```
 
-- [ ] **Step 2: Add the package export map**
+- [x] **Step 2: Add the package export map**
 
 In `package.json`, add `./devtools` between the JSX runtime exports and `./package.json`:
 
@@ -155,7 +155,7 @@ The surrounding `exports` object should become:
   },
 ```
 
-- [ ] **Step 3: Add Rollup JavaScript input**
+- [x] **Step 3: Add Rollup JavaScript input**
 
 In the first `input` map in `rollup.config.mjs`, add:
 
@@ -174,7 +174,7 @@ The map should become:
     },
 ```
 
-- [ ] **Step 4: Add Rollup declaration input**
+- [x] **Step 4: Add Rollup declaration input**
 
 In the second `input` map in `rollup.config.mjs`, add the same entry:
 
@@ -193,7 +193,7 @@ The map should become:
     },
 ```
 
-- [ ] **Step 5: Verify GREEN for package exports**
+- [x] **Step 5: Verify GREEN for package exports**
 
 Run:
 
@@ -211,7 +211,7 @@ Expected: exits with code 0 and verifies `dist/devtools.js`, `dist/devtools.cjs`
 
 - Modify: `scripts/package-consumer-smoke.mjs`
 
-- [ ] **Step 1: Add public DevTools imports to the generated TypeScript consumer**
+- [x] **Step 1: Add public DevTools imports to the generated TypeScript consumer**
 
 Inside the generated `src/main.tsx` template string, after the root Solace imports, add:
 
@@ -220,7 +220,7 @@ import { createDevtoolsRecorder, onDevtoolsEvent } from "solace/devtools";
 import type { DevtoolsEvent } from "solace/devtools";
 ```
 
-- [ ] **Step 2: Add a typechecked public DevTools usage snippet**
+- [x] **Step 2: Add a typechecked public DevTools usage snippet**
 
 Inside the same generated `src/main.tsx` template string, after `type CounterState = { count: number };`, add:
 
@@ -237,7 +237,7 @@ stopDevtoolsListener();
 
 This verifies the public API and types without requiring a public event emitter.
 
-- [ ] **Step 3: Extend the ESM runtime smoke command**
+- [x] **Step 3: Extend the ESM runtime smoke command**
 
 Replace the ESM `node --input-type=module -e` string with:
 
@@ -245,7 +245,7 @@ Replace the ESM `node --input-type=module -e` string with:
 "const api = await import('solace'); const runtime = await import('solace/jsx-runtime'); const dev = await import('solace/jsx-dev-runtime'); const devtools = await import('solace/devtools'); if (!api.createApp || !api.defineAsyncComponent || !api.defineComponent || !api.inject || !api.provide || !api.watchEffect || !runtime.jsx || !dev.jsxDEV || !devtools.createDevtoolsRecorder || !devtools.onDevtoolsEvent || devtools.emitDevtoolsEvent) process.exit(1);";
 ```
 
-- [ ] **Step 4: Extend the CJS runtime smoke command**
+- [x] **Step 4: Extend the CJS runtime smoke command**
 
 Replace the CJS `node -e` string with:
 
@@ -253,7 +253,7 @@ Replace the CJS `node -e` string with:
 "const api = require('solace'); const runtime = require('solace/jsx-runtime'); const dev = require('solace/jsx-dev-runtime'); const devtools = require('solace/devtools'); if (!api.createApp || !api.defineAsyncComponent || !api.defineComponent || !api.inject || !api.provide || !api.watchEffect || !runtime.jsx || !dev.jsxDEV || !devtools.createDevtoolsRecorder || !devtools.onDevtoolsEvent || devtools.emitDevtoolsEvent) process.exit(1);";
 ```
 
-- [ ] **Step 5: Verify packed consumer smoke**
+- [x] **Step 5: Verify packed consumer smoke**
 
 Run:
 
@@ -273,7 +273,7 @@ Expected: exits with code 0 and prints `package consumer smoke passed`.
 - Modify: `docs/package-usage.md`
 - Modify: `readme.md`
 
-- [ ] **Step 1: Update DevTools overview**
+- [x] **Step 1: Update DevTools overview**
 
 In `docs/devtools.md`, replace the opening paragraph:
 
@@ -289,7 +289,7 @@ Solace exposes a narrow public DevTools integration surface through `solace/devt
 public lifecycle, private runtime boundary, and safe constraints for future instrumentation.
 ```
 
-- [ ] **Step 2: Update DevTools non-goals**
+- [x] **Step 2: Update DevTools non-goals**
 
 Replace:
 
@@ -303,7 +303,7 @@ with:
 - No browser extension, custom panel, network transport, storage persistence, or automatic telemetry in the current phase.
 ```
 
-- [ ] **Step 3: Add public API section**
+- [x] **Step 3: Add public API section**
 
 After `## Non-Goals`, add:
 
@@ -322,7 +322,7 @@ global cleanup helpers, serializers, DOM nodes, VNode trees, component instances
 action arguments, or action results.
 ````
 
-- [ ] **Step 4: Update hook boundary wording**
+- [x] **Step 4: Update hook boundary wording**
 
 In `docs/devtools.md`, replace:
 
@@ -338,7 +338,7 @@ Solace has an internal event bus in `src/devtools/events.ts`. Runtime modules em
 public integrations subscribe through `solace/devtools`. The package root intentionally does not export DevTools APIs.
 ```
 
-- [ ] **Step 5: Update recorder wording**
+- [x] **Step 5: Update recorder wording**
 
 Replace the paragraph that starts with `` `createDevtoolsRecorder()` is also internal.`` with:
 
@@ -349,7 +349,7 @@ exposes `stop()` to remove the listener. Pass `{ limit }` to keep only the lates
 persist data, send data over the network, write to storage, or install third-party scripts.
 ```
 
-- [ ] **Step 6: Update roadmap**
+- [x] **Step 6: Update roadmap**
 
 In `docs/devtools.md`, replace roadmap item 12:
 
@@ -366,7 +366,7 @@ with:
 
 Then renumber the previous item 13 to item 14.
 
-- [ ] **Step 7: Update recommendation**
+- [x] **Step 7: Update recommendation**
 
 Replace the recommendation:
 
@@ -383,7 +383,7 @@ tests, and future inspector tooling. Build a browser extension or custom panel o
 real examples.
 ```
 
-- [ ] **Step 8: Update package usage entry points**
+- [x] **Step 8: Update package usage entry points**
 
 In `docs/package-usage.md`, under `## Public Entry Points`, add:
 
@@ -393,7 +393,7 @@ In `docs/package-usage.md`, under `## Public Entry Points`, add:
 
 after the `solace/jsx-dev-runtime` bullet.
 
-- [ ] **Step 9: Update README DevTools summary**
+- [x] **Step 9: Update README DevTools summary**
 
 In `readme.md`, replace:
 
@@ -431,7 +431,7 @@ with:
 - 根据 [`docs/devtools.md`](./docs/devtools.md) 的边界继续扩展 DevTools summary payload；浏览器扩展或可视化面板应在更多真实示例验证后再实现。
 ```
 
-- [ ] **Step 10: Format documentation**
+- [x] **Step 10: Format documentation**
 
 Run:
 
@@ -450,7 +450,7 @@ Expected: exits with code 0.
 - Add: `solace-project-log/solace-entries/2026-07-15-002-devtools-public-api.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Add the project log entry after validation commands have run**
+- [x] **Step 1: Add the project log entry after validation commands have run**
 
 Create `solace-project-log/solace-entries/2026-07-15-002-devtools-public-api.md` with this structure, replacing each validation result row with the observed command result from Task 6:
 
@@ -515,7 +515,7 @@ DevTools internal recorder、payload stability smoke 和 public boundary guard �
 - 浏览器扩展或可视化面板应在更多真实示例验证后再实现。
 ```
 
-- [ ] **Step 2: Add the log index row**
+- [x] **Step 2: Add the log index row**
 
 Under `## 2026-07-15` in `solace-project-log/index.md`, add this row after `001`:
 
@@ -523,7 +523,7 @@ Under `## 2026-07-15` in `solace-project-log/index.md`, add this row after `001`
 | 002 | 新增 DevTools public subpath | package exports、DevTools public API、文档、package smoke | `src/devtools/index.ts`, `package.json`, `rollup.config.mjs`, `tests/integration/package-exports.test.ts`, `scripts/package-consumer-smoke.mjs`, `docs/devtools.md`, `docs/package-usage.md`, `readme.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-15-002-devtools-public-api.md) |
 ```
 
-- [ ] **Step 3: Format project log files**
+- [x] **Step 3: Format project log files**
 
 Run:
 
@@ -541,7 +541,7 @@ Expected: exits with code 0.
 
 - All touched files.
 
-- [ ] **Step 1: Run package exports**
+- [x] **Step 1: Run package exports**
 
 Run:
 
@@ -551,7 +551,7 @@ pnpm test:package
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run package consumer smoke**
+- [x] **Step 2: Run package consumer smoke**
 
 Run:
 
@@ -561,7 +561,7 @@ pnpm package:smoke
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run default tests**
+- [x] **Step 3: Run default tests**
 
 Run:
 
@@ -571,7 +571,7 @@ pnpm test
 
 Expected: exits with code 0.
 
-- [ ] **Step 4: Run TypeScript checks**
+- [x] **Step 4: Run TypeScript checks**
 
 Run:
 
@@ -582,7 +582,7 @@ pnpm typecheck:jsxdev
 
 Expected: both commands exit with code 0.
 
-- [ ] **Step 5: Run lint**
+- [x] **Step 5: Run lint**
 
 Run:
 
@@ -592,7 +592,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Run build**
+- [x] **Step 6: Run build**
 
 Run:
 
@@ -602,7 +602,7 @@ pnpm build
 
 Expected: exits with code 0 and includes `dist/devtools.js`, `dist/devtools.cjs`, and `dist/devtools.d.ts`.
 
-- [ ] **Step 7: Run format check**
+- [x] **Step 7: Run format check**
 
 Run:
 
@@ -612,7 +612,7 @@ pnpm format:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 8: Inspect final public boundary**
+- [x] **Step 8: Inspect final public boundary**
 
 Run:
 

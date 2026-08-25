@@ -27,7 +27,7 @@ No runtime source, package scripts, benchmark scenarios, or Playwright config sh
 
 - Modify: `.github/workflows/ci.yml`
 
-- [ ] **Step 1: Add browser benchmark step**
+- [x] **Step 1: Add browser benchmark step**
 
 In `.github/workflows/ci.yml`, after:
 
@@ -55,7 +55,7 @@ Keep the existing `E2E` step after it.
 - Add: `solace-project-log/solace-entries/2026-07-14-005-ci-browser-benchmark-gate.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update release docs**
+- [x] **Step 1: Update release docs**
 
 In `docs/release.md`, after the Local Release Gate paragraph, add:
 
@@ -64,11 +64,11 @@ The GitHub Actions CI workflow keeps these checks split into named steps and als
 `pnpm benchmark` and `pnpm benchmark:browser`.
 ```
 
-- [ ] **Step 2: Add project log entry**
+- [x] **Step 2: Add project log entry**
 
 Create `solace-project-log/solace-entries/2026-07-14-005-ci-browser-benchmark-gate.md` with status `验证中`, affected files, and pending validation rows.
 
-- [ ] **Step 3: Add index row**
+- [x] **Step 3: Add index row**
 
 Add a `005` row under the `2026-07-14` project log index.
 
@@ -80,7 +80,7 @@ Add a `005` row under the `2026-07-14` project log index.
 
 - All touched files.
 
-- [ ] **Step 1: Format touched files**
+- [x] **Step 1: Format touched files**
 
 Run:
 
@@ -90,7 +90,7 @@ pnpm exec prettier --write .github/workflows/ci.yml docs/release.md docs/superpo
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run browser benchmark**
+- [x] **Step 2: Run browser benchmark**
 
 Run:
 
@@ -100,7 +100,7 @@ pnpm benchmark:browser
 
 Expected: exits with code 0 and logs `browser benchmark summary`.
 
-- [ ] **Step 3: Run format check**
+- [x] **Step 3: Run format check**
 
 Run:
 
@@ -110,11 +110,11 @@ pnpm format:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 4: Update project log validation table**
+- [x] **Step 4: Update project log validation table**
 
 Set log status to `已完成` and replace pending validation rows with observed results.
 
-- [ ] **Step 5: Run final format check**
+- [x] **Step 5: Run final format check**
 
 Run:
 

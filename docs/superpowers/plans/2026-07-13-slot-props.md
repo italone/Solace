@@ -16,7 +16,7 @@
 
 - Modify: `tests/unit/component/component.test.ts`
 
-- [ ] **Step 1: Add named slot props test**
+- [x] **Step 1: Add named slot props test**
 
 ```ts
 it("passes props to named slot children", () => {
@@ -40,7 +40,7 @@ it("passes props to named slot children", () => {
 });
 ```
 
-- [ ] **Step 2: Add default slot props test**
+- [x] **Step 2: Add default slot props test**
 
 ```ts
 it("passes props to default slot children", () => {
@@ -61,7 +61,7 @@ it("passes props to default slot children", () => {
 });
 ```
 
-- [ ] **Step 3: Add reactive slot props update test**
+- [x] **Step 3: Add reactive slot props update test**
 
 ```ts
 it("updates slot props when the child component rerenders", async () => {
@@ -86,7 +86,7 @@ it("updates slot props when the child component rerenders", async () => {
 });
 ```
 
-- [ ] **Step 4: Run RED**
+- [x] **Step 4: Run RED**
 
 Run: `pnpm test tests/unit/component/component.test.ts`
 
@@ -100,7 +100,7 @@ Expected: FAIL at TypeScript transform/type level because `Slot` does not curren
 - Modify: `src/vnode/vnode.ts`
 - Modify: `src/index.ts`
 
-- [ ] **Step 1: Add `SlotProps` and update `Slot`**
+- [x] **Step 1: Add `SlotProps` and update `Slot`**
 
 In `src/component/component.ts`:
 
@@ -109,7 +109,7 @@ export type SlotProps = Record<string, unknown>;
 export type Slot = (props?: SlotProps) => VNodeChildren;
 ```
 
-- [ ] **Step 2: Reuse `Slot` in VNode slot children**
+- [x] **Step 2: Reuse `Slot` in VNode slot children**
 
 In `src/vnode/vnode.ts`, import the `Slot` type and update:
 
@@ -117,11 +117,11 @@ In `src/vnode/vnode.ts`, import the `Slot` type and update:
 export type VNodeSlots = Record<string, Slot>;
 ```
 
-- [ ] **Step 3: Export the public type**
+- [x] **Step 3: Export the public type**
 
 In `src/index.ts`, export `SlotProps` from `src/component/component.ts`.
 
-- [ ] **Step 4: Run GREEN**
+- [x] **Step 4: Run GREEN**
 
 Run: `pnpm test tests/unit/component/component.test.ts`
 
@@ -137,20 +137,20 @@ Expected: PASS.
 - Add: `solace-project-log/solace-entries/2026-07-13-012-slot-props.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Add slot props to package smoke**
+- [x] **Step 1: Add slot props to package smoke**
 
 Update the packed consumer `Panel` to call `slots.default?.({ label: "slotted" })`, and update the
 default slot function to read `slotProps?.label`.
 
-- [ ] **Step 2: Document slot props**
+- [x] **Step 2: Document slot props**
 
 Update `docs/api.md` component examples to show `slots.default?.({ text: "Body" })`.
 
-- [ ] **Step 3: Update README candidate list**
+- [x] **Step 3: Update README candidate list**
 
 Remove `slot props` from future candidates and include it in current component capability text.
 
-- [ ] **Step 4: Add project log entry and index row**
+- [x] **Step 4: Add project log entry and index row**
 
 Record changed files and validation results.
 
@@ -160,31 +160,31 @@ Record changed files and validation results.
 
 - No source edits expected.
 
-- [ ] **Step 1: Run targeted component tests**
+- [x] **Step 1: Run targeted component tests**
 
 Run: `pnpm test tests/unit/component/component.test.ts`
 
 Expected: PASS.
 
-- [ ] **Step 2: Run typecheck**
+- [x] **Step 2: Run typecheck**
 
 Run: `pnpm typecheck`
 
 Expected: PASS.
 
-- [ ] **Step 3: Run package smoke**
+- [x] **Step 3: Run package smoke**
 
 Run: `pnpm package:smoke`
 
 Expected: PASS and print `package consumer smoke passed`.
 
-- [ ] **Step 4: Run full quality gate**
+- [x] **Step 4: Run full quality gate**
 
 Run: `pnpm quality`
 
 Expected: PASS.
 
-- [ ] **Step 5: Run format check**
+- [x] **Step 5: Run format check**
 
 Run: `pnpm format:check`
 

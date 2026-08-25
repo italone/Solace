@@ -16,7 +16,7 @@
 
 - Modify: `tests/unit/app/create-app.test.ts`
 
-- [ ] **Step 1: Add function plugin test**
+- [x] **Step 1: Add function plugin test**
 
 ```ts
 it("installs function plugins with options", () => {
@@ -39,7 +39,7 @@ it("installs function plugins with options", () => {
 });
 ```
 
-- [ ] **Step 2: Add object plugin test**
+- [x] **Step 2: Add object plugin test**
 
 ```ts
 it("installs object plugins with options", () => {
@@ -57,7 +57,7 @@ it("installs object plugins with options", () => {
 });
 ```
 
-- [ ] **Step 3: Add chaining and dedupe test**
+- [x] **Step 3: Add chaining and dedupe test**
 
 ```ts
 it("returns the app from use and installs each plugin once per app", () => {
@@ -74,7 +74,7 @@ it("returns the app from use and installs each plugin once per app", () => {
 });
 ```
 
-- [ ] **Step 4: Add per-app installation test**
+- [x] **Step 4: Add per-app installation test**
 
 ```ts
 it("tracks installed plugins per app instance", () => {
@@ -92,7 +92,7 @@ it("tracks installed plugins per app instance", () => {
 });
 ```
 
-- [ ] **Step 5: Run RED**
+- [x] **Step 5: Run RED**
 
 Run: `pnpm test tests/unit/app/create-app.test.ts`
 
@@ -104,7 +104,7 @@ Expected: FAIL because `app.use` does not exist.
 
 - Modify: `src/app.ts`
 
-- [ ] **Step 1: Add plugin types**
+- [x] **Step 1: Add plugin types**
 
 ```ts
 export type PluginInstall = (app: App, ...options: unknown[]) => void;
@@ -114,7 +114,7 @@ export interface PluginObject {
 export type Plugin = PluginInstall | PluginObject;
 ```
 
-- [ ] **Step 2: Extend `App`**
+- [x] **Step 2: Extend `App`**
 
 ```ts
 export interface App {
@@ -123,7 +123,7 @@ export interface App {
 }
 ```
 
-- [ ] **Step 3: Add installed plugin state**
+- [x] **Step 3: Add installed plugin state**
 
 Inside `createApp()`:
 
@@ -133,7 +133,7 @@ const app: App = { ... };
 return app;
 ```
 
-- [ ] **Step 4: Implement `use()`**
+- [x] **Step 4: Implement `use()`**
 
 ```ts
 use(plugin, ...options) {
@@ -152,7 +152,7 @@ use(plugin, ...options) {
 }
 ```
 
-- [ ] **Step 5: Run GREEN**
+- [x] **Step 5: Run GREEN**
 
 Run: `pnpm test tests/unit/app/create-app.test.ts`
 
@@ -168,20 +168,20 @@ Expected: PASS.
 - Add: `solace-project-log/solace-entries/2026-07-13-013-app-use-plugin.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Add plugin usage to package smoke**
+- [x] **Step 1: Add plugin usage to package smoke**
 
 Import `Plugin`, create a function plugin, call `createApp(App).use(plugin).mount(...)`, and ensure
 the plugin can typecheck against the packed package.
 
-- [ ] **Step 2: Document `app.use()`**
+- [x] **Step 2: Document `app.use()`**
 
 Update `docs/api.md` App section with plugin forms and chaining.
 
-- [ ] **Step 3: Update README**
+- [x] **Step 3: Update README**
 
 Add plugin system to current capability text and remove it from future candidates.
 
-- [ ] **Step 4: Add project log entry and index row**
+- [x] **Step 4: Add project log entry and index row**
 
 Record changed files and validation results.
 
@@ -191,31 +191,31 @@ Record changed files and validation results.
 
 - No source edits expected.
 
-- [ ] **Step 1: Run targeted app tests**
+- [x] **Step 1: Run targeted app tests**
 
 Run: `pnpm test tests/unit/app/create-app.test.ts`
 
 Expected: PASS.
 
-- [ ] **Step 2: Run typecheck**
+- [x] **Step 2: Run typecheck**
 
 Run: `pnpm typecheck`
 
 Expected: PASS.
 
-- [ ] **Step 3: Run package smoke**
+- [x] **Step 3: Run package smoke**
 
 Run: `pnpm package:smoke`
 
 Expected: PASS and print `package consumer smoke passed`.
 
-- [ ] **Step 4: Run full quality gate**
+- [x] **Step 4: Run full quality gate**
 
 Run: `pnpm quality`
 
 Expected: PASS.
 
-- [ ] **Step 5: Run format check**
+- [x] **Step 5: Run format check**
 
 Run: `pnpm format:check`
 

@@ -18,7 +18,7 @@
 - Modify: `scripts/one-zero-readiness-config.mjs`
 - Modify if the exported signature changes: `scripts/one-zero-readiness-config.d.mts`
 
-- [ ] **Step 1: Change the ready fixture to structured records**
+- [x] **Step 1: Change the ready fixture to structured records**
 
 Use this shape for all four procedure keys:
 
@@ -47,7 +47,7 @@ Add one table-driven test that replaces `migration` with each invalid value: `tr
 empty evidence array, an empty path, `/absolute.md`, and `../outside.md`. Assert the
 `release.migration-policy` criterion fails and names `migration`.
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [x] **Step 2: Run the focused test and verify RED**
 
 Run:
 
@@ -58,7 +58,7 @@ pnpm exec vitest run tests/unit/scripts/one-zero-readiness.test.ts
 Expected: the ready fixture and invalid-structured-evidence test fail because the evaluator still
 compares every procedure directly with `true`.
 
-- [ ] **Step 3: Implement the minimal structural validator**
+- [x] **Step 3: Implement the minimal structural validator**
 
 Add a focused helper in `scripts/one-zero-readiness-config.mjs`:
 
@@ -85,7 +85,7 @@ function isSafeEvidencePath(value) {
 Use `isDocumentedProcedure(evidence?.migrationPolicy?.[field])` when collecting missing fields.
 Keep the exported evaluator signature and declaration file unchanged.
 
-- [ ] **Step 4: Run the focused test and verify GREEN**
+- [x] **Step 4: Run the focused test and verify GREEN**
 
 Run:
 
@@ -103,14 +103,14 @@ Expected: all readiness unit tests pass, including the legacy-boolean and unsafe
 - Create: `docs/migration.zh-CN.md`
 - Modify: `tests/unit/docs/public-contract-docs.test.ts`
 
-- [ ] **Step 1: Add failing documentation assertions**
+- [x] **Step 1: Add failing documentation assertions**
 
 Read both new documents in the existing `Promise.all()`. Assert both contain migration procedure,
 rollback triggers, rollback procedure, exact-version consumer validation, immutable npm version
 rules, and explicit maintainer authorization. Use language-specific phrases for prose and shared
 literal commands or identifiers for machine-sensitive boundaries.
 
-- [ ] **Step 2: Run the documentation contract test and verify RED**
+- [x] **Step 2: Run the documentation contract test and verify RED**
 
 Run:
 
@@ -120,7 +120,7 @@ pnpm exec vitest run tests/unit/docs/public-contract-docs.test.ts
 
 Expected: fail with `ENOENT` for `docs/migration.md` before either runbook exists.
 
-- [ ] **Step 3: Write the English runbook**
+- [x] **Step 3: Write the English runbook**
 
 Include these sections:
 
@@ -143,13 +143,13 @@ examples, package-only install/typecheck/build/CSR-or-SSR checks, evidence field
 pinning, corrective releases, immutable npm versions and Git tags, and explicit approval for publish,
 unpublish, dist-tag, push, or tag operations.
 
-- [ ] **Step 4: Write the synchronized Chinese runbook**
+- [x] **Step 4: Write the synchronized Chinese runbook**
 
 Mirror every English section and command boundary in Chinese. Preserve literal package names,
 commands, evidence keys, and public import paths so contract assertions can compare the same public
 workflow.
 
-- [ ] **Step 5: Run the documentation test and verify GREEN**
+- [x] **Step 5: Run the documentation test and verify GREEN**
 
 Run:
 
@@ -170,14 +170,14 @@ Expected: the documentation contract test passes.
 - Modify: `docs/project-status.zh-CN.md`
 - Modify: `tests/unit/docs/public-contract-docs.test.ts`
 
-- [ ] **Step 1: Add status assertions for the narrowed remaining gaps**
+- [x] **Step 1: Add status assertions for the narrowed remaining gaps**
 
 Require both project-status documents to say migration/rollback procedures now pass while real
 independent applications and five-record performance history remain incomplete. Require
 `docs/release.md` to link both runbooks and `docs/roadmap.md` to keep UI libraries and plugin
 marketplaces outside the `1.0` gate.
 
-- [ ] **Step 2: Run the documentation test and verify RED**
+- [x] **Step 2: Run the documentation test and verify RED**
 
 Run:
 
@@ -188,19 +188,19 @@ pnpm exec vitest run tests/unit/docs/public-contract-docs.test.ts
 Expected: fail because release, roadmap, and project-status prose still describe migration/rollback
 as missing.
 
-- [ ] **Step 3: Replace boolean evidence with structured references**
+- [x] **Step 3: Replace boolean evidence with structured references**
 
 Set all four `release/one-zero-readiness.json` procedure records to `documented: true`. Point
 compatibility and deprecation at the two compatibility documents; point migration and rollback at
 the two migration documents. Do not change application or performance evidence.
 
-- [ ] **Step 4: Synchronize release, roadmap, and project status**
+- [x] **Step 4: Synchronize release, roadmap, and project status**
 
 Link the runbooks from `docs/release.md`, mark only the procedure criterion as satisfied in
 `docs/roadmap.md`, and update both status documents so the remaining `1.0` gaps are independent
 applications and performance history. Do not claim a live rollback rehearsal.
 
-- [ ] **Step 5: Verify the focused evidence report and docs**
+- [x] **Step 5: Verify the focused evidence report and docs**
 
 Run:
 
@@ -220,12 +220,12 @@ and FAIL only for independent applications and recent performance history.
 - Modify after fresh output: `docs/project-status.zh-CN.md`
 - Modify after fresh output: `tests/unit/docs/public-contract-docs.test.ts`
 
-- [ ] **Step 1: Format the changed slice**
+- [x] **Step 1: Format the changed slice**
 
 Run Prettier only on the migration design/plan, both runbooks, readiness files, documentation tests,
 evidence JSON, and synchronized public docs.
 
-- [ ] **Step 2: Run the full local release gate**
+- [x] **Step 2: Run the full local release gate**
 
 Run:
 
@@ -236,13 +236,13 @@ pnpm release:check
 Expected: release readiness, quality, coverage, package/adoption/Operations Console smoke,
 benchmarks, browser e2e, and DevTools extension e2e all pass.
 
-- [ ] **Step 3: Refresh final metrics from the gate output**
+- [x] **Step 3: Refresh final metrics from the gate output**
 
 Update only the beta.5 Vitest file/test counts or coverage values that changed. Keep package tests,
 browser e2e, DevTools e2e, and benchmark claims aligned with the fresh output. Update the matching
 documentation assertions before rerunning the focused docs test.
 
-- [ ] **Step 4: Run final integrity checks**
+- [x] **Step 4: Run final integrity checks**
 
 Run:
 
@@ -256,7 +256,7 @@ git status --short --branch
 Expected: focused tests pass, the readiness report has exactly two remaining failures, diff checking
 passes, and all work remains local and uncommitted.
 
-- [ ] **Step 5: Preserve external-state boundaries**
+- [x] **Step 5: Preserve external-state boundaries**
 
 Do not run `npm publish`, `npm unpublish`, `npm dist-tag`, `git push`, or any tag command. A future
 commit or release requires a separate maintainer instruction.

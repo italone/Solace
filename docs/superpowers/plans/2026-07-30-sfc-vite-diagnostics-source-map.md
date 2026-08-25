@@ -33,7 +33,7 @@
 - Modify: `tests/unit/compiler/compile.test.ts`
 - Create: `tests/unit/compiler/diagnostics.test.ts`
 
-- [ ] **Step 1: Write the failing diagnostic formatter tests**
+- [x] **Step 1: Write the failing diagnostic formatter tests**
 
 Create `tests/unit/compiler/diagnostics.test.ts`:
 
@@ -84,7 +84,7 @@ expect(error).toMatchObject({
 });
 ```
 
-- [ ] **Step 2: Run the new tests to verify they fail**
+- [x] **Step 2: Run the new tests to verify they fail**
 
 Run:
 
@@ -94,7 +94,7 @@ pnpm vitest run tests/unit/compiler/diagnostics.test.ts tests/unit/compiler/comp
 
 Expected: the diagnostics test fails first because `src/compiler/diagnostics.ts` does not exist yet.
 
-- [ ] **Step 3: Implement the formatter and wire it into Vite**
+- [x] **Step 3: Implement the formatter and wire it into Vite**
 
 Create `src/compiler/diagnostics.ts`:
 
@@ -120,7 +120,7 @@ import { formatSolaceCompileError } from "../compiler/diagnostics";
 throw new Error(formatSolaceCompileError(error));
 ```
 
-- [ ] **Step 4: Re-run the compiler diagnostics tests**
+- [x] **Step 4: Re-run the compiler diagnostics tests**
 
 Run:
 
@@ -130,7 +130,7 @@ pnpm vitest run tests/unit/compiler/diagnostics.test.ts tests/unit/compiler/comp
 
 Expected: all compiler diagnostic assertions pass.
 
-- [ ] **Step 5: Commit the diagnostics formatter**
+- [x] **Step 5: Commit the diagnostics formatter**
 
 Run:
 
@@ -151,7 +151,7 @@ git commit -m "feat: stabilize sfc diagnostics formatting"
 - Modify: `tests/unit/vite/solace-plugin.test.ts`
 - Modify: `tests/unit/vite/public-contract-types.test.ts`
 
-- [ ] **Step 1: Write the failing source-map policy test**
+- [x] **Step 1: Write the failing source-map policy test**
 
 Create `tests/unit/vite/transform-result.test.ts`:
 
@@ -184,7 +184,7 @@ expect(() =>
 ).toThrow("[SFC_PARSE_ERROR] /app/src/Broken.solace:1:19 Unclosed interpolation expression");
 ```
 
-- [ ] **Step 2: Run the new source-map policy test to verify it fails**
+- [x] **Step 2: Run the new source-map policy test to verify it fails**
 
 Run:
 
@@ -194,7 +194,7 @@ pnpm vitest run tests/unit/vite/transform-result.test.ts tests/unit/vite/solace-
 
 Expected: the source-map policy test fails first because `src/vite/transform-result.ts` does not exist yet.
 
-- [ ] **Step 3: Implement the shared transform-result helper**
+- [x] **Step 3: Implement the shared transform-result helper**
 
 Create `src/vite/transform-result.ts`:
 
@@ -216,7 +216,7 @@ import { createSolaceTransformResult } from "./transform-result";
 return createSolaceTransformResult(result.code);
 ```
 
-- [ ] **Step 4: Re-run the Vite contract tests**
+- [x] **Step 4: Re-run the Vite contract tests**
 
 Run:
 
@@ -226,7 +226,7 @@ pnpm vitest run tests/unit/vite/transform-result.test.ts tests/unit/vite/solace-
 
 Expected: the transform result helper and plugin contract checks pass.
 
-- [ ] **Step 5: Commit the source-map policy helper**
+- [x] **Step 5: Commit the source-map policy helper**
 
 Run:
 
@@ -247,7 +247,7 @@ git commit -m "feat: codify sfc source map policy"
 - Modify: `docs/project-status.md`
 - Modify: `docs/project-status.zh-CN.md`
 
-- [ ] **Step 1: Update the English docs**
+- [x] **Step 1: Update the English docs**
 
 In `docs/api.md`, replace the SFC paragraph that ends with `do not import compiler or router deep subpaths such as @italone/solace/compiler, @italone/solace/router, or @italone/solace/dist/**.` with this:
 
@@ -282,7 +282,7 @@ optional-script, optional-style model. The `@italone/solace/vite` subpath intent
 `@italone/solace/compiler`, `@italone/solace/router`, or `@italone/solace/dist/**`.
 ```
 
-- [ ] **Step 2: Update the Chinese docs and project status wording**
+- [x] **Step 2: Update the Chinese docs and project status wording**
 
 In `docs/api.zh-CN.md`, replace the SFC contract paragraph with:
 
@@ -314,7 +314,7 @@ In `docs/project-status.zh-CN.md`, update the SFC known-gap bullet so it says:
 当前 `.solace` compiler 和 Vite plugin 已文档化为支持一个 `<template>`、可选 `<script>`、可选 `<style>`、Vite transform diagnostics 和显式 `map: null` source-map policy；语法扩展继续推迟。
 ```
 
-- [ ] **Step 3: Verify the stale wording is gone**
+- [x] **Step 3: Verify the stale wording is gone**
 
 Run:
 
@@ -325,7 +325,7 @@ rg -n "map: null|Vite transform diagnostics|source maps are not part of the alph
 Expected: the new wording appears in the updated files and the old stale phrases are gone from the
 sections you replaced.
 
-- [ ] **Step 4: Format the touched Markdown files**
+- [x] **Step 4: Format the touched Markdown files**
 
 Run:
 
@@ -335,7 +335,7 @@ pnpm exec prettier --write docs/api.md docs/api.zh-CN.md docs/package-usage.md d
 
 Expected: Prettier completes without errors.
 
-- [ ] **Step 5: Commit the documentation alignment**
+- [x] **Step 5: Commit the documentation alignment**
 
 Run:
 
@@ -364,7 +364,7 @@ git commit -m "docs: align sfc diagnostics contract"
 - Validate: `docs/project-status.md`
 - Validate: `docs/project-status.zh-CN.md`
 
-- [ ] **Step 1: Run the focused SFC contract tests**
+- [x] **Step 1: Run the focused SFC contract tests**
 
 Run:
 
@@ -374,7 +374,7 @@ pnpm vitest run tests/unit/compiler/diagnostics.test.ts tests/unit/compiler/comp
 
 Expected: all targeted SFC contract tests pass.
 
-- [ ] **Step 2: Run the package-level validation**
+- [x] **Step 2: Run the package-level validation**
 
 Run:
 
@@ -386,7 +386,7 @@ pnpm release:readiness -- --publishable
 
 Expected: quality passes, package smoke passes, and publishable readiness stays green.
 
-- [ ] **Step 3: Check the branch status before wrapping up**
+- [x] **Step 3: Check the branch status before wrapping up**
 
 Run:
 

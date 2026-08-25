@@ -23,7 +23,7 @@
 
 **Files:** `tests/integration/router-component.test.ts`
 
-- [ ] **Step 1: Add a test named `renders RouterLink hrefs from resolved full paths`.**
+- [x] **Step 1: Add a test named `renders RouterLink hrefs from resolved full paths`.**
 
 Mount an app with three links:
 
@@ -58,7 +58,7 @@ expect(container.querySelector<HTMLAnchorElement>("#array-link")?.getAttribute("
 );
 ```
 
-- [ ] **Step 2: Run the focused test file.**
+- [x] **Step 2: Run the focused test file.**
 
 Run:
 
@@ -73,21 +73,21 @@ If a mismatch appears, update `src/router/components.ts` with the smallest local
 
 **Files:** `docs/api.md`, `docs/api.zh-CN.md`, `docs/project-status.md`, `docs/project-status.zh-CN.md`
 
-- [ ] **Step 1: Update English API docs.**
+- [x] **Step 1: Update English API docs.**
 
 In the `RouterLink` / `RouterView` section, state that `RouterLink` renders the anchor `href` from
 `router.resolve(to).fullPath`.
 
-- [ ] **Step 2: Update Chinese API docs.**
+- [x] **Step 2: Update Chinese API docs.**
 
 Mirror the same statement in Simplified Chinese.
 
-- [ ] **Step 3: Update both project status files.**
+- [x] **Step 3: Update both project status files.**
 
 Add `RouterLink` href contract coverage to the Router evidence and stabilization note without
 changing the deferred Router feature list.
 
-- [ ] **Step 4: Format and check.**
+- [x] **Step 4: Format and check.**
 
 Run:
 
@@ -100,7 +100,7 @@ git diff --check
 
 **Files:** all files modified above
 
-- [ ] **Step 1: Run Router regression tests.**
+- [x] **Step 1: Run Router regression tests.**
 
 Run:
 
@@ -110,7 +110,7 @@ pnpm vitest run tests/unit/router tests/integration/router-component.test.ts
 
 Expected: all Router unit and integration tests pass.
 
-- [ ] **Step 2: Run the full quality gate.**
+- [x] **Step 2: Run the full quality gate.**
 
 Run:
 
@@ -120,7 +120,7 @@ pnpm quality
 
 Expected: format check, build, both typechecks, lint, full Vitest suite, and package tests all pass.
 
-- [ ] **Step 3: Review the diff.**
+- [x] **Step 3: Review the diff.**
 
 Run:
 
@@ -133,7 +133,7 @@ git diff --stat
 Confirm only the intended integration test and documentation files changed unless the tests exposed
 an implementation mismatch.
 
-- [ ] **Step 4: Commit.**
+- [x] **Step 4: Commit.**
 
 If no production implementation changed:
 
@@ -149,7 +149,7 @@ git add src/router/components.ts tests/integration/router-component.test.ts docs
 git commit -m "fix(router): stabilize RouterLink href contract"
 ```
 
-- [ ] **Step 5: Push and confirm synchronization.**
+- [x] **Step 5: Push and confirm synchronization.**
 
 ```bash
 git -c http.version=HTTP/1.1 push

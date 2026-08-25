@@ -29,12 +29,12 @@ No `src/index.ts`, package export map, public API, props/state event payload, or
 
 - Modify: `tests/unit/component/lifecycle.test.ts`
 
-- [ ] **Step 1: Add internal DevTools imports and cleanup**
+- [x] **Step 1: Add internal DevTools imports and cleanup**
 
 Import `clearDevtoolsListeners`, `onDevtoolsEvent`, and `type DevtoolsEvent`.
 Add `afterEach(clearDevtoolsListeners)`.
 
-- [ ] **Step 2: Add named component lifecycle event test**
+- [x] **Step 2: Add named component lifecycle event test**
 
 Register a listener, render a named component, update reactive state, unmount it, and assert component events are:
 
@@ -44,11 +44,11 @@ Register a listener, render a named component, update reactive state, unmount it
 
 with the same numeric id and name `Counter`.
 
-- [ ] **Step 3: Add anonymous component fallback test**
+- [x] **Step 3: Add anonymous component fallback test**
 
 Render an inline anonymous component and assert the mount event name is `AnonymousComponent`.
 
-- [ ] **Step 4: Verify tests fail**
+- [x] **Step 4: Verify tests fail**
 
 Run:
 
@@ -67,17 +67,17 @@ Expected: fails because component events are not emitted yet.
 - Modify: `src/component/component.ts`
 - Modify: `src/renderer/diff.ts`
 
-- [ ] **Step 1: Add component devtools id and name helper**
+- [x] **Step 1: Add component devtools id and name helper**
 
 Add `devtoolsId` to `ComponentInstance`, assign it in `createComponentInstance`, and export
 `getComponentDevtoolsName`.
 
-- [ ] **Step 2: Emit lifecycle events from renderer**
+- [x] **Step 2: Emit lifecycle events from renderer**
 
 Import `emitDevtoolsEvent`, `hasDevtoolsListeners`, and `getComponentDevtoolsName`. Emit mount/update/unmount
 summary events after lifecycle hooks.
 
-- [ ] **Step 3: Verify lifecycle tests pass**
+- [x] **Step 3: Verify lifecycle tests pass**
 
 Run:
 
@@ -97,15 +97,15 @@ Expected: exits with code 0.
 - Add: `solace-project-log/solace-entries/2026-07-14-010-component-devtools-lifecycle.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update DevTools docs**
+- [x] **Step 1: Update DevTools docs**
 
 Record that component mount/update/unmount summaries are emitted through the internal event bus.
 
-- [ ] **Step 2: Add project log entry**
+- [x] **Step 2: Add project log entry**
 
 Create log entry with status `验证中`.
 
-- [ ] **Step 3: Add index row**
+- [x] **Step 3: Add index row**
 
 Add a `010` row under the 2026-07-14 project log section.
 
@@ -117,7 +117,7 @@ Add a `010` row under the 2026-07-14 project log section.
 
 - All touched files.
 
-- [ ] **Step 1: Format touched files**
+- [x] **Step 1: Format touched files**
 
 Run:
 
@@ -127,7 +127,7 @@ pnpm exec prettier --write src/component/component.ts src/renderer/diff.ts tests
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run lifecycle tests**
+- [x] **Step 2: Run lifecycle tests**
 
 Run:
 
@@ -137,7 +137,7 @@ pnpm exec vitest run tests/unit/component/lifecycle.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run full tests**
+- [x] **Step 3: Run full tests**
 
 Run:
 
@@ -147,7 +147,7 @@ pnpm test
 
 Expected: exits with code 0.
 
-- [ ] **Step 4: Run typecheck**
+- [x] **Step 4: Run typecheck**
 
 Run:
 
@@ -157,7 +157,7 @@ pnpm typecheck
 
 Expected: exits with code 0.
 
-- [ ] **Step 5: Run lint**
+- [x] **Step 5: Run lint**
 
 Run:
 
@@ -167,7 +167,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Run build**
+- [x] **Step 6: Run build**
 
 Run:
 
@@ -177,7 +177,7 @@ pnpm build
 
 Expected: exits with code 0.
 
-- [ ] **Step 7: Run format check**
+- [x] **Step 7: Run format check**
 
 Run:
 
@@ -187,11 +187,11 @@ pnpm format:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 8: Update project log validation table**
+- [x] **Step 8: Update project log validation table**
 
 Set log status to `已完成` and replace pending validation rows with observed results.
 
-- [ ] **Step 9: Run final format check**
+- [x] **Step 9: Run final format check**
 
 Run:
 

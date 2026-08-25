@@ -258,7 +258,7 @@ git diff --check
 
 Expected: formatting passes, diffs are whitespace-clean, and the plan files match the repository style.
 
-- [ ] **Step 4: Commit the plan**
+- [x] **Step 4: Commit the plan**
 
 Run:
 

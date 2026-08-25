@@ -30,7 +30,7 @@ No runtime source, package exports, benchmark scenario files, or browser benchma
 
 - Add: `tests/unit/scripts/benchmark-metadata.test.ts`
 
-- [ ] **Step 1: Create the test**
+- [x] **Step 1: Create the test**
 
 Create `tests/unit/scripts/benchmark-metadata.test.ts` with:
 
@@ -82,7 +82,7 @@ describe("benchmark metadata CLI", () => {
 });
 ```
 
-- [ ] **Step 2: Verify the test fails before implementation**
+- [x] **Step 2: Verify the test fails before implementation**
 
 Run:
 
@@ -103,7 +103,7 @@ Expected:
 
 - Add: `scripts/benchmark-metadata.mjs`
 
-- [ ] **Step 1: Create the script**
+- [x] **Step 1: Create the script**
 
 Create `scripts/benchmark-metadata.mjs` with:
 
@@ -165,7 +165,7 @@ async function readPackageJson() {
 }
 ```
 
-- [ ] **Step 2: Run targeted test**
+- [x] **Step 2: Run targeted test**
 
 Run:
 
@@ -175,7 +175,7 @@ pnpm exec vitest run tests/unit/scripts/benchmark-metadata.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run CLI directly**
+- [x] **Step 3: Run CLI directly**
 
 Run:
 
@@ -196,7 +196,7 @@ Expected:
 
 - Modify: `package.json`
 
-- [ ] **Step 1: Update the benchmark script**
+- [x] **Step 1: Update the benchmark script**
 
 In `package.json`, replace:
 
@@ -210,7 +210,7 @@ with:
 "benchmark": "node scripts/benchmark-metadata.mjs && vitest run --config vitest.benchmark.config.ts",
 ```
 
-- [ ] **Step 2: Run benchmark command**
+- [x] **Step 2: Run benchmark command**
 
 Run:
 
@@ -235,7 +235,7 @@ Expected:
 - Add: `solace-project-log/solace-entries/2026-07-14-003-jsdom-benchmark-metadata.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update performance docs**
+- [x] **Step 1: Update performance docs**
 
 In `docs/performance.md`, after the `pnpm benchmark` command block in "Latest Local Benchmark Run", add:
 
@@ -257,7 +257,7 @@ with:
 | CPU / memory | Recorded by `benchmark metadata` output |
 ```
 
-- [ ] **Step 2: Update README next-step wording**
+- [x] **Step 2: Update README next-step wording**
 
 In `readme.md`, under `## 14. 后续建议`, replace:
 
@@ -271,11 +271,11 @@ with:
 - 持续记录 jsdom 与 Chromium 生产构建 benchmark 趋势；两个 benchmark 命令已输出机器、运行时和样本量元数据，后续可扩展为历史趋势记录。
 ```
 
-- [ ] **Step 3: Add project log entry**
+- [x] **Step 3: Add project log entry**
 
 Create `solace-project-log/solace-entries/2026-07-14-003-jsdom-benchmark-metadata.md` with a log entry documenting the script, package script, docs, tests, and validation status as `验证中`.
 
-- [ ] **Step 4: Add log index row**
+- [x] **Step 4: Add log index row**
 
 In `solace-project-log/index.md`, add a `003` row under `2026-07-14` for jsdom benchmark metadata.
 
@@ -287,7 +287,7 @@ In `solace-project-log/index.md`, add a `003` row under `2026-07-14` for jsdom b
 
 - All touched files.
 
-- [ ] **Step 1: Format touched files**
+- [x] **Step 1: Format touched files**
 
 Run:
 
@@ -297,7 +297,7 @@ pnpm exec prettier --write scripts/benchmark-metadata.mjs tests/unit/scripts/ben
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run targeted test**
+- [x] **Step 2: Run targeted test**
 
 Run:
 
@@ -307,7 +307,7 @@ pnpm exec vitest run tests/unit/scripts/benchmark-metadata.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run benchmark**
+- [x] **Step 3: Run benchmark**
 
 Run:
 
@@ -317,7 +317,7 @@ pnpm benchmark
 
 Expected: exits with code 0 and prints `benchmark metadata:`.
 
-- [ ] **Step 4: Run typecheck**
+- [x] **Step 4: Run typecheck**
 
 Run:
 
@@ -327,7 +327,7 @@ pnpm typecheck
 
 Expected: exits with code 0.
 
-- [ ] **Step 5: Run lint**
+- [x] **Step 5: Run lint**
 
 Run:
 
@@ -337,7 +337,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Run tests**
+- [x] **Step 6: Run tests**
 
 Run:
 
@@ -347,7 +347,7 @@ pnpm test
 
 Expected: exits with code 0.
 
-- [ ] **Step 7: Run format check**
+- [x] **Step 7: Run format check**
 
 Run:
 
@@ -357,11 +357,11 @@ pnpm format:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 8: Update project log validation table**
+- [x] **Step 8: Update project log validation table**
 
 Change the log entry status to `已完成` and replace pending validation rows with observed results.
 
-- [ ] **Step 9: Run final format check**
+- [x] **Step 9: Run final format check**
 
 Run:
 

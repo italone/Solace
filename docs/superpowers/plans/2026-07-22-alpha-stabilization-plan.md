@@ -53,7 +53,7 @@
 - Create: `tests/unit/vitest-config.test.ts`
 - Modify: `vitest.config.ts`
 
-- [ ] **Step 1: 编写失败的配置测试**
+- [x] **Step 1: 编写失败的配置测试**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -68,13 +68,13 @@ describe("vitest config", () => {
 });
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 Run: `pnpm test tests/unit/vitest-config.test.ts -v`
 
 Expected: FAIL —— `Expected "#".worktrees/**" to be in the array` 或类似断言失败。
 
-- [ ] **Step 3: 修改 Vitest 配置**
+- [x] **Step 3: 修改 Vitest 配置**
 
 在 `vitest.config.ts` 中，将 `exclude` 数组更新为：
 
@@ -89,19 +89,19 @@ exclude: [
 ],
 ```
 
-- [ ] **Step 4: 运行测试确认通过**
+- [x] **Step 4: 运行测试确认通过**
 
 Run: `pnpm test tests/unit/vitest-config.test.ts -v`
 
 Expected: PASS。
 
-- [ ] **Step 5: 运行完整测试套件**
+- [x] **Step 5: 运行完整测试套件**
 
 Run: `pnpm test`
 
 Expected: 118 test files 中仅框架相关 47+1 个文件被识别，71 个工作树第三方测试文件不再被扫描，全部 tests 通过。
 
-- [ ] **Step 6: 提交**
+- [x] **Step 6: 提交**
 
 ```bash
 git add vitest.config.ts tests/unit/vitest-config.test.ts
@@ -116,43 +116,43 @@ git commit -m "fix: exclude worktree and nested node_modules from vitest"
 
 - 无文件变更，仅验证命令。
 
-- [ ] **Step 1: 运行 format 检查**
+- [x] **Step 1: 运行 format 检查**
 
 Run: `pnpm format:check`
 
 Expected: `All matched files use Prettier code style!`
 
-- [ ] **Step 2: 运行类型检查**
+- [x] **Step 2: 运行类型检查**
 
 Run: `pnpm typecheck && pnpm typecheck:jsxdev`
 
 Expected: 两条命令均无输出错误，退出码 0。
 
-- [ ] **Step 3: 运行 lint**
+- [x] **Step 3: 运行 lint**
 
 Run: `pnpm lint`
 
 Expected: 无错误，退出码 0。
 
-- [ ] **Step 4: 运行完整测试**
+- [x] **Step 4: 运行完整测试**
 
 Run: `pnpm test`
 
 Expected: `Test Files  48 passed`（47 原框架测试文件 + 1 新增 vitest-config 测试），`Tests  384 passed`。
 
-- [ ] **Step 5: 运行 package 构建与导出测试**
+- [x] **Step 5: 运行 package 构建与导出测试**
 
 Run: `pnpm test:package`
 
 Expected: Rollup 构建成功，package-exports 测试通过。
 
-- [ ] **Step 6: 运行 quality 聚合命令**
+- [x] **Step 6: 运行 quality 聚合命令**
 
 Run: `pnpm quality`
 
 Expected: format、typecheck、jsxdev typecheck、lint、test、test:package 全部通过。
 
-- [ ] **Step 7: 提交**
+- [x] **Step 7: 提交**
 
 若只有验证无代码变更，此步骤可跳过；若期间因格式化产生变更，则：
 
@@ -170,14 +170,14 @@ git commit -m "chore: verify quality gate after vitest exclusion fix"
 - Modify: `package.json`
 - Modify（如需要）: `readme.md`, `solace-project-plan/README.md`
 
-- [ ] **Step 1: 决策确认**
+- [x] **Step 1: 决策确认**
 
 与用户确认：在获得明确批准前，`@italone/solace` 是否应保持不可发布？
 
 - 推荐：**保持 `private: true`**，避免误触发 `changeset publish`。
 - 若用户决定进入发布流程，则改为 `private: false` 并同步配置 npm registry、access、changeset 版本。
 
-- [ ] **Step 2: 写入配置**
+- [x] **Step 2: 写入配置**
 
 在 `package.json` 顶部增加：
 
@@ -191,19 +191,19 @@ git commit -m "chore: verify quality gate after vitest exclusion fix"
 }
 ```
 
-- [ ] **Step 3: 验证 release readiness（非发布模式）**
+- [x] **Step 3: 验证 release readiness（非发布模式）**
 
 Run: `pnpm release:readiness`
 
 Expected: 非发布模式下通过，publishability 检查因 `private: true` 按预期跳过。
 
-- [ ] **Step 4: 运行 quality 确认无回归**
+- [x] **Step 4: 运行 quality 确认无回归**
 
 Run: `pnpm quality`
 
 Expected: 通过。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add package.json
@@ -218,19 +218,19 @@ git commit -m "chore: mark package as private until release is approved"
 
 - 无仓库文件变更，仅删除本地 git worktree。
 
-- [ ] **Step 1: 列出工作树**
+- [x] **Step 1: 列出工作树**
 
 Run: `git worktree list`
 
 Expected: 看到 main、`/private/tmp/solace-review-08387ce`、`/Users/alone/Desktop/TEST/Solace/.worktrees/keyed-reorder-move-path-instrumentation`。
 
-- [ ] **Step 2: 确认分支状态**
+- [x] **Step 2: 确认分支状态**
 
 Run: `git branch -a | grep keyed-reorder`
 
 Expected: 本地/远程分支 `perf/keyed-reorder-move-path-instrumentation` 已合并或已推送。
 
-- [ ] **Step 3: 移除本地工作树**
+- [x] **Step 3: 移除本地工作树**
 
 Run:
 
@@ -240,13 +240,13 @@ git worktree remove .worktrees/keyed-reorder-move-path-instrumentation
 
 Expected: 工作树目录被移除，`git worktree list` 不再列出。
 
-- [ ] **Step 4: 验证测试不再扫描工作树**
+- [x] **Step 4: 验证测试不再扫描工作树**
 
 Run: `pnpm test`
 
 Expected: 通过，且不再出现 `.worktrees/...` 路径的测试文件。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 此步骤无仓库文件变更，无需提交；若 `.worktrees/` 目录本身被移除，.gitignore 已覆盖，也无需提交。
 
@@ -259,7 +259,7 @@ Expected: 通过，且不再出现 `.worktrees/...` 路径的测试文件。
 - Modify: `solace-project-plan/README.md`
 - Modify（如需要）: `readme.md`
 
-- [ ] **Step 1: 更新 `solace-project-plan/README.md` 的「当前收口状态」**
+- [x] **Step 1: 更新 `solace-project-plan/README.md` 的「当前收口状态」**
 
 将当前状态补充为：
 
@@ -273,17 +273,17 @@ Expected: 通过，且不再出现 `.worktrees/...` 路径的测试文件。
 - browser benchmark history 已支持 full-history、minimum count gate 和 latest-window summary，用于后续性能趋势判断。
 ```
 
-- [ ] **Step 2: 如有必要，同步 `readme.md` 第 14 节**
+- [x] **Step 2: 如有必要，同步 `readme.md` 第 14 节**
 
 确保「发布前运行 release readiness」与当前配置一致。
 
-- [ ] **Step 3: 运行 quality 确认文档变更不破坏构建**
+- [x] **Step 3: 运行 quality 确认文档变更不破坏构建**
 
 Run: `pnpm quality`
 
 Expected: 通过。
 
-- [ ] **Step 4: 提交**
+- [x] **Step 4: 提交**
 
 ```bash
 git add solace-project-plan/README.md

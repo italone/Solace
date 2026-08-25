@@ -28,17 +28,17 @@ No package root export, package export map, component hook, renderer hook, or pu
 
 - Modify: `tests/unit/scheduler/scheduler.test.ts`
 
-- [ ] **Step 1: Add DevTools imports and cleanup**
+- [x] **Step 1: Add DevTools imports and cleanup**
 
 Import `clearDevtoolsListeners`, `onDevtoolsEvent`, and `type DevtoolsEvent` from `../../../src/devtools/events`.
 Add `afterEach(clearDevtoolsListeners)`.
 
-- [ ] **Step 2: Add scheduler flush test**
+- [x] **Step 2: Add scheduler flush test**
 
 Add a test that queues two jobs, awaits `nextTick`, and expects one `scheduler:flush` event with `queuedJobs: 2` and
 non-negative `durationMs`.
 
-- [ ] **Step 3: Verify test fails**
+- [x] **Step 3: Verify test fails**
 
 Run:
 
@@ -56,15 +56,15 @@ Expected: fails because no scheduler DevTools event is emitted yet.
 
 - Modify: `src/scheduler/scheduler.ts`
 
-- [ ] **Step 1: Import DevTools helpers**
+- [x] **Step 1: Import DevTools helpers**
 
 Import `emitDevtoolsEvent` and `hasDevtoolsListeners`.
 
-- [ ] **Step 2: Emit scheduler flush event**
+- [x] **Step 2: Emit scheduler flush event**
 
 Track executed jobs and duration when listeners exist, then emit `scheduler:flush` in `finally`.
 
-- [ ] **Step 3: Verify scheduler tests pass**
+- [x] **Step 3: Verify scheduler tests pass**
 
 Run:
 
@@ -84,15 +84,15 @@ Expected: exits with code 0.
 - Add: `solace-project-log/solace-entries/2026-07-14-009-scheduler-devtools-flush.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update DevTools docs**
+- [x] **Step 1: Update DevTools docs**
 
 Record that scheduler flush summaries now emit through the internal event bus.
 
-- [ ] **Step 2: Add project log entry**
+- [x] **Step 2: Add project log entry**
 
 Create log entry with status `验证中`.
 
-- [ ] **Step 3: Add index row**
+- [x] **Step 3: Add index row**
 
 Add a `009` row under the 2026-07-14 project log section.
 
@@ -104,7 +104,7 @@ Add a `009` row under the 2026-07-14 project log section.
 
 - All touched files.
 
-- [ ] **Step 1: Format touched files**
+- [x] **Step 1: Format touched files**
 
 Run:
 
@@ -114,7 +114,7 @@ pnpm exec prettier --write src/scheduler/scheduler.ts tests/unit/scheduler/sched
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run scheduler tests**
+- [x] **Step 2: Run scheduler tests**
 
 Run:
 
@@ -124,7 +124,7 @@ pnpm exec vitest run tests/unit/scheduler/scheduler.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run full tests**
+- [x] **Step 3: Run full tests**
 
 Run:
 
@@ -134,7 +134,7 @@ pnpm test
 
 Expected: exits with code 0.
 
-- [ ] **Step 4: Run typecheck**
+- [x] **Step 4: Run typecheck**
 
 Run:
 
@@ -144,7 +144,7 @@ pnpm typecheck
 
 Expected: exits with code 0.
 
-- [ ] **Step 5: Run lint**
+- [x] **Step 5: Run lint**
 
 Run:
 
@@ -154,7 +154,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Run build**
+- [x] **Step 6: Run build**
 
 Run:
 
@@ -164,7 +164,7 @@ pnpm build
 
 Expected: exits with code 0.
 
-- [ ] **Step 7: Run format check**
+- [x] **Step 7: Run format check**
 
 Run:
 
@@ -174,11 +174,11 @@ pnpm format:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 8: Update project log validation table**
+- [x] **Step 8: Update project log validation table**
 
 Set log status to `已完成` and replace pending validation rows with observed results.
 
-- [ ] **Step 9: Run final format check**
+- [x] **Step 9: Run final format check**
 
 Run:
 

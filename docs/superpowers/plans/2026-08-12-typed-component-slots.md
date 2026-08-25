@@ -63,7 +63,7 @@ release tags. Do not add a package-root slot-map helper export.
 - Modify: `tests/unit/renderer/jsx-runtime-public-contract-types.test.tsx`
 - Modify: `scripts/package-consumer-smoke.mjs`
 
-- [ ] **Step 1: Add source slot-map fixtures**
+- [x] **Step 1: Add source slot-map fixtures**
 
 In `tests/unit/renderer/jsx-runtime-public-contract-types.test.tsx`, add `h` to the root value import
 and `VNodeChildren` to the root type import:
@@ -92,7 +92,7 @@ type InvalidCounterSlots = {
 
 Do not add a string index signature. These aliases prove a finite ordinary object type is accepted.
 
-- [ ] **Step 2: Add direct setup-context slot contracts**
+- [x] **Step 2: Add direct setup-context slot contracts**
 
 Add these functions beside `acceptTypedContext`:
 
@@ -158,7 +158,7 @@ void rejectInvalidSlots;
 The `acceptTypedSlots` value intentionally omits optional slots. Do not make required slots optional
 to simplify fixture construction.
 
-- [ ] **Step 3: Declare a component with typed emits and typed slots together**
+- [x] **Step 3: Declare a component with typed emits and typed slots together**
 
 Change `TypedEmitter` to use all three generics and consume the valid slots before its existing emit
 negative cases:
@@ -190,7 +190,7 @@ const RequiredSlotPanel = defineComponent<object, ComponentEventMap, RequiredCou
 );
 ```
 
-- [ ] **Step 4: Lock the consumer-only producer boundary**
+- [x] **Step 4: Lock the consumer-only producer boundary**
 
 Add these valid expressions near the existing top-level JSX and direct factory expressions:
 
@@ -208,7 +208,7 @@ undeclared slot. Both must continue compiling because this phase does not type p
 Keep all existing `TypedEmitter` listener positive and negative cases. They prove extracting the
 third generic does not turn strict listeners permissive.
 
-- [ ] **Step 5: Run source typechecks and verify RED**
+- [x] **Step 5: Run source typechecks and verify RED**
 
 Run:
 
@@ -222,7 +222,7 @@ accepts at most two explicit generics, and the current broad `slots` type leaves
 `@ts-expect-error` directives unused. Confirm the errors originate from the new slot contract; fix
 only fixture mistakes that obscure those intended failures.
 
-- [ ] **Step 6: Add packed-consumer slot contracts**
+- [x] **Step 6: Add packed-consumer slot contracts**
 
 Add `VNodeChildren` to the generated root type-only import inside
 `scripts/package-consumer-smoke.mjs`.
@@ -271,7 +271,7 @@ h(RequiredPackedPanel, null, {
 Keep the existing typed listener, generic component, DOM, router, SSR, SFC, and runtime smoke
 contracts unchanged.
 
-- [ ] **Step 7: Run packed consumer and verify RED**
+- [x] **Step 7: Run packed consumer and verify RED**
 
 Run:
 
@@ -283,7 +283,7 @@ Expected: build, pack, and install may succeed, then generated consumer typechec
 installed declarations lack the slot generics. Confirm new negative directives are unused or the
 three-generic declarations fail.
 
-- [ ] **Step 8: Keep the RED contract uncommitted**
+- [x] **Step 8: Keep the RED contract uncommitted**
 
 Run:
 
@@ -315,7 +315,7 @@ Do not commit the deliberately failing contract.
 - Test: `tests/unit/renderer/jsx-runtime-public-contract-types.test.tsx`
 - Test: `scripts/package-consumer-smoke.mjs`
 
-- [ ] **Step 1: Add bivariant legacy slots and property-level map validation**
+- [x] **Step 1: Add bivariant legacy slots and property-level map validation**
 
 In `src/component/component.ts`, replace the existing `Slot` alias with the equivalent bivariant
 method form, add internal validation helpers after `Slots`, and replace the setup context declaration:
@@ -355,7 +355,7 @@ shared parameter tuple, and `[Result]` prevents distributive union-return failur
 `Slots`, `ComponentInstance.slots`, `initSlots()`, and all runtime functions unchanged. Do not export
 the validation helpers.
 
-- [ ] **Step 2: Carry the slot map through `ComponentType` and erase it at runtime boundaries**
+- [x] **Step 2: Carry the slot map through `ComponentType` and erase it at runtime boundaries**
 
 In `src/vnode/vnode.ts`, import `Slots`, then change the component type:
 
@@ -390,7 +390,7 @@ export function createVNode<
 Do not make `VNode`, `VNodeSlots`, `ComponentVNodeChildren`, or `AsyncComponentType` generic. Do not
 change emitted runtime code.
 
-- [ ] **Step 3: Add the `defineComponent` three-generic overload**
+- [x] **Step 3: Add the `defineComponent` three-generic overload**
 
 In `src/component/define-component.ts`, import `Slots`. Change the explicit
 metadata overload to:
@@ -407,7 +407,7 @@ Keep the first overload that preserves an exact direct/render-function result fo
 components, and keep the identity implementation unchanged. The default third generic ensures every
 existing `defineComponent<Props, Events>` call remains source compatible.
 
-- [ ] **Step 4: Accept typed-slot components through `h()` without typing producers**
+- [x] **Step 4: Accept typed-slot components through `h()` without typing producers**
 
 In `src/vnode/h.ts`, add the third generic to the component overload:
 
@@ -421,7 +421,7 @@ export function h<Props extends object, Events extends ComponentEventMap, SlotMa
 
 The `children` parameter must remain `ComponentVNodeChildren`. Do not derive it from `SlotMap`.
 
-- [ ] **Step 5: Preserve listener extraction while ignoring the slot map**
+- [x] **Step 5: Preserve listener extraction while ignoring the slot map**
 
 In `src/jsx-types.ts`, change only the component match inside `JSXManagedComponentProps`:
 
@@ -437,7 +437,7 @@ This preserves TypeScript's instantiated `Props`, extracts the event map, and ig
 matching. Keep the existing generic-function regression and strict listener negatives. Do not add
 slot properties to `JSXComponentProps`.
 
-- [ ] **Step 6: Accept typed-slot components in all JSX factory overloads**
+- [x] **Step 6: Accept typed-slot components in all JSX factory overloads**
 
 In `src/jsx-runtime.ts`, change both component overloads:
 
@@ -462,7 +462,7 @@ export function jsxs<
 In `src/jsx-dev-runtime.ts`, make the equivalent `jsxDEV()` overload change. Keep the implementation
 delegation, `JSXProps`, children normalization, and runtime imports unchanged.
 
-- [ ] **Step 7: Update internal component erasure only where compilation requires it**
+- [x] **Step 7: Update internal component erasure only where compilation requires it**
 
 Run the source typecheck:
 
@@ -482,7 +482,7 @@ Do not edit Router, SSR, async components, application roots, runtime instances,
 carry slot maps. Changes outside the seven implementation files listed for Task 2 require controller
 review against the design before proceeding.
 
-- [ ] **Step 8: Run source and runtime regression checks GREEN**
+- [x] **Step 8: Run source and runtime regression checks GREEN**
 
 Run:
 
@@ -496,7 +496,7 @@ pnpm exec vitest run tests/unit/renderer/jsx-runtime-public-contract-types.test.
 Expected: both typechecks pass and both test files pass. Existing default, named, scoped, updated,
 and omitted slot runtime tests must remain unchanged and green.
 
-- [ ] **Step 9: Verify generated declarations and installed consumption**
+- [x] **Step 9: Verify generated declarations and installed consumption**
 
 Run serially:
 
@@ -510,7 +510,7 @@ contracts, accepts typed slot consumption, rejects invalid slot consumption, and
 JSX and `h()` slot producers. Inspect emitted declarations if the consumer loses the third generic;
 do not add a package export.
 
-- [ ] **Step 10: Verify type-only scope and commit**
+- [x] **Step 10: Verify type-only scope and commit**
 
 Run:
 
@@ -545,7 +545,7 @@ git commit -m "feat: add typed component slot contract"
 - Modify: `docs/api.zh-CN.md`
 - Modify: `docs/package-usage.md`
 
-- [ ] **Step 1: Update the documentation contract first**
+- [x] **Step 1: Update the documentation contract first**
 
 In `tests/unit/docs/public-contract-docs.test.ts`, retain all typed emit/listener assertions and add
 these English assertions for both `api` and `packageUsage`:
@@ -575,7 +575,7 @@ expect(doc).toContain("ComponentSetupContext<Events, SlotMap>");
 Keep the existing `ComponentType<` assertions. Existing typed-event sections may continue showing
 `defineComponent<Props, Events>` while the new slot section shows all three generics.
 
-- [ ] **Step 2: Run the documentation contract and verify RED**
+- [x] **Step 2: Run the documentation contract and verify RED**
 
 Run:
 
@@ -586,7 +586,7 @@ pnpm exec vitest run tests/unit/docs/public-contract-docs.test.ts
 Expected: one test fails because current documents do not describe typed slots or the producer
 caveat.
 
-- [ ] **Step 3: Add the English API example and boundary**
+- [x] **Step 3: Add the English API example and boundary**
 
 In the component section of `docs/api.md`, import `VNodeChildren` with the existing public types and
 add this example after the broad slot example:
@@ -618,7 +618,7 @@ children, `h()` slot objects, async slot producers, and runtime validation remai
 Ensure the exact lowercase phrase `explicit slot maps type component-side slot consumption` appears
 verbatim, using a preceding semicolon if needed.
 
-- [ ] **Step 4: Add the Chinese API example and boundary**
+- [x] **Step 4: Add the Chinese API example and boundary**
 
 Use the same `PanelSlots` and `TypedPanel` code in `docs/api.zh-CN.md`. Add:
 
@@ -629,13 +629,13 @@ slot 消费：声明的 default、named 和 scoped slots 会保留精确签名�
 children、`h()` slot objects、async slot producers 与 runtime validation 均保持不变。
 ```
 
-- [ ] **Step 5: Update package usage with the same public boundary**
+- [x] **Step 5: Update package usage with the same public boundary**
 
 Add the English typed `PanelSlots` example to the existing component-slot section of
 `docs/package-usage.md`. Include the same four exact English phrases asserted by the docs test. Do
 not describe required slots as caller-enforced and do not imply named-slot JSX syntax exists.
 
-- [ ] **Step 6: Run docs GREEN and formatting checks**
+- [x] **Step 6: Run docs GREEN and formatting checks**
 
 Run:
 
@@ -649,7 +649,7 @@ git diff --check
 Expected: all pass. Confirm no document claims runtime validation, producer enforcement, async slot
 typing, React compatibility, or a new helper export.
 
-- [ ] **Step 7: Commit documentation**
+- [x] **Step 7: Commit documentation**
 
 ```bash
 git add tests/unit/docs/public-contract-docs.test.ts docs/api.md docs/api.zh-CN.md \
@@ -664,7 +664,7 @@ git commit -m "docs: explain typed component slots"
 - Create: `solace-project-log/solace-entries/2026-08-12-005-typed-component-slots.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Run the complete quality gate**
+- [x] **Step 1: Run the complete quality gate**
 
 Run:
 
@@ -676,7 +676,7 @@ Expected: formatting, builds, both typechecks, lint, full Vitest, and package te
 fresh main and package file/test totals from this exact run; do not copy prior log counts without
 checking the output.
 
-- [ ] **Step 2: Re-run packed and focused contracts**
+- [x] **Step 2: Re-run packed and focused contracts**
 
 Run serially:
 
@@ -689,7 +689,7 @@ pnpm exec vitest run tests/unit/docs/public-contract-docs.test.ts \
 
 Expected: the packed consumer passes and all three files pass. Record fresh focused totals.
 
-- [ ] **Step 3: Verify frozen public and release scope**
+- [x] **Step 3: Verify frozen public and release scope**
 
 Run:
 
@@ -709,7 +709,7 @@ Expected:
 - changed paths are limited to approved component types, overloads, contracts, docs, and log files;
 - worktree is clean before evidence files are written.
 
-- [ ] **Step 4: Write the implementation evidence**
+- [x] **Step 4: Write the implementation evidence**
 
 Create `solace-project-log/solace-entries/2026-08-12-005-typed-component-slots.md` with:
 
@@ -756,7 +756,7 @@ Add row `005` under `2026-08-12` in `solace-project-log/index.md`:
 | 005 | 增加 typed component slots | JSX/TSX ergonomics、public types、tests、docs | `src/component/**`, `src/vnode/**`, `src/jsx*-runtime.ts`, `tests/**`, `scripts/package-consumer-smoke.mjs`, `docs/**`, `solace-project-log/**` | [查看](./solace-entries/2026-08-12-005-typed-component-slots.md) |
 ```
 
-- [ ] **Step 5: Format, verify, and commit evidence**
+- [x] **Step 5: Format, verify, and commit evidence**
 
 Run:
 
@@ -777,7 +777,7 @@ git add solace-project-log/index.md \
 git commit -m "docs: record typed component slots"
 ```
 
-- [ ] **Step 6: Final no-publish review**
+- [x] **Step 6: Final no-publish review**
 
 Run:
 

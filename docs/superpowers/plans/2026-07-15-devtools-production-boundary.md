@@ -26,7 +26,7 @@
 
 - Modify: `tests/integration/package-exports.test.ts`
 
-- [ ] **Step 1: Import `readdirSync`**
+- [x] **Step 1: Import `readdirSync`**
 
 Change the first import from:
 
@@ -40,7 +40,7 @@ to:
 import { existsSync, readdirSync } from "node:fs";
 ```
 
-- [ ] **Step 2: Add the production sourcemap guard**
+- [x] **Step 2: Add the production sourcemap guard**
 
 Add this test after `builds root and JSX runtime artifacts`:
 
@@ -54,7 +54,7 @@ it("does not publish production sourcemaps", () => {
 });
 ```
 
-- [ ] **Step 3: Verify RED**
+- [x] **Step 3: Verify RED**
 
 Run:
 
@@ -72,7 +72,7 @@ Expected: fails because the current Rollup build emits `.map` files in `dist`.
 
 - Modify: `rollup.config.mjs`
 
-- [ ] **Step 1: Stop TypeScript transform maps**
+- [x] **Step 1: Stop TypeScript transform maps**
 
 Change the custom TypeScript plugin option from:
 
@@ -86,7 +86,7 @@ to:
           sourceMap: false,
 ```
 
-- [ ] **Step 2: Stop ESM Rollup output maps**
+- [x] **Step 2: Stop ESM Rollup output maps**
 
 Change the ESM output from:
 
@@ -100,7 +100,7 @@ to:
         sourcemap: false,
 ```
 
-- [ ] **Step 3: Stop CJS Rollup output maps**
+- [x] **Step 3: Stop CJS Rollup output maps**
 
 Change the CJS output from:
 
@@ -114,7 +114,7 @@ to:
         sourcemap: false,
 ```
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run:
 
@@ -134,7 +134,7 @@ Expected: passes and `dist` contains no `.map` files.
 - Add: `solace-project-log/solace-entries/2026-07-15-005-devtools-production-boundary.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update DevTools docs**
+- [x] **Step 1: Update DevTools docs**
 
 In `docs/devtools.md`, add this paragraph after the recorder paragraph:
 
@@ -143,12 +143,12 @@ Production package builds do not publish JavaScript sourcemaps. This keeps inter
 control but out of package artifacts, so consumers do not accidentally couple to private helper names or module layout.
 ```
 
-- [ ] **Step 2: Add the project log entry**
+- [x] **Step 2: Add the project log entry**
 
 Create `solace-project-log/solace-entries/2026-07-15-005-devtools-production-boundary.md` with observed validation rows
 after running final validation.
 
-- [ ] **Step 3: Update the project log index**
+- [x] **Step 3: Update the project log index**
 
 Add this row after `004` in the `2026-07-15` section:
 
@@ -164,7 +164,7 @@ Add this row after `004` in the `2026-07-15` section:
 
 - All changed files
 
-- [ ] **Step 1: Format changed files**
+- [x] **Step 1: Format changed files**
 
 Run:
 
@@ -174,7 +174,7 @@ pnpm exec prettier --write rollup.config.mjs tests/integration/package-exports.t
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run package boundary test**
+- [x] **Step 2: Run package boundary test**
 
 Run:
 
@@ -184,7 +184,7 @@ pnpm test:package
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run build**
+- [x] **Step 3: Run build**
 
 Run:
 
@@ -194,7 +194,7 @@ pnpm build
 
 Expected: exits with code 0 and emits no `.map` files.
 
-- [ ] **Step 4: Run typecheck**
+- [x] **Step 4: Run typecheck**
 
 Run:
 
@@ -204,7 +204,7 @@ pnpm typecheck
 
 Expected: exits with code 0.
 
-- [ ] **Step 5: Run lint**
+- [x] **Step 5: Run lint**
 
 Run:
 
@@ -214,7 +214,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Run full tests**
+- [x] **Step 6: Run full tests**
 
 Run:
 
@@ -224,7 +224,7 @@ pnpm test
 
 Expected: exits with code 0.
 
-- [ ] **Step 7: Run format check**
+- [x] **Step 7: Run format check**
 
 Run:
 
@@ -234,7 +234,7 @@ pnpm format:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 Run:
 

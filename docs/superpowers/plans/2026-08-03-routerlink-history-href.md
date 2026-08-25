@@ -26,11 +26,11 @@
 
 **Files:** `tests/integration/router-component.test.ts`
 
-- [ ] **Step 1: Import `createWebHashHistory`.**
+- [x] **Step 1: Import `createWebHashHistory`.**
 
 Add `createWebHashHistory` to the existing import list from `../../src/index`.
 
-- [ ] **Step 2: Add test `renders hash history RouterLink hrefs for browser-owned navigation`.**
+- [x] **Step 2: Add test `renders hash history RouterLink hrefs for browser-owned navigation`.**
 
 Set the browser URL to `/#/`, create a router with `history: createWebHashHistory()`, mount two
 links, and assert literal href attributes:
@@ -62,7 +62,7 @@ expect(container.querySelector<HTMLAnchorElement>("#hash-object-link")?.getAttri
 );
 ```
 
-- [ ] **Step 3: Run the focused test and verify RED.**
+- [x] **Step 3: Run the focused test and verify RED.**
 
 Run:
 
@@ -77,7 +77,7 @@ instead of `#/users/...`.
 
 **Files:** `src/router/internal.ts`, `src/router/history.ts`, `src/router/router.ts`, `src/router/components.ts`
 
-- [ ] **Step 1: Create `src/router/internal.ts`.**
+- [x] **Step 1: Create `src/router/internal.ts`.**
 
 ```ts
 import type { RouteLocationRaw } from "./types";
@@ -102,7 +102,7 @@ export function hasHistoryHrefFormatter(history: unknown): history is HistoryHre
 }
 ```
 
-- [ ] **Step 2: Add history adapter href formatters.**
+- [x] **Step 2: Add history adapter href formatters.**
 
 In `createWebHistory()`, return an adapter object that includes:
 
@@ -119,7 +119,7 @@ In `createWebHashHistory()`, return an adapter object that includes:
 Keep exported function return types as `RouterHistory` so this does not become a public type
 contract.
 
-- [ ] **Step 3: Add router internal formatter.**
+- [x] **Step 3: Add router internal formatter.**
 
 Import `hasHistoryHrefFormatter` and `routerHrefFormatterKey` into `src/router/router.ts`. Add this
 symbol-keyed method to the router object:
@@ -137,7 +137,7 @@ If TypeScript rejects the object literal because `Router` does not declare the s
 object as `Router & RouterHrefFormatter` internally while keeping `createRouter()`'s return type as
 `Router`.
 
-- [ ] **Step 4: Use the internal formatter in `RouterLink`.**
+- [x] **Step 4: Use the internal formatter in `RouterLink`.**
 
 Import `routerHrefFormatterKey` and `RouterHrefFormatter`. Compute href as:
 
@@ -148,7 +148,7 @@ const href = hrefFormatter[routerHrefFormatterKey]?.(to) ?? router.resolve(to).f
 
 Keep click handling unchanged.
 
-- [ ] **Step 5: Run focused tests and verify GREEN.**
+- [x] **Step 5: Run focused tests and verify GREEN.**
 
 Run:
 
@@ -162,21 +162,21 @@ Expected: all router component integration tests pass.
 
 **Files:** `docs/api.md`, `docs/api.zh-CN.md`, `docs/project-status.md`, `docs/project-status.zh-CN.md`
 
-- [ ] **Step 1: Update English API docs.**
+- [x] **Step 1: Update English API docs.**
 
 In the `RouterLink` / `RouterView` section, state that first-party history adapters format rendered
 hrefs, including `#/` hrefs for `createWebHashHistory()`.
 
-- [ ] **Step 2: Update Chinese API docs.**
+- [x] **Step 2: Update Chinese API docs.**
 
 Mirror the same statement in Simplified Chinese.
 
-- [ ] **Step 3: Update project status docs.**
+- [x] **Step 3: Update project status docs.**
 
 Add hash-history-aware `RouterLink` href coverage to the Router evidence and stabilization note.
 Do not change the deferred Router feature list.
 
-- [ ] **Step 4: Format and check.**
+- [x] **Step 4: Format and check.**
 
 Run:
 
@@ -189,7 +189,7 @@ git diff --check
 
 **Files:** all files modified above
 
-- [ ] **Step 1: Run Router regression tests.**
+- [x] **Step 1: Run Router regression tests.**
 
 Run:
 
@@ -199,7 +199,7 @@ pnpm vitest run tests/unit/router tests/integration/router-component.test.ts
 
 Expected: all Router unit and integration tests pass.
 
-- [ ] **Step 2: Run full quality gate.**
+- [x] **Step 2: Run full quality gate.**
 
 Run:
 
@@ -209,7 +209,7 @@ pnpm quality
 
 Expected: format check, build, typechecks, lint, full Vitest suite, and package tests pass.
 
-- [ ] **Step 3: Review final diff.**
+- [x] **Step 3: Review final diff.**
 
 Run:
 
@@ -221,14 +221,14 @@ git diff --stat
 
 Confirm only router internals, focused tests, and docs changed.
 
-- [ ] **Step 4: Commit.**
+- [x] **Step 4: Commit.**
 
 ```bash
 git add src/router/internal.ts src/router/history.ts src/router/router.ts src/router/components.ts tests/integration/router-component.test.ts docs/api.md docs/api.zh-CN.md docs/project-status.md docs/project-status.zh-CN.md
 git commit -m "fix(router): format RouterLink hrefs through history"
 ```
 
-- [ ] **Step 5: Push and confirm synchronization.**
+- [x] **Step 5: Push and confirm synchronization.**
 
 ```bash
 git -c http.version=HTTP/1.1 push

@@ -29,7 +29,7 @@
 
 - Modify: `tests/unit/scheduler/scheduler.test.ts`
 
-- [ ] **Step 1: Update the existing scheduler flush summary test**
+- [x] **Step 1: Update the existing scheduler flush summary test**
 
 In `"emits a devtools summary after flushing queued jobs"`, add `dedupedJobs: 0` to the `toMatchObject()` assertion:
 
@@ -41,7 +41,7 @@ expect(events[0]).toMatchObject({
 });
 ```
 
-- [ ] **Step 2: Add a duplicate-before-flush test**
+- [x] **Step 2: Add a duplicate-before-flush test**
 
 Add this test after `"emits a devtools summary after flushing queued jobs"`:
 
@@ -69,7 +69,7 @@ it("counts duplicate queued jobs in devtools flush summaries", async () => {
 });
 ```
 
-- [ ] **Step 3: Add a self-queue-during-flush test**
+- [x] **Step 3: Add a self-queue-during-flush test**
 
 Add this test after the duplicate-before-flush test:
 
@@ -100,7 +100,7 @@ it("counts jobs deduped during the current flush in devtools summaries", async (
 });
 ```
 
-- [ ] **Step 4: Verify RED for scheduler tests**
+- [x] **Step 4: Verify RED for scheduler tests**
 
 Run:
 
@@ -118,7 +118,7 @@ Expected: fails because `scheduler:flush` does not include `dedupedJobs` yet.
 
 - Modify: `tests/integration/devtools-payload-stability.test.ts`
 
-- [ ] **Step 1: Add `dedupedJobs` to allowed scheduler keys**
+- [x] **Step 1: Add `dedupedJobs` to allowed scheduler keys**
 
 Replace:
 
@@ -132,7 +132,7 @@ with:
   "scheduler:flush": ["dedupedJobs", "durationMs", "queuedJobs", "type"],
 ```
 
-- [ ] **Step 2: Verify RED for payload stability**
+- [x] **Step 2: Verify RED for payload stability**
 
 Run:
 
@@ -150,7 +150,7 @@ Expected: fails because serialized `scheduler:flush` events do not include `dedu
 
 - Modify: `src/devtools/events.ts`
 
-- [ ] **Step 1: Add `dedupedJobs` to the event union**
+- [x] **Step 1: Add `dedupedJobs` to the event union**
 
 Replace:
 
@@ -164,7 +164,7 @@ with:
   | { type: "scheduler:flush"; queuedJobs: number; dedupedJobs: number; durationMs: number }
 ```
 
-- [ ] **Step 2: Add `dedupedJobs` to serialization**
+- [x] **Step 2: Add `dedupedJobs` to serialization**
 
 In the `case "scheduler:flush"` branch, replace:
 
@@ -187,7 +187,7 @@ return {
 };
 ```
 
-- [ ] **Step 3: Verify TypeScript exposes runtime callsites**
+- [x] **Step 3: Verify TypeScript exposes runtime callsites**
 
 Run:
 
@@ -205,7 +205,7 @@ Expected: fails in scheduler code because `emitDevtoolsEvent({ type: "scheduler:
 
 - Modify: `src/scheduler/scheduler.ts`
 
-- [ ] **Step 1: Add scheduler dedupe state**
+- [x] **Step 1: Add scheduler dedupe state**
 
 After:
 
@@ -219,7 +219,7 @@ add:
 let dedupedJobs = 0;
 ```
 
-- [ ] **Step 2: Count duplicate queue attempts only when listeners exist**
+- [x] **Step 2: Count duplicate queue attempts only when listeners exist**
 
 Replace:
 
@@ -240,7 +240,7 @@ if (queuedJobs.has(job)) {
 }
 ```
 
-- [ ] **Step 3: Include `dedupedJobs` in the flush event**
+- [x] **Step 3: Include `dedupedJobs` in the flush event**
 
 In `flushJobs()`, replace:
 
@@ -263,7 +263,7 @@ emitDevtoolsEvent({
 });
 ```
 
-- [ ] **Step 4: Reset the counter after every flush**
+- [x] **Step 4: Reset the counter after every flush**
 
 In the `finally` block, after:
 
@@ -286,7 +286,7 @@ dedupedJobs = 0;
 currentFlushPromise = null;
 ```
 
-- [ ] **Step 5: Verify scheduler tests are GREEN**
+- [x] **Step 5: Verify scheduler tests are GREEN**
 
 Run:
 
@@ -296,7 +296,7 @@ pnpm test -- tests/unit/scheduler/scheduler.test.ts
 
 Expected: exits with code 0 and the scheduler tests pass.
 
-- [ ] **Step 6: Verify payload stability is GREEN**
+- [x] **Step 6: Verify payload stability is GREEN**
 
 Run:
 
@@ -314,7 +314,7 @@ Expected: exits with code 0 and the payload stability test passes.
 
 - Modify: `docs/devtools.md`
 
-- [ ] **Step 1: Update the documented event union**
+- [x] **Step 1: Update the documented event union**
 
 In the documented `DevtoolsEvent` union, replace:
 
@@ -328,7 +328,7 @@ with:
   | { type: "scheduler:flush"; queuedJobs: number; dedupedJobs: number; durationMs: number }
 ```
 
-- [ ] **Step 2: Add scheduler privacy wording**
+- [x] **Step 2: Add scheduler privacy wording**
 
 After the `component:emit` summary paragraph, add:
 
@@ -338,7 +338,7 @@ not include scheduler job functions, function names, stack traces, component ins
 nodes, or user data.
 ```
 
-- [ ] **Step 3: Update the roadmap scheduler wording**
+- [x] **Step 3: Update the roadmap scheduler wording**
 
 Replace:
 
@@ -352,7 +352,7 @@ with:
 3. **Scheduler flush and dedupe summary**: `scheduler:flush` reports executed jobs, deduped queue attempts, and duration.
 ```
 
-- [ ] **Step 4: Format DevTools docs**
+- [x] **Step 4: Format DevTools docs**
 
 Run:
 
@@ -371,7 +371,7 @@ Expected: exits with code 0.
 - Add: `solace-project-log/solace-entries/2026-07-15-004-scheduler-dedupe-devtools.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Add project log entry after validation commands have run**
+- [x] **Step 1: Add project log entry after validation commands have run**
 
 Create `solace-project-log/solace-entries/2026-07-15-004-scheduler-dedupe-devtools.md` with this structure, replacing validation rows with observed command results from Task 7:
 
@@ -431,7 +431,7 @@ DevTools 文档已将 scheduler 的 queued jobs、flush duration 和 skipped sta
 - 可继续评估 renderer diff count 或 scheduler error summary。
 ```
 
-- [ ] **Step 2: Add log index row**
+- [x] **Step 2: Add log index row**
 
 Under `## 2026-07-15` in `solace-project-log/index.md`, add this row after `003`:
 
@@ -439,7 +439,7 @@ Under `## 2026-07-15` in `solace-project-log/index.md`, add this row after `003`
 | 004 | 补充 scheduler dedupe DevTools summary | scheduler、DevTools payload、文档、项目日志 | `src/scheduler/scheduler.ts`, `src/devtools/events.ts`, `tests/unit/scheduler/scheduler.test.ts`, `tests/integration/devtools-payload-stability.test.ts`, `docs/devtools.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-15-004-scheduler-dedupe-devtools.md) |
 ```
 
-- [ ] **Step 3: Format log files**
+- [x] **Step 3: Format log files**
 
 Run:
 
@@ -457,7 +457,7 @@ Expected: exits with code 0.
 
 - All touched files.
 
-- [ ] **Step 1: Run targeted tests**
+- [x] **Step 1: Run targeted tests**
 
 Run:
 
@@ -467,7 +467,7 @@ pnpm test -- tests/unit/scheduler/scheduler.test.ts tests/integration/devtools-p
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run default tests**
+- [x] **Step 2: Run default tests**
 
 Run:
 
@@ -477,7 +477,7 @@ pnpm test
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run TypeScript checks**
+- [x] **Step 3: Run TypeScript checks**
 
 Run:
 
@@ -488,7 +488,7 @@ pnpm typecheck:jsxdev
 
 Expected: both commands exit with code 0.
 
-- [ ] **Step 4: Run lint**
+- [x] **Step 4: Run lint**
 
 Run:
 
@@ -498,7 +498,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 5: Run build**
+- [x] **Step 5: Run build**
 
 Run:
 
@@ -508,7 +508,7 @@ pnpm build
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Run format check**
+- [x] **Step 6: Run format check**
 
 Run:
 
@@ -526,7 +526,7 @@ Expected: exits with code 0.
 
 - All touched files.
 
-- [ ] **Step 1: Check status**
+- [x] **Step 1: Check status**
 
 Run:
 
@@ -536,7 +536,7 @@ git status --short
 
 Expected: only files touched by this plan are modified or added.
 
-- [ ] **Step 2: Stage and commit**
+- [x] **Step 2: Stage and commit**
 
 Run:
 

@@ -29,7 +29,7 @@ No public API, package export map, scheduler queue semantics, keyed diff behavio
 
 - Modify: `tests/unit/component/component.test.ts`
 
-- [ ] **Step 1: Add a stable child skip test**
+- [x] **Step 1: Add a stable child skip test**
 
 Add this test near other component update tests:
 
@@ -56,7 +56,7 @@ it("skips child component updates when parent rerenders with unchanged props", a
 });
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run:
 
@@ -74,7 +74,7 @@ Expected: the new test fails because the current `updateComponent()` path reruns
 
 - Modify: `src/renderer/diff.ts`
 
-- [ ] **Step 1: Add the update guard**
+- [x] **Step 1: Add the update guard**
 
 At the start of `updateComponent(n1, n2)`, after carrying over the instance, add:
 
@@ -86,7 +86,7 @@ if (!shouldUpdateComponent(n1, n2)) {
 }
 ```
 
-- [ ] **Step 2: Add shallow comparison helpers**
+- [x] **Step 2: Add shallow comparison helpers**
 
 Add these helpers near `updateComponent()`:
 
@@ -113,7 +113,7 @@ function havePropsChanged(oldProps: VNodeProps | null, newProps: VNodeProps | nu
 }
 ```
 
-- [ ] **Step 3: Verify GREEN**
+- [x] **Step 3: Verify GREEN**
 
 Run:
 
@@ -131,7 +131,7 @@ Expected: exits with code 0.
 
 - Modify: `tests/performance/component-update.bench.ts`
 
-- [ ] **Step 1: Add stable-child benchmark task**
+- [x] **Step 1: Add stable-child benchmark task**
 
 Inside the existing benchmark test, add:
 
@@ -163,7 +163,7 @@ bench.add("1000 stable child components parent update", async () => {
 });
 ```
 
-- [ ] **Step 2: Run component benchmark**
+- [x] **Step 2: Run component benchmark**
 
 Run:
 
@@ -183,15 +183,15 @@ Expected: exits with code 0 and logs both component update benchmark tasks.
 - Add: `solace-project-log/solace-entries/2026-07-16-003-stable-component-update-skip.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update performance docs**
+- [x] **Step 1: Update performance docs**
 
 Update the current conclusion bullet to mention the stable child component update skip and keep additional browser trend samples as the next follow-up.
 
-- [ ] **Step 2: Add project log entry**
+- [x] **Step 2: Add project log entry**
 
 Create `solace-project-log/solace-entries/2026-07-16-003-stable-component-update-skip.md` with observed validation rows.
 
-- [ ] **Step 3: Update project log index**
+- [x] **Step 3: Update project log index**
 
 Add a 2026-07-16 `003` row for the stable component update skip.
 
@@ -203,7 +203,7 @@ Add a 2026-07-16 `003` row for the stable component update skip.
 
 - All changed files
 
-- [ ] **Step 1: Format changed files**
+- [x] **Step 1: Format changed files**
 
 Run:
 
@@ -213,7 +213,7 @@ pnpm exec prettier --write src/renderer/diff.ts tests/unit/component/component.t
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run targeted component tests**
+- [x] **Step 2: Run targeted component tests**
 
 Run:
 
@@ -223,7 +223,7 @@ pnpm exec vitest run tests/unit/component/component.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run component benchmark**
+- [x] **Step 3: Run component benchmark**
 
 Run:
 
@@ -233,7 +233,7 @@ pnpm exec vitest run --config vitest.benchmark.config.ts tests/performance/compo
 
 Expected: exits with code 0.
 
-- [ ] **Step 4: Run full tests**
+- [x] **Step 4: Run full tests**
 
 Run:
 
@@ -243,7 +243,7 @@ pnpm test
 
 Expected: exits with code 0.
 
-- [ ] **Step 5: Run typecheck**
+- [x] **Step 5: Run typecheck**
 
 Run:
 
@@ -253,7 +253,7 @@ pnpm typecheck
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Run lint**
+- [x] **Step 6: Run lint**
 
 Run:
 
@@ -263,7 +263,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 7: Run build**
+- [x] **Step 7: Run build**
 
 Run:
 
@@ -273,7 +273,7 @@ pnpm build
 
 Expected: exits with code 0.
 
-- [ ] **Step 8: Run format check**
+- [x] **Step 8: Run format check**
 
 Run:
 
@@ -283,7 +283,7 @@ pnpm format:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 Run:
 

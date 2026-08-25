@@ -38,7 +38,7 @@ Git release tags, or npm dist-tags.
 - Create: `scripts/registry-contract-smoke-config.mjs`
 - Create: `tests/unit/scripts/registry-contract-smoke.test.ts`
 
-- [ ] **Step 1: Write the failing pure-contract tests**
+- [x] **Step 1: Write the failing pure-contract tests**
 
 Create `tests/unit/scripts/registry-contract-smoke.test.ts` with the initial contract tests:
 
@@ -130,7 +130,7 @@ describe("registry contract smoke", () => {
 });
 ```
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [x] **Step 2: Run the focused test and verify RED**
 
 Run:
 
@@ -140,7 +140,7 @@ pnpm exec vitest run tests/unit/scripts/registry-contract-smoke.test.ts
 
 Expected: FAIL because `scripts/registry-contract-smoke-config.mjs` does not exist.
 
-- [ ] **Step 3: Implement argument parsing and consumer metadata**
+- [x] **Step 3: Implement argument parsing and consumer metadata**
 
 Create `scripts/registry-contract-smoke-config.mjs` with these public helpers and exact validation:
 
@@ -187,7 +187,7 @@ function usageError(detail) {
 }
 ```
 
-- [ ] **Step 4: Implement the generated ESM probe**
+- [x] **Step 4: Implement the generated ESM probe**
 
 In the same config module, add `createRegistryProbeSource(exactVersion)`. The returned source must
 define `runRegistryProbe()` and perform the checks in separately prefixed `try` blocks:
@@ -265,7 +265,7 @@ export async function runRegistryProbe() {
 }
 ```
 
-- [ ] **Step 5: Run the pure-contract test and verify GREEN**
+- [x] **Step 5: Run the pure-contract test and verify GREEN**
 
 Run:
 
@@ -275,7 +275,7 @@ pnpm exec vitest run tests/unit/scripts/registry-contract-smoke.test.ts
 
 Expected: PASS with 6 tests and no network access.
 
-- [ ] **Step 6: Commit the pure contract**
+- [x] **Step 6: Commit the pure contract**
 
 ```bash
 git add scripts/registry-contract-smoke-config.mjs tests/unit/scripts/registry-contract-smoke.test.ts
@@ -289,7 +289,7 @@ git commit -m "test: define registry smoke contract"
 - Create: `scripts/registry-contract-smoke.mjs`
 - Modify: `tests/unit/scripts/registry-contract-smoke.test.ts`
 
-- [ ] **Step 1: Add failing orchestration and cleanup tests**
+- [x] **Step 1: Add failing orchestration and cleanup tests**
 
 Extend the test file with Node filesystem imports and these tests. Inject install and probe behavior;
 do not spawn pnpm:
@@ -383,7 +383,7 @@ it("preserves probe stage failures and still cleans up", async () => {
 });
 ```
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [x] **Step 2: Run the focused test and verify RED**
 
 Run:
 
@@ -393,7 +393,7 @@ pnpm exec vitest run tests/unit/scripts/registry-contract-smoke.test.ts
 
 Expected: FAIL because `scripts/registry-contract-smoke.mjs` does not exist.
 
-- [ ] **Step 3: Implement the CLI and injectable orchestration**
+- [x] **Step 3: Implement the CLI and injectable orchestration**
 
 Create `scripts/registry-contract-smoke.mjs` with a main guard, exported orchestration for tests, and
 these exact boundaries:
@@ -508,7 +508,7 @@ Do not add signal handling in this slice. The workspace `finally` covers normal 
 the existing Operations Console signal lifecycle remains separate and should not be copied without a
 demonstrated registry-smoke need.
 
-- [ ] **Step 4: Run the focused test and verify GREEN**
+- [x] **Step 4: Run the focused test and verify GREEN**
 
 Run:
 
@@ -518,7 +518,7 @@ pnpm exec vitest run tests/unit/scripts/registry-contract-smoke.test.ts
 
 Expected: PASS with 9 tests; no npm request is made.
 
-- [ ] **Step 5: Verify CLI usage without network**
+- [x] **Step 5: Verify CLI usage without network**
 
 Run:
 
@@ -530,7 +530,7 @@ node scripts/registry-contract-smoke.mjs
 Expected: `--help` exits 0 and prints usage. The missing-target call exits 1 with
 `registry smoke usage failed` and does not create a persistent workspace.
 
-- [ ] **Step 6: Commit orchestration**
+- [x] **Step 6: Commit orchestration**
 
 ```bash
 git add scripts/registry-contract-smoke.mjs tests/unit/scripts/registry-contract-smoke.test.ts
@@ -544,7 +544,7 @@ git commit -m "feat: add registry contract smoke cli"
 - Modify: `package.json:80-96`
 - Modify: `tests/unit/scripts/release-readiness-check.test.ts:99-141`
 
-- [ ] **Step 1: Add a failing package-script boundary test**
+- [x] **Step 1: Add a failing package-script boundary test**
 
 Add this test after the existing release gate ordering tests:
 
@@ -562,7 +562,7 @@ test("keeps registry smoke explicit and outside ordinary release gates", async (
 });
 ```
 
-- [ ] **Step 2: Run the focused script tests and verify RED**
+- [x] **Step 2: Run the focused script tests and verify RED**
 
 Run:
 
@@ -572,7 +572,7 @@ pnpm exec vitest run tests/unit/scripts/registry-contract-smoke.test.ts tests/un
 
 Expected: FAIL only because `package.json` does not yet contain `registry:smoke`.
 
-- [ ] **Step 3: Add only the explicit package script**
+- [x] **Step 3: Add only the explicit package script**
 
 Add this entry beside `package:smoke`:
 
@@ -584,7 +584,7 @@ Do not change `quality`, `release:check`, `release:candidate:check`, either publ
 Do not make `release-readiness-check.mjs` require the post-publish command; availability is locked by
 the package-script test while publish readiness stays candidate-focused.
 
-- [ ] **Step 4: Run the focused script tests and verify GREEN**
+- [x] **Step 4: Run the focused script tests and verify GREEN**
 
 Run:
 
@@ -594,7 +594,7 @@ pnpm exec vitest run tests/unit/scripts/registry-contract-smoke.test.ts tests/un
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Commit package wiring**
+- [x] **Step 5: Commit package wiring**
 
 ```bash
 git add package.json tests/unit/scripts/release-readiness-check.test.ts
@@ -610,7 +610,7 @@ git commit -m "chore: expose registry smoke command"
 - Create: `solace-project-log/solace-entries/2026-08-12-002-registry-contract-smoke.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Add a failing release-document contract test**
+- [x] **Step 1: Add a failing release-document contract test**
 
 Add this test to `tests/unit/docs/release-docs.test.ts`:
 
@@ -628,7 +628,7 @@ it("separates local, upgrade, and published package smoke checks", async () => {
 });
 ```
 
-- [ ] **Step 2: Run the documentation test and verify RED**
+- [x] **Step 2: Run the documentation test and verify RED**
 
 Run:
 
@@ -638,7 +638,7 @@ pnpm exec vitest run tests/unit/docs/release-docs.test.ts
 
 Expected: FAIL because the post-publish section is absent.
 
-- [ ] **Step 3: Add the release documentation section**
+- [x] **Step 3: Add the release documentation section**
 
 Insert this section after `Stable Compatibility Checklist` and before async compatibility:
 
@@ -663,7 +663,7 @@ eight protected public entries, checks one server-rendered paragraph, and confir
 errors must be reported separately from package contract failures.
 ```
 
-- [ ] **Step 4: Run documentation and focused tests**
+- [x] **Step 4: Run documentation and focused tests**
 
 Run:
 
@@ -673,7 +673,7 @@ pnpm exec vitest run tests/unit/docs/release-docs.test.ts tests/unit/scripts/reg
 
 Expected: all focused tests pass.
 
-- [ ] **Step 5: Run the exact published beta.4 registry smoke**
+- [x] **Step 5: Run the exact published beta.4 registry smoke**
 
 Run:
 
@@ -690,7 +690,7 @@ Registry contract smoke passed: requested 0.1.0-beta.4, resolved 0.1.0-beta.4; c
 If the first attempt fails with DNS, timeout, or other install-stage network output, retry the same
 command with approved network access. Do not weaken assertions or change the target.
 
-- [ ] **Step 6: Run scoped full validation**
+- [x] **Step 6: Run scoped full validation**
 
 Run:
 
@@ -712,7 +712,7 @@ Expected:
 - no `src/**` path is printed;
 - only the approved script/test/package/docs/log files are modified.
 
-- [ ] **Step 7: Add the project-log evidence**
+- [x] **Step 7: Add the project-log evidence**
 
 Create `solace-project-log/solace-entries/2026-08-12-002-registry-contract-smoke.md` using the existing
 Chinese log structure. Record:
@@ -752,7 +752,7 @@ Run the listed commands before writing their result cells, and copy only the obs
 counts from that execution. Do not reuse beta.4 publication counts if the new tests change them. Add
 index row `002` under `2026-08-12` pointing to this file.
 
-- [ ] **Step 8: Commit documentation and evidence**
+- [x] **Step 8: Commit documentation and evidence**
 
 ```bash
 git add docs/release.md tests/unit/docs/release-docs.test.ts solace-project-log/index.md solace-project-log/solace-entries/2026-08-12-002-registry-contract-smoke.md
@@ -765,7 +765,7 @@ git commit -m "docs: record registry contract smoke"
 
 - No edits expected
 
-- [ ] **Step 1: Review the complete implementation diff**
+- [x] **Step 1: Review the complete implementation diff**
 
 Run:
 
@@ -788,7 +788,7 @@ tests/unit/scripts/registry-contract-smoke.test.ts
 tests/unit/scripts/release-readiness-check.test.ts
 ```
 
-- [ ] **Step 2: Verify immutable release state**
+- [x] **Step 2: Verify immutable release state**
 
 Run:
 
@@ -806,7 +806,7 @@ fbe69842b13a1be6d2207976cb1f43e21ae369ef
 latest = 0.0.5; beta = 0.1.0-beta.4
 ```
 
-- [ ] **Step 3: Verify final clean branch after approved integration action**
+- [x] **Step 3: Verify final clean branch after approved integration action**
 
 Do not push, tag, publish, or create a PR unless the maintainer explicitly selects that integration
 action. Before reporting completion, run:

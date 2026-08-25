@@ -20,14 +20,14 @@
 - Test: `tests/unit/scripts/benchmark-metadata.test.ts`
 - Test: `tests/unit/scripts/browser-benchmark-history.test.ts`
 
-- [ ] **Step 1: Write failing metadata tests**
+- [x] **Step 1: Write failing metadata tests**
 
 Add tests that provide `SOLACE_BENCHMARK_COMMIT_SHA=0123456789abcdef0123456789abcdef01234567`
 and assert both jsdom metadata and browser history summaries contain that exact SHA. Add a test that
 an invalid non-40-hex SHA is rejected when a history output path is configured, while metadata
 without persisted output remains valid without the variable.
 
-- [ ] **Step 2: Run the metadata tests and verify RED**
+- [x] **Step 2: Run the metadata tests and verify RED**
 
 Run:
 
@@ -37,7 +37,7 @@ pnpm exec vitest run tests/unit/scripts/benchmark-metadata.test.ts tests/unit/sc
 
 Expected: the new commit SHA assertions fail because current records do not expose the field.
 
-- [ ] **Step 3: Implement shared SHA parsing and propagation**
+- [x] **Step 3: Implement shared SHA parsing and propagation**
 
 Add a small parser in `scripts/benchmark-metadata.mjs`:
 
@@ -61,7 +61,7 @@ Include the optional parsed value in jsdom metadata. In the browser benchmark, r
 the appended JSONL record preserves it. Keep non-persisted local smoke commands compatible with an
 unset SHA.
 
-- [ ] **Step 4: Run the metadata tests and formatting**
+- [x] **Step 4: Run the metadata tests and formatting**
 
 Run:
 
@@ -72,7 +72,7 @@ pnpm prettier --check scripts/benchmark-metadata.mjs tests/e2e/browser-benchmark
 
 Expected: focused tests pass and all files are formatted.
 
-- [ ] **Step 5: Commit metadata propagation**
+- [x] **Step 5: Commit metadata propagation**
 
 ```bash
 git add scripts/benchmark-metadata.mjs tests/e2e/browser-benchmark.spec.ts tests/e2e/browser-benchmark-history.ts tests/unit/scripts/benchmark-metadata.test.ts tests/unit/scripts/browser-benchmark-history.test.ts
@@ -91,7 +91,7 @@ git commit -m "feat: attach commit sha to benchmark history"
 - Create: `tests/fixtures/performance/head.jsonl`
 - Test: `tests/unit/scripts/performance-cross-commit.test.ts`
 
-- [ ] **Step 1: Write failing evaluator tests**
+- [x] **Step 1: Write failing evaluator tests**
 
 Create synthetic browser/jsdom records with explicit `commitSha`, matching environment fingerprints,
 and three samples per metric. Cover:
@@ -109,13 +109,13 @@ expect(evaluateCrossCommitPerformance(environmentMismatch).errors.join(" ")).toC
 Also cover odd-sample median selection, missing scenarios/metrics, non-finite values, missing or
 conflicting SHAs, duplicate revision labels, and fewer than three samples.
 
-- [ ] **Step 2: Run the evaluator tests and verify RED**
+- [x] **Step 2: Run the evaluator tests and verify RED**
 
 Run: `pnpm exec vitest run tests/unit/scripts/performance-cross-commit.test.ts`
 
 Expected: the test file fails because the evaluator module does not exist.
 
-- [ ] **Step 3: Implement configuration and evaluator**
+- [x] **Step 3: Implement configuration and evaluator**
 
 Define `release/performance-cross-commit-budgets.json` with `schemaVersion: 1`,
 `minimumSamples: 3`, `maximumRatio: 1.2`, and the existing browser/jsdom scenario metric maps. The
@@ -138,7 +138,7 @@ writes a formatted report when requested, prints stable failures, and exits nonz
 or regression. Use `node:fs/promises`, `node:path`, and argument arrays only; do not shell-interpolate
 record values.
 
-- [ ] **Step 4: Run evaluator tests and CLI fixture checks**
+- [x] **Step 4: Run evaluator tests and CLI fixture checks**
 
 Run:
 
@@ -149,7 +149,7 @@ node scripts/performance-cross-commit.mjs --base tests/fixtures/performance/base
 
 Expected: unit tests pass; the passing fixture prints `performance cross-commit: PASS`.
 
-- [ ] **Step 5: Commit the evaluator slice**
+- [x] **Step 5: Commit the evaluator slice**
 
 ```bash
 git add scripts/performance-cross-commit-config.mjs scripts/performance-cross-commit-config.d.mts scripts/performance-cross-commit.mjs release/performance-cross-commit-budgets.json tests/unit/scripts/performance-cross-commit.test.ts tests/fixtures/performance/base.jsonl tests/fixtures/performance/head.jsonl
@@ -166,20 +166,20 @@ git commit -m "feat: add cross-commit performance evaluator"
 - Test: `tests/unit/scripts/ci-performance-comparison.test.ts`
 - Test: `tests/unit/docs/release-docs.test.ts`
 
-- [ ] **Step 1: Write failing commit-resolution and orchestration tests**
+- [x] **Step 1: Write failing commit-resolution and orchestration tests**
 
 Test pull-request input resolves `pull_request.base.sha` and `pull_request.head.sha`; push input
 resolves `before` and `sha`; all-zero or missing base SHA throws a stable error. Test that legacy base
 records receive the resolved SHA, conflicting record SHAs fail, and temporary output paths are
 revision-specific.
 
-- [ ] **Step 2: Run orchestration tests and verify RED**
+- [x] **Step 2: Run orchestration tests and verify RED**
 
 Run: `pnpm exec vitest run tests/unit/scripts/ci-performance-comparison.test.ts`
 
 Expected: the test file fails because the orchestrator does not exist.
 
-- [ ] **Step 3: Implement the CI orchestrator**
+- [x] **Step 3: Implement the CI orchestrator**
 
 Implement `scripts/ci-performance-comparison.mjs` with pure exported helpers for SHA resolution and
 record normalization, plus a CLI path that:
@@ -195,7 +195,7 @@ record normalization, plus a CLI path that:
 Use `spawn`/`execFile` with argument arrays, propagate child exit codes and stderr, and reject missing
 base/head revisions before creating worktrees.
 
-- [ ] **Step 4: Wire the CI job and package script**
+- [x] **Step 4: Wire the CI job and package script**
 
 Add `performance:compare:ci: node scripts/ci-performance-comparison.mjs` to `package.json`. Add a
 `performance-comparison` job after `quality` in `.github/workflows/ci.yml` that:
@@ -225,7 +225,7 @@ performance-comparison:
 The job must pass the event-derived base/head SHAs through environment variables, must not write to
 `.benchmark-history/`, and must keep the existing browser job unchanged.
 
-- [ ] **Step 5: Add workflow documentation assertions and validate locally**
+- [x] **Step 5: Add workflow documentation assertions and validate locally**
 
 Extend `tests/unit/docs/release-docs.test.ts` to require the new script, 20% ratio, three samples,
 same-runner comparison, and artifact upload wording in `docs/release.md`. Run:
@@ -237,7 +237,7 @@ pnpm prettier --check .github/workflows/ci.yml package.json scripts/ci-performan
 
 Expected: focused tests and formatting pass.
 
-- [ ] **Step 6: Commit CI integration**
+- [x] **Step 6: Commit CI integration**
 
 ```bash
 git add .github/workflows/ci.yml package.json scripts/ci-performance-comparison.mjs tests/unit/scripts/ci-performance-comparison.test.ts docs/release.md tests/unit/docs/release-docs.test.ts
@@ -253,7 +253,7 @@ git commit -m "ci: compare cross-commit performance on same runner"
 - Modify: `docs/project-status.zh-CN.md`
 - Test: `tests/unit/docs/public-contract-docs.test.ts`
 
-- [ ] **Step 1: Add the patch changeset and synchronized status note**
+- [x] **Step 1: Add the patch changeset and synchronized status note**
 
 Create `.changeset/cross-commit-performance-gate.md`:
 
@@ -268,12 +268,12 @@ Add a same-runner base/head performance regression gate with commit and environm
 Add the same English/Chinese status statement: the CI cross-commit gate is active, uses three samples
 and a 1.2 ratio, and does not count as five-date 1.0 evidence.
 
-- [ ] **Step 2: Update documentation contract tests and format**
+- [x] **Step 2: Update documentation contract tests and format**
 
 Assert the new script, ratio, sample count, and separation from 1.0 evidence in
 `tests/unit/docs/public-contract-docs.test.ts`. Run `pnpm prettier --check .changeset/cross-commit-performance-gate.md docs/project-status.md docs/project-status.zh-CN.md tests/unit/docs/public-contract-docs.test.ts` and `git diff --check`.
 
-- [ ] **Step 3: Run the complete local gates**
+- [x] **Step 3: Run the complete local gates**
 
 Run:
 
@@ -294,7 +294,7 @@ pnpm release:one-zero:check -- --report
 Expected: all local gates pass; 1.0 remains `INCOMPLETE` because CI comparison is not five-date
 evidence and the existing adoption/DevTools/stable-boundary gaps remain honest.
 
-- [ ] **Step 4: Commit release metadata and final local state**
+- [x] **Step 4: Commit release metadata and final local state**
 
 ```bash
 git add .changeset/cross-commit-performance-gate.md docs/project-status.md docs/project-status.zh-CN.md tests/unit/docs/public-contract-docs.test.ts

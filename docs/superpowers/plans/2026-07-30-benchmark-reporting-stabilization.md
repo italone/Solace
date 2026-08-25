@@ -36,7 +36,7 @@ browser benchmark source, then mirror that evidence in e2e and history tests. Do
 - Modify: `tests/e2e/browser-benchmark.spec.ts`
 - Modify: `examples/performance-benchmark/src/main.tsx`
 
-- [ ] **Step 1: Write the failing e2e assertion**
+- [x] **Step 1: Write the failing e2e assertion**
 
 In `tests/e2e/browser-benchmark.spec.ts`, extend the keyed reorder result type with row-order
 evidence:
@@ -93,7 +93,7 @@ expect(result.lastRowText).toBe(expectedRows.lastRowText);
 Remove the per-shape `expect(result.firstRowText)...` assertions from the `switch` block because the
 new helper covers every shape.
 
-- [ ] **Step 2: Run e2e to verify RED**
+- [x] **Step 2: Run e2e to verify RED**
 
 Run:
 
@@ -104,7 +104,7 @@ pnpm exec playwright test --config playwright.benchmark.config.ts
 Expected: FAIL for keyed reorder shapes because `middleRowText` and `lastRowText` are `undefined` in
 the current browser benchmark result.
 
-- [ ] **Step 3: Implement benchmark row-order evidence**
+- [x] **Step 3: Implement benchmark row-order evidence**
 
 In `examples/performance-benchmark/src/main.tsx`, add this type below `type KeyedReorderShape`:
 
@@ -191,7 +191,7 @@ Then replace `firstRowText,` in the result object with:
     ...rowTexts,
 ```
 
-- [ ] **Step 4: Run e2e to verify GREEN**
+- [x] **Step 4: Run e2e to verify GREEN**
 
 Run:
 
@@ -201,7 +201,7 @@ pnpm exec playwright test --config playwright.benchmark.config.ts
 
 Expected: PASS for the browser benchmark scenario suite.
 
-- [ ] **Step 5: Format and commit**
+- [x] **Step 5: Format and commit**
 
 Run:
 
@@ -220,7 +220,7 @@ Expected: one commit with browser benchmark result and e2e assertion changes.
 - Modify: `tests/e2e/browser-benchmark-history.ts`
 - Modify: `tests/unit/scripts/browser-benchmark-history.test.ts`
 
-- [ ] **Step 1: Write the history append coverage**
+- [x] **Step 1: Write the history append coverage**
 
 In `tests/unit/scripts/browser-benchmark-history.test.ts`, extend `keyedReorderSummary` with:
 
@@ -318,7 +318,7 @@ test("appends keyed reorder row-order evidence for another shape", async () => {
 });
 ```
 
-- [ ] **Step 2: Run unit test to verify RED**
+- [x] **Step 2: Run unit test to verify RED**
 
 Run:
 
@@ -330,7 +330,7 @@ Expected: FAIL during transform or type-aware editor feedback until `BrowserBenc
 allows `middleRowText` and `lastRowText` on keyed reorder summaries. If Vitest transpilation does
 not typecheck this file, run `pnpm typecheck` and expect the type error there.
 
-- [ ] **Step 3: Update history result type**
+- [x] **Step 3: Update history result type**
 
 In `tests/e2e/browser-benchmark-history.ts`, extend the keyed reorder result type with optional row
 evidence fields:
@@ -344,7 +344,7 @@ evidence fields:
 
 Keep these fields optional so existing JSONL records without row-order evidence remain valid.
 
-- [ ] **Step 4: Run unit test and typecheck to verify GREEN**
+- [x] **Step 4: Run unit test and typecheck to verify GREEN**
 
 Run:
 
@@ -355,7 +355,7 @@ pnpm typecheck
 
 Expected: PASS for the unit test and typecheck.
 
-- [ ] **Step 5: Format and commit**
+- [x] **Step 5: Format and commit**
 
 Run:
 
@@ -373,7 +373,7 @@ Expected: one commit with history type and append coverage changes.
 
 - Modify: `tests/unit/scripts/benchmark-history-summary.test.ts`
 
-- [ ] **Step 1: Strengthen summary test inputs**
+- [x] **Step 1: Strengthen summary test inputs**
 
 In `tests/unit/scripts/benchmark-history-summary.test.ts`, update the helper type for keyed reorder
 records so row-order evidence can be supplied:
@@ -426,7 +426,7 @@ for `shape: "reverse"`, and:
 
 for `shape: "sorted"`.
 
-- [ ] **Step 2: Run summary unit test**
+- [x] **Step 2: Run summary unit test**
 
 Run:
 
@@ -437,7 +437,7 @@ pnpm vitest run tests/unit/scripts/benchmark-history-summary.test.ts
 Expected: PASS. This is a compatibility pin: the implementation already groups by `scenario:shape`,
 and the test proves adding row-order evidence does not change grouping or metrics.
 
-- [ ] **Step 3: Run renderer non-regression test**
+- [x] **Step 3: Run renderer non-regression test**
 
 Run:
 
@@ -448,7 +448,7 @@ pnpm vitest run tests/unit/renderer/diff.test.ts
 Expected: PASS. This proves the migration did not change renderer diff behavior or
 `movedExistingBatches` expectations.
 
-- [ ] **Step 4: Format and commit**
+- [x] **Step 4: Format and commit**
 
 Run:
 
@@ -462,7 +462,7 @@ Expected: one commit with summary compatibility coverage.
 
 ## Final Verification
 
-- [ ] **Step 1: Run focused unit validation**
+- [x] **Step 1: Run focused unit validation**
 
 Run:
 
@@ -472,7 +472,7 @@ pnpm vitest run tests/unit/scripts/browser-benchmark-history.test.ts tests/unit/
 
 Expected: PASS for all selected unit tests.
 
-- [ ] **Step 2: Run browser benchmark validation**
+- [x] **Step 2: Run browser benchmark validation**
 
 Run:
 
@@ -482,7 +482,7 @@ pnpm exec playwright test --config playwright.benchmark.config.ts
 
 Expected: PASS for the browser benchmark e2e suite.
 
-- [ ] **Step 3: Run typecheck**
+- [x] **Step 3: Run typecheck**
 
 Run:
 
@@ -492,7 +492,7 @@ pnpm typecheck
 
 Expected: PASS.
 
-- [ ] **Step 4: Inspect final diff**
+- [x] **Step 4: Inspect final diff**
 
 Run:
 

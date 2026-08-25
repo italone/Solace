@@ -27,7 +27,7 @@ Do not modify `src/devtools/events.ts`, `src/devtools/index.ts`, `package.json`,
 
 - Create: `tests/integration/devtools-large-list-recorder-smoke.test.ts`
 
-- [ ] **Step 1: Create the test file**
+- [x] **Step 1: Create the test file**
 
 Create `tests/integration/devtools-large-list-recorder-smoke.test.ts` with this content:
 
@@ -132,7 +132,7 @@ describe("devtools large-list recorder smoke", () => {
 });
 ```
 
-- [ ] **Step 2: Run the new test to verify RED**
+- [x] **Step 2: Run the new test to verify RED**
 
 Run:
 
@@ -142,7 +142,7 @@ pnpm vitest run tests/integration/devtools-large-list-recorder-smoke.test.ts
 
 Expected: If current payload boundaries already satisfy this smoke, the test may pass immediately. Treat that as acceptable because this task adds missing coverage rather than forcing a runtime change. If it fails, the failure should be about missing broad update evidence or unsafe payload shape, not a TypeScript import error.
 
-- [ ] **Step 3: Fix import or fixture mistakes only if RED errors before exercising behavior**
+- [x] **Step 3: Fix import or fixture mistakes only if RED errors before exercising behavior**
 
 If the test errors because of a typo, fix only the typo. Keep imports limited to:
 
@@ -165,7 +165,7 @@ Run the same command again until the test either passes or fails on payload/upda
 - Test: `tests/integration/devtools-large-list-recorder-smoke.test.ts`
 - Test: `tests/integration/devtools-payload-stability.test.ts`
 
-- [ ] **Step 1: Inspect the first behavioral failure**
+- [x] **Step 1: Inspect the first behavioral failure**
 
 If Task 1 fails, read the first assertion failure:
 
@@ -174,7 +174,7 @@ If Task 1 fails, read the first assertion failure:
 - If a forbidden string appears, identify which event included user/list content.
 - If no scheduler or renderer update appears, inspect whether the update did not schedule or the recorder limit dropped the event.
 
-- [ ] **Step 2: Fix unsafe payloads at the serializer boundary**
+- [x] **Step 2: Fix unsafe payloads at the serializer boundary**
 
 If an event leaks raw data through `serializeDevtoolsEvent`, keep the serializer explicit. For example, a safe renderer event must remain:
 
@@ -189,7 +189,7 @@ case "renderer:element":
 
 Do not add fields such as `el`, `node`, `vnode`, `props`, `children`, `text`, `class`, `dataset`, `state`, or `args`.
 
-- [ ] **Step 3: Fix missing broad update evidence without widening payloads**
+- [x] **Step 3: Fix missing broad update evidence without widening payloads**
 
 If the only failure is that the recorder limit drops update-window events, increase the test limit from `80` to `160` in `tests/integration/devtools-large-list-recorder-smoke.test.ts`.
 
@@ -205,7 +205,7 @@ emitDevtoolsEvent({
 
 Do not emit DOM nodes, VNodes, props, class names, text, or dataset values.
 
-- [ ] **Step 4: Run targeted tests after any fix**
+- [x] **Step 4: Run targeted tests after any fix**
 
 Run:
 
@@ -226,7 +226,7 @@ Expected: both commands exit with code 0.
 - Add: `solace-project-log/solace-entries/2026-07-17-011-devtools-large-list-recorder-smoke.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update DevTools roadmap**
+- [x] **Step 1: Update DevTools roadmap**
 
 In `docs/devtools.md`, add a new roadmap item after the bounded recorder captures item and before the public package boundary items:
 
@@ -236,7 +236,7 @@ In `docs/devtools.md`, add a new roadmap item after the bounded recorder capture
 
 Renumber the following roadmap items by adding 1 to their current numbers.
 
-- [ ] **Step 2: Add project log entry**
+- [x] **Step 2: Add project log entry**
 
 Create `solace-project-log/solace-entries/2026-07-17-011-devtools-large-list-recorder-smoke.md`:
 
@@ -291,7 +291,7 @@ todo-style recorder smoke 已覆盖小交互。近期 renderer keyed list 路径
 - 若继续扩展 DevTools，应继续优先选择真实示例 smoke，不扩大 public API 或暴露 raw runtime objects。
 ```
 
-- [ ] **Step 3: Add project log index row**
+- [x] **Step 3: Add project log index row**
 
 In `solace-project-log/index.md`, add row `011` under `2026-07-17`:
 
@@ -307,7 +307,7 @@ In `solace-project-log/index.md`, add row `011` under `2026-07-17`:
 
 - All changed files
 
-- [ ] **Step 1: Format touched Markdown and test files**
+- [x] **Step 1: Format touched Markdown and test files**
 
 Run:
 
@@ -317,7 +317,7 @@ pnpm exec prettier --write tests/integration/devtools-large-list-recorder-smoke.
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run targeted DevTools tests**
+- [x] **Step 2: Run targeted DevTools tests**
 
 Run:
 
@@ -328,7 +328,7 @@ pnpm vitest run tests/integration/devtools-payload-stability.test.ts
 
 Expected: both commands exit with code 0.
 
-- [ ] **Step 3: Run full default test suite**
+- [x] **Step 3: Run full default test suite**
 
 Run:
 
@@ -338,7 +338,7 @@ pnpm test
 
 Expected: exits with code 0. Test count should increase by one test file and at least one test compared with the previous baseline.
 
-- [ ] **Step 4: Run static and build checks**
+- [x] **Step 4: Run static and build checks**
 
 Run:
 
@@ -352,7 +352,7 @@ git diff --check
 
 Expected: every command exits with code 0.
 
-- [ ] **Step 5: Run package checks only if public import paths changed**
+- [x] **Step 5: Run package checks only if public import paths changed**
 
 If any of `package.json`, `rollup.config.mjs`, `src/devtools/index.ts`, or package exports tests changed, run:
 
@@ -363,11 +363,11 @@ pnpm package:smoke
 
 Expected: both commands exit with code 0. If none of those files changed, skip this step and state that package checks were not required because public package boundaries were unchanged.
 
-- [ ] **Step 6: Update the project log validation table**
+- [x] **Step 6: Update the project log validation table**
 
 Replace each `待最终验证` in `solace-project-log/solace-entries/2026-07-17-011-devtools-large-list-recorder-smoke.md` with the observed command result. Include the final `pnpm test` file/test counts.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 Run:
 

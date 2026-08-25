@@ -38,7 +38,7 @@
 - Test: `tests/unit/router/public-contract-types.test.ts`
 - Test: `tests/integration/package-exports.test.ts`
 
-- [ ] **Step 1: Write failing type contract checks**
+- [x] **Step 1: Write failing type contract checks**
 
 In `tests/unit/router/public-contract-types.test.ts`, update the imports and accepted checks so the new public types compile:
 
@@ -83,7 +83,7 @@ acceptRouteLocationRaw({ path: "/users/1", params: { id: "1" } });
 acceptRouteLocationRaw({ name: 42, params: { id: "1" } });
 ```
 
-- [ ] **Step 2: Update package export expectations so they fail before implementation**
+- [x] **Step 2: Update package export expectations so they fail before implementation**
 
 In `tests/integration/package-exports.test.ts`, add `createMemoryHistory` to the public root API match and sorted key list:
 
@@ -118,7 +118,7 @@ expect(Object.keys(routerModule).sort()).toEqual([
 expect(routerModule.createMemoryHistory).toEqual(expect.any(Function));
 ```
 
-- [ ] **Step 3: Run tests to verify the contract fails**
+- [x] **Step 3: Run tests to verify the contract fails**
 
 Run:
 
@@ -128,7 +128,7 @@ pnpm vitest run tests/unit/router/public-contract-types.test.ts tests/unit/route
 
 Expected: FAIL because `createMemoryHistory`, `RouteRecordName`, and `RouteProps` are not exported and the old route record types still reject `name`, `alias`, and `props`.
 
-- [ ] **Step 4: Implement public type widening**
+- [x] **Step 4: Implement public type widening**
 
 Replace the route type section in `src/router/types.ts` with these public shapes:
 
@@ -167,7 +167,7 @@ export type RouteLocationRaw =
   | { name: RouteRecordName; params?: RouteParamsInput; query?: QueryInput };
 ```
 
-- [ ] **Step 5: Add first-pass runtime exports**
+- [x] **Step 5: Add first-pass runtime exports**
 
 In `src/router/history.ts`, add a first-pass `createMemoryHistory()` implementation that is enough
 for public exports before Task 2 completes full stack behavior:
@@ -238,7 +238,7 @@ export {
 } from "./router";
 ```
 
-- [ ] **Step 6: Run focused tests**
+- [x] **Step 6: Run focused tests**
 
 Run:
 
@@ -248,7 +248,7 @@ pnpm vitest run tests/unit/router/public-contract-types.test.ts tests/unit/route
 
 Expected: type test and export assertions pass where the first-pass adapter is enough; runtime route-name behavior still fails in later tasks because it is not tested here yet.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/router/types.ts src/router/index.ts src/index.ts src/router/history.ts tests/unit/router/public-contract-types.test.ts tests/unit/router/router.test.ts tests/integration/package-exports.test.ts
@@ -265,7 +265,7 @@ git commit -m "feat(router): widen stable contract types"
 - Modify: `tests/unit/router/router.test.ts`
 - Test: `tests/unit/router/router.test.ts`
 
-- [ ] **Step 1: Add failing memory history tests**
+- [x] **Step 1: Add failing memory history tests**
 
 In `tests/unit/router/router.test.ts`, import `createMemoryHistory` from `src/router/history` or `src/router` and add:
 
@@ -310,7 +310,7 @@ it("normalizes and validates memory history targets", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run:
 
@@ -320,7 +320,7 @@ pnpm vitest run tests/unit/router/router.test.ts
 
 Expected: FAIL because the first-pass memory history does not maintain stack navigation, target normalization, or boundary no-op behavior.
 
-- [ ] **Step 3: Implement memory history**
+- [x] **Step 3: Implement memory history**
 
 In `src/router/history.ts`, replace the first-pass `createMemoryHistory()` with:
 
@@ -379,7 +379,7 @@ function normalizeMemoryHistoryEntries(initial: string | string[]): string[] {
 }
 ```
 
-- [ ] **Step 4: Run focused tests**
+- [x] **Step 4: Run focused tests**
 
 Run:
 
@@ -389,7 +389,7 @@ pnpm vitest run tests/unit/router/router.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/router/history.ts tests/unit/router/router.test.ts
@@ -407,7 +407,7 @@ git commit -m "feat(router): add memory history"
 - Modify: `tests/unit/router/router.test.ts`
 - Test: `tests/unit/router/router.test.ts`
 
-- [ ] **Step 1: Add failing route-name tests**
+- [x] **Step 1: Add failing route-name tests**
 
 In `tests/unit/router/router.test.ts`, add:
 
@@ -466,7 +466,7 @@ it("rejects duplicate and invalid route names at creation time", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run:
 
@@ -476,7 +476,7 @@ pnpm vitest run tests/unit/router/router.test.ts
 
 Expected: FAIL because the matcher cannot register names or generate canonical paths from params.
 
-- [ ] **Step 3: Extend matcher interfaces**
+- [x] **Step 3: Extend matcher interfaces**
 
 In `src/router/matcher.ts`, replace the public matcher shape with:
 
@@ -503,7 +503,7 @@ export interface Matcher {
 }
 ```
 
-- [ ] **Step 4: Register named routes and interpolate params**
+- [x] **Step 4: Register named routes and interpolate params**
 
 In `createMatcher()`, create and use a `namedRoutes` map:
 
@@ -594,7 +594,7 @@ function stringifyNamedRoutePath(
 }
 ```
 
-- [ ] **Step 5: Teach router raw-location normalization about names**
+- [x] **Step 5: Teach router raw-location normalization about names**
 
 In `src/router/router.ts`, change `resolveLocation()` so named objects use `matcher.resolveByName()`:
 
@@ -709,7 +709,7 @@ function assertRouterParamsInputContract(
 }
 ```
 
-- [ ] **Step 6: Validate route names during route record validation**
+- [x] **Step 6: Validate route names during route record validation**
 
 In `assertRouteRecordContract()`, call:
 
@@ -733,7 +733,7 @@ function assertRouteRecordNameContract(name: RouteRecord["name"]): void {
 }
 ```
 
-- [ ] **Step 7: Run focused tests**
+- [x] **Step 7: Run focused tests**
 
 Run:
 
@@ -743,7 +743,7 @@ pnpm vitest run tests/unit/router/router.test.ts tests/unit/router/public-contra
 
 Expected: PASS for route-name tests and existing router unit tests.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add src/router/matcher.ts src/router/router.ts tests/unit/router/router.test.ts tests/unit/router/public-contract-types.test.ts
@@ -761,7 +761,7 @@ git commit -m "feat(router): support named routes"
 - Modify: `tests/unit/router/router.test.ts`
 - Test: `tests/unit/router/router.test.ts`
 
-- [ ] **Step 1: Add failing alias tests**
+- [x] **Step 1: Add failing alias tests**
 
 In `tests/unit/router/router.test.ts`, add:
 
@@ -795,7 +795,7 @@ it("rejects duplicate alias and path collisions", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run:
 
@@ -805,7 +805,7 @@ pnpm vitest run tests/unit/router/router.test.ts
 
 Expected: FAIL because aliases are still not compiled into matcher entries.
 
-- [ ] **Step 3: Add alias validation**
+- [x] **Step 3: Add alias validation**
 
 In `src/router/router.ts`, add `alias` to `allowedRouteRecordFields` and call:
 
@@ -830,7 +830,7 @@ function assertRouteRecordAliasContract(alias: RouteRecord["alias"]): void {
 }
 ```
 
-- [ ] **Step 4: Compile alias entries in the matcher**
+- [x] **Step 4: Compile alias entries in the matcher**
 
 In `src/router/matcher.ts`, change `flattenRoutes()` so it emits canonical entries and aliases:
 
@@ -887,7 +887,7 @@ const compiled = flattened
   .sort((a, b) => b.score - a.score || b.chain.length - a.chain.length);
 ```
 
-- [ ] **Step 5: Run focused tests**
+- [x] **Step 5: Run focused tests**
 
 Run:
 
@@ -897,7 +897,7 @@ pnpm vitest run tests/unit/router/router.test.ts
 
 Expected: PASS for alias tests and existing router unit tests.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/router/matcher.ts src/router/router.ts tests/unit/router/router.test.ts
@@ -915,7 +915,7 @@ git commit -m "feat(router): support route aliases"
 - Modify: `tests/integration/router-component.test.ts`
 - Test: `tests/integration/router-component.test.ts`
 
-- [ ] **Step 1: Add failing route props integration tests**
+- [x] **Step 1: Add failing route props integration tests**
 
 In `tests/integration/router-component.test.ts`, add:
 
@@ -971,7 +971,7 @@ it("supports RouterLink named locations", async () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run:
 
@@ -981,7 +981,7 @@ pnpm vitest run tests/integration/router-component.test.ts
 
 Expected: FAIL because `RouterView` currently calls `h(resolvedComponent)` without route props.
 
-- [ ] **Step 3: Validate route props records**
+- [x] **Step 3: Validate route props records**
 
 In `src/router/router.ts`, add `props` to `allowedRouteRecordFields`, call:
 
@@ -1006,7 +1006,7 @@ function assertRouteRecordPropsContract(props: RouteRecord["props"]): void {
 }
 ```
 
-- [ ] **Step 4: Pass props from RouterView**
+- [x] **Step 4: Pass props from RouterView**
 
 In `src/router/components.ts`, change the render branch:
 
@@ -1053,7 +1053,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 ```
 
-- [ ] **Step 5: Run focused tests**
+- [x] **Step 5: Run focused tests**
 
 Run:
 
@@ -1063,7 +1063,7 @@ pnpm vitest run tests/integration/router-component.test.ts tests/unit/router/rou
 
 Expected: PASS for route props integration and router unit tests.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/router/components.ts src/router/router.ts tests/integration/router-component.test.ts
@@ -1083,7 +1083,7 @@ git commit -m "feat(router): pass route props through RouterView"
 - Modify: `tests/integration/package-exports.test.ts`
 - Test: `tests/integration/package-exports.test.ts`
 
-- [ ] **Step 1: Update docs**
+- [x] **Step 1: Update docs**
 
 In `docs/package-usage.md`, replace the Router scope paragraph with this content:
 
@@ -1130,7 +1130,7 @@ route props、RouterLink 和 RouterView。scrollBehavior、auth、permissions、
 integration 仍为 deferred，不属于当前兼容性承诺。
 ```
 
-- [ ] **Step 2: Ensure package export tests cover the final root API**
+- [x] **Step 2: Ensure package export tests cover the final root API**
 
 In `tests/integration/package-exports.test.ts`, make the root API sorted key list include `createMemoryHistory` and keep `createSSRRouter` excluded:
 
@@ -1170,7 +1170,7 @@ expect(Object.keys(api).sort()).toEqual([
 expect(api).not.toHaveProperty("createSSRRouter");
 ```
 
-- [ ] **Step 3: Run focused router and package checks**
+- [x] **Step 3: Run focused router and package checks**
 
 Run:
 
@@ -1182,7 +1182,7 @@ pnpm vitest run --config vitest.package.config.ts tests/integration/package-expo
 
 Expected: PASS.
 
-- [ ] **Step 4: Run full quality gate**
+- [x] **Step 4: Run full quality gate**
 
 Run:
 
@@ -1192,7 +1192,7 @@ pnpm quality
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add docs/api.md docs/api.zh-CN.md docs/package-usage.md docs/project-status.zh-CN.md tests/integration/package-exports.test.ts

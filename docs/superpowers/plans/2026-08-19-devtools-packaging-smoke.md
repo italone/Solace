@@ -31,7 +31,7 @@
 - Modify: `tests/unit/scripts/one-zero-readiness.test.ts:482`
 - Modify: `scripts/one-zero-readiness-config.mjs:239`
 
-- [ ] **Step 1: Write the failing reserved-origin test**
+- [x] **Step 1: Write the failing reserved-origin test**
 
 Add this test after the existing exact-HTTPS-origin test:
 
@@ -49,7 +49,7 @@ it("rejects reserved .invalid DevTools smoke origins", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test and verify RED**
+- [x] **Step 2: Run the test and verify RED**
 
 Run:
 
@@ -59,7 +59,7 @@ pnpm exec vitest run tests/unit/scripts/one-zero-readiness.test.ts
 
 Expected: FAIL because `https://devtools-smoke.invalid` currently satisfies `isExactHttpsOrigin()` and the criterion is `passed: true`.
 
-- [ ] **Step 3: Implement the minimum production-origin guard**
+- [x] **Step 3: Implement the minimum production-origin guard**
 
 Update `isExactHttpsOrigin()` without changing the packaging parser:
 
@@ -86,7 +86,7 @@ function isExactHttpsOrigin(value) {
 }
 ```
 
-- [ ] **Step 4: Run the test and verify GREEN**
+- [x] **Step 4: Run the test and verify GREEN**
 
 Run:
 
@@ -96,7 +96,7 @@ pnpm exec vitest run tests/unit/scripts/one-zero-readiness.test.ts
 
 Expected: PASS with the reserved origin rejected and existing exact HTTPS fixtures still accepted.
 
-- [ ] **Step 5: Commit the evidence guard**
+- [x] **Step 5: Commit the evidence guard**
 
 ```bash
 git add scripts/one-zero-readiness-config.mjs tests/unit/scripts/one-zero-readiness.test.ts
@@ -111,7 +111,7 @@ git commit -m "test: reject DevTools smoke origins as production evidence"
 - Modify: `package.json:68,102`
 - Modify: `scripts/release-readiness-check.mjs:32-54,110`
 
-- [ ] **Step 1: Write failing release-gate assertions**
+- [x] **Step 1: Write failing release-gate assertions**
 
 Update the reported gate assertion to include the named smoke:
 
@@ -135,7 +135,7 @@ Insert this segment immediately after `pnpm stable:app` in the expected array:
 "pnpm package:devtools-extension:smoke",
 ```
 
-- [ ] **Step 2: Run the release-readiness test and verify RED**
+- [x] **Step 2: Run the release-readiness test and verify RED**
 
 Run:
 
@@ -145,7 +145,7 @@ pnpm exec vitest run tests/unit/scripts/release-readiness-check.test.ts
 
 Expected: FAIL because the smoke script and release-check segment do not exist.
 
-- [ ] **Step 3: Add the package script and release-check segment**
+- [x] **Step 3: Add the package script and release-check segment**
 
 Add next to `package:devtools-extension` in `package.json`:
 
@@ -159,7 +159,7 @@ Insert the named smoke after `pnpm stable:app` in `release:check`:
 "release:check": "pnpm release:readiness && pnpm quality && pnpm test:coverage && pnpm package:smoke && pnpm adoption:smoke && pnpm stable:app && pnpm package:devtools-extension:smoke && pnpm benchmark && pnpm benchmark:browser && pnpm performance:regression && pnpm test:e2e && pnpm test:e2e:devtools-extension"
 ```
 
-- [ ] **Step 4: Make release readiness enforce the gate**
+- [x] **Step 4: Make release readiness enforce the gate**
 
 Add the script, command, and ignored-output requirements:
 
@@ -171,7 +171,7 @@ requireGitignorePattern(".devtools-artifacts/");
 
 Update the success diagnostic to the exact string asserted in Step 1.
 
-- [ ] **Step 5: Run focused checks and verify GREEN**
+- [x] **Step 5: Run focused checks and verify GREEN**
 
 Run:
 
@@ -182,7 +182,7 @@ pnpm release:readiness
 
 Expected: both commands pass; readiness reports `pnpm package:devtools-extension:smoke` among mandatory gates.
 
-- [ ] **Step 6: Exercise the real package build**
+- [x] **Step 6: Exercise the real package build**
 
 Run:
 
@@ -200,7 +200,7 @@ node -e 'const fs=require("node:fs"); const p=".devtools-artifacts/solace-devtoo
 
 Expected: `DevTools smoke evidence verified`.
 
-- [ ] **Step 7: Commit the local gate**
+- [x] **Step 7: Commit the local gate**
 
 ```bash
 git add package.json scripts/release-readiness-check.mjs tests/unit/scripts/release-readiness-check.test.ts
@@ -218,7 +218,7 @@ git commit -m "chore: gate DevTools distribution packaging"
 - Modify: `docs/devtools.md:157`
 - Modify: `docs/release.md:159`
 
-- [ ] **Step 1: Write the failing CI placement assertion**
+- [x] **Step 1: Write the failing CI placement assertion**
 
 Slice the browser job and assert the smoke is between build and Playwright installation:
 
@@ -237,7 +237,7 @@ expect(devtoolsPackageSmoke).toBeGreaterThan(packageBuild);
 expect(installBrowsers).toBeGreaterThan(devtoolsPackageSmoke);
 ```
 
-- [ ] **Step 2: Write failing documentation assertions**
+- [x] **Step 2: Write failing documentation assertions**
 
 Add to the DevTools packaging documentation test:
 
@@ -254,7 +254,7 @@ expect(release).toContain("pnpm package:devtools-extension:smoke");
 expect(release).toContain("does not satisfy production DevTools distribution evidence");
 ```
 
-- [ ] **Step 3: Run the focused tests and verify RED**
+- [x] **Step 3: Run the focused tests and verify RED**
 
 Run:
 
@@ -264,7 +264,7 @@ pnpm exec vitest run tests/unit/ci-workflow.test.ts tests/unit/devtools/devtools
 
 Expected: FAIL for the missing workflow step and missing documentation wording.
 
-- [ ] **Step 4: Add the browser-job smoke step**
+- [x] **Step 4: Add the browser-job smoke step**
 
 Insert after the browser job's ordinary `Build` step:
 
@@ -275,7 +275,7 @@ Insert after the browser job's ordinary `Build` step:
 
 Do not upload `.devtools-artifacts/` and do not remove the existing DevTools E2E step.
 
-- [ ] **Step 5: Document the local smoke boundary**
+- [x] **Step 5: Document the local smoke boundary**
 
 Add after the build/E2E command block in `docs/devtools.md`:
 
@@ -294,7 +294,7 @@ tests. This validates the real ZIP and manifest-generation path, but the reserve
 and ignored artifact do not satisfy production DevTools distribution evidence.
 ```
 
-- [ ] **Step 6: Run focused tests and verify GREEN**
+- [x] **Step 6: Run focused tests and verify GREEN**
 
 Run:
 
@@ -304,7 +304,7 @@ pnpm exec vitest run tests/unit/ci-workflow.test.ts tests/unit/devtools/devtools
 
 Expected: all focused workflow and documentation tests pass.
 
-- [ ] **Step 7: Format and commit CI/documentation integration**
+- [x] **Step 7: Format and commit CI/documentation integration**
 
 Run:
 
@@ -328,7 +328,7 @@ git commit -m "ci: smoke test DevTools distribution packaging"
 
 - Verify only; no production evidence files should change.
 
-- [ ] **Step 1: Run all focused contract tests**
+- [x] **Step 1: Run all focused contract tests**
 
 ```bash
 pnpm exec vitest run tests/unit/scripts/one-zero-readiness.test.ts tests/unit/scripts/release-readiness-check.test.ts tests/unit/ci-workflow.test.ts tests/unit/devtools/devtools-docs.test.ts tests/unit/docs/release-docs.test.ts tests/unit/scripts/devtools-extension-package.test.ts
@@ -336,7 +336,7 @@ pnpm exec vitest run tests/unit/scripts/one-zero-readiness.test.ts tests/unit/sc
 
 Expected: all selected test files pass.
 
-- [ ] **Step 2: Run static and full unit validation**
+- [x] **Step 2: Run static and full unit validation**
 
 ```bash
 pnpm format:check
@@ -347,7 +347,7 @@ git diff --check
 
 Expected: all commands exit zero with no formatting, type, test, or whitespace failures.
 
-- [ ] **Step 3: Run the full local release gate**
+- [x] **Step 3: Run the full local release gate**
 
 ```bash
 pnpm release:check
@@ -357,7 +357,7 @@ Expected: the real DevTools packaging smoke runs and the complete existing relea
 including coverage, package/adoption/stable smoke, benchmarks, local performance regression, browser
 E2E, and DevTools extension E2E.
 
-- [ ] **Step 4: Confirm production evidence did not change**
+- [x] **Step 4: Confirm production evidence did not change**
 
 ```bash
 git diff --exit-code f6d7809 -- release/devtools-distribution-evidence.json release/one-zero-readiness.json
@@ -368,7 +368,7 @@ Expected: the diff command prints nothing and exits zero. The report remains `IN
 `devtools.production-permissions` still failing, alongside the independent-adoption, five-date
 performance-history, and stable-contract gaps.
 
-- [ ] **Step 5: Inspect the final repository state**
+- [x] **Step 5: Inspect the final repository state**
 
 ```bash
 git status --short --branch

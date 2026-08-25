@@ -62,7 +62,7 @@ runtime or type-level validation in this slice.
 - Modify: `tsconfig.jsxdev.json`
 - Modify: `scripts/package-consumer-smoke.mjs`
 
-- [ ] **Step 1: Expand the source event and props fixtures**
+- [x] **Step 1: Expand the source event and props fixtures**
 
 In `tests/unit/renderer/jsx-runtime-public-contract-types.test.tsx`, import `jsxs` with `jsx`:
 
@@ -100,7 +100,7 @@ Add the valid producer call before the negative emit cases:
 emit("value-change", props.count);
 ```
 
-- [ ] **Step 2: Add positive automatic JSX listener contracts**
+- [x] **Step 2: Add positive automatic JSX listener contracts**
 
 Replace the current single `<TypedEmitter ... />` expression with:
 
@@ -136,7 +136,7 @@ Keep the existing untyped component expression and add a function-array compatib
 <Row label="permissive" onAnything={(value: Date) => value} />;
 ```
 
-- [ ] **Step 3: Add negative automatic JSX listener contracts**
+- [x] **Step 3: Add negative automatic JSX listener contracts**
 
 Add these expressions beside the existing TypeScript negative cases:
 
@@ -167,7 +167,7 @@ Use a direct factory call to prove the raw kebab listener prop is not accepted:
 jsx(TypedEmitter, { count: 1, "onValue-change": (value: number) => value });
 ```
 
-- [ ] **Step 4: Add direct factory strict contracts**
+- [x] **Step 4: Add direct factory strict contracts**
 
 Add positive calls for each factory:
 
@@ -197,7 +197,7 @@ jsxDEV(TypedEmitter, { count: 1, onValueChange: (value: string) => value });
 Retain the existing direct non-function listener negatives for permissive components and DOM
 elements.
 
-- [ ] **Step 5: Compile the same contract under the JSX development transform**
+- [x] **Step 5: Compile the same contract under the JSX development transform**
 
 Change `tsconfig.jsxdev.json` to:
 
@@ -216,7 +216,7 @@ Change `tsconfig.jsxdev.json` to:
 
 This validates automatic `jsxDEV` output instead of relying only on manual `jsxDEV()` calls.
 
-- [ ] **Step 6: Run source typechecks and verify RED**
+- [x] **Step 6: Run source typechecks and verify RED**
 
 Run:
 
@@ -231,7 +231,7 @@ payloads and unknown listeners, producing unused `@ts-expect-error` diagnostics.
 the event-map-wins rule exists. Fix only mistakes that prevent these intended failures from being
 observed.
 
-- [ ] **Step 7: Add packed-consumer listener contracts**
+- [x] **Step 7: Add packed-consumer listener contracts**
 
 In the generated `main.tsx` inside `scripts/package-consumer-smoke.mjs`, change `ButtonEvents` and the
 typed component props to:
@@ -292,7 +292,7 @@ packedJsx(TypedButton, { value: 1, "onValue-change": (value: number) => value })
 <Button label="legacy" onLegacyEvent={(value: symbol) => value} />;
 ```
 
-- [ ] **Step 8: Run packed consumer and verify RED**
+- [x] **Step 8: Run packed consumer and verify RED**
 
 Run:
 
@@ -305,7 +305,7 @@ because the installed declarations still leave strict listeners broad. Confirm t
 `@ts-expect-error` directives are unused or the positive collision case fails for the missing
 event-map-wins rule.
 
-- [ ] **Step 9: Keep the RED tree uncommitted**
+- [x] **Step 9: Keep the RED tree uncommitted**
 
 Run:
 
@@ -335,7 +335,7 @@ Do not commit the deliberately failing contract.
 - Test: `scripts/package-consumer-smoke.mjs`
 - Test config: `tsconfig.jsxdev.json`
 
-- [ ] **Step 1: Add the internal shared JSX type module**
+- [x] **Step 1: Add the internal shared JSX type module**
 
 Create `src/jsx-types.ts`:
 
@@ -448,7 +448,7 @@ require runtime imports in this type-only helper and create an unnecessary depen
 The ASCII character union and recursive mapping match runtime `-(\w)`. Do not replace them with a
 shorter rule that removes all hyphens or uppercases punctuation.
 
-- [ ] **Step 2: Replace duplicated runtime-local JSX types**
+- [x] **Step 2: Replace duplicated runtime-local JSX types**
 
 In `src/jsx-runtime.ts`, remove the local declarations for `JSXChild`, `JSXChildren`, `JSXKey`,
 `JSXEventHandler`, `JSXEventHandlerValue`, `JSXDomEventHandler`, `JSXElementProps`, and
@@ -489,7 +489,7 @@ export function jsxs<Props extends object, Events extends ComponentEventMap>(
 Delete the local `JSXProps` alias and keep `createJsxVNode()` and `normalizeChildren()` behavior
 unchanged.
 
-- [ ] **Step 3: Add LibraryManagedAttributes and close the global escape hatch**
+- [x] **Step 3: Add LibraryManagedAttributes and close the global escape hatch**
 
 In the exported `JSX` namespace in `src/jsx-runtime.ts`, add:
 
@@ -510,7 +510,7 @@ Removing the broad `on${string}` index is mandatory. The permissive branch in
 `JSXManagedComponentProps` now owns legacy component listener compatibility, while intrinsic DOM
 listeners remain in `IntrinsicElements` through `JSXElementProps`.
 
-- [ ] **Step 4: Reuse the shared types in the development runtime**
+- [x] **Step 4: Reuse the shared types in the development runtime**
 
 In `src/jsx-dev-runtime.ts`, remove all local JSX child/key/handler/element/component/props aliases and
 import:
@@ -531,7 +531,7 @@ export function jsxDEV<Props extends object, Events extends ComponentEventMap>(
 
 Keep the runtime delegation to `jsx()` unchanged.
 
-- [ ] **Step 5: Run normal and development typechecks GREEN**
+- [x] **Step 5: Run normal and development typechecks GREEN**
 
 Run:
 
@@ -545,7 +545,7 @@ unrelated callback cases must compile, and untyped/ordinary components must rema
 automatic JSX still accepts `onMissing`, first verify the broad index is absent from
 `IntrinsicAttributes`; do not weaken strict props to make the negative pass.
 
-- [ ] **Step 6: Run focused runtime and type-contract tests**
+- [x] **Step 6: Run focused runtime and type-contract tests**
 
 Run:
 
@@ -556,7 +556,7 @@ pnpm exec vitest run tests/unit/renderer/jsx-runtime-public-contract-types.test.
 Expected: both files pass with the existing runtime test inventory. Listener function dispatch,
 arrays, kebab-case resolution, and DevTools summaries remain unchanged.
 
-- [ ] **Step 7: Verify generated declarations and installed consumer**
+- [x] **Step 7: Verify generated declarations and installed consumer**
 
 Run serially:
 
@@ -569,7 +569,7 @@ Expected: package tests pass and the installed temporary consumer accepts valid 
 consuming all listener `@ts-expect-error` cases. Inspect generated declarations if either command
 loses `LibraryManagedAttributes`; do not add a new package export.
 
-- [ ] **Step 8: Commit the listener contract**
+- [x] **Step 8: Commit the listener contract**
 
 Run:
 
@@ -594,7 +594,7 @@ The commit must contain only the six approved paths. No runtime component file, 
 - Modify: `docs/api.zh-CN.md`
 - Modify: `docs/package-usage.md`
 
-- [ ] **Step 1: Update the failing documentation contract**
+- [x] **Step 1: Update the failing documentation contract**
 
 In `tests/unit/docs/public-contract-docs.test.ts`, replace the English assertion:
 
@@ -627,7 +627,7 @@ expect(apiZh).toContain("函数或函数数组");
 Retain all current assertions for `ComponentEventMap`, `defineComponent<Props, Events>`, permissive
 defaults, compile-time behavior, no runtime validation, and generic component signatures.
 
-- [ ] **Step 2: Run the documentation test and verify RED**
+- [x] **Step 2: Run the documentation test and verify RED**
 
 Run:
 
@@ -637,7 +637,7 @@ pnpm exec vitest run tests/unit/docs/public-contract-docs.test.ts
 
 Expected: fail because the current docs still say precise listener inference is deferred.
 
-- [ ] **Step 3: Update the English API event contract**
+- [x] **Step 3: Update the English API event contract**
 
 In `docs/api.md`, extend `CounterEvents` and the example:
 
@@ -671,7 +671,7 @@ tuple. Kebab-case events expose only their canonical camelized listener, so `val
 `onValueChange`. This JSX inference does not change the existing broad `h()` props contract.
 ```
 
-- [ ] **Step 4: Update the Chinese API event contract**
+- [x] **Step 4: Update the Chinese API event contract**
 
 In `docs/api.zh-CN.md`, use the same `CounterEvents`, `Counter`, and `App` code. Replace the deferred
 paragraph with:
@@ -683,7 +683,7 @@ paragraph with:
 `onValueChange`。这个 JSX 推导不会改变 `h()` 现有的宽松 props 契约。
 ```
 
-- [ ] **Step 5: Update package usage**
+- [x] **Step 5: Update package usage**
 
 In `docs/package-usage.md`, add `"value-change"` and `onValueChange` to the existing counter example,
 then replace the deferred paragraph with:
@@ -696,7 +696,7 @@ or an array of functions whose arguments match the event tuple; kebab-case event
 canonical camelized listener. This inference does not change the existing broad `h()` props contract.
 ```
 
-- [ ] **Step 6: Run documentation GREEN and formatting checks**
+- [x] **Step 6: Run documentation GREEN and formatting checks**
 
 Run:
 
@@ -710,7 +710,7 @@ git diff --check
 Expected: all pass. Check that no document claims runtime validation, strict listeners for untyped
 components, typed `h()` listeners, or React compatibility.
 
-- [ ] **Step 7: Commit documentation**
+- [x] **Step 7: Commit documentation**
 
 Run:
 
@@ -727,7 +727,7 @@ git commit -m "docs: explain typed component listeners"
 - Create: `solace-project-log/solace-entries/2026-08-12-004-typed-component-listener-inference.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Run the complete quality gate**
+- [x] **Step 1: Run the complete quality gate**
 
 Run:
 
@@ -739,7 +739,7 @@ Expected: formatting, build, normal typecheck, Operations Console build, JSX dev
 lint, complete Vitest inventory, and package tests all pass. Record fresh main test and package test
 file/test totals from this exact run.
 
-- [ ] **Step 2: Re-run the installed consumer and focused contract**
+- [x] **Step 2: Re-run the installed consumer and focused contract**
 
 Run serially:
 
@@ -752,7 +752,7 @@ pnpm exec vitest run tests/unit/docs/public-contract-docs.test.ts \
 
 Expected: packed consumer passes and all three focused files pass. Record fresh focused totals.
 
-- [ ] **Step 3: Verify the frozen public and release scope**
+- [x] **Step 3: Verify the frozen public and release scope**
 
 Run:
 
@@ -771,7 +771,7 @@ Expected:
 - changed paths are limited to the approved JSX types, contracts, docs, and project-log files;
 - worktree is clean before evidence files are written.
 
-- [ ] **Step 4: Write the implementation evidence**
+- [x] **Step 4: Write the implementation evidence**
 
 Create `solace-project-log/solace-entries/2026-08-12-004-typed-component-listener-inference.md`:
 
@@ -822,7 +822,7 @@ Add row `004` under `2026-08-12` in `solace-project-log/index.md`:
 | 004 | 增加 typed component listener inference | JSX/TSX ergonomics、public types、tests、docs | `src/jsx-types.ts`, `src/jsx*-runtime.ts`, `tests/**`, `scripts/package-consumer-smoke.mjs`, `docs/**`, `solace-project-log/**` | [查看](./solace-entries/2026-08-12-004-typed-component-listener-inference.md) |
 ```
 
-- [ ] **Step 5: Format and verify evidence**
+- [x] **Step 5: Format and verify evidence**
 
 Run:
 
@@ -836,7 +836,7 @@ git diff --check
 Expected: all pass. Confirm that the recorded counts match the fresh commands and that the log does
 not claim `release:check` ran.
 
-- [ ] **Step 6: Commit evidence**
+- [x] **Step 6: Commit evidence**
 
 Run:
 
@@ -846,7 +846,7 @@ git add solace-project-log/index.md \
 git commit -m "docs: record typed component listeners"
 ```
 
-- [ ] **Step 7: Final no-publish review**
+- [x] **Step 7: Final no-publish review**
 
 Run:
 

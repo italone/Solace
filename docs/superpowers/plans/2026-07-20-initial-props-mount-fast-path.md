@@ -33,7 +33,7 @@ or release flow.
 
 - Modify: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Add RED tests**
+- [x] **Step 1: Add RED tests**
 
 Add these tests after `it("batches initial element child insertion into the element container", () => { ... })`:
 
@@ -80,7 +80,7 @@ it("skips redundant removals for empty initial element props", () => {
 });
 ```
 
-- [ ] **Step 2: Run the renderer test to verify RED**
+- [x] **Step 2: Run the renderer test to verify RED**
 
 Run:
 
@@ -99,7 +99,7 @@ props on a fresh element.
 
 - Modify: `src/renderer/diff.ts`
 
-- [ ] **Step 1: Replace the initial props loop**
+- [x] **Step 1: Replace the initial props loop**
 
 In `mountElement()`, replace the current `Object.entries()` loop:
 
@@ -121,7 +121,7 @@ if (vnode.props) {
 }
 ```
 
-- [ ] **Step 2: Add the helper functions**
+- [x] **Step 2: Add the helper functions**
 
 Add these helpers near `patchProps()` so prop-mount behavior stays close to prop-patch behavior:
 
@@ -151,7 +151,7 @@ function mightBeEventProp(key: string): boolean {
 }
 ```
 
-- [ ] **Step 3: Run the renderer and event tests to verify GREEN**
+- [x] **Step 3: Run the renderer and event tests to verify GREEN**
 
 Run:
 
@@ -173,7 +173,7 @@ binding still works.
 - Add: `solace-project-log/solace-entries/2026-07-20-009-initial-props-mount-fast-path.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update the performance note**
+- [x] **Step 1: Update the performance note**
 
 In `docs/performance.md`, add a short sentence near the current renderer follow-up summary:
 
@@ -182,7 +182,7 @@ The initial element mount path now uses a conservative props fast path for ordin
 scans and redundant attribute removals on fresh elements.
 ```
 
-- [ ] **Step 2: Add the implementation log entry**
+- [x] **Step 2: Add the implementation log entry**
 
 Create `solace-project-log/solace-entries/2026-07-20-009-initial-props-mount-fast-path.md`:
 
@@ -238,7 +238,7 @@ Create `solace-project-log/solace-entries/2026-07-20-009-initial-props-mount-fas
 - 根据本次 browser trend refresh 再判断下一轮性能切片；发布线仍受 `"private": true` 门禁约束。
 ```
 
-- [ ] **Step 3: Add the log index row**
+- [x] **Step 3: Add the log index row**
 
 Add this row to the `2026-07-20` table after `008`:
 
@@ -254,7 +254,7 @@ Add this row to the `2026-07-20` table after `008`:
 
 - All changed files
 
-- [ ] **Step 1: Format touched files**
+- [x] **Step 1: Format touched files**
 
 Run:
 
@@ -264,7 +264,7 @@ pnpm exec prettier --write src/renderer/diff.ts tests/unit/renderer/diff.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run focused validation**
+- [x] **Step 2: Run focused validation**
 
 Run:
 
@@ -276,7 +276,7 @@ pnpm exec vitest run --config vitest.benchmark.config.ts tests/performance/list-
 
 Expected: all commands exit with code 0.
 
-- [ ] **Step 3: Refresh browser benchmark trend**
+- [x] **Step 3: Refresh browser benchmark trend**
 
 Run:
 
@@ -288,7 +288,7 @@ pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
 
 Expected: benchmark exits with code 0, appends ignored browser history, and both history summaries exit with code 0.
 
-- [ ] **Step 4: Run the full validation set**
+- [x] **Step 4: Run the full validation set**
 
 Run:
 
@@ -303,7 +303,7 @@ git diff --check
 
 Expected: all commands exit with code 0.
 
-- [ ] **Step 5: Confirm generated history stays ignored**
+- [x] **Step 5: Confirm generated history stays ignored**
 
 Run:
 
@@ -313,7 +313,7 @@ git status --short --ignored=matching
 
 Expected: `.benchmark-history/` appears as ignored (`!!`), not as tracked or untracked (`??`).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 Run:
 

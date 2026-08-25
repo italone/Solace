@@ -28,7 +28,7 @@ Do not modify `package.json`, Rollup config, public package exports, `src/devtoo
 
 - Modify: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Add the RED test**
+- [x] **Step 1: Add the RED test**
 
 In `tests/unit/renderer/diff.test.ts`, add this test after `skips element updates for unchanged keyed siblings` and before `emits devtools summaries for element mount, update, and unmount`:
 
@@ -65,7 +65,7 @@ it("avoids Object.keys props scans for child-only keyed updates", () => {
 });
 ```
 
-- [ ] **Step 2: Run the focused renderer test to verify RED**
+- [x] **Step 2: Run the focused renderer test to verify RED**
 
 Run:
 
@@ -92,7 +92,7 @@ If the command errors because of a test typo, fix only the typo and rerun until 
 - Modify: `src/renderer/diff.ts`
 - Test: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Split element patching into props and children decisions**
+- [x] **Step 1: Split element patching into props and children decisions**
 
 In `src/renderer/diff.ts`, replace the current `patchElement()` and `shouldPatchElement()` block:
 
@@ -151,7 +151,7 @@ function patchElement(
 }
 ```
 
-- [ ] **Step 2: Replace `havePropsChanged()` with guarded early-return loops**
+- [x] **Step 2: Replace `havePropsChanged()` with guarded early-return loops**
 
 In `src/renderer/diff.ts`, replace the current `havePropsChanged()` implementation:
 
@@ -228,7 +228,7 @@ function hasOwnProp(props: VNodeProps, key: string): boolean {
 }
 ```
 
-- [ ] **Step 3: Run the focused renderer test to verify GREEN**
+- [x] **Step 3: Run the focused renderer test to verify GREEN**
 
 Run:
 
@@ -238,7 +238,7 @@ pnpm vitest run tests/unit/renderer/diff.test.ts
 
 Expected: exits with code 0. The renderer test count should increase by one.
 
-- [ ] **Step 4: Confirm existing non-key prop and event behavior still passes**
+- [x] **Step 4: Confirm existing non-key prop and event behavior still passes**
 
 Read the output from Step 3 and confirm the existing tests named:
 
@@ -257,7 +257,7 @@ are included in the passing file. If either fails, fix the implementation, not t
 - Add: `solace-project-log/solace-entries/2026-07-17-015-keyed-props-compare-fast-path.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update the renderer follow-up summary in `docs/performance.md`**
+- [x] **Step 1: Update the renderer follow-up summary in `docs/performance.md`**
 
 In the `Latest Local Benchmark Run` conclusion paragraph, replace this sentence fragment:
 
@@ -276,7 +276,7 @@ props scans for keyed child-only updates.
 
 Keep the rest of the paragraph unchanged.
 
-- [ ] **Step 2: Add the implementation log**
+- [x] **Step 2: Add the implementation log**
 
 Create `solace-project-log/solace-entries/2026-07-17-015-keyed-props-compare-fast-path.md`:
 
@@ -334,7 +334,7 @@ Create `solace-project-log/solace-entries/2026-07-17-015-keyed-props-compare-fas
 - 后续 renderer 性能优化继续以 benchmark 和 narrow TDD regression 为入口；不要在没有稳定性信号的情况下扩大 keyed diff 重写范围。
 ```
 
-- [ ] **Step 3: Add the project log index row**
+- [x] **Step 3: Add the project log index row**
 
 In `solace-project-log/index.md`, add row `015` under `2026-07-17`:
 
@@ -350,7 +350,7 @@ In `solace-project-log/index.md`, add row `015` under `2026-07-17`:
 
 - All changed files
 
-- [ ] **Step 1: Format touched files**
+- [x] **Step 1: Format touched files**
 
 Run:
 
@@ -360,7 +360,7 @@ pnpm exec prettier --write src/renderer/diff.ts tests/unit/renderer/diff.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run targeted renderer and benchmark validation**
+- [x] **Step 2: Run targeted renderer and benchmark validation**
 
 Run:
 
@@ -371,7 +371,7 @@ pnpm exec vitest run --config vitest.benchmark.config.ts tests/performance/list-
 
 Expected: both commands exit with code 0.
 
-- [ ] **Step 3: Run full default test suite**
+- [x] **Step 3: Run full default test suite**
 
 Run:
 
@@ -381,7 +381,7 @@ pnpm test
 
 Expected: exits with code 0. Test count should increase by one compared with the current baseline of 23 files / 174 tests.
 
-- [ ] **Step 4: Run static and build checks**
+- [x] **Step 4: Run static and build checks**
 
 Run:
 
@@ -395,7 +395,7 @@ git diff --check
 
 Expected: every command exits with code 0.
 
-- [ ] **Step 5: Skip package checks unless public package boundaries changed**
+- [x] **Step 5: Skip package checks unless public package boundaries changed**
 
 If `package.json`, `rollup.config.mjs`, `src/devtools/index.ts`, package exports tests, or public entry points changed, run:
 
@@ -408,11 +408,11 @@ Expected: both commands exit with code 0.
 
 If none of those files changed, skip this step and record that package checks were not required because public package boundaries were unchanged.
 
-- [ ] **Step 6: Update the project log validation table**
+- [x] **Step 6: Update the project log validation table**
 
 Replace each `待最终验证` in `solace-project-log/solace-entries/2026-07-17-015-keyed-props-compare-fast-path.md` with observed command results. Include the final `pnpm test` file/test counts.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 Run:
 

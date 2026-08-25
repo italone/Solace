@@ -21,7 +21,7 @@
 - Test: `tests/integration/devtools-payload-stability.test.ts:15-17` (allowed keys)
 - Test: `tests/unit/devtools/devtools-events.test.ts`
 
-- [ ] **Step 1: Update the payload stability allowlist (failing test)**
+- [x] **Step 1: Update the payload stability allowlist (failing test)**
 
 In `tests/integration/devtools-payload-stability.test.ts`, change lines 15-17 to include `parentId`:
 
@@ -43,12 +43,12 @@ expect(mountEvents.length).toBeGreaterThanOrEqual(1);
 expect(mountEvents[0]?.parentId).toBeNull();
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm vitest run tests/integration/devtools-payload-stability.test.ts`
 Expected: FAIL — serialized component events lack `parentId`.
 
-- [ ] **Step 3: Update the union and serializer**
+- [x] **Step 3: Update the union and serializer**
 
 In `src/devtools/events.ts`, replace lines 2-4 with:
 
@@ -72,7 +72,7 @@ In `serializeDevtoolsEvent` (lines 101-108), add `parentId` to the returned obje
       };
 ```
 
-- [ ] **Step 4: Pass `parentId` at the emit site**
+- [x] **Step 4: Pass `parentId` at the emit site**
 
 In `src/renderer/devtools-events.ts`, update `emitComponentDevtoolsEvent`:
 
@@ -85,12 +85,12 @@ emitDevtoolsEvent({
 });
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 Run: `pnpm vitest run tests/integration/devtools-payload-stability.test.ts tests/unit/devtools`
 Expected: PASS (existing unit tests referencing component event shapes may need `parentId` added to literals — add `parentId: null` or a real parent id where tests construct such events).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/devtools/events.ts src/renderer/devtools-events.ts tests/
@@ -108,7 +108,7 @@ git commit -m "feat: add parentId to component DevTools events"
 
 Note: the timeline trims events to `state.limit`, so the tree must be maintained as its own structure in `PanelState`, updated in `recordDevtoolsEvent` before trimming. Tree state also survives `clearTimeline`? No — Clear resets the whole capture window, tree included.
 
-- [ ] **Step 1: Write failing unit tests**
+- [x] **Step 1: Write failing unit tests**
 
 Append to `tests/unit/devtools-extension/state.test.ts`:
 
@@ -202,12 +202,12 @@ describe("component tree state", () => {
 
 Import `getComponentTreeNodes` (and existing helpers) from `../../../examples/devtools-extension/src/panel/state` following the file's existing import style.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm vitest run tests/unit/devtools-extension/state.test.ts`
 Expected: FAIL — `getComponentTreeNodes` is not exported.
 
-- [ ] **Step 3: Implement tree state in `state.ts`**
+- [x] **Step 3: Implement tree state in `state.ts`**
 
 Add types and state:
 
@@ -331,12 +331,12 @@ export function getComponentTreeNodes(state: PanelState): ComponentTreeNode[] {
 
 Extend `ComponentTreeNode` with `depth?: number` (set only by `getComponentTreeNodes`) — or return `Array<ComponentTreeNode & { depth: number }>`; prefer the latter intersection type as the return type of `getComponentTreeNodes`.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `pnpm vitest run tests/unit/devtools-extension`
 Expected: PASS (existing tests constructing `PanelState` may need `componentTree` added where they build state literally — prefer routing them through `createPanelState`/`recordDevtoolsEvent`).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add examples/devtools-extension/src/panel/state.ts tests/unit/devtools-extension/state.test.ts
@@ -354,7 +354,7 @@ git commit -m "feat: track component tree in DevTools panel state"
 - Modify: `examples/devtools-extension/src/panel/styles.css` (indentation + highlight styles)
 - Test: `tests/unit/devtools-extension/panel.test.ts`
 
-- [ ] **Step 1: Write failing panel test**
+- [x] **Step 1: Write failing panel test**
 
 Append to `tests/unit/devtools-extension/panel.test.ts`, following its existing render-into-container pattern:
 
@@ -380,12 +380,12 @@ it("renders the Components tab tree with update highlights", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm vitest run tests/unit/devtools-extension/panel.test.ts`
 Expected: FAIL — no "Components" tab.
 
-- [ ] **Step 3: Implement the tab and tree view**
+- [x] **Step 3: Implement the tab and tree view**
 
 In `state.ts`, extend `PanelView` to `"timeline" | "store" | "components"`. In `components.tsx`:
 
@@ -451,12 +451,12 @@ In `styles.css` add:
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `pnpm vitest run tests/unit/devtools-extension`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add examples/devtools-extension/src/panel tests/unit/devtools-extension/panel.test.ts
@@ -471,7 +471,7 @@ git commit -m "feat: add Components tree tab to DevTools panel"
 
 - Test: `tests/e2e/devtools-extension-component-tree.spec.ts`
 
-- [ ] **Step 1: Write the e2e test**
+- [x] **Step 1: Write the e2e test**
 
 Model on `tests/e2e/devtools-extension-store-timeline.spec.ts` (panel relayed via `window.postMessage` with `{ type: "devtools:event", event }` on `http://127.0.0.1:6177/panel.html`):
 
@@ -516,12 +516,12 @@ test("panel Components tab renders a relayed component tree with updates", async
 
 Note: this test is Chromium-only by existing project convention — if the other extension specs rely on a projects filter, match their configuration (check `playwright.devtools-extension.config.ts` before running).
 
-- [ ] **Step 2: Run the e2e to verify it passes**
+- [x] **Step 2: Run the e2e to verify it passes**
 
 Run: `pnpm test:e2e:devtools-extension`
 Expected: PASS including the new test (existing 4 + 1 new).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add tests/e2e/devtools-extension-component-tree.spec.ts
@@ -538,7 +538,7 @@ git commit -m "test: cover DevTools panel component tree e2e"
 - Modify: `docs/project-status.md`, `docs/project-status.zh-CN.md` (DevTools row / next-steps note)
 - Create: `solace-project-log/` entry following existing naming convention (check directory for the current date-prefix pattern)
 
-- [ ] **Step 1: Update `docs/devtools.md`**
+- [x] **Step 1: Update `docs/devtools.md`**
 
 In the `DevtoolsEvent` union code block, update the three component variants to include `parentId: number | null`. In the "Browser Extension Panel" section, add to the initial panel scope list:
 
@@ -549,15 +549,15 @@ In the `DevtoolsEvent` union code block, update the three component variants to 
   read component instances, props, state, or DOM.
 ```
 
-- [ ] **Step 2: Update project status docs**
+- [x] **Step 2: Update project status docs**
 
 In `docs/project-status.md` Completion Map "DevTools subpath" row and the 2026-08-20 baseline paragraph, note that the example panel now includes a Components tree tab built from `parentId`-extended component events, with the payload policy unchanged. Mirror the same note in `docs/project-status.zh-CN.md`. Keep all release/coverage claims unchanged (only the full gate run in Task 5 Step 4 can back new numbers).
 
-- [ ] **Step 3: Add project log entry**
+- [x] **Step 3: Add project log entry**
 
 Create `solace-project-log/2026-08-20-devtools-component-tree.md` (match an existing entry's structure): what changed (runtime payload field, panel tab, tests), what gates ran, what was not changed (no manifest/origin widening, no props/state, no new runtime exports).
 
-- [ ] **Step 4: Run quality gates**
+- [x] **Step 4: Run quality gates**
 
 Run: `pnpm quality`
 Expected: PASS (format, typecheck, jsxdev typecheck, lint, unit + integration tests).
@@ -565,7 +565,7 @@ Expected: PASS (format, typecheck, jsxdev typecheck, lint, unit + integration te
 Run: `pnpm test:e2e:devtools-extension`
 Expected: PASS 5/5.
 
-- [ ] **Step 5: Commit and push**
+- [x] **Step 5: Commit and push**
 
 ```bash
 git add docs/ solace-project-log/

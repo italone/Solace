@@ -30,7 +30,7 @@ The workspace is not currently a Git repository, so omit commit steps unless Git
 
 - Modify: `tests/unit/component/lifecycle.test.ts`
 
-- [ ] **Step 1: Add a single-handler summary test**
+- [x] **Step 1: Add a single-handler summary test**
 
 Add this test after `"emits component events to parent listeners"`:
 
@@ -68,7 +68,7 @@ it("emits devtools summaries for component emits", () => {
 });
 ```
 
-- [ ] **Step 2: Add an array-handler summary test**
+- [x] **Step 2: Add an array-handler summary test**
 
 Add this test after `"emits component events to listener arrays"`:
 
@@ -106,7 +106,7 @@ it("counts callable listener array entries in devtools emit summaries", () => {
 });
 ```
 
-- [ ] **Step 3: Add a missing-handler summary test**
+- [x] **Step 3: Add a missing-handler summary test**
 
 Add this test after the array-handler summary test:
 
@@ -139,7 +139,7 @@ it("emits devtools summaries for component emits without handlers", () => {
 });
 ```
 
-- [ ] **Step 4: Verify RED for component tests**
+- [x] **Step 4: Verify RED for component tests**
 
 Run:
 
@@ -157,7 +157,7 @@ Expected: fails with TypeScript or assertion errors because `component:emit` is 
 
 - Modify: `tests/integration/devtools-payload-stability.test.ts`
 
-- [ ] **Step 1: Add allowed keys for `component:emit`**
+- [x] **Step 1: Add allowed keys for `component:emit`**
 
 In `allowedKeysByType`, add this entry after `component:unmount`:
 
@@ -165,7 +165,7 @@ In `allowedKeysByType`, add this entry after `component:unmount`:
   "component:emit": ["event", "handlerCount", "id", "name", "type"],
 ```
 
-- [ ] **Step 2: Update the integrated component to emit an event**
+- [x] **Step 2: Update the integrated component to emit an event**
 
 Replace:
 
@@ -183,7 +183,7 @@ const Counter =
     h("button", { onClick: () => emit("change") }, `count: ${store.state.count}`);
 ```
 
-- [ ] **Step 3: Render the component with a handler and click it**
+- [x] **Step 3: Render the component with a handler and click it**
 
 Replace:
 
@@ -198,7 +198,7 @@ render(h(Counter, { onChange }), container);
 container.querySelector("button")?.click();
 ```
 
-- [ ] **Step 4: Update expected integrated event order**
+- [x] **Step 4: Update expected integrated event order**
 
 Replace the expected event type array with:
 
@@ -218,7 +218,7 @@ expect(events.map((event) => event.type)).toEqual([
 ]);
 ```
 
-- [ ] **Step 5: Verify RED for payload stability**
+- [x] **Step 5: Verify RED for payload stability**
 
 Run:
 
@@ -236,7 +236,7 @@ Expected: fails because `component:emit` is not yet emitted or serialized.
 
 - Modify: `src/devtools/events.ts`
 
-- [ ] **Step 1: Add the event union member**
+- [x] **Step 1: Add the event union member**
 
 Add this union member after `component:unmount`:
 
@@ -244,7 +244,7 @@ Add this union member after `component:unmount`:
   | { type: "component:emit"; id: number; name: string; event: string; handlerCount: number }
 ```
 
-- [ ] **Step 2: Add serializer handling**
+- [x] **Step 2: Add serializer handling**
 
 Add this `switch` branch after the component lifecycle branch:
 
@@ -259,7 +259,7 @@ Add this `switch` branch after the component lifecycle branch:
       };
 ```
 
-- [ ] **Step 3: Run TypeScript to expose remaining runtime work**
+- [x] **Step 3: Run TypeScript to expose remaining runtime work**
 
 Run:
 
@@ -277,7 +277,7 @@ Expected: exits with code 0; this step ensures the event type and serializer bra
 
 - Modify: `src/component/component.ts`
 
-- [ ] **Step 1: Import DevTools helpers**
+- [x] **Step 1: Import DevTools helpers**
 
 At the top of `src/component/component.ts`, add:
 
@@ -285,7 +285,7 @@ At the top of `src/component/component.ts`, add:
 import { emitDevtoolsEvent, hasDevtoolsListeners } from "../devtools/events";
 ```
 
-- [ ] **Step 2: Emit the summary after resolving the handler**
+- [x] **Step 2: Emit the summary after resolving the handler**
 
 In `emit(instance, event, ...args)`, after:
 
@@ -299,7 +299,7 @@ add:
 emitComponentEmitDevtoolsEvent(instance, event, handler);
 ```
 
-- [ ] **Step 3: Add helper functions before `resolveEmitHandler`**
+- [x] **Step 3: Add helper functions before `resolveEmitHandler`**
 
 Add these helpers after `emit()` and before `resolveEmitHandler()`:
 
@@ -335,7 +335,7 @@ function countEmitHandlers(handler: unknown): number {
 }
 ```
 
-- [ ] **Step 4: Verify component tests are GREEN**
+- [x] **Step 4: Verify component tests are GREEN**
 
 Run:
 
@@ -345,7 +345,7 @@ pnpm test -- tests/unit/component/lifecycle.test.ts
 
 Expected: exits with code 0 and includes the new component emit summary tests.
 
-- [ ] **Step 5: Verify payload stability is GREEN**
+- [x] **Step 5: Verify payload stability is GREEN**
 
 Run:
 
@@ -363,7 +363,7 @@ Expected: exits with code 0 and verifies `component:emit` exposes only allowed s
 
 - Modify: `docs/devtools.md`
 
-- [ ] **Step 1: Update candidate capability notes**
+- [x] **Step 1: Update candidate capability notes**
 
 In the Candidate Capabilities table, replace the Components note with:
 
@@ -371,7 +371,7 @@ In the Candidate Capabilities table, replace the Components note with:
 Component lifecycle and emit summaries are emitted by the internal event bus
 ```
 
-- [ ] **Step 2: Update the event union docs**
+- [x] **Step 2: Update the event union docs**
 
 In the documented `DevtoolsEvent` union, add this member after `component:unmount`:
 
@@ -379,7 +379,7 @@ In the documented `DevtoolsEvent` union, add this member after `component:unmoun
   | { type: "component:emit"; id: number; name: string; event: string; handlerCount: number }
 ```
 
-- [ ] **Step 3: Add emit privacy wording**
+- [x] **Step 3: Add emit privacy wording**
 
 After the documented event union code block, add:
 
@@ -389,7 +389,7 @@ They do not include emitted arguments, raw props, handler functions, component i
 content.
 ```
 
-- [ ] **Step 4: Update the roadmap**
+- [x] **Step 4: Update the roadmap**
 
 In the Phased Roadmap, insert this item after component lifecycle summaries:
 
@@ -399,7 +399,7 @@ In the Phased Roadmap, insert this item after component lifecycle summaries:
 
 Then renumber the remaining roadmap items.
 
-- [ ] **Step 5: Format DevTools docs**
+- [x] **Step 5: Format DevTools docs**
 
 Run:
 
@@ -418,7 +418,7 @@ Expected: exits with code 0.
 - Add: `solace-project-log/solace-entries/2026-07-15-003-component-emit-devtools.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Add project log entry after validation commands have run**
+- [x] **Step 1: Add project log entry after validation commands have run**
 
 Create `solace-project-log/solace-entries/2026-07-15-003-component-emit-devtools.md` with this structure, replacing validation rows with observed command results from Task 7:
 
@@ -478,7 +478,7 @@ DevTools 已有 component lifecycle、scheduler、store、reactivity、renderer 
 - 可继续评估 renderer diff count 或 scheduler stale job summary。
 ```
 
-- [ ] **Step 2: Add log index row**
+- [x] **Step 2: Add log index row**
 
 Under `## 2026-07-15` in `solace-project-log/index.md`, add this row after `002`:
 
@@ -486,7 +486,7 @@ Under `## 2026-07-15` in `solace-project-log/index.md`, add this row after `002`
 | 003 | 接入 component emit DevTools summary | component emit、DevTools payload、文档、项目日志 | `src/component/component.ts`, `src/devtools/events.ts`, `tests/unit/component/lifecycle.test.ts`, `tests/integration/devtools-payload-stability.test.ts`, `docs/devtools.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-15-003-component-emit-devtools.md) |
 ```
 
-- [ ] **Step 3: Format log files**
+- [x] **Step 3: Format log files**
 
 Run:
 
@@ -504,7 +504,7 @@ Expected: exits with code 0.
 
 - All touched files.
 
-- [ ] **Step 1: Run targeted tests**
+- [x] **Step 1: Run targeted tests**
 
 Run:
 
@@ -514,7 +514,7 @@ pnpm test -- tests/unit/component/lifecycle.test.ts tests/integration/devtools-p
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run default tests**
+- [x] **Step 2: Run default tests**
 
 Run:
 
@@ -524,7 +524,7 @@ pnpm test
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run TypeScript checks**
+- [x] **Step 3: Run TypeScript checks**
 
 Run:
 
@@ -535,7 +535,7 @@ pnpm typecheck:jsxdev
 
 Expected: both commands exit with code 0.
 
-- [ ] **Step 4: Run lint**
+- [x] **Step 4: Run lint**
 
 Run:
 
@@ -545,7 +545,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 5: Run build**
+- [x] **Step 5: Run build**
 
 Run:
 
@@ -555,7 +555,7 @@ pnpm build
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Run format check**
+- [x] **Step 6: Run format check**
 
 Run:
 

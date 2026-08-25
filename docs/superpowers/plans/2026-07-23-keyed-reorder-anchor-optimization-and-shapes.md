@@ -30,7 +30,7 @@
 
 - Modify: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Import the instrumentation helpers**
+- [x] **Step 1: Import the instrumentation helpers**
 
 Ensure the test file already imports:
 
@@ -43,7 +43,7 @@ import {
 } from "../../../src/renderer/keyed-reorder-instrumentation";
 ```
 
-- [ ] **Step 2: Update `afterEach` to reset counters**
+- [x] **Step 2: Update `afterEach` to reset counters**
 
 Confirm `afterEach` reads:
 
@@ -56,7 +56,7 @@ afterEach(() => {
 });
 ```
 
-- [ ] **Step 3: Add a RED test for reverse with zero anchor lookups**
+- [x] **Step 3: Add a RED test for reverse with zero anchor lookups**
 
 Add this test near the existing keyed reorder tests:
 
@@ -105,7 +105,7 @@ it("tracks keyed reverse reorder without anchor lookups", () => {
 });
 ```
 
-- [ ] **Step 4: Add RED tests for sorted, swap-neighbors, and shift-window**
+- [x] **Step 4: Add RED tests for sorted, swap-neighbors, and shift-window**
 
 Add these tests after the reverse test:
 
@@ -239,7 +239,7 @@ it("tracks window shift reorder with few moves and no anchor lookups", () => {
 });
 ```
 
-- [ ] **Step 5: Run renderer RED tests**
+- [x] **Step 5: Run renderer RED tests**
 
 Run:
 
@@ -250,7 +250,7 @@ pnpm vitest run tests/unit/renderer/diff.test.ts
 
 Expected: the new tests fail because `anchorLookups` is still greater than 0. Existing tests should still pass.
 
-- [ ] **Step 6: Keep RED changes uncommitted until Task 2 passes**
+- [x] **Step 6: Keep RED changes uncommitted until Task 2 passes**
 
 Run:
 
@@ -270,7 +270,7 @@ Expected: `tests/unit/renderer/diff.test.ts` is modified locally. Do not commit 
 - Modify: `src/renderer/diff.ts`
 - Test: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Add `anchorNode` initialization**
+- [x] **Step 1: Add `anchorNode` initialization**
 
 Inside `patchKeyedChildren()`, immediately after the LIS length recording block, add:
 
@@ -290,7 +290,7 @@ let stableIndex = stablePositions.length - 1;
 let anchorNode = getAnchor(newChildren, newEnd + 1);
 ```
 
-- [ ] **Step 2: Replace batched mount anchor lookup**
+- [x] **Step 2: Replace batched mount anchor lookup**
 
 Replace the batched new-children branch from:
 
@@ -336,7 +336,7 @@ if (runStart < index && canBatchMountChildren(newChildren, runStart, index)) {
 }
 ```
 
-- [ ] **Step 3: Replace single mount anchor lookup**
+- [x] **Step 3: Replace single mount anchor lookup**
 
 Replace the single new-child branch from:
 
@@ -367,7 +367,7 @@ anchorNode = newChildren[index].el ?? anchorNode;
 continue;
 ```
 
-- [ ] **Step 4: Replace stable skip and move anchor lookups**
+- [x] **Step 4: Replace stable skip and move anchor lookups**
 
 Replace the stable/move branch from:
 
@@ -416,7 +416,7 @@ insert(childEl, container, anchorNode);
 anchorNode = childEl;
 ```
 
-- [ ] **Step 5: Run renderer tests**
+- [x] **Step 5: Run renderer tests**
 
 Run:
 
@@ -427,7 +427,7 @@ pnpm vitest run tests/unit/renderer/diff.test.ts
 
 Expected: all 30+ tests pass, including the new zero-anchor-lookup tests.
 
-- [ ] **Step 6: Commit renderer optimization and tests**
+- [x] **Step 6: Commit renderer optimization and tests**
 
 Run:
 
@@ -448,7 +448,7 @@ Expected: one focused commit containing the anchor optimization and passing rend
 - Modify: `tests/e2e/browser-benchmark-history.ts`
 - Modify: `tests/unit/scripts/browser-benchmark-history.test.ts`
 
-- [ ] **Step 1: Add the `shape` field to history types**
+- [x] **Step 1: Add the `shape` field to history types**
 
 In `tests/e2e/browser-benchmark-history.ts`, update the keyed-reorder branch of `BrowserBenchmarkHistoryResult`:
 
@@ -467,7 +467,7 @@ In `tests/e2e/browser-benchmark-history.ts`, update the keyed-reorder branch of 
   };
 ```
 
-- [ ] **Step 2: Update the keyed-reorder fixture**
+- [x] **Step 2: Update the keyed-reorder fixture**
 
 In `tests/unit/scripts/browser-benchmark-history.test.ts`, add `shape: "reverse"` to `keyedReorderSummary` immediately after `scenario`:
 
@@ -490,7 +490,7 @@ expect(record.summary).toMatchObject({
 });
 ```
 
-- [ ] **Step 3: Run history unit tests**
+- [x] **Step 3: Run history unit tests**
 
 Run:
 
@@ -501,7 +501,7 @@ pnpm vitest run tests/unit/scripts/browser-benchmark-history.test.ts
 
 Expected: passes.
 
-- [ ] **Step 4: Commit history type updates**
+- [x] **Step 4: Commit history type updates**
 
 Run:
 
@@ -520,7 +520,7 @@ git commit -m "test: add keyed reorder shape to browser benchmark history"
 - Modify: `examples/performance-benchmark/src/main.tsx`
 - Modify: `tests/e2e/browser-benchmark.spec.ts`
 
-- [ ] **Step 1: Update scenario type and API shape**
+- [x] **Step 1: Update scenario type and API shape**
 
 In `examples/performance-benchmark/src/main.tsx`, replace:
 
@@ -537,7 +537,7 @@ type BrowserBenchmarkScenario =
   "large-list" | { scenario: "keyed-reorder"; shape: KeyedReorderShape };
 ```
 
-- [ ] **Step 2: Update the global API type**
+- [x] **Step 2: Update the global API type**
 
 Replace the global declaration with:
 
@@ -551,7 +551,7 @@ declare global {
 }
 ```
 
-- [ ] **Step 3: Implement seeded shuffle**
+- [x] **Step 3: Implement seeded shuffle**
 
 Add this helper near the top of the file after the `rows` declaration:
 
@@ -578,7 +578,7 @@ function shuffleArray<T>(source: T[], seed: number): T[] {
 }
 ```
 
-- [ ] **Step 4: Implement shape transforms**
+- [x] **Step 4: Implement shape transforms**
 
 Add this helper below `shuffleArray`:
 
@@ -605,7 +605,7 @@ function applyKeyedReorderShape(rowOrder: number[], shape: KeyedReorderShape): n
 }
 ```
 
-- [ ] **Step 5: Update `runScenario` dispatcher**
+- [x] **Step 5: Update `runScenario` dispatcher**
 
 Replace the dispatcher body with:
 
@@ -623,7 +623,7 @@ async function runScenario(scenario: BrowserBenchmarkScenario): Promise<BrowserB
 }
 ```
 
-- [ ] **Step 6: Update `runKeyedReorderBenchmark` signature and result**
+- [x] **Step 6: Update `runKeyedReorderBenchmark` signature and result**
 
 Change the function signature to:
 
@@ -654,7 +654,7 @@ const result: BrowserBenchmarkResult = {
 };
 ```
 
-- [ ] **Step 7: Update the Playwright spec to iterate shapes**
+- [x] **Step 7: Update the Playwright spec to iterate shapes**
 
 In `tests/e2e/browser-benchmark.spec.ts`, replace:
 
@@ -716,7 +716,7 @@ for (const scenario of browserBenchmarkScenarios) {
 }
 ```
 
-- [ ] **Step 8: Update `expectBrowserBenchmarkResult` to handle shapes**
+- [x] **Step 8: Update `expectBrowserBenchmarkResult` to handle shapes**
 
 Change the function signature to:
 
@@ -799,7 +799,7 @@ function expectBrowserBenchmarkSummary(
 ): void {
 ```
 
-- [ ] **Step 9: Run focused checks**
+- [x] **Step 9: Run focused checks**
 
 Run:
 
@@ -819,7 +819,7 @@ pnpm benchmark:browser
 
 Expected: passes and logs one `large-list` summary and five `keyed-reorder` summaries (one per shape).
 
-- [ ] **Step 10: Commit browser shape fixture**
+- [x] **Step 10: Commit browser shape fixture**
 
 Run:
 
@@ -839,7 +839,7 @@ git commit -m "perf: add keyed reorder shape matrix to browser benchmark"
 - Create: `solace-project-log/solace-entries/2026-07-23-keyed-reorder-anchor-optimization-and-shapes.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update `docs/performance.md`**
+- [x] **Step 1: Update `docs/performance.md`**
 
 Update the measured scenarios table to:
 
@@ -865,7 +865,7 @@ Each shape logs its own browser benchmark summary record, allowing comparison of
 across stable, pathological, and realistic reorder distributions.
 ```
 
-- [ ] **Step 2: Create implementation log entry**
+- [x] **Step 2: Create implementation log entry**
 
 Create `solace-project-log/solace-entries/2026-07-23-keyed-reorder-anchor-optimization-and-shapes.md` with a structure matching previous entries. Include:
 
@@ -876,7 +876,7 @@ Create `solace-project-log/solace-entries/2026-07-23-keyed-reorder-anchor-optimi
 - Verification table with commands and results (fill after running).
 - Follow-up: refresh browser trend window.
 
-- [ ] **Step 3: Update log index**
+- [x] **Step 3: Update log index**
 
 In `solace-project-log/index.md`, add a row for 2026-07-23 entry 001:
 
@@ -884,7 +884,7 @@ In `solace-project-log/index.md`, add a row for 2026-07-23 entry 001:
 | 001 | 优化 keyed reorder anchor lookup 并扩展 shape matrix | renderer performance、browser benchmark、项目日志 | `src/renderer/diff.ts`, `tests/unit/renderer/diff.test.ts`, `examples/performance-benchmark/src/main.tsx`, `tests/e2e/browser-benchmark.spec.ts`, `tests/e2e/browser-benchmark-history.ts`, `tests/unit/scripts/browser-benchmark-history.test.ts`, `docs/performance.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-23-keyed-reorder-anchor-optimization-and-shapes.md) |
 ```
 
-- [ ] **Step 4: Format and run validation**
+- [x] **Step 4: Format and run validation**
 
 Run:
 
@@ -903,7 +903,7 @@ git diff --check
 
 Expected: all pass.
 
-- [ ] **Step 5: Commit documentation and log**
+- [x] **Step 5: Commit documentation and log**
 
 Run:
 
@@ -923,7 +923,7 @@ git commit -m "docs: record keyed reorder anchor optimization and shape matrix"
 - Create: `solace-project-log/solace-entries/2026-07-23-keyed-reorder-anchor-shape-trend-refresh.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Run a five-sample browser benchmark refresh**
+- [x] **Step 1: Run a five-sample browser benchmark refresh**
 
 Run:
 
@@ -934,7 +934,7 @@ SOLACE_BROWSER_BENCHMARK_HISTORY_PATH=.benchmark-history/browser.jsonl SOLACE_BR
 
 Expected: passes and appends five samples per shape to local ignored history.
 
-- [ ] **Step 2: Summarize the latest window**
+- [x] **Step 2: Summarize the latest window**
 
 Run:
 
@@ -945,7 +945,7 @@ pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
 
 Expected: passes and reports groups for `large-list`, `keyed-reorder:reverse`, `keyed-reorder:sorted`, `keyed-reorder:swap-neighbors`, `keyed-reorder:shuffle`, and `keyed-reorder:shift-window`.
 
-- [ ] **Step 3: Update `docs/performance.md` latest window**
+- [x] **Step 3: Update `docs/performance.md` latest window**
 
 Replace the previous latest-window section with the observed fresh values. Add a short note:
 
@@ -955,11 +955,11 @@ The `reverse` shape still performs 9,999 DOM `insertBefore` operations, confirmi
 removed renderer-internal anchor lookups without changing DOM behavior.
 ```
 
-- [ ] **Step 4: Create trend refresh log entry**
+- [x] **Step 4: Create trend refresh log entry**
 
 Create `solace-project-log/solace-entries/2026-07-23-keyed-reorder-anchor-shape-trend-refresh.md` matching the structure of previous trend-refresh entries.
 
-- [ ] **Step 5: Update log index**
+- [x] **Step 5: Update log index**
 
 Add a row for 2026-07-23 entry 002:
 
@@ -967,7 +967,7 @@ Add a row for 2026-07-23 entry 002:
 | 002 | 刷新 keyed reorder anchor optimization 与 shape matrix 趋势 | browser benchmark、本地 history、性能文档、项目日志 | `docs/performance.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-23-keyed-reorder-anchor-shape-trend-refresh.md) |
 ```
 
-- [ ] **Step 6: Format and validate**
+- [x] **Step 6: Format and validate**
 
 Run:
 
@@ -980,7 +980,7 @@ git diff --check
 
 Expected: all pass.
 
-- [ ] **Step 7: Commit trend refresh**
+- [x] **Step 7: Commit trend refresh**
 
 Run:
 

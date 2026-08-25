@@ -38,7 +38,7 @@
 - Modify: `src/index.ts`
 - Test: `tests/unit/router/public-contract-types.test.ts`
 
-- [ ] **Step 1: Write failing public contract type tests**
+- [x] **Step 1: Write failing public contract type tests**
 
 Update `tests/unit/router/public-contract-types.test.ts` so `children`, `redirect`, `beforeEnter`, `meta`, `lazyRoute()` components, and async `router.push()` are valid, while `name`, `alias`, `props`, `scrollBehavior`, named locations, hash locations, and params locations remain invalid.
 
@@ -139,7 +139,7 @@ describe("router public contract types", () => {
 });
 ```
 
-- [ ] **Step 2: Run type-focused test and verify it fails**
+- [x] **Step 2: Run type-focused test and verify it fails**
 
 Run:
 
@@ -149,7 +149,7 @@ pnpm vitest run tests/unit/router/public-contract-types.test.ts
 
 Expected: FAIL at TypeScript transform/type assertions because `NavigationGuard`, `RouteComponent`, `lazyRoute`, `children`, `redirect`, `beforeEnter`, `meta`, and async `router.push()` are not in the current public contract.
 
-- [ ] **Step 3: Implement public router types**
+- [x] **Step 3: Implement public router types**
 
 Replace `src/router/types.ts` with this shape, preserving existing imports:
 
@@ -277,7 +277,7 @@ export type {
 } from "./router";
 ```
 
-- [ ] **Step 4: Run type-focused test and verify it passes**
+- [x] **Step 4: Run type-focused test and verify it passes**
 
 Run:
 
@@ -287,7 +287,7 @@ pnpm vitest run tests/unit/router/public-contract-types.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/router/types.ts src/router/lazy.ts src/router/index.ts src/index.ts tests/unit/router/public-contract-types.test.ts
@@ -303,7 +303,7 @@ git commit -m "feat(router): widen beta route types"
 - Test: `tests/unit/router/matcher.test.ts`
 - Test: `tests/unit/router/router.test.ts`
 
-- [ ] **Step 1: Write failing matcher tests**
+- [x] **Step 1: Write failing matcher tests**
 
 Append these tests to `tests/unit/router/matcher.test.ts`:
 
@@ -376,7 +376,7 @@ it("merges parent and child params with child params taking precedence", () => {
 
 Update existing matcher expectations that read `matched?.path` to read `matched.at(-1)?.path`, and update no-match expectations to expect `matched` as an array.
 
-- [ ] **Step 2: Write failing router normalization tests**
+- [x] **Step 2: Write failing router normalization tests**
 
 In `tests/unit/router/router.test.ts`, update the deferred route field test so `children`, `redirect`, `beforeEnter`, and `meta` are no longer in the rejected list. Keep `name` rejected.
 
@@ -417,7 +417,7 @@ it("keeps still-deferred route record fields rejected", () => {
 });
 ```
 
-- [ ] **Step 3: Run router tests and verify they fail**
+- [x] **Step 3: Run router tests and verify they fail**
 
 Run:
 
@@ -427,7 +427,7 @@ pnpm vitest run tests/unit/router/matcher.test.ts tests/unit/router/router.test.
 
 Expected: FAIL because matcher still returns a single `matched` record and runtime validation still rejects newly designed route fields.
 
-- [ ] **Step 4: Implement internal matcher records**
+- [x] **Step 4: Implement internal matcher records**
 
 Refactor `src/router/matcher.ts` around internal records:
 
@@ -519,7 +519,7 @@ function joinRoutePaths(parentPath: string, childPath: string): string {
 
 Change `compileRoute(record: RouteRecord)` to `compileRoute(record: NormalizedRouteRecord)` and compile `record.fullPath` while preserving `record.chain`.
 
-- [ ] **Step 5: Update route record validation**
+- [x] **Step 5: Update route record validation**
 
 In `src/router/router.ts`, change the allowed route record fields:
 
@@ -564,7 +564,7 @@ function assertRouteRecordContract(route: RouteRecord): void {
 
 Call `assertRouteRecordContract(route)` for every root route.
 
-- [ ] **Step 6: Update single-record route expectations**
+- [x] **Step 6: Update single-record route expectations**
 
 Update all router tests that use `route.matched?.component` or `route.matched?.path`:
 
@@ -579,7 +579,7 @@ For no match:
 expect(router.currentRoute.value.matched).toEqual([]);
 ```
 
-- [ ] **Step 7: Run router tests and verify they pass**
+- [x] **Step 7: Run router tests and verify they pass**
 
 Run:
 
@@ -589,7 +589,7 @@ pnpm vitest run tests/unit/router/matcher.test.ts tests/unit/router/router.test.
 
 Expected: PASS.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add src/router/matcher.ts src/router/router.ts tests/unit/router/matcher.test.ts tests/unit/router/router.test.ts
@@ -604,7 +604,7 @@ git commit -m "feat(router): match nested route chains"
 - Modify: `src/router/router.ts`
 - Test: `tests/integration/router-component.test.ts`
 
-- [ ] **Step 1: Write failing nested RouterView integration tests**
+- [x] **Step 1: Write failing nested RouterView integration tests**
 
 Append these tests to `tests/integration/router-component.test.ts`:
 
@@ -679,7 +679,7 @@ it("does not consume RouterView depth for layout-less grouping records", async (
 });
 ```
 
-- [ ] **Step 2: Run integration test and verify it fails**
+- [x] **Step 2: Run integration test and verify it fails**
 
 Run:
 
@@ -689,7 +689,7 @@ pnpm vitest run tests/integration/router-component.test.ts
 
 Expected: FAIL because `RouterView` still renders only a single matched component and has no depth context.
 
-- [ ] **Step 3: Add RouterView depth context**
+- [x] **Step 3: Add RouterView depth context**
 
 In `src/router/router.ts`, export a depth key:
 
@@ -729,7 +729,7 @@ export function RouterView(): ComponentRender {
 
 This implementation is intentionally eager-only; lazy support is added in Task 6.
 
-- [ ] **Step 4: Run integration test and verify it passes**
+- [x] **Step 4: Run integration test and verify it passes**
 
 Run:
 
@@ -739,7 +739,7 @@ pnpm vitest run tests/integration/router-component.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/router/components.ts src/router/router.ts tests/integration/router-component.test.ts
@@ -754,7 +754,7 @@ git commit -m "feat(router): render nested router views"
 - Test: `tests/unit/router/router.test.ts`
 - Test: `tests/integration/router-component.test.ts`
 
-- [ ] **Step 1: Write failing redirect and async navigation tests**
+- [x] **Step 1: Write failing redirect and async navigation tests**
 
 Append to `tests/unit/router/router.test.ts`:
 
@@ -832,7 +832,7 @@ it("rejects redirect loops before mutating history", async () => {
 
 Update existing tests that call `router.push()` or `router.replace()` to `await` those calls.
 
-- [ ] **Step 2: Run router tests and verify they fail**
+- [x] **Step 2: Run router tests and verify they fail**
 
 Run:
 
@@ -842,7 +842,7 @@ pnpm vitest run tests/unit/router/router.test.ts tests/integration/router-compon
 
 Expected: FAIL because navigation is still synchronous and redirects are not applied.
 
-- [ ] **Step 3: Add navigation error class**
+- [x] **Step 3: Add navigation error class**
 
 In `src/router/router.ts`, before `createRouter()`:
 
@@ -866,7 +866,7 @@ Export it from `src/router/index.ts`:
 export { createRouter, RouterNavigationError, useRoute, useRouter } from "./router";
 ```
 
-- [ ] **Step 4: Implement shared async navigation**
+- [x] **Step 4: Implement shared async navigation**
 
 In `src/router/router.ts`, add `const redirectLimit = 16;` inside `createRouter()`, then replace `push()` and `replace()` with async methods:
 
@@ -924,7 +924,7 @@ function resolveRedirects(
 }
 ```
 
-- [ ] **Step 5: Run redirect tests and verify they pass**
+- [x] **Step 5: Run redirect tests and verify they pass**
 
 Run:
 
@@ -934,7 +934,7 @@ pnpm vitest run tests/unit/router/router.test.ts tests/integration/router-compon
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/router/router.ts src/router/index.ts tests/unit/router/router.test.ts tests/integration/router-component.test.ts
@@ -948,7 +948,7 @@ git commit -m "feat(router): add redirect navigation pipeline"
 - Modify: `src/router/router.ts`
 - Test: `tests/unit/router/router.test.ts`
 
-- [ ] **Step 1: Write failing guard tests**
+- [x] **Step 1: Write failing guard tests**
 
 Append to `tests/unit/router/router.test.ts`:
 
@@ -1082,7 +1082,7 @@ it("rejects guard errors without mutating history or current route", async () =>
 });
 ```
 
-- [ ] **Step 2: Run guard tests and verify they fail**
+- [x] **Step 2: Run guard tests and verify they fail**
 
 Run:
 
@@ -1092,7 +1092,7 @@ pnpm vitest run tests/unit/router/router.test.ts
 
 Expected: FAIL because `beforeEach()` and guard execution are not implemented.
 
-- [ ] **Step 3: Implement guard registration and execution**
+- [x] **Step 3: Implement guard registration and execution**
 
 In `src/router/router.ts`, inside `createRouter()`:
 
@@ -1168,7 +1168,7 @@ function normalizeGuards(guards: RouteRecord["beforeEnter"]): NavigationGuard[] 
 }
 ```
 
-- [ ] **Step 4: Run guard tests and verify they pass**
+- [x] **Step 4: Run guard tests and verify they pass**
 
 Run:
 
@@ -1178,7 +1178,7 @@ pnpm vitest run tests/unit/router/router.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/router/router.ts tests/unit/router/router.test.ts
@@ -1193,7 +1193,7 @@ git commit -m "feat(router): add navigation guards"
 - Modify: `src/router/components.ts`
 - Test: `tests/integration/router-component.test.ts`
 
-- [ ] **Step 1: Write failing lazy component tests**
+- [x] **Step 1: Write failing lazy component tests**
 
 Append to `tests/integration/router-component.test.ts`:
 
@@ -1241,7 +1241,7 @@ it("renders lazy default exports after they resolve", async () => {
 });
 ```
 
-- [ ] **Step 2: Run lazy component tests and verify they fail**
+- [x] **Step 2: Run lazy component tests and verify they fail**
 
 Run:
 
@@ -1251,7 +1251,7 @@ pnpm vitest run tests/integration/router-component.test.ts
 
 Expected: FAIL because `RouterView` does not resolve explicit lazy route component wrappers yet.
 
-- [ ] **Step 3: Add lazy route component cache fields**
+- [x] **Step 3: Add lazy route component cache fields**
 
 In `src/router/components.ts`, add:
 
@@ -1296,7 +1296,7 @@ function isLazyRouteComponent(component: RouteComponent): component is LazyRoute
 }
 ```
 
-- [ ] **Step 4: Update RouterView lazy rendering**
+- [x] **Step 4: Update RouterView lazy rendering**
 
 In `RouterView`, call `resolveRouteComponent(record)` instead of reading `record.component` directly:
 
@@ -1307,7 +1307,7 @@ return component === null ? h(Fragment, null, []) : h(component);
 
 Import `LazyRouteComponent`, `RouteComponent`, and `RouteRecord` from `src/router/types.ts`.
 
-- [ ] **Step 5: Run lazy tests and verify they pass**
+- [x] **Step 5: Run lazy tests and verify they pass**
 
 Run:
 
@@ -1317,7 +1317,7 @@ pnpm vitest run tests/integration/router-component.test.ts tests/unit/router/pub
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/router/types.ts src/router/lazy.ts src/router/components.ts src/router/index.ts src/index.ts tests/integration/router-component.test.ts tests/unit/router/public-contract-types.test.ts
@@ -1333,7 +1333,7 @@ git commit -m "feat(router): add lazy route components"
 - Modify: `examples/router-basic/src/main.tsx`
 - Modify: `tests/e2e/router-basic.spec.ts`
 
-- [ ] **Step 1: Update package export tests**
+- [x] **Step 1: Update package export tests**
 
 In `tests/integration/package-exports.test.ts`, update the root API expectation to include `lazyRoute` and remove negative checks for `NavigationGuard`/`RouteMeta` if they are type-only. Keep `createMemoryHistory` and `createSSRRouter` negative checks.
 
@@ -1348,7 +1348,7 @@ expect(api).not.toHaveProperty("createSSRRouter");
 
 Update router boundary test so `children`, `redirect`, `beforeEnter`, and `meta` are accepted, while `name`, `alias`, `props`, and `scrollBehavior` still throw.
 
-- [ ] **Step 2: Update packed consumer smoke**
+- [x] **Step 2: Update packed consumer smoke**
 
 In `scripts/package-consumer-smoke.mjs`, update the generated `src/main.tsx` import:
 
@@ -1414,7 +1414,7 @@ acceptRouteRecord({ path: "/legacy", redirect: "/dashboard/settings" });
 
 Keep existing `@ts-expect-error` checks for still-deferred fields.
 
-- [ ] **Step 3: Expand router example**
+- [x] **Step 3: Expand router example**
 
 Update `examples/router-basic/src/main.tsx` with visible routes:
 
@@ -1457,7 +1457,7 @@ const router = createRouter({
 
 Add a small login button in the example that sets `authenticated = true` and calls `router.push("/dashboard")`.
 
-- [ ] **Step 4: Update router e2e**
+- [x] **Step 4: Update router e2e**
 
 In `tests/e2e/router-basic.spec.ts`, add assertions:
 
@@ -1478,7 +1478,7 @@ await page.goto("/#/dashboard/report");
 await expect(page.locator("#lazy-report")).toContainText("Lazy report");
 ```
 
-- [ ] **Step 5: Run package and e2e checks**
+- [x] **Step 5: Run package and e2e checks**
 
 Run:
 
@@ -1490,7 +1490,7 @@ pnpm test:e2e
 
 Expected: all PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add tests/integration/package-exports.test.ts scripts/package-consumer-smoke.mjs examples/router-basic/src/main.tsx tests/e2e/router-basic.spec.ts
@@ -1510,7 +1510,7 @@ git commit -m "test(router): cover expanded beta package surface"
 - Modify: `readme.md`
 - Modify: `readme.zh-CN.md`
 
-- [ ] **Step 1: Update English API docs**
+- [x] **Step 1: Update English API docs**
 
 In `docs/api.md`, update the Router section to state:
 
@@ -1541,21 +1541,21 @@ Named routes, aliases, route props, scroll behavior, memory history, auth/permis
 and SSR/SSG/hydration router integration remain deferred.
 ```
 
-- [ ] **Step 2: Update Chinese API docs**
+- [x] **Step 2: Update Chinese API docs**
 
 Mirror the same content in `docs/api.zh-CN.md`, using the same public API names and the same deferred list.
 
-- [ ] **Step 3: Update README and package usage**
+- [x] **Step 3: Update README and package usage**
 
 Update `readme.md`, `readme.zh-CN.md`, and `docs/package-usage.md` so the router examples mention nested routes, redirects, guards, and `lazyRoute()`.
 
-- [ ] **Step 4: Update status and roadmap**
+- [x] **Step 4: Update status and roadmap**
 
 In `docs/roadmap.md`, move nested routes, redirects, guards, and lazy route components out of the router deferred list and keep scroll behavior, memory history, SSR integration, auth, and permissions deferred.
 
 In `docs/project-status.md`, update Router evidence to include the next beta slice and update Known Gaps accordingly.
 
-- [ ] **Step 5: Format docs**
+- [x] **Step 5: Format docs**
 
 Run:
 
@@ -1565,7 +1565,7 @@ pnpm exec prettier --write docs/api.md docs/api.zh-CN.md docs/package-usage.md d
 
 Expected: Prettier completes successfully.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add docs/api.md docs/api.zh-CN.md docs/package-usage.md docs/examples.md docs/roadmap.md docs/project-status.md readme.md readme.zh-CN.md
@@ -1578,7 +1578,7 @@ git commit -m "docs(router): document expanded beta surface"
 
 - Verify repository state only.
 
-- [ ] **Step 1: Run router-focused tests**
+- [x] **Step 1: Run router-focused tests**
 
 Run:
 
@@ -1588,7 +1588,7 @@ pnpm vitest run tests/unit/router tests/integration/router-component.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 2: Run package boundary checks**
+- [x] **Step 2: Run package boundary checks**
 
 Run:
 
@@ -1598,7 +1598,7 @@ pnpm package:smoke
 
 Expected: PASS, including packed consumer TypeScript checks and Vite production build.
 
-- [ ] **Step 3: Run quality gate**
+- [x] **Step 3: Run quality gate**
 
 Run:
 
@@ -1608,7 +1608,7 @@ pnpm quality
 
 Expected: PASS.
 
-- [ ] **Step 4: Run browser e2e**
+- [x] **Step 4: Run browser e2e**
 
 Run:
 
@@ -1618,7 +1618,7 @@ pnpm test:e2e
 
 Expected: PASS.
 
-- [ ] **Step 5: Run release readiness**
+- [x] **Step 5: Run release readiness**
 
 Run:
 
@@ -1628,7 +1628,7 @@ pnpm release:readiness -- --publishable
 
 Expected: PASS if the branch is synchronized and clean. If it fails because the branch is ahead after local commits, push first, fetch, and rerun.
 
-- [ ] **Step 6: Push main**
+- [x] **Step 6: Push main**
 
 Run:
 

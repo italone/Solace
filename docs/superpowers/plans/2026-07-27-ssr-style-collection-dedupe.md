@@ -35,7 +35,7 @@
 - Modify: `tests/integration/package-exports.test.ts`
 - Modify: `scripts/package-consumer-smoke.mjs`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```ts
 import { describe, expect, it, beforeEach } from "vitest";
@@ -200,7 +200,7 @@ if (
 }
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `pnpm vitest run tests/unit/style/runtime-style.test.ts tests/integration/package-exports.test.ts`
 
@@ -208,7 +208,7 @@ Run: `pnpm package:smoke`
 
 Expected: fail because `useStyle` is not exported and style collection/dedupe is not implemented yet.
 
-- [ ] **Step 3: Commit the red checkpoint**
+- [x] **Step 3: Commit the red checkpoint**
 
 ```bash
 git add tests/unit/style/runtime-style.test.ts tests/integration/package-exports.test.ts scripts/package-consumer-smoke.mjs
@@ -225,7 +225,7 @@ git commit -m "test: cover runtime style collection contract"
 - Modify: `src/renderer/renderer.ts`
 - Modify: `src/index.ts`
 
-- [ ] **Step 1: Write the minimal implementation**
+- [x] **Step 1: Write the minimal implementation**
 
 ```ts
 // src/shared/html.ts
@@ -492,7 +492,7 @@ function normalizeHydrationSource(source: HydrationSource): VNode {
 export { useStyle } from "./component/style";
 ```
 
-- [ ] **Step 2: Run the focused style/runtime tests**
+- [x] **Step 2: Run the focused style/runtime tests**
 
 Run: `pnpm vitest run tests/unit/style/runtime-style.test.ts tests/unit/server/render-to-string.test.ts tests/unit/renderer/hydration.test.ts tests/unit/app/create-app.test.ts`
 
@@ -500,7 +500,7 @@ Run: `pnpm package:smoke`
 
 Expected: pass with server-side style collection and client dedupe working through the shared sink.
 
-- [ ] **Step 3: Commit the implementation**
+- [x] **Step 3: Commit the implementation**
 
 ```bash
 git add src/shared/html.ts src/component/style.ts src/server/render-to-string.ts src/renderer/renderer.ts src/index.ts
@@ -515,7 +515,7 @@ git commit -m "feat: add shared style runtime sink"
 - Modify: `tests/unit/compiler/compile.test.ts`
 - Modify: `tests/integration/sfc-compiler.test.ts`
 
-- [ ] **Step 1: Write the failing compiler tests**
+- [x] **Step 1: Write the failing compiler tests**
 
 ```ts
 expect(result.code).toContain("_Solace.useStyle(");
@@ -551,13 +551,13 @@ describe("SFC compiler integration", () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `pnpm vitest run tests/unit/compiler/compile.test.ts tests/integration/sfc-compiler.test.ts`
 
 Expected: fail because compiler output still uses direct DOM style insertion.
 
-- [ ] **Step 3: Update the compiler output**
+- [x] **Step 3: Update the compiler output**
 
 ```ts
 let styleInjection = "";
@@ -571,13 +571,13 @@ if (descriptor.style && scopeId !== undefined) {
 
 The compiler should still scope the CSS at compile time, but the generated JavaScript must call the shared runtime helper instead of creating a `<style>` element directly.
 
-- [ ] **Step 4: Run the focused compiler tests**
+- [x] **Step 4: Run the focused compiler tests**
 
 Run: `pnpm vitest run tests/unit/compiler/compile.test.ts tests/integration/sfc-compiler.test.ts`
 
 Expected: pass with generated SFC code using `useStyle()` and the browser mount path injecting exactly one scoped style tag.
 
-- [ ] **Step 5: Commit the compiler change**
+- [x] **Step 5: Commit the compiler change**
 
 ```bash
 git add src/compiler/index.ts tests/unit/compiler/compile.test.ts tests/integration/sfc-compiler.test.ts
@@ -597,7 +597,7 @@ git commit -m "feat: route sfc styles through runtime helper"
 - Modify: `readme.md`
 - Modify: `readme.zh-CN.md`
 
-- [ ] **Step 1: Update the public docs**
+- [x] **Step 1: Update the public docs**
 
 ```md
 import { createApp, h, useStyle } from "@italone/solace";
@@ -635,13 +635,13 @@ result.styles; // ['<style data-s-id="counter">.counter { color: blue; }</style>
   recovery.
 ```
 
-- [ ] **Step 2: Run a formatting pass on the docs**
+- [x] **Step 2: Run a formatting pass on the docs**
 
 Run: `pnpm exec prettier --write docs/api.md docs/api.zh-CN.md docs/package-usage.md docs/project-status.md docs/project-status.zh-CN.md docs/roadmap.md readme.md readme.zh-CN.md`
 
 Expected: docs remain semantically aligned, with only markdown formatting normalization if needed.
 
-- [ ] **Step 3: Run the repo gates**
+- [x] **Step 3: Run the repo gates**
 
 Run: `pnpm release:readiness`
 
@@ -655,7 +655,7 @@ Run: `pnpm release:check`
 
 Expected: all gates pass with the new shared style runtime, SFC compiler output, and docs in place.
 
-- [ ] **Step 4: Commit the docs and gate results**
+- [x] **Step 4: Commit the docs and gate results**
 
 ```bash
 git add docs/api.md docs/api.zh-CN.md docs/package-usage.md docs/project-status.md docs/project-status.zh-CN.md docs/roadmap.md readme.md readme.zh-CN.md

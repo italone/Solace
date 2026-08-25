@@ -33,7 +33,7 @@ No changes should be made to keyed LIS movement, anchor selection, DOM insertion
 
 - Modify: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Add stable keyed reorder skip test**
+- [x] **Step 1: Add stable keyed reorder skip test**
 
 Add this test near the existing keyed reorder tests:
 
@@ -76,7 +76,7 @@ it("skips no-op element patching for stable keyed reorders", () => {
 });
 ```
 
-- [ ] **Step 2: Add changed text safety test**
+- [x] **Step 2: Add changed text safety test**
 
 Add:
 
@@ -110,7 +110,7 @@ it("still patches changed text in matched keyed reorders", () => {
 });
 ```
 
-- [ ] **Step 3: Add changed props and event safety tests**
+- [x] **Step 3: Add changed props and event safety tests**
 
 Add:
 
@@ -164,7 +164,7 @@ it("still replaces event props in matched keyed reorders", () => {
 });
 ```
 
-- [ ] **Step 4: Add array children safety test**
+- [x] **Step 4: Add array children safety test**
 
 Add:
 
@@ -195,7 +195,7 @@ it("still diffs nested array children in matched keyed reorders", () => {
 });
 ```
 
-- [ ] **Step 5: Verify RED**
+- [x] **Step 5: Verify RED**
 
 Run:
 
@@ -216,7 +216,7 @@ implemented.
 - Modify: `src/renderer/diff.ts`
 - Modify: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Add the early return in `patch()`**
+- [x] **Step 1: Add the early return in `patch()`**
 
 Inside the element branch in `patch()`, before `patchElement(n1, n2, ...)`, add:
 
@@ -229,7 +229,7 @@ if (isNoopElementPatch(n1, n2)) {
 
 The surrounding branch should keep the existing mount behavior for `n1 === null`.
 
-- [ ] **Step 2: Add the no-op predicate helpers**
+- [x] **Step 2: Add the no-op predicate helpers**
 
 Add these helpers near `patchElement()` and the existing props/children comparison helpers:
 
@@ -250,7 +250,7 @@ function isNoopElementPatch(n1: VNode, n2: VNode): boolean {
 This intentionally reuses `havePropsChanged()` and `haveElementChildrenChanged()` so changed text, changed props, event
 props, and nested array children keep the existing behavior. Do not alter keyed LIS logic or move code.
 
-- [ ] **Step 3: Verify GREEN**
+- [x] **Step 3: Verify GREEN**
 
 Run:
 
@@ -260,7 +260,7 @@ pnpm vitest run tests/unit/renderer/diff.test.ts
 
 Expected: all renderer diff tests pass, including the new stable skip and safety tests.
 
-- [ ] **Step 4: Commit implementation**
+- [x] **Step 4: Commit implementation**
 
 Run:
 
@@ -279,7 +279,7 @@ git commit -m "perf: skip no-op keyed element patches"
 - Add: `solace-project-log/solace-entries/2026-07-21-004-keyed-reorder-matched-patch-skip.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Run focused benchmark validation**
+- [x] **Step 1: Run focused benchmark validation**
 
 Run:
 
@@ -291,7 +291,7 @@ pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
 
 Expected: benchmark commands exit with code 0. Treat timings as trend context only; do not add thresholds.
 
-- [ ] **Step 2: Update performance docs**
+- [x] **Step 2: Update performance docs**
 
 In `docs/performance.md`, update the renderer conclusion paragraph so it mentions:
 
@@ -303,7 +303,7 @@ provably unchanged, while leaving keyed LIS movement and changed-node patching i
 If a browser benchmark sample was recorded to local ignored history, update only trend tables backed by the summary CLI.
 Do not commit `.benchmark-history/**`.
 
-- [ ] **Step 3: Add implementation log and index row**
+- [x] **Step 3: Add implementation log and index row**
 
 Create `solace-project-log/solace-entries/2026-07-21-004-keyed-reorder-matched-patch-skip.md` with:
 
@@ -324,7 +324,7 @@ children 均不会改变 DOM 输出时，直接复用旧 DOM `el` 并跳过 `pat
 
 Also append a `2026-07-21` row `004` to `solace-project-log/index.md`.
 
-- [ ] **Step 4: Commit docs**
+- [x] **Step 4: Commit docs**
 
 Run:
 
@@ -341,7 +341,7 @@ git commit -m "docs: record keyed reorder patch skip"
 
 - All changed files
 
-- [ ] **Step 1: Format changed files**
+- [x] **Step 1: Format changed files**
 
 Run:
 
@@ -351,7 +351,7 @@ pnpm exec prettier --write src/renderer/diff.ts tests/unit/renderer/diff.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run focused renderer tests**
+- [x] **Step 2: Run focused renderer tests**
 
 Run:
 
@@ -361,7 +361,7 @@ pnpm vitest run tests/unit/renderer/diff.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run list diff benchmark smoke**
+- [x] **Step 3: Run list diff benchmark smoke**
 
 Run:
 
@@ -371,7 +371,7 @@ pnpm exec vitest run --config vitest.benchmark.config.ts tests/performance/list-
 
 Expected: exits with code 0.
 
-- [ ] **Step 4: Run browser benchmark smoke**
+- [x] **Step 4: Run browser benchmark smoke**
 
 Run:
 
@@ -381,7 +381,7 @@ pnpm benchmark:browser
 
 Expected: exits with code 0 and prints `large-list` and `keyed-reorder` browser benchmark summaries.
 
-- [ ] **Step 5: Run static quality gates**
+- [x] **Step 5: Run static quality gates**
 
 Run:
 
@@ -395,7 +395,7 @@ git diff --check
 
 Expected: all commands exit with code 0.
 
-- [ ] **Step 6: Confirm ignored history stays uncommitted**
+- [x] **Step 6: Confirm ignored history stays uncommitted**
 
 Run:
 

@@ -16,7 +16,7 @@
 
 - Modify: `tests/unit/component/component.test.ts`
 
-- [ ] **Step 1: Add rejection retry delay test**
+- [x] **Step 1: Add rejection retry delay test**
 
 ```ts
 it("retries a rejected async component loader after retryDelay", async () => {
@@ -54,7 +54,7 @@ it("retries a rejected async component loader after retryDelay", async () => {
 });
 ```
 
-- [ ] **Step 2: Add retry success test**
+- [x] **Step 2: Add retry success test**
 
 ```ts
 it("renders an async component when a retry succeeds", async () => {
@@ -82,7 +82,7 @@ it("renders an async component when a retry succeeds", async () => {
 });
 ```
 
-- [ ] **Step 3: Add retry exhaustion test**
+- [x] **Step 3: Add retry exhaustion test**
 
 ```ts
 it("renders an async error component after retries are exhausted", async () => {
@@ -109,7 +109,7 @@ it("renders an async error component after retries are exhausted", async () => {
 });
 ```
 
-- [ ] **Step 4: Add timeout retry test**
+- [x] **Step 4: Add timeout retry test**
 
 ```ts
 it("retries an async component loader after timeout and renders a later success", async () => {
@@ -138,7 +138,7 @@ it("retries an async component loader after timeout and renders a later success"
 });
 ```
 
-- [ ] **Step 5: Add no-retry regression test**
+- [x] **Step 5: Add no-retry regression test**
 
 ```ts
 it("keeps single-attempt behavior when retry is omitted", async () => {
@@ -162,7 +162,7 @@ it("keeps single-attempt behavior when retry is omitted", async () => {
 });
 ```
 
-- [ ] **Step 6: Run RED**
+- [x] **Step 6: Run RED**
 
 Run: `pnpm test tests/unit/component/component.test.ts`
 
@@ -175,14 +175,14 @@ behavior is not implemented.
 
 - Modify: `src/component/async-component.ts`
 
-- [ ] **Step 1: Add option fields**
+- [x] **Step 1: Add option fields**
 
 ```ts
 retry?: number;
 retryDelay?: number;
 ```
 
-- [ ] **Step 2: Add retry state**
+- [x] **Step 2: Add retry state**
 
 ```ts
 let failedAttempts = 0;
@@ -190,21 +190,21 @@ let activeAttemptId = 0;
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
 ```
 
-- [ ] **Step 3: Extract loader start**
+- [x] **Step 3: Extract loader start**
 
 Create `startLoad(update)` that increments `activeAttemptId`, clears per-attempt timers, starts
 delay/timeout timers, calls `options.loader()`, and stores the promise in `pendingRequest`.
 
-- [ ] **Step 4: Centralize failure handling**
+- [x] **Step 4: Centralize failure handling**
 
 Create `handleLoadFailure(error, attemptId, update)` that ignores stale attempts, clears timers,
 retries while `failedAttempts < getRetry(options)`, and sets `loadError` only when no attempts remain.
 
-- [ ] **Step 5: Clear retry timer**
+- [x] **Step 5: Clear retry timer**
 
 Update `clearAsyncTimers()` to clear delay, timeout, and retry timers.
 
-- [ ] **Step 6: Run GREEN**
+- [x] **Step 6: Run GREEN**
 
 Run: `pnpm test tests/unit/component/component.test.ts`
 
@@ -220,19 +220,19 @@ Expected: PASS.
 - Add: `solace-project-log/solace-entries/2026-07-13-010-async-component-retry.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Add retry options to package smoke**
+- [x] **Step 1: Add retry options to package smoke**
 
 Add `retry: 1` and `retryDelay: 10` to `lazyPanelOptions`.
 
-- [ ] **Step 2: Document retry options**
+- [x] **Step 2: Document retry options**
 
 Update `docs/api.md` to mention retry behavior and include `retry` / `retryDelay` in the example.
 
-- [ ] **Step 3: Update README**
+- [x] **Step 3: Update README**
 
 Remove async retry from future-work wording and keep current capability text accurate.
 
-- [ ] **Step 4: Add project log entry and index row**
+- [x] **Step 4: Add project log entry and index row**
 
 Record changed files, validation commands, and residual risks.
 
@@ -242,31 +242,31 @@ Record changed files, validation commands, and residual risks.
 
 - No source edits expected.
 
-- [ ] **Step 1: Run targeted component tests**
+- [x] **Step 1: Run targeted component tests**
 
 Run: `pnpm test tests/unit/component/component.test.ts`
 
 Expected: PASS.
 
-- [ ] **Step 2: Run typecheck**
+- [x] **Step 2: Run typecheck**
 
 Run: `pnpm typecheck`
 
 Expected: PASS.
 
-- [ ] **Step 3: Run package smoke**
+- [x] **Step 3: Run package smoke**
 
 Run: `pnpm package:smoke`
 
 Expected: PASS and print `package consumer smoke passed`.
 
-- [ ] **Step 4: Run full quality gate**
+- [x] **Step 4: Run full quality gate**
 
 Run: `pnpm quality`
 
 Expected: PASS.
 
-- [ ] **Step 5: Run format check**
+- [x] **Step 5: Run format check**
 
 Run: `pnpm format:check`
 

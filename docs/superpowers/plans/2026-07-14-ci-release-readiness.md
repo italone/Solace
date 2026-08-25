@@ -27,7 +27,7 @@ No runtime source, package scripts, package exports, or publishability state sho
 
 - Modify: `.github/workflows/ci.yml`
 
-- [ ] **Step 1: Add readiness step**
+- [x] **Step 1: Add readiness step**
 
 After:
 
@@ -53,7 +53,7 @@ add:
 - Add: `solace-project-log/solace-entries/2026-07-14-006-ci-release-readiness.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update release docs**
+- [x] **Step 1: Update release docs**
 
 Add this sentence after the CI workflow sentence in `docs/release.md`:
 
@@ -61,11 +61,11 @@ Add this sentence after the CI workflow sentence in `docs/release.md`:
 CI also runs `pnpm release:readiness` before the longer checks so package metadata and release script drift fail early.
 ```
 
-- [ ] **Step 2: Add project log entry**
+- [x] **Step 2: Add project log entry**
 
 Create the project log entry with status `验证中`.
 
-- [ ] **Step 3: Add index row**
+- [x] **Step 3: Add index row**
 
 Add a `006` row under the `2026-07-14` project log index.
 
@@ -77,7 +77,7 @@ Add a `006` row under the `2026-07-14` project log index.
 
 - All touched files.
 
-- [ ] **Step 1: Format touched files**
+- [x] **Step 1: Format touched files**
 
 Run:
 
@@ -87,7 +87,7 @@ pnpm exec prettier --write .github/workflows/ci.yml docs/release.md docs/superpo
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run readiness**
+- [x] **Step 2: Run readiness**
 
 Run:
 
@@ -97,7 +97,7 @@ pnpm release:readiness
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run lint**
+- [x] **Step 3: Run lint**
 
 Run:
 
@@ -107,7 +107,7 @@ pnpm lint
 
 Expected: exits with code 0.
 
-- [ ] **Step 4: Run build**
+- [x] **Step 4: Run build**
 
 Run:
 
@@ -117,7 +117,7 @@ pnpm build
 
 Expected: exits with code 0.
 
-- [ ] **Step 5: Run format check**
+- [x] **Step 5: Run format check**
 
 Run:
 
@@ -127,11 +127,11 @@ pnpm format:check
 
 Expected: exits with code 0.
 
-- [ ] **Step 6: Update project log validation table**
+- [x] **Step 6: Update project log validation table**
 
 Set log status to `已完成` and replace pending validation rows with observed results.
 
-- [ ] **Step 7: Run final format check**
+- [x] **Step 7: Run final format check**
 
 Run:
 

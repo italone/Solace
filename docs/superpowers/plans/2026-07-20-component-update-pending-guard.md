@@ -29,7 +29,7 @@ Do not modify public package exports, scheduler ordering semantics, DevTools pay
 
 - Modify: `tests/unit/component/component.test.ts`
 
-- [ ] **Step 1: Add the RED test and the scheduler spy import**
+- [x] **Step 1: Add the RED test and the scheduler spy import**
 
 Add this import near the top of `tests/unit/component/component.test.ts`:
 
@@ -86,7 +86,7 @@ it("queues each pending component update only once per tick", async () => {
 });
 ```
 
-- [ ] **Step 2: Run the component test to verify RED**
+- [x] **Step 2: Run the component test to verify RED**
 
 Run:
 
@@ -105,7 +105,7 @@ Expected: the new test fails because each synchronous mutation still calls `queu
 - Modify: `src/component/component.ts`
 - Modify: `src/renderer/diff.ts`
 
-- [ ] **Step 1: Add the pending flag to the component instance type and constructor**
+- [x] **Step 1: Add the pending flag to the component instance type and constructor**
 
 In `src/component/component.ts`, extend `ComponentInstance` and `createComponentInstance()` with a boolean flag:
 
@@ -163,7 +163,7 @@ const instance: ComponentInstance = {
 };
 ```
 
-- [ ] **Step 2: Guard the component scheduler callback in the renderer**
+- [x] **Step 2: Guard the component scheduler callback in the renderer**
 
 In `src/renderer/diff.ts`, update `mountComponent()` so the component scheduler only queues once while pending and clears the flag in a `finally` block when the queued job runs:
 
@@ -226,7 +226,7 @@ function mountComponent(
 }
 ```
 
-- [ ] **Step 3: Run the component test to verify GREEN**
+- [x] **Step 3: Run the component test to verify GREEN**
 
 Run:
 
@@ -246,7 +246,7 @@ Expected: exits with code 0, and the new test passes with the existing component
 - Add: `solace-project-log/solace-entries/2026-07-20-003-component-update-pending-guard.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Update the performance note**
+- [x] **Step 1: Update the performance note**
 
 In `docs/performance.md`, add a short sentence near the current renderer follow-up summary that says the component update path now avoids repeated enqueue attempts while a component update is already pending.
 
@@ -258,7 +258,7 @@ The current component update path also avoids repeated enqueue attempts while a 
 
 Keep the existing browser-trend and renderer summary text intact.
 
-- [ ] **Step 2: Add the implementation log entry**
+- [x] **Step 2: Add the implementation log entry**
 
 Create `solace-project-log/solace-entries/2026-07-20-003-component-update-pending-guard.md` with the same structure as the other 2026-07-20 log entries:
 
@@ -300,7 +300,7 @@ Create `solace-project-log/solace-entries/2026-07-20-003-component-update-pendin
 | Diff whitespace          | `git diff --check`                                                                                     | 通过 |
 ```
 
-- [ ] **Step 3: Add the log index row**
+- [x] **Step 3: Add the log index row**
 
 Add a `2026-07-20` row to `solace-project-log/index.md`:
 
@@ -316,7 +316,7 @@ Add a `2026-07-20` row to `solace-project-log/index.md`:
 
 - All changed files
 
-- [ ] **Step 1: Format touched files**
+- [x] **Step 1: Format touched files**
 
 Run:
 
@@ -326,7 +326,7 @@ pnpm exec prettier --write src/component/component.ts src/renderer/diff.ts tests
 
 Expected: exits with code 0.
 
-- [ ] **Step 2: Run the focused component test**
+- [x] **Step 2: Run the focused component test**
 
 Run:
 
@@ -336,7 +336,7 @@ pnpm vitest run tests/unit/component/component.test.ts
 
 Expected: exits with code 0.
 
-- [ ] **Step 3: Run the component benchmark**
+- [x] **Step 3: Run the component benchmark**
 
 Run:
 
@@ -346,7 +346,7 @@ pnpm exec vitest run --config vitest.benchmark.config.ts tests/performance/compo
 
 Expected: exits with code 0 and logs both component update benchmark tasks.
 
-- [ ] **Step 4: Run the full validation set**
+- [x] **Step 4: Run the full validation set**
 
 Run:
 
@@ -361,7 +361,7 @@ git diff --check
 
 Expected: all commands exit with code 0.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Run:
 

@@ -31,7 +31,7 @@
 - Create: `tests/unit/server/static-assets.test.ts`
 - Modify: `src/server/index.ts`
 
-- [ ] **Step 1: Write failing manifest helper tests**
+- [x] **Step 1: Write failing manifest helper tests**
 
 Create `tests/unit/server/static-assets.test.ts`:
 
@@ -152,7 +152,7 @@ describe("resolveStaticAssets", () => {
 });
 ```
 
-- [ ] **Step 2: Run the manifest helper tests to verify failure**
+- [x] **Step 2: Run the manifest helper tests to verify failure**
 
 Run:
 
@@ -162,7 +162,7 @@ pnpm vitest run tests/unit/server/static-assets.test.ts
 
 Expected: FAIL because `tests/unit/server/static-assets.test.ts` imports `resolveStaticAssets` before the helper is exported.
 
-- [ ] **Step 3: Implement the manifest helper**
+- [x] **Step 3: Implement the manifest helper**
 
 Create `src/server/static-assets.ts`:
 
@@ -281,7 +281,7 @@ export {
 } from "./static-assets";
 ```
 
-- [ ] **Step 4: Run the manifest helper tests to verify pass**
+- [x] **Step 4: Run the manifest helper tests to verify pass**
 
 Run:
 
@@ -291,7 +291,7 @@ pnpm vitest run tests/unit/server/static-assets.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit the manifest helper**
+- [x] **Step 5: Commit the manifest helper**
 
 Run:
 
@@ -310,7 +310,7 @@ Expected: one focused commit containing the helper, export, and helper tests.
 - Modify: `tests/unit/server/generate-static-site.test.ts`
 - Modify: `tests/unit/server/public-contract-types.test.ts`
 
-- [ ] **Step 1: Add failing SSG manifest shell tests**
+- [x] **Step 1: Add failing SSG manifest shell tests**
 
 In `tests/unit/server/generate-static-site.test.ts`, update the first shell expectation objects to include empty asset tags:
 
@@ -394,7 +394,7 @@ expect(() =>
 
 Keep the app-level `router` rejection expectation unchanged.
 
-- [ ] **Step 2: Add failing SSG public type assertions**
+- [x] **Step 2: Add failing SSG public type assertions**
 
 In `tests/unit/server/public-contract-types.test.ts`, update the server import:
 
@@ -460,7 +460,7 @@ acceptShell(({ assets }) => {
 
 Keep the `renderToString()` manifest/clientEntry negative assertions unchanged.
 
-- [ ] **Step 3: Run targeted SSG tests to verify failure**
+- [x] **Step 3: Run targeted SSG tests to verify failure**
 
 Run:
 
@@ -470,7 +470,7 @@ pnpm vitest run tests/unit/server/generate-static-site.test.ts tests/unit/server
 
 Expected: FAIL because `GenerateStaticSiteOptions`, `StaticShellPage`, and implementation do not yet support `manifest`, `clientEntry`, `base`, or `assets`.
 
-- [ ] **Step 4: Implement SSG manifest shell integration**
+- [x] **Step 4: Implement SSG manifest shell integration**
 
 Modify the top of `src/server/generate-static-site.ts`:
 
@@ -578,7 +578,7 @@ function cloneStaticAssetTags(assets: StaticAssetTags): StaticAssetTags {
 }
 ```
 
-- [ ] **Step 5: Run targeted SSG tests to verify pass**
+- [x] **Step 5: Run targeted SSG tests to verify pass**
 
 Run:
 
@@ -588,7 +588,7 @@ pnpm vitest run tests/unit/server/generate-static-site.test.ts tests/unit/server
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit the SSG manifest integration**
+- [x] **Step 6: Commit the SSG manifest integration**
 
 Run:
 
@@ -608,7 +608,7 @@ Expected: one focused commit containing the SSG shell integration.
 - Modify: `src/server/index.ts`
 - Modify: `tests/unit/server/public-contract-types.test.ts`
 
-- [ ] **Step 1: Write failing router-aware SSG adapter tests**
+- [x] **Step 1: Write failing router-aware SSG adapter tests**
 
 Create `tests/unit/server/static-router.test.ts`:
 
@@ -736,7 +736,7 @@ describe("createStaticRoutesFromRouter", () => {
 });
 ```
 
-- [ ] **Step 2: Add failing router-aware public type assertions**
+- [x] **Step 2: Add failing router-aware public type assertions**
 
 In `tests/unit/server/public-contract-types.test.ts`, update the root import:
 
@@ -797,7 +797,7 @@ Keep this negative assertion unchanged:
 acceptSSGOptions({ routes: [{ path: "/", source: h("p") }], router: {} });
 ```
 
-- [ ] **Step 3: Run adapter tests to verify failure**
+- [x] **Step 3: Run adapter tests to verify failure**
 
 Run:
 
@@ -807,7 +807,7 @@ pnpm vitest run tests/unit/server/static-router.test.ts tests/unit/server/public
 
 Expected: FAIL because `createStaticRoutesFromRouter` and `StaticRouterOptions` are not implemented or exported.
 
-- [ ] **Step 4: Implement the router-aware SSG adapter**
+- [x] **Step 4: Implement the router-aware SSG adapter**
 
 Create `src/server/static-router.ts`:
 
@@ -886,7 +886,7 @@ Modify `src/server/index.ts`:
 export { createStaticRoutesFromRouter, type StaticRouterOptions } from "./static-router";
 ```
 
-- [ ] **Step 5: Run adapter tests to verify pass**
+- [x] **Step 5: Run adapter tests to verify pass**
 
 Run:
 
@@ -896,7 +896,7 @@ pnpm vitest run tests/unit/server/static-router.test.ts tests/unit/server/public
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit the router-aware SSG adapter**
+- [x] **Step 6: Commit the router-aware SSG adapter**
 
 Run:
 
@@ -913,7 +913,7 @@ Expected: one focused commit containing the adapter and type contract coverage.
 
 - Modify: `tests/integration/package-exports.test.ts`
 
-- [ ] **Step 1: Update failing built package export assertions**
+- [x] **Step 1: Update failing built package export assertions**
 
 In both server export surface checks in `tests/integration/package-exports.test.ts`, replace:
 
@@ -1007,7 +1007,7 @@ expect(staticRoutes[0].context?.route).toMatchObject({
 });
 ```
 
-- [ ] **Step 2: Run package export integration test to verify failure before build**
+- [x] **Step 2: Run package export integration test to verify failure before build**
 
 Run:
 
@@ -1017,7 +1017,7 @@ pnpm vitest run --config vitest.package.config.ts tests/integration/package-expo
 
 Expected: FAIL if `dist/server.*` still reflects the old build artifacts.
 
-- [ ] **Step 3: Build package artifacts**
+- [x] **Step 3: Build package artifacts**
 
 Run:
 
@@ -1027,7 +1027,7 @@ pnpm build
 
 Expected: PASS and generated `dist/server.js`, `dist/server.cjs`, and `dist/server.d.ts` include the new server helper exports for package-export validation.
 
-- [ ] **Step 4: Run package export integration test to verify pass**
+- [x] **Step 4: Run package export integration test to verify pass**
 
 Run:
 
@@ -1037,7 +1037,7 @@ pnpm vitest run --config vitest.package.config.ts tests/integration/package-expo
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit package export coverage**
+- [x] **Step 5: Commit package export coverage**
 
 Run:
 
@@ -1061,7 +1061,7 @@ Expected: one focused commit containing package export test updates. Generated `
 - Modify: `readme.md`
 - Modify: `readme.zh-CN.md`
 
-- [ ] **Step 1: Update English usage docs**
+- [x] **Step 1: Update English usage docs**
 
 In `docs/package-usage.md`, update the server import example to:
 
@@ -1135,7 +1135,7 @@ const staticRoutes = createStaticRoutesFromRouter({
 generateStaticSite({ routes: staticRoutes });
 ```
 
-- [ ] **Step 2: Update English API docs**
+- [x] **Step 2: Update English API docs**
 
 In `docs/api.md`, update the server import block to include the two new helpers:
 
@@ -1198,7 +1198,7 @@ render nested `RouterView` trees, and does not crawl or infer dynamic params. Us
 as `/users/42`; do not pass `/users/:id` as a path to render.
 ```
 
-- [ ] **Step 3: Update Chinese API docs**
+- [x] **Step 3: Update Chinese API docs**
 
 In `docs/api.zh-CN.md`, make the matching server import example include:
 
@@ -1252,7 +1252,7 @@ trees，也不会 crawl 或推断 dynamic params。需要传入 `/users/42` 这�
 `/users/:id` 当作待渲染 path。
 ```
 
-- [ ] **Step 4: Update status, roadmap, and README boundaries**
+- [x] **Step 4: Update status, roadmap, and README boundaries**
 
 In `readme.md`, replace `production asset manifest integration` in the alpha scope paragraph with `full production SSR pipeline automation`, and add that the current alpha includes `production asset tag resolution and explicit-path router-aware SSG helpers through @italone/solace/server`.
 
@@ -1264,7 +1264,7 @@ In `docs/project-status.md`, update the SSR/hydration row to mention `resolveSta
 
 In `docs/project-status.zh-CN.md`, make the parallel Chinese status and known-gap updates.
 
-- [ ] **Step 5: Format changed docs**
+- [x] **Step 5: Format changed docs**
 
 Run:
 
@@ -1274,7 +1274,7 @@ pnpm exec prettier --write docs/package-usage.md docs/api.md docs/api.zh-CN.md d
 
 Expected: Prettier completes and rewrites only formatting needed for the listed docs.
 
-- [ ] **Step 6: Commit documentation**
+- [x] **Step 6: Commit documentation**
 
 Run:
 
@@ -1304,7 +1304,7 @@ Expected: one focused documentation commit.
 - Validate: `readme.md`
 - Validate: `readme.zh-CN.md`
 
-- [ ] **Step 1: Run targeted server and router unit tests**
+- [x] **Step 1: Run targeted server and router unit tests**
 
 Run:
 
@@ -1314,7 +1314,7 @@ pnpm vitest run tests/unit/server/static-assets.test.ts tests/unit/server/static
 
 Expected: PASS. `renderToString()` manifest/router rejection tests remain passing.
 
-- [ ] **Step 2: Run public type contract tests**
+- [x] **Step 2: Run public type contract tests**
 
 Run:
 
@@ -1324,7 +1324,7 @@ pnpm vitest run tests/unit/server/public-contract-types.test.ts
 
 Expected: PASS with the new SSG manifest and router adapter public types accepted, while unsupported `renderToString()` and direct `GenerateStaticSiteOptions.router` fields remain rejected by `@ts-expect-error`.
 
-- [ ] **Step 3: Run TypeScript typecheck**
+- [x] **Step 3: Run TypeScript typecheck**
 
 Run:
 
@@ -1334,7 +1334,7 @@ pnpm typecheck
 
 Expected: PASS.
 
-- [ ] **Step 4: Rebuild package artifacts**
+- [x] **Step 4: Rebuild package artifacts**
 
 Run:
 
@@ -1344,7 +1344,7 @@ pnpm build
 
 Expected: PASS and generated server subpath declarations include `resolveStaticAssets`, `createStaticRoutesFromRouter`, and their public types.
 
-- [ ] **Step 5: Run package export integration checks**
+- [x] **Step 5: Run package export integration checks**
 
 Run:
 
@@ -1354,7 +1354,7 @@ pnpm vitest run --config vitest.package.config.ts tests/integration/package-expo
 
 Expected: PASS for ESM and CJS imports of the expanded server subpath.
 
-- [ ] **Step 6: Check formatting and lint-adjacent whitespace**
+- [x] **Step 6: Check formatting and lint-adjacent whitespace**
 
 Run:
 
@@ -1364,7 +1364,7 @@ git diff --check
 
 Expected: no output and exit code 0.
 
-- [ ] **Step 7: Review final diff**
+- [x] **Step 7: Review final diff**
 
 Run:
 
@@ -1375,7 +1375,7 @@ git diff --stat HEAD
 
 Expected: either a clean worktree after the task commits, or only intentional final validation artifacts. No files outside the SSR/SSG manifest/router-aware scope are modified.
 
-- [ ] **Step 8: Commit any final validation-only adjustments**
+- [x] **Step 8: Commit any final validation-only adjustments**
 
 If Step 7 shows intentional uncommitted changes from formatting or rebuilt package artifacts, run:
 

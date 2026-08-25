@@ -43,7 +43,7 @@
 - Create: `src/router/query.ts`
 - Test: `tests/unit/router/query.test.ts`
 
-- [ ] **Step 1: Write failing query tests**
+- [x] **Step 1: Write failing query tests**
 
 Create `tests/unit/router/query.test.ts`:
 
@@ -88,7 +88,7 @@ describe("router query helpers", () => {
 });
 ```
 
-- [ ] **Step 2: Run query tests to verify RED**
+- [x] **Step 2: Run query tests to verify RED**
 
 Run:
 
@@ -98,7 +98,7 @@ pnpm vitest run tests/unit/router/query.test.ts
 
 Expected: fails because `src/router/query.ts` does not exist.
 
-- [ ] **Step 3: Implement query helpers**
+- [x] **Step 3: Implement query helpers**
 
 Create `src/router/query.ts`:
 
@@ -163,7 +163,7 @@ function pushQueryPart(parts: string[], key: string, value: QueryInputValue): vo
 }
 ```
 
-- [ ] **Step 4: Run query tests to verify GREEN**
+- [x] **Step 4: Run query tests to verify GREEN**
 
 Run:
 
@@ -173,7 +173,7 @@ pnpm vitest run tests/unit/router/query.test.ts
 
 Expected: all query tests pass.
 
-- [ ] **Step 5: Commit query helpers**
+- [x] **Step 5: Commit query helpers**
 
 Run:
 
@@ -192,7 +192,7 @@ git commit -m "feat: add router query helpers"
 - Create: `src/router/matcher.ts`
 - Test: `tests/unit/router/matcher.test.ts`
 
-- [ ] **Step 1: Write failing matcher tests**
+- [x] **Step 1: Write failing matcher tests**
 
 Create `tests/unit/router/matcher.test.ts`:
 
@@ -255,7 +255,7 @@ describe("router matcher", () => {
 });
 ```
 
-- [ ] **Step 2: Run matcher tests to verify RED**
+- [x] **Step 2: Run matcher tests to verify RED**
 
 Run:
 
@@ -265,7 +265,7 @@ pnpm vitest run tests/unit/router/matcher.test.ts
 
 Expected: fails because matcher/types files do not exist.
 
-- [ ] **Step 3: Add router types**
+- [x] **Step 3: Add router types**
 
 Create `src/router/types.ts`:
 
@@ -315,7 +315,7 @@ export interface Router {
 }
 ```
 
-- [ ] **Step 4: Implement matcher**
+- [x] **Step 4: Implement matcher**
 
 Create `src/router/matcher.ts`:
 
@@ -412,7 +412,7 @@ function escapeRegExp(value: string): string {
 }
 ```
 
-- [ ] **Step 5: Run matcher tests to verify GREEN**
+- [x] **Step 5: Run matcher tests to verify GREEN**
 
 Run:
 
@@ -422,7 +422,7 @@ pnpm vitest run tests/unit/router/matcher.test.ts
 
 Expected: all matcher tests pass.
 
-- [ ] **Step 6: Commit matcher and types**
+- [x] **Step 6: Commit matcher and types**
 
 Run:
 
@@ -440,7 +440,7 @@ git commit -m "feat: add router matcher"
 - Create: `src/router/history.ts`
 - Test: `tests/unit/router/history.test.ts`
 
-- [ ] **Step 1: Write failing history tests**
+- [x] **Step 1: Write failing history tests**
 
 Create `tests/unit/router/history.test.ts`:
 
@@ -488,7 +488,7 @@ describe("router history", () => {
 });
 ```
 
-- [ ] **Step 2: Run history tests to verify RED**
+- [x] **Step 2: Run history tests to verify RED**
 
 Run:
 
@@ -498,7 +498,7 @@ pnpm vitest run tests/unit/router/history.test.ts
 
 Expected: fails because `src/router/history.ts` does not exist.
 
-- [ ] **Step 3: Implement history adapters**
+- [x] **Step 3: Implement history adapters**
 
 Create `src/router/history.ts`:
 
@@ -551,7 +551,7 @@ function normalizeHashTarget(path: string): string {
 }
 ```
 
-- [ ] **Step 4: Run history tests to verify GREEN**
+- [x] **Step 4: Run history tests to verify GREEN**
 
 Run:
 
@@ -561,7 +561,7 @@ pnpm vitest run tests/unit/router/history.test.ts
 
 Expected: all history tests pass.
 
-- [ ] **Step 5: Commit history adapters**
+- [x] **Step 5: Commit history adapters**
 
 Run:
 
@@ -579,7 +579,7 @@ git commit -m "feat: add router history adapters"
 - Create: `src/router/router.ts`
 - Test: `tests/unit/router/router.test.ts`
 
-- [ ] **Step 1: Write failing router core tests**
+- [x] **Step 1: Write failing router core tests**
 
 Create `tests/unit/router/router.test.ts`:
 
@@ -684,7 +684,7 @@ describe("createRouter", () => {
 });
 ```
 
-- [ ] **Step 2: Run router core tests to verify RED**
+- [x] **Step 2: Run router core tests to verify RED**
 
 Run:
 
@@ -694,7 +694,7 @@ pnpm vitest run tests/unit/router/router.test.ts
 
 Expected: fails because `src/router/router.ts` does not exist.
 
-- [ ] **Step 3: Implement router core and hooks**
+- [x] **Step 3: Implement router core and hooks**
 
 Create `src/router/router.ts`:
 
@@ -786,7 +786,7 @@ function normalizeRawLocation(to: RouteLocationRaw): string {
 }
 ```
 
-- [ ] **Step 4: Run router core tests to verify GREEN**
+- [x] **Step 4: Run router core tests to verify GREEN**
 
 Run:
 
@@ -796,7 +796,7 @@ pnpm vitest run tests/unit/router/router.test.ts
 
 Expected: all router core tests pass.
 
-- [ ] **Step 5: Commit router core**
+- [x] **Step 5: Commit router core**
 
 Run:
 
@@ -816,7 +816,7 @@ git commit -m "feat: add router core"
 - Modify: `src/index.ts`
 - Test: `tests/integration/router-component.test.ts`
 
-- [ ] **Step 1: Write failing component integration tests**
+- [x] **Step 1: Write failing component integration tests**
 
 Create `tests/integration/router-component.test.ts`:
 
@@ -904,7 +904,7 @@ describe("router components", () => {
 });
 ```
 
-- [ ] **Step 2: Run component integration tests to verify RED**
+- [x] **Step 2: Run component integration tests to verify RED**
 
 Run:
 
@@ -914,7 +914,7 @@ pnpm vitest run tests/integration/router-component.test.ts
 
 Expected: fails because router components/root exports do not exist.
 
-- [ ] **Step 3: Implement router components**
+- [x] **Step 3: Implement router components**
 
 Create `src/router/components.ts`:
 
@@ -970,7 +970,7 @@ function shouldNavigate(event: MouseEvent): boolean {
 }
 ```
 
-- [ ] **Step 4: Add router module exports**
+- [x] **Step 4: Add router module exports**
 
 Create `src/router/index.ts`:
 
@@ -1010,7 +1010,7 @@ export type {
 } from "./router";
 ```
 
-- [ ] **Step 5: Run component integration tests to verify GREEN**
+- [x] **Step 5: Run component integration tests to verify GREEN**
 
 Run:
 
@@ -1020,7 +1020,7 @@ pnpm vitest run tests/integration/router-component.test.ts
 
 Expected: all router component integration tests pass.
 
-- [ ] **Step 6: Run router unit and integration tests together**
+- [x] **Step 6: Run router unit and integration tests together**
 
 Run:
 
@@ -1030,7 +1030,7 @@ pnpm vitest run tests/unit/router tests/integration/router-component.test.ts
 
 Expected: all router tests pass.
 
-- [ ] **Step 7: Commit router components and exports**
+- [x] **Step 7: Commit router components and exports**
 
 Run:
 
@@ -1048,7 +1048,7 @@ git commit -m "feat: add router components"
 - Modify: `tests/integration/package-exports.test.ts`
 - Modify: `scripts/package-consumer-smoke.mjs`
 
-- [ ] **Step 1: Extend package export tests**
+- [x] **Step 1: Extend package export tests**
 
 In `tests/integration/package-exports.test.ts`, update the public root API test to include:
 
@@ -1074,7 +1074,7 @@ expect(api.useRoute).toEqual(expect.any(Function));
 expect(api.useRouter).toEqual(expect.any(Function));
 ```
 
-- [ ] **Step 2: Extend packed consumer smoke TypeScript entry**
+- [x] **Step 2: Extend packed consumer smoke TypeScript entry**
 
 In `scripts/package-consumer-smoke.mjs`, extend the root import with router APIs:
 
@@ -1139,7 +1139,7 @@ Update the ESM and CJS runtime checks to require router functions:
   !api.useRouter;
 ```
 
-- [ ] **Step 3: Run package export tests**
+- [x] **Step 3: Run package export tests**
 
 Run:
 
@@ -1150,7 +1150,7 @@ pnpm vitest run --config vitest.package.config.ts tests/integration/package-expo
 
 Expected: package export tests pass.
 
-- [ ] **Step 4: Run package smoke**
+- [x] **Step 4: Run package smoke**
 
 Run:
 
@@ -1160,7 +1160,7 @@ pnpm package:smoke
 
 Expected: packed consumer smoke passes and validates router ESM/CJS/type usage.
 
-- [ ] **Step 5: Commit package boundary coverage**
+- [x] **Step 5: Commit package boundary coverage**
 
 Run:
 
@@ -1182,7 +1182,7 @@ git commit -m "test: cover router package exports"
 - Modify: `playwright.config.ts`
 - Create: `tests/e2e/router-basic.spec.ts`
 
-- [ ] **Step 1: Create router example**
+- [x] **Step 1: Create router example**
 
 Create `examples/router-basic/index.html`:
 
@@ -1265,7 +1265,7 @@ createApp(App)
   .mount(document.querySelector("#app") as Element);
 ```
 
-- [ ] **Step 2: Add dev script**
+- [x] **Step 2: Add dev script**
 
 Add to `package.json` scripts:
 
@@ -1273,7 +1273,7 @@ Add to `package.json` scripts:
 "dev:router": "vite examples/router-basic"
 ```
 
-- [ ] **Step 3: Add Playwright web server and e2e spec**
+- [x] **Step 3: Add Playwright web server and e2e spec**
 
 In `playwright.config.ts`, add a web server after large-list:
 
@@ -1303,7 +1303,7 @@ test("navigates the router example", async ({ page }) => {
 });
 ```
 
-- [ ] **Step 4: Run example checks**
+- [x] **Step 4: Run example checks**
 
 Run:
 
@@ -1314,7 +1314,7 @@ pnpm test:e2e tests/e2e/router-basic.spec.ts
 
 Expected: typecheck passes and router e2e passes. If Playwright cannot bind `127.0.0.1:5178` inside the sandbox, rerun the same command with approval outside the sandbox.
 
-- [ ] **Step 5: Commit router example**
+- [x] **Step 5: Commit router example**
 
 Run:
 
@@ -1339,7 +1339,7 @@ git commit -m "feat: add router example"
 - Modify: `readme.md`
 - Modify: `readme.zh-CN.md`
 
-- [ ] **Step 1: Document router API**
+- [x] **Step 1: Document router API**
 
 In `docs/api.md`, add a `## Router` section before DevTools or after JSX/tooling entries. Include this example:
 
@@ -1368,23 +1368,23 @@ The first router slice supports static routes, dynamic params, wildcard not-foun
 
 Add the same content in Chinese to `docs/api.zh-CN.md`.
 
-- [ ] **Step 2: Document package usage**
+- [x] **Step 2: Document package usage**
 
 In `docs/package-usage.md`, add a router usage section with the same `createRouter` example and a short note that `createWebHashHistory()` works without server rewrite support, while `createWebHistory()` requires deployment fallback for direct URL loads.
 
-- [ ] **Step 3: Update examples docs and READMEs**
+- [x] **Step 3: Update examples docs and READMEs**
 
 In `docs/examples.md`, add `Router Basic` with command `pnpm dev:router`, location `examples/router-basic`, coverage for `RouterView`, `RouterLink`, params, query, and hash history.
 
 In `readme.md` and `readme.zh-CN.md`, add `Router basic | pnpm dev:router | beta router, params, query, RouterLink` to the examples table.
 
-- [ ] **Step 4: Update status and roadmap**
+- [x] **Step 4: Update status and roadmap**
 
 In `docs/project-status.md` and `docs/project-status.zh-CN.md`, add router as beta implementation after SFC compiler. Move first-party router out of Known Gaps and keep nested routes/guards/SSR auth routing as deferred scope.
 
 In `docs/roadmap.md`, mark first-party router as the current beta work if the implementation has landed, and leave SSR/SSG/hydration next.
 
-- [ ] **Step 5: Format docs**
+- [x] **Step 5: Format docs**
 
 Run:
 
@@ -1394,7 +1394,7 @@ pnpm exec prettier --write docs/api.md docs/api.zh-CN.md docs/package-usage.md d
 
 Expected: docs are formatted.
 
-- [ ] **Step 6: Run docs-relevant checks**
+- [x] **Step 6: Run docs-relevant checks**
 
 Run:
 
@@ -1405,7 +1405,7 @@ pnpm test tests/unit/devtools/devtools-docs.test.ts
 
 Expected: both commands pass.
 
-- [ ] **Step 7: Commit docs**
+- [x] **Step 7: Commit docs**
 
 Run:
 
@@ -1422,7 +1422,7 @@ git commit -m "docs: document beta router"
 
 - No new files unless validation exposes a defect.
 
-- [ ] **Step 1: Run focused router tests**
+- [x] **Step 1: Run focused router tests**
 
 Run:
 
@@ -1432,7 +1432,7 @@ pnpm vitest run tests/unit/router tests/integration/router-component.test.ts
 
 Expected: all focused router tests pass.
 
-- [ ] **Step 2: Run quality gate**
+- [x] **Step 2: Run quality gate**
 
 Run:
 
@@ -1442,7 +1442,7 @@ pnpm quality
 
 Expected: format check, typecheck, JSX dev typecheck, lint, unit/integration tests, build, and package export tests pass.
 
-- [ ] **Step 3: Run package smoke**
+- [x] **Step 3: Run package smoke**
 
 Run:
 
@@ -1452,7 +1452,7 @@ pnpm package:smoke
 
 Expected: packed consumer smoke passes and validates router APIs.
 
-- [ ] **Step 4: Run browser e2e**
+- [x] **Step 4: Run browser e2e**
 
 Run:
 
@@ -1462,7 +1462,7 @@ pnpm test:e2e
 
 Expected: all browser e2e tests pass, including `router-basic.spec.ts`. If local port binding is blocked by sandboxing, rerun the same command with approval outside the sandbox.
 
-- [ ] **Step 5: Record final status**
+- [x] **Step 5: Record final status**
 
 Run:
 

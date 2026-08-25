@@ -28,7 +28,7 @@
 
 - Modify: `src/renderer/keyed-reorder-instrumentation.ts`
 
-- [ ] **Step 1: Add `movedExistingBatches` to the move-path counts type and empty factory**
+- [x] **Step 1: Add `movedExistingBatches` to the move-path counts type and empty factory**
 
 ```ts
 export type KeyedReorderMovePathCounts = {
@@ -58,7 +58,7 @@ export function createEmptyKeyedReorderMovePathCounts(): KeyedReorderMovePathCou
 }
 ```
 
-- [ ] **Step 2: Add recorder function**
+- [x] **Step 2: Add recorder function**
 
 After `recordKeyedReorderMovedExistingChild` add:
 
@@ -68,7 +68,7 @@ export function recordKeyedReorderMovedExistingBatch(): void {
 }
 ```
 
-- [ ] **Step 3: Run instrumentation unit tests**
+- [x] **Step 3: Run instrumentation unit tests**
 
 Run:
 
@@ -79,7 +79,7 @@ pnpm vitest run tests/unit/scripts/browser-benchmark-history.test.ts
 
 Expected: tests still pass (the fixture does not yet use the new counter).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /Users/alone/Desktop/TEST/Solace
@@ -95,7 +95,7 @@ git commit -m "feat: add movedExistingBatches move-path counter"
 
 - Modify: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Add a test for a single two-node moved run**
+- [x] **Step 1: Add a test for a single two-node moved run**
 
 Add after the existing shuffle move-path test:
 
@@ -145,7 +145,7 @@ it("batches two consecutive moved children into one movedExistingBatch", () => {
 });
 ```
 
-- [ ] **Step 2: Add a test for two separated moved runs**
+- [x] **Step 2: Add a test for two separated moved runs**
 
 ```ts
 it("counts two separated moved runs as two movedExistingBatches", () => {
@@ -191,7 +191,7 @@ it("counts two separated moved runs as two movedExistingBatches", () => {
 });
 ```
 
-- [ ] **Step 3: Run RED tests**
+- [x] **Step 3: Run RED tests**
 
 Run:
 
@@ -202,7 +202,7 @@ pnpm vitest run tests/unit/renderer/diff.test.ts
 
 Expected: the two new tests fail because `movedExistingBatches` is still `0`. Existing tests pass.
 
-- [ ] **Step 4: Keep RED changes uncommitted until Task 3 passes**
+- [x] **Step 4: Keep RED changes uncommitted until Task 3 passes**
 
 ```bash
 cd /Users/alone/Desktop/TEST/Solace
@@ -220,7 +220,7 @@ Expected: `tests/unit/renderer/diff.test.ts` is modified locally. Do not commit 
 - Modify: `src/renderer/diff.ts`
 - Test: `tests/unit/renderer/diff.test.ts`
 
-- [ ] **Step 1: Import the new recorder**
+- [x] **Step 1: Import the new recorder**
 
 In `src/renderer/diff.ts`, add `recordKeyedReorderMovedExistingBatch` to the keyed-reorder instrumentation import block.
 
@@ -238,7 +238,7 @@ import {
 } from "./keyed-reorder-instrumentation";
 ```
 
-- [ ] **Step 2: Replace the single-insert move loop with a batched flush**
+- [x] **Step 2: Replace the single-insert move loop with a batched flush**
 
 Replace the move loop from:
 
@@ -376,7 +376,7 @@ for (let index = newEnd; index >= newStart; index -= 1) {
 flushMoveBatch();
 ```
 
-- [ ] **Step 3: Record batch count on multi-node flush**
+- [x] **Step 3: Record batch count on multi-node flush**
 
 Modify `flushMoveBatch` so it records `movedExistingBatches` only when `moveBatch.length > 1` and instrumentation is enabled:
 
@@ -406,7 +406,7 @@ function flushMoveBatch(): void {
 }
 ```
 
-- [ ] **Step 4: Run renderer tests**
+- [x] **Step 4: Run renderer tests**
 
 Run:
 
@@ -417,7 +417,7 @@ pnpm vitest run tests/unit/renderer/diff.test.ts
 
 Expected: all tests pass, including the two new batch tests and the existing shuffle test.
 
-- [ ] **Step 5: Run full validation**
+- [x] **Step 5: Run full validation**
 
 Run:
 
@@ -432,7 +432,7 @@ git diff --check
 
 Expected: all pass.
 
-- [ ] **Step 6: Commit renderer optimization and tests**
+- [x] **Step 6: Commit renderer optimization and tests**
 
 ```bash
 cd /Users/alone/Desktop/TEST/Solace
@@ -448,7 +448,7 @@ git commit -m "perf: batch consecutive moved keyed children into DocumentFragmen
 
 - Modify: `tests/e2e/browser-benchmark.spec.ts`
 
-- [ ] **Step 1: Assert shuffle batch count**
+- [x] **Step 1: Assert shuffle batch count**
 
 In the `shuffle` switch case of `expectBrowserBenchmarkResult`, add:
 
@@ -459,7 +459,7 @@ expect(result.movePathCounts.movedExistingBatches).toBeLessThan(
 );
 ```
 
-- [ ] **Step 2: Run browser benchmark**
+- [x] **Step 2: Run browser benchmark**
 
 Run:
 
@@ -470,7 +470,7 @@ pnpm benchmark:browser
 
 Expected: exits with code 0 and all shape assertions pass. `shuffle` now reports a much smaller `movedExistingBatches` than `movedExistingChildren`.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/alone/Desktop/TEST/Solace
@@ -488,7 +488,7 @@ git commit -m "test: assert shuffle moved-existing batches are batched"
 - Create: `solace-project-log/solace-entries/2026-07-23-004-keyed-reorder-batch-move-runs.md`
 - Modify: `solace-project-log/index.md`
 
-- [ ] **Step 1: Run five-sample browser benchmark**
+- [x] **Step 1: Run five-sample browser benchmark**
 
 Run:
 
@@ -499,7 +499,7 @@ SOLACE_BROWSER_BENCHMARK_HISTORY_PATH=.benchmark-history/browser.jsonl SOLACE_BR
 
 Expected: passes and appends five samples per shape.
 
-- [ ] **Step 2: Summarize latest window**
+- [x] **Step 2: Summarize latest window**
 
 Run:
 
@@ -510,7 +510,7 @@ pnpm benchmark:history -- --latest-browser-count 5 --min-browser-count 5 --json
 
 Expected: passes and reports all six scenario groups.
 
-- [ ] **Step 3: Update `docs/performance.md`**
+- [x] **Step 3: Update `docs/performance.md`**
 
 Replace the previous latest-window section with the observed fresh values. Keep the anchor-lookup note and add a note about batch move runs:
 
@@ -520,7 +520,7 @@ After batching consecutive moved keyed children into `DocumentFragment` inserts,
 shape continues to report `movePathCounts.anchorLookups: 0`.
 ```
 
-- [ ] **Step 4: Create implementation log entry**
+- [x] **Step 4: Create implementation log entry**
 
 Create `solace-project-log/solace-entries/2026-07-23-004-keyed-reorder-batch-move-runs.md` matching the structure of previous entries. Include:
 
@@ -532,7 +532,7 @@ Create `solace-project-log/solace-entries/2026-07-23-004-keyed-reorder-batch-mov
 - Follow-up: monitor next browser benchmark for `shuffle` reorderMs and `insertBeforeMs` trend.
 - Raw summary JSON from Step 2 in a code block.
 
-- [ ] **Step 5: Update log index**
+- [x] **Step 5: Update log index**
 
 In `solace-project-log/index.md`, append row:
 
@@ -540,7 +540,7 @@ In `solace-project-log/index.md`, append row:
 | 004 | 批量移动连续 keyed children | renderer performance、browser benchmark、性能文档、项目日志 | `src/renderer/diff.ts`, `src/renderer/keyed-reorder-instrumentation.ts`, `tests/unit/renderer/diff.test.ts`, `tests/e2e/browser-benchmark.spec.ts`, `docs/performance.md`, `solace-project-log/**` | [查看](./solace-entries/2026-07-23-004-keyed-reorder-batch-move-runs.md) |
 ```
 
-- [ ] **Step 6: Format and validate**
+- [x] **Step 6: Format and validate**
 
 Run:
 
@@ -556,7 +556,7 @@ git diff --check
 
 Expected: all pass.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 cd /Users/alone/Desktop/TEST/Solace

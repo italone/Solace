@@ -24,7 +24,7 @@
 - Modify: `tests/unit/router/query.test.ts`
 - Modify: `src/router/query.ts`
 
-- [ ] **Step 1: Write the failing query tests**
+- [x] **Step 1: Write the failing query tests**
 
 In `tests/unit/router/query.test.ts`, append these tests inside `describe("router query helpers", () => { ... })`:
 
@@ -48,7 +48,7 @@ it("decodes encoded equals signs inside values", () => {
 });
 ```
 
-- [ ] **Step 2: Run query tests to verify RED**
+- [x] **Step 2: Run query tests to verify RED**
 
 Run:
 
@@ -58,7 +58,7 @@ pnpm vitest run tests/unit/router/query.test.ts
 
 Expected: the first two new tests fail because `parseQuery()` currently truncates values after the second `=`. The encoded `=` test may already pass because encoded `=` is decoded after splitting.
 
-- [ ] **Step 3: Implement first-separator splitting**
+- [x] **Step 3: Implement first-separator splitting**
 
 In `src/router/query.ts`, replace this line in `parseQuery()`:
 
@@ -86,7 +86,7 @@ function splitQueryPart(part: string): [string, string] {
 }
 ```
 
-- [ ] **Step 4: Run query tests to verify GREEN**
+- [x] **Step 4: Run query tests to verify GREEN**
 
 Run:
 
@@ -96,7 +96,7 @@ pnpm vitest run tests/unit/router/query.test.ts
 
 Expected: all query tests pass.
 
-- [ ] **Step 5: Run all router unit tests**
+- [x] **Step 5: Run all router unit tests**
 
 Run:
 
@@ -106,7 +106,7 @@ pnpm vitest run tests/unit/router
 
 Expected: all router unit tests pass.
 
-- [ ] **Step 6: Commit the query parser fix**
+- [x] **Step 6: Commit the query parser fix**
 
 Run:
 
@@ -124,7 +124,7 @@ git commit -m "fix: preserve equals in router query values"
 - Validate: `src/router/query.ts`
 - Validate: `tests/unit/router/query.test.ts`
 
-- [ ] **Step 1: Inspect status and latest commit**
+- [x] **Step 1: Inspect status and latest commit**
 
 Run:
 
@@ -135,7 +135,7 @@ git log --oneline -3
 
 Expected: worktree is clean and the latest commit is `fix: preserve equals in router query values`.
 
-- [ ] **Step 2: Record verification**
+- [x] **Step 2: Record verification**
 
 Record these command results in the final response:
 
