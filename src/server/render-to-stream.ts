@@ -7,6 +7,12 @@ import { getAsyncComponentMetadata } from "../component/async-component";
 import type { Provides } from "../component/provide";
 import { createServerStyleSink, withStyleSink, type ServerStyleSink } from "../component/style";
 import { runWithInstance } from "../shared/async-tree";
+import {
+  boundaryEndMarker,
+  boundaryStartMarker,
+  createPendingBoundary,
+  type PendingBoundary,
+} from "./stream-boundary";
 import { ShapeFlags } from "../shared/flags";
 import { escapeHtml } from "../shared/html";
 import { isThenable } from "../shared/utils";
@@ -33,6 +39,32 @@ export interface RenderToStreamOptions {
   mode?: "ordered" | "out-of-order";
 }
 
+type StreamMode = "ordered" | "out-of-order";
+
+interface StreamContext {
+  mode: StreamMode;
+  appProvides: Provides | null;
+  sink: ServerStyleSink;
+  styles: StyleDrain;
+  pending: PendingBoundary[];
+  nextBoundaryId(): number;
+}
+
+function createStreamContext(mode: StreamMode, appProvides: Provides | null): StreamContext {
+  let nextId = 0;
+  return {
+    mode,
+    appProvides,
+    sink: createServerStyleSink(),
+    styles: createStyleDrain(),
+    pending: [],
+    nextBoundaryId: () => {
+      nextId += 1;
+      return nextId;
+    },
+  };
+}
+
 export function renderToStream(
   source: RenderToStringAsyncSource,
   options: RenderToStreamOptions = {},
@@ -43,11 +75,8 @@ export function renderToStream(
   return new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        const sink = createServerStyleSink();
-        const styles = createStyleDrain();
-        const iterator = streamSource(source, options.provides ?? null, sink, styles)[
-          Symbol.asyncIterator
-        ]();
+        const ctx = createStreamContext(options.mode ?? "ordered", options.provides ?? null);
+        const iterator = streamSource(source, ctx)[Symbol.asyncIterator]();
         let buffer = "";
 
         for (;;) {
@@ -82,6 +111,17 @@ export function renderToStream(
 
         if (buffer !== "") {
           controller.enqueue(encoder.encode(buffer));
+          buffer = "";
+        }
+
+        for await (const chunk of flushPendingBoundaries(ctx)) {
+          buffer += chunk;
+          controller.enqueue(encoder.encode(buffer));
+          buffer = "";
+        }
+
+        if (buffer !== "") {
+          controller.enqueue(encoder.encode(buffer));
         }
         controller.close();
       } catch (error) {
@@ -91,15 +131,10 @@ export function renderToStream(
   });
 }
 
-async function* streamSource(
-  source: RenderToStringAsyncSource,
-  appProvides: Provides | null,
-  sink: ServerStyleSink,
-  styles: StyleDrain,
-): AsyncGenerator<string> {
+async function* streamSource(source: RenderToStringAsyncSource, ctx: StreamContext): AsyncGenerator<string> {
   const resolved = isThenable(source) ? await source : source;
   const vnode = isVNode(resolved) ? resolved : normalizeSync(resolved);
-  yield* streamVNode(vnode, null, appProvides, sink, styles);
+  yield* streamVNode(vnode, null, ctx.appProvides, ctx);
 }
 
 function normalizeSync(source: unknown): VNode {
@@ -116,8 +151,7 @@ async function* streamVNode(
   vnode: VNode,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
-  sink: ServerStyleSink,
-  styles: StyleDrain,
+  ctx: StreamContext,
 ): AsyncGenerator<string> {
   if (isThenable(vnode as unknown)) {
     throw new TypeError(PROMISED_CHILDREN_ERROR);
@@ -127,18 +161,18 @@ async function* streamVNode(
     const tag = String(vnode.type);
     assertSafeHtmlName(tag, "element");
     yield `<${tag}${renderAttributes(vnode.props)}>`;
-    yield* streamChildren(vnode.children, parentComponent, appProvides, sink, styles);
+    yield* streamChildren(vnode.children, parentComponent, appProvides, ctx);
     yield `</${tag}>`;
     return;
   }
 
   if (vnode.shapeFlag & ShapeFlags.FRAGMENT) {
-    yield* streamChildren(vnode.children, parentComponent, appProvides, sink, styles);
+    yield* streamChildren(vnode.children, parentComponent, appProvides, ctx);
     return;
   }
 
   if (vnode.shapeFlag & ShapeFlags.COMPONENT) {
-    yield* streamComponent(vnode, parentComponent, appProvides, sink, styles);
+    yield* streamComponent(vnode, parentComponent, appProvides, ctx);
     return;
   }
 }
@@ -147,8 +181,7 @@ async function* streamChildren(
   children: VNode["children"],
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
-  sink: ServerStyleSink,
-  styles: StyleDrain,
+  ctx: StreamContext,
 ): AsyncGenerator<string> {
   if (children === null) {
     return;
@@ -161,13 +194,13 @@ async function* streamChildren(
 
   if (Array.isArray(children)) {
     for (const child of children) {
-      yield* streamVNode(child, parentComponent, appProvides, sink, styles);
+      yield* streamVNode(child, parentComponent, appProvides, ctx);
     }
     return;
   }
 
   if (isVNode(children)) {
-    yield* streamVNode(children, parentComponent, appProvides, sink, styles);
+    yield* streamVNode(children, parentComponent, appProvides, ctx);
     return;
   }
 
@@ -182,26 +215,57 @@ async function* streamComponent(
   vnode: VNode,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
-  sink: ServerStyleSink,
-  styles: StyleDrain,
+  ctx: StreamContext,
 ): AsyncGenerator<string> {
   const metadata = getAsyncComponentMetadata(vnode.type);
   if (metadata !== undefined) {
+    if (ctx.mode === "out-of-order") {
+      yield* streamOutOfOrderBoundary(vnode, metadata, parentComponent, appProvides, ctx);
+      return;
+    }
     await metadata.load();
   }
 
+  yield* streamLoadedComponent(vnode, parentComponent, appProvides, ctx);
+}
+
+async function* streamOutOfOrderBoundary(
+  vnode: VNode,
+  metadata: NonNullable<ReturnType<typeof getAsyncComponentMetadata>>,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+  ctx: StreamContext,
+): AsyncGenerator<string> {
+  const id = ctx.nextBoundaryId();
+  const boundary = createPendingBoundary(id, metadata.load());
+  ctx.pending.push(boundary);
+
+  yield boundaryStartMarker(id);
+  const fallback = metadata.getFallback();
+  if (fallback !== null) {
+    yield* streamVNode(fallback, parentComponent, appProvides, ctx);
+  }
+  yield boundaryEndMarker(id);
+}
+
+async function* streamLoadedComponent(
+  vnode: VNode,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+  ctx: StreamContext,
+): AsyncGenerator<string> {
   const instance = createComponentInstance(vnode, parentComponent, appProvides);
   vnode.component = instance;
   setupComponent(instance);
 
-  let rendered = withStyleSink(sink, () => instance.render()) as unknown;
+  let rendered = withStyleSink(ctx.sink, () => instance.render()) as unknown;
 
   if (isThenable(rendered)) {
     const resolved = await rendered;
     if (typeof resolved === "function") {
       const renderWithInstance = () => runWithInstance(instance, resolved as () => VNode);
       instance.render = renderWithInstance;
-      rendered = withStyleSink(sink, renderWithInstance);
+      rendered = withStyleSink(ctx.sink, renderWithInstance);
     } else if (isVNode(resolved)) {
       instance.render = () => resolved;
       rendered = resolved;
@@ -218,10 +282,14 @@ async function* streamComponent(
     throw new TypeError("Component render must return a VNode");
   }
 
-  yield* styles.drain(sink);
+  yield* ctx.styles.drain(ctx.sink);
 
   instance.subTree = rendered;
-  yield* streamVNode(rendered, instance, instance.appProvides, sink, styles);
+  yield* streamVNode(rendered, instance, instance.appProvides, ctx);
+}
+
+async function* flushPendingBoundaries(ctx: StreamContext): AsyncGenerator<string> {
+  await Promise.all(ctx.pending.map((boundary) => boundary.ready));
 }
 
 interface StyleDrain {
