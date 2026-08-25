@@ -11,7 +11,7 @@ Let async components flush out of order during streaming SSR: the completed docu
 
 ## API Surface
 
-- `defineAsyncComponent(loader, { fallback? })` — optional `fallback: VNode | (() => VNode)`. The fallback participates only in out-of-order streaming; buffered rendering (`renderToStringAsync`) keeps awaiting the full tree and ignores `fallback`.
+- `defineAsyncComponent({ loader, fallback? })` — new optional `fallback?: VNode | (() => VNode)` field on the existing `AsyncComponentOptions` object (the loader-only shorthand stays unchanged). The fallback participates only in out-of-order streaming; buffered rendering (`renderToStringAsync`) keeps awaiting the full tree and ignores `fallback`.
 - `renderToStream(source, { mode?: "ordered" | "out-of-order" })` — default `"ordered"` preserves the current byte-for-byte contract. `"out-of-order"` enables placeholder replacement. Option validation follows the existing `assertStreamOptions` style: unknown or invalid `mode` values throw `TypeError` (surfaced as stream rejection, consistent with current behavior).
 
 ## Wire Protocol
