@@ -38,8 +38,11 @@ output; each requires a separate public API and compatibility review.
 5. **SSR / hydration minimum loop** — implemented through `@italone/solace/server` and
    `createApp(App).hydrate(container)` for synchronous VNode/component trees, including
    server-side style collection and hydration-safe style dedupe; the sequential streaming slice is
-   implemented as `renderToStream()`; continue hardening mismatch policy,
-   async boundaries, out-of-order streaming, full pipeline automation, and integration tests before
+   implemented as `renderToStream()`, and the out-of-order slice is implemented as
+   `renderToStream(source, { mode: "out-of-order" })` with `defineAsyncComponent({ loader, fallback })`
+   fallbacks, `<!--so:b:N-->` boundary markers, resolution-order inline replacement scripts, and
+   non-rejecting failure semantics; continue hardening mismatch policy,
+   async boundaries, full pipeline automation, and integration tests before
    widening the contract.
 6. **SSG core** — implemented on top of `renderToString()` via `generateStaticSite()`; keep
    filesystem output and route crawling deferred while preserving collected `renderToString()`
@@ -49,7 +52,12 @@ output; each requires a separate public API and compatibility review.
    is implemented as `renderToStream()` on `@italone/solace/server`: it streams the exact
    `renderToStringAsync().html` byte order, flushes completed prefixes before async components
    resolve, emits `useStyle()` styles inline at first registration, starts rendering eagerly, and
-   does not handle consumer backpressure. Keep out-of-order streaming, Suspense/selective
+   does not handle consumer backpressure. The out-of-order streaming slice is now implemented on
+   top of it: `mode: "out-of-order"` emits `<!--so:b:N-->` boundary markers with
+   `defineAsyncComponent({ loader, fallback })` fallbacks and flushes `<!--so:r:N-->` replacement
+   scripts in resolution order after the document; loader failures keep the fallback and emit a
+   failure comment without rejecting the stream, and the DOM is final before client hydration runs.
+   Keep Suspense/selective
    hydration, route crawling, filesystem output, and direct renderer-owned router options deferred.
 8. **Browser DevTools extension UI** — the first example panel is implemented under
    `examples/devtools-extension`; continue hardening extension packaging, the browser extension QA

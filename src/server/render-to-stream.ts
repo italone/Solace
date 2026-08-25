@@ -135,7 +135,10 @@ export function renderToStream(
   });
 }
 
-async function* streamSource(source: RenderToStringAsyncSource, ctx: StreamContext): AsyncGenerator<string> {
+async function* streamSource(
+  source: RenderToStringAsyncSource,
+  ctx: StreamContext,
+): AsyncGenerator<string> {
   const resolved = isThenable(source) ? await source : source;
   const vnode = isVNode(resolved) ? resolved : normalizeSync(resolved);
   yield* streamVNode(vnode, null, ctx.appProvides, ctx);
@@ -361,11 +364,7 @@ function assertStreamOptions(options: RenderToStreamOptions): void {
     throw new TypeError("SSR provides must be a Map");
   }
 
-  if (
-    options.mode !== undefined &&
-    options.mode !== "ordered" &&
-    options.mode !== "out-of-order"
-  ) {
+  if (options.mode !== undefined && options.mode !== "ordered" && options.mode !== "out-of-order") {
     throw new TypeError('SSR streaming mode must be "ordered" or "out-of-order"');
   }
 

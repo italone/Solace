@@ -68,9 +68,9 @@ event snapshots 的示例，或运行 `examples/devtools-extension` 浏览器 De
 ## Deferred Beta 边界
 
 当前公共契约会主动拒绝仍处于 deferred 状态的集成入口，而不是静默接受 Solace 尚未实现的
-options。Router auth、permissions、router-aware SSR、router-aware hydration、乱序 streaming SSR、
+options。Router auth、permissions、router-aware SSR、router-aware hydration、
 Suspense/selective hydration 和 async update scheduling 仍不属于 beta 契约。`renderToStream()`
-提供的顺序流式（sequential）streaming SSR 已作为 beta server entry 提供，见下文章节。Route `meta` 是给
+提供的顺序流式（sequential）与乱序（out-of-order）streaming SSR 已作为 beta server entry 提供，见下文章节。Route `meta` 是给
 应用代码和示例使用的开发者自定义数据，不是认证或权限执行机制。使用 `auth` 或 `permissions`
 字段的 router options 或 route records 会被明确的 deferred-boundary 错误拒绝；本地 UX routing
 应使用应用自己的 guards，真正的 enforcement 应由后端授权承担。任何扩大这些边界的公共 API
@@ -234,7 +234,7 @@ Async setup 在 initial preparation 中采用 setup-once 语义。解析为同�
 promised children 是 one-shot values。`provide()`、`inject()`、lifecycle registration 和
 `useStyle()` 可在第一次 suspension 前，以及解析后的同步 render function 内使用；它们不属于
 `await` 之后 continuation code 的 ambient component-instance API 契约。顺序流式（sequential）
-Streaming SSR 已通过 `renderToStream()` 提供；乱序 streaming、SSR/hydration 上的直接 router
+与乱序（out-of-order）streaming SSR 已通过 `renderToStream()` 提供；SSR/hydration 上的直接 router
 option、Suspense/selective hydration 仍保持
 deferred；async update scheduling 仍保持 deferred。
 
@@ -260,11 +260,39 @@ return new Response(stream, { headers: { "content-type": "text/html; charset=utf
 ```
 
 `renderToStream()` 被调用时渲染立即开始（eager start）；本切片返回的流不处理消费者
-backpressure。options 只接受 `context` 和 `provides`；未知自有字段 —— 包括 `manifest`、
-`clientEntry` 和 `router` —— 会抛出带字段名的 `TypeError`。渲染错误会通过
-`controller.error()` 拒绝流，此时部分字节可能已经发射。乱序 streaming、
+backpressure。options 只接受 `context`、`provides` 和 `mode`（`"ordered"` 为默认值，与之前的
+版本字节一致；`"out-of-order"` 见下文）；未知自有字段 —— 包括 `manifest`、
+`clientEntry` 和 `router` —— 会抛出带字段名的 `TypeError`。默认的 ordered 模式下，渲染错误会通过
+`controller.error()` 拒绝流，此时部分字节可能已经发射。
 Suspense/selective hydration、renderer-owned 直接 router options 和消费者 backpressure 均未
 实现。
+
+#### 乱序（out-of-order）streaming
+
+传入 `mode: "out-of-order"` 可按 async component 边界的解析顺序流式输出，而不是阻塞在声明顺序上：
+
+```tsx
+import { defineAsyncComponent, h } from "@italone/solace";
+import { renderToStream } from "@italone/solace/server";
+
+const AsyncMessage = defineAsyncComponent({
+  loader: async () => () => <strong>ready</strong>,
+  fallback: () => <p>loading…</p>,
+});
+const stream = renderToStream(h("section", null, h(AsyncMessage)), { mode: "out-of-order" });
+```
+
+`defineAsyncComponent({ loader, fallback })` 接受一个仅用于乱序模式的可选 `fallback`：
+可以是 VNode，或返回 VNode 的工厂函数。缓冲式渲染（`renderToStringAsync()`）与顺序流式会
+忽略该 fallback。每个未解析的 async 边界会以 `<!--so:b:N-->` 和 `<!--/so:b:N-->` 注释标记
+包裹，其中包含 fallback（未提供 fallback 时为空）。边界解析后，会以 `<!--so:r:N-->` 注释
+标记加一段内联替换脚本的形式 —— 按解析顺序而非声明顺序 —— 在文档其余部分之后 flush；
+脚本会把边界中的 fallback 替换为解析后的标记。边界子树内通过 `useStyle()` 注册的样式会
+内联发射在替换 payload 中，并由共享的 style sink 去重。如果 loader 失败，fallback 标记会
+保留，并发射 `<!--so:b:N failed:message-->` 失败注释，流不会被拒绝 —— 这与 ordered 模式
+不同，后者会因渲染错误拒绝整个流。hydration 不受影响：内联脚本在文档流式输出期间执行，
+因此客户端代码运行前 DOM 已是最终状态，`hydrateAsync()` 保持不变。Suspense、selective
+hydration 和消费者 backpressure 仍不属于本切片的目标。
 
 ### Router-aware SSR 与 hydration 组合
 

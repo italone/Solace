@@ -94,9 +94,9 @@ beta and SFC/Vite APIs experimental without silently removing their documented e
 
 The current public contract intentionally rejects still-deferred integration surfaces instead of
 silently accepting options that Solace does not implement. Router auth, permissions,
-direct router options on SSR/hydration, out-of-order streaming SSR, Suspense/selective hydration, and
-async update scheduling remain outside the beta contract. Sequential streaming SSR through
-`renderToStream()` is available as a beta server entry; see its section below. Composable router
+direct router options on SSR/hydration, Suspense/selective hydration, and
+async update scheduling remain outside the beta contract. Sequential and out-of-order streaming SSR
+through `renderToStream()` are available as beta server entries; see the section below. Composable router
 readiness, server context, and route
 snapshot primitives are available without widening those renderer options. Route `meta` is developer-authored data for
 application code and examples; it is not an authentication or permission enforcement mechanism.
@@ -271,8 +271,8 @@ function enables later reactive updates after `hydrateAsync()`; resolving direct
 fixed initial result, and promised children are one-shot values. `provide()`, `inject()`, lifecycle
 registration, and `useStyle()` are supported before the first suspension and inside the resolved
 synchronous render function. Ambient component-instance APIs in continuation code after `await` are
-outside the beta.4 contract. Sequential streaming SSR is available through `renderToStream()`;
-out-of-order streaming, direct router options on SSR/hydration, and
+outside the beta.4 contract. Sequential and out-of-order streaming SSR are available through `renderToStream()`;
+direct router options on SSR/hydration and
 Suspense/selective hydration remain deferred; async update scheduling remains deferred.
 
 ### `renderToStream(source, options?)`
@@ -298,12 +298,44 @@ return new Response(stream, { headers: { "content-type": "text/html; charset=utf
 ```
 
 Rendering starts eagerly when `renderToStream()` is called; the returned stream does not support
-consumer backpressure in this slice. Options accept only `context` and `provides`; unknown own option
-fields — including `manifest`, `clientEntry`, and `router` — throw a `TypeError` naming the field.
-Render errors reject the stream (the underlying `ReadableStream` errors via `controller.error()`),
-which may surface after partial bytes have already been emitted. Out-of-order streaming,
-Suspense/selective hydration, direct renderer-owned router options, and consumer backpressure are
-not implemented.
+consumer backpressure in this slice. Options accept only `context`, `provides`, and `mode`
+(`"ordered"` is the default and byte-identical to previous releases; `"out-of-order"` is described
+below); unknown own option fields — including `manifest`, `clientEntry`, and `router` — throw a
+`TypeError` naming the field. In the default ordered mode, render errors reject the stream (the
+underlying `ReadableStream` errors via `controller.error()`), which may surface after partial bytes
+have already been emitted. Suspense/selective hydration, direct renderer-owned router options, and
+consumer backpressure are not implemented.
+
+#### Out-of-order streaming
+
+Pass `mode: "out-of-order"` to stream async component boundaries as they resolve instead of
+blocking on declaration order:
+
+```tsx
+import { defineAsyncComponent, h } from "@italone/solace";
+import { renderToStream } from "@italone/solace/server";
+
+const AsyncMessage = defineAsyncComponent({
+  loader: async () => () => <strong>ready</strong>,
+  fallback: () => <p>loading…</p>,
+});
+const stream = renderToStream(h("section", null, h(AsyncMessage)), { mode: "out-of-order" });
+```
+
+`defineAsyncComponent({ loader, fallback })` accepts an optional `fallback` for the out-of-order
+mode only: either a VNode or a factory returning one. Buffered rendering (`renderToStringAsync()`)
+and ordered streaming ignore the fallback. Each unresolved async boundary is emitted between
+`<!--so:b:N-->` and `<!--/so:b:N-->` comment markers containing its fallback (or nothing when no
+fallback was provided). When a boundary resolves, a `<!--so:r:N-->` comment marker plus an inline
+replacement script are flushed — in resolution order, not declaration order — after the rest of the
+document; the script replaces the boundary's fallback with the resolved markup. Styles registered
+with `useStyle()` inside a boundary subtree are emitted inline within the replacement payload and
+deduplicated by the shared style sink. If a boundary's loader fails, the fallback markup is kept, a
+`<!--so:b:N failed:message-->` failure comment is emitted, and the stream is not rejected — unlike
+ordered mode, where a render error rejects the whole stream. Hydration is unaffected: the inline
+scripts execute while the document streams, so the DOM is final before client code runs and
+`hydrateAsync()` is unchanged. Suspense, selective hydration, and consumer backpressure remain
+non-goals of this slice.
 
 ### Router-aware SSR and hydration composition
 

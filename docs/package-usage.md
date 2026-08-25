@@ -315,7 +315,7 @@ possibly after partial bytes were emitted.
 
 ```ts
 import { renderToStream } from "@italone/solace/server";
-const stream = renderToStream(App);
+const stream = renderToStream(App, { mode: "out-of-order" });
 return new Response(stream, { headers: { "content-type": "text/html; charset=utf-8" } });
 ```
 
@@ -366,8 +366,9 @@ serialization escapes script-sensitive characters, parsing validates the exact v
 and `RouterHydrationError` fails closed on the first route mismatch. Application code owns any fresh
 mount recovery. Existing `{ recover: true }` remains limited to DOM hydration mismatch.
 
-The public loop includes sequential streaming SSR through `renderToStream()`. It does not include
-out-of-order streaming, filesystem SSG output, route crawling, direct
+The public loop includes sequential streaming SSR through `renderToStream()` plus out-of-order
+streaming via `renderToStream(source, { mode: "out-of-order" })`. It does not include
+filesystem SSG output, route crawling, direct
 renderer-owned router options, Suspense/selective hydration, or automatic router snapshot recovery.
 
 Passing only one of `manifest` or `clientEntry` to `generateStaticSite()` throws a `TypeError`; pass
@@ -493,7 +494,8 @@ guards, route `meta`, route names, aliases, route props, named locations, `creat
 `lazyRoute()` route components, `RouterLink`, `RouterView`, and `scrollBehavior` after successful
 navigations. It also exposes `router.isReady()` plus canonical route snapshot primitives for explicit
 SSR/hydration composition. The beta router still defers auth, permissions, direct renderer-owned
-router options, out-of-order streaming SSR, and Suspense/selective hydration. `props: true`
+router options and Suspense/selective hydration (out-of-order streaming SSR is available through
+`renderToStream(source, { mode: "out-of-order" })`). `props: true`
 passes route params, plain object props are used as-is, and function props are evaluated from the
 matched route. Named locations preserve canonical path generation, and alias URLs preserve canonical
 matched/name behavior.
