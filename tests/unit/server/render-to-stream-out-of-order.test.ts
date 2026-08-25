@@ -151,6 +151,32 @@ describe("renderToStream out-of-order replacement", () => {
     expect(streamed).toContain('data-s-id="card"');
   });
 
+  it("flushes replacement scripts for nested async boundaries", async () => {
+    const Inner = defineAsyncComponent(async () => () => h("i", null, "inner"));
+    const Outer = defineAsyncComponent({
+      loader: async () => () => h("div", null, [h(Inner)]),
+      fallback: h("p", null, "outer…"),
+    });
+    const streamed = await collectStream(renderToStream(h(Outer), { mode: "out-of-order" }));
+    expect(streamed).toContain("so:r:1");
+    expect(streamed).toContain("so:r:2");
+    expect(streamed.slice(streamed.indexOf("so:r:2"))).toContain("<i>inner</i>");
+  });
+
+  it("preserves boundary props and children in replacement content", async () => {
+    const Part = defineAsyncComponent({
+      loader: async () => (props: { label: string }, ctx: { slots: { default?: () => unknown } }) =>
+        h("span", { "data-label": props.label }, (ctx.slots.default?.() ?? null) as never),
+      fallback: h("p", null, "…"),
+    });
+    const streamed = await collectStream(
+      renderToStream(h(Part, { label: "hi" }, "slot text"), { mode: "out-of-order" }),
+    );
+    const scriptIndex = streamed.indexOf("so:r:1");
+    expect(streamed.slice(scriptIndex)).toContain('data-label="hi"');
+    expect(streamed.slice(scriptIndex)).toContain("slot text");
+  });
+
   it("neutralizes closing script sequences in embedded content", async () => {
     const Tricky = defineAsyncComponent(async () => () => h("p", null, "</script>"));
     const streamed = await collectStream(renderToStream(h(Tricky), { mode: "out-of-order" }));

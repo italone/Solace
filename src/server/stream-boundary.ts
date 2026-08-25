@@ -1,3 +1,5 @@
+import type { VNode } from "../vnode/vnode";
+
 export function boundaryStartMarker(id: number): string {
   return `<!--so:b:${id}-->`;
 }
@@ -49,13 +51,22 @@ export interface PendingBoundary {
   ready: Promise<void>;
   error: unknown;
   component: unknown;
+  props: VNode["props"];
+  children: VNode["children"];
 }
 
-export function createPendingBoundary(id: number, load: Promise<unknown>): PendingBoundary {
+export function createPendingBoundary(
+  id: number,
+  load: Promise<unknown>,
+  props: VNode["props"],
+  children: VNode["children"],
+): PendingBoundary {
   const boundary: PendingBoundary = {
     id,
     error: null,
     component: null,
+    props,
+    children,
     ready: null as never,
   };
   boundary.ready = load.then(

@@ -332,7 +332,7 @@ document; the script replaces the boundary's fallback with the resolved markup. 
 with `useStyle()` inside a boundary subtree are emitted inline within the replacement payload and
 deduplicated by the shared style sink. If a boundary's loader fails, the fallback markup is kept, a
 `<!--so:b:N failed:message-->` failure comment is emitted, and the stream is not rejected — unlike
-ordered mode, where a render error rejects the whole stream. Hydration is unaffected: the inline
+ordered mode, where a render error after a successful load still rejects the whole stream. Hydration is unaffected: the inline
 scripts execute while the document streams, so the DOM is final before client code runs and
 `hydrateAsync()` is unchanged. Suspense, selective hydration, and consumer backpressure remain
 non-goals of this slice.

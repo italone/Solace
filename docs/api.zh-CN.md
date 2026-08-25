@@ -290,7 +290,7 @@ const stream = renderToStream(h("section", null, h(AsyncMessage)), { mode: "out-
 脚本会把边界中的 fallback 替换为解析后的标记。边界子树内通过 `useStyle()` 注册的样式会
 内联发射在替换 payload 中，并由共享的 style sink 去重。如果 loader 失败，fallback 标记会
 保留，并发射 `<!--so:b:N failed:message-->` 失败注释，流不会被拒绝 —— 这与 ordered 模式
-不同，后者会因渲染错误拒绝整个流。hydration 不受影响：内联脚本在文档流式输出期间执行，
+不同，后者在 loader 成功后若渲染出错仍会拒绝整个流。hydration 不受影响：内联脚本在文档流式输出期间执行，
 因此客户端代码运行前 DOM 已是最终状态，`hydrateAsync()` 保持不变。Suspense、selective
 hydration 和消费者 backpressure 仍不属于本切片的目标。
 

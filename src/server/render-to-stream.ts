@@ -244,7 +244,7 @@ async function* streamOutOfOrderBoundary(
   ctx: StreamContext,
 ): AsyncGenerator<string> {
   const id = ctx.nextBoundaryId();
-  const boundary = createPendingBoundary(id, metadata.load());
+  const boundary = createPendingBoundary(id, metadata.load(), vnode.props, vnode.children);
   ctx.pending.push(boundary);
 
   yield boundaryStartMarker(id);
@@ -296,11 +296,16 @@ async function* streamLoadedComponent(
 }
 
 async function* flushPendingBoundaries(ctx: StreamContext): AsyncGenerator<string> {
-  const remaining = new Set(ctx.pending);
+  // Boundaries can register while an earlier winner's subtree renders (nested
+  // async components), so re-sync the unflushed set with ctx.pending every
+  // iteration. Resolution order among concurrent boundaries is preserved by
+  // always racing the full remaining set.
+  const flushed = new Set<PendingBoundary>();
 
-  while (remaining.size > 0) {
+  while (flushed.size < ctx.pending.length) {
+    const remaining = new Set(ctx.pending.filter((boundary) => !flushed.has(boundary)));
     const winner = await racePending(remaining);
-    remaining.delete(winner);
+    flushed.add(winner);
 
     if (winner.error !== null) {
       yield boundaryFailureMarker(
@@ -327,7 +332,7 @@ function racePending(remaining: Set<PendingBoundary>): Promise<PendingBoundary> 
 async function collectBoundaryHtml(boundary: PendingBoundary, ctx: StreamContext): Promise<string> {
   // Render the loaded component through the standard component pipeline so the
   // shared style sink is active (useStyle) and new styles drain into the html.
-  const vnode = h(boundary.component as ComponentType);
+  const vnode = h(boundary.component as ComponentType, boundary.props, boundary.children as never);
   let html = "";
   for await (const chunk of streamLoadedComponent(vnode, null, ctx.appProvides, ctx)) {
     html += chunk;
