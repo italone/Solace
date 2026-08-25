@@ -23,7 +23,7 @@ Pure refactor, no behavior change. Existing suites must stay green before any ne
 - Create: `src/server/render-shared.ts`
 - Modify: `src/server/render-to-string.ts`
 
-- [ ] **Step 1: Create `src/server/render-shared.ts` with the helpers currently private in `render-to-string.ts`**
+- [x] **Step 1: Create `src/server/render-shared.ts` with the helpers currently private in `render-to-string.ts`**
 
 ```ts
 import { escapeAttribute } from "../shared/html";
@@ -96,7 +96,7 @@ export function isPlainObject(value: unknown): value is Record<string, unknown> 
 }
 ```
 
-- [ ] **Step 2: In `src/server/render-to-string.ts`, delete the local copies of `isVNode`, `normalizeSource`, `renderAttributes`, `isEventProp`, `assertSafeHtmlName`, `hasOwn`, `isPlainObject` and import them instead**
+- [x] **Step 2: In `src/server/render-to-string.ts`, delete the local copies of `isVNode`, `normalizeSource`, `renderAttributes`, `isEventProp`, `assertSafeHtmlName`, `hasOwn`, `isPlainObject` and import them instead**
 
 Replace the local definitions with:
 
@@ -113,12 +113,12 @@ import {
 
 Keep `isThenable` local in `render-to-string.ts` (it also exists in `src/shared/utils.ts`; the local copy can be replaced by `import { isThenable } from "../shared/utils";` — do that too and delete the local copy).
 
-- [ ] **Step 3: Run unit tests to verify no behavior change**
+- [x] **Step 3: Run unit tests to verify no behavior change**
 
 Run: `pnpm vitest run tests/unit/server`
 Expected: PASS (all existing server tests)
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/server/render-shared.ts src/server/render-to-string.ts
@@ -135,7 +135,7 @@ git commit -m "refactor: extract shared SSR render helpers"
 - Modify: `src/server/index.ts`
 - Test: `tests/unit/server/render-to-stream.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -205,12 +205,12 @@ export function stripStyleTags(html: string): string {
 
 Note: because rendering runs eagerly in `start()`, validation errors surface as a rejected stream read — that is why tests use `collectStream(...)`.rejects.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `pnpm vitest run tests/unit/server/render-to-stream.test.ts`
 Expected: FAIL — `renderToStream` is not exported from `src/server`.
 
-- [ ] **Step 3: Implement `src/server/render-to-stream.ts`**
+- [x] **Step 3: Implement `src/server/render-to-stream.ts`**
 
 ```ts
 import type { Provides } from "../component/provide";
@@ -296,7 +296,7 @@ import { hasOwn, isPlainObject } from "./render-shared";
 import type { RenderToStringAsyncSource } from "./render-to-string";
 ```
 
-- [ ] **Step 4: Export from `src/server/index.ts`**
+- [x] **Step 4: Export from `src/server/index.ts`**
 
 Add to the render-to-string export block:
 
@@ -304,12 +304,12 @@ Add to the render-to-string export block:
 export { renderToStream, type RenderToStreamOptions } from "./render-to-stream";
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 Run: `pnpm vitest run tests/unit/server/render-to-stream.test.ts`
 Expected: PASS (4 option tests; the placeholder generator yields one empty chunk)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/server/render-to-stream.ts src/server/index.ts tests/unit/server/render-to-stream.test.ts tests/unit/server/stream-test-utils.ts
@@ -325,7 +325,7 @@ git commit -m "feat: add renderToStream option validation skeleton"
 - Modify: `src/server/render-to-stream.ts`
 - Test: `tests/unit/server/render-to-stream.test.ts`
 
-- [ ] **Step 1: Write the failing tests (append to the file)**
+- [x] **Step 1: Write the failing tests (append to the file)**
 
 ```ts
 import { Fragment, renderToString, renderToStringAsync } from "../../../src"; // extend existing import
@@ -369,12 +369,12 @@ describe("renderToStream synchronous trees", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `pnpm vitest run tests/unit/server/render-to-stream.test.ts`
 Expected: new tests FAIL (stream currently yields only `""`)
 
-- [ ] **Step 3: Implement the sync traversal generator in `render-to-stream.ts`**
+- [x] **Step 3: Implement the sync traversal generator in `render-to-stream.ts`**
 
 Replace the placeholder `streamSource` and add:
 
@@ -531,12 +531,12 @@ Update `renderToStream`'s `start` to wire the sink and drain:
 
 Note: in this task, async components are NOT yet loaded (`streamComponent` throws on thenable renders). Task 4 adds async support. The `styles.drain` yields are empty until Task 5 wires `useStyle` (styles already flow through `withStyleSink`, so drain output appears naturally if a component calls `useStyle`; full style coverage is Task 5).
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `pnpm vitest run tests/unit/server/render-to-stream.test.ts`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/server/render-to-stream.ts tests/unit/server/render-to-stream.test.ts
@@ -552,7 +552,7 @@ git commit -m "feat: stream synchronous SSR trees with byte-equality to renderTo
 - Modify: `src/server/render-to-stream.ts`
 - Test: `tests/unit/server/render-to-stream.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```ts
 import { defineAsyncComponent } from "../../../src"; // extend existing import
@@ -607,12 +607,12 @@ describe("renderToStream async trees", () => {
 
 Check the actual `defineAsyncComponent` signature in `src/component/async-component.ts` before writing the tests; adapt the loader/promise shapes to the real API (the existing `render-to-string.test.ts` async tests show the exact usage pattern — copy their construction style).
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `pnpm vitest run tests/unit/server/render-to-stream.test.ts`
 Expected: new tests FAIL (async components currently throw or never resolve)
 
-- [ ] **Step 3: Implement async support**
+- [x] **Step 3: Implement async support**
 
 In `render-to-stream.ts`, extend imports:
 
@@ -674,12 +674,12 @@ async function* streamComponent(
 
 Also relax the `streamChildren` thenable error to only reject thenable children (children that are raw promises remain invalid, same as buffered mode).
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `pnpm vitest run tests/unit/server/render-to-stream.test.ts`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/server/render-to-stream.ts tests/unit/server/render-to-stream.test.ts
@@ -696,7 +696,7 @@ git commit -m "feat: stream async SSR trees with ordered prefix flushing"
 
 No new production code expected — `withStyleSink` + `styles.drain` already emit inline at first registration; this task locks the contract with tests.
 
-- [ ] **Step 1: Write the failing-or-passing tests**
+- [x] **Step 1: Write the failing-or-passing tests**
 
 ```ts
 import { useStyle } from "../../../src"; // extend existing import
@@ -749,12 +749,12 @@ describe("renderToStream styles", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests**
+- [x] **Step 2: Run tests**
 
 Run: `pnpm vitest run tests/unit/server/render-to-stream.test.ts`
 Expected: PASS. If the "before subtree" ordering fails, move `yield* styles.drain(sink)` so it fires immediately after each `withStyleSink` call (it already does in Task 4's code).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add tests/unit/server/render-to-stream.test.ts
@@ -769,7 +769,7 @@ git commit -m "test: lock inline style emission contract for renderToStream"
 
 - Modify: `tests/integration/package-exports.test.ts:217-246`
 
-- [ ] **Step 1: Update the server subpath export assertion**
+- [x] **Step 1: Update the server subpath export assertion**
 
 Add `renderToStream` to the expected `Object.keys(server).sort()` array (alphabetical position) and add:
 
@@ -777,17 +777,17 @@ Add `renderToStream` to the expected `Object.keys(server).sort()` array (alphabe
 expect(server.renderToStream).toEqual(expect.any(Function));
 ```
 
-- [ ] **Step 2: Build and run the gate**
+- [x] **Step 2: Build and run the gate**
 
 Run: `pnpm build && pnpm vitest run tests/integration/package-exports.test.ts`
 Expected: PASS
 
-- [ ] **Step 3: Run the packed-consumer smoke**
+- [x] **Step 3: Run the packed-consumer smoke**
 
 Run: `pnpm test:package` (or the repo's exact script name from `package.json` — check with `pnpm run` and use the package smoke entry)
 Expected: PASS
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add tests/integration/package-exports.test.ts
@@ -802,7 +802,7 @@ git commit -m "test: gate renderToStream in server package exports"
 
 - Test: `tests/integration/router-ssr-streaming.test.ts`
 
-- [ ] **Step 1: Write the integration test, following the composition pattern in `tests/integration/router-ssr-hydration.test.ts`**
+- [x] **Step 1: Write the integration test, following the composition pattern in `tests/integration/router-ssr-hydration.test.ts`**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -825,12 +825,12 @@ describe("router-aware streaming SSR", () => {
 
 Fill in the real setup code by copying from `tests/integration/router-ssr-hydration.test.ts` — do not invent new composition APIs; use only what that file already uses.
 
-- [ ] **Step 2: Run**
+- [x] **Step 2: Run**
 
 Run: `pnpm vitest run tests/integration/router-ssr-streaming.test.ts`
 Expected: PASS
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add tests/integration/router-ssr-streaming.test.ts
@@ -845,11 +845,11 @@ git commit -m "test: cover router-aware streaming SSR with hydration"
 
 - Modify: `docs/api.md`, `docs/api.zh-CN.md`, `docs/package-usage.md`, `docs/project-status.md`, `docs/project-status.zh-CN.md`, `docs/roadmap.md`, `readme.md`, `readme.zh-CN.md`, `docs/compatibility.md` (only if it enumerates server exports)
 
-- [ ] **Step 1: Add a `renderToStream` section to `docs/api.md` and `docs/api.zh-CN.md`**
+- [x] **Step 1: Add a `renderToStream` section to `docs/api.md` and `docs/api.zh-CN.md`**
 
 Content must state: signature, `ReadableStream<Uint8Array>` return, ordered streaming semantics (byte order equals `renderToStringAsync().html`), inline style emission at first registration with dedupe, eager start + no backpressure, error behavior via stream rejection, option validation, and the non-goals (no Suspense, no out-of-order, no renderer-owned router).
 
-- [ ] **Step 2: Add a usage snippet to `docs/package-usage.md`** (server subpath section):
+- [x] **Step 2: Add a usage snippet to `docs/package-usage.md`** (server subpath section):
 
 ```ts
 import { renderToStream } from "@italone/solace/server";
@@ -858,18 +858,18 @@ const stream = renderToStream(App);
 return new Response(stream, { headers: { "content-type": "text/html; charset=utf-8" } });
 ```
 
-- [ ] **Step 3: Update status/roadmap/README (en + zh)**
+- [x] **Step 3: Update status/roadmap/README (en + zh)**
 
 - `docs/project-status.md` + zh-CN: move streaming SSR from "deferred" to "implemented (beta)" in the SSR row and the weaknesses paragraph; keep remaining SSR gaps (Suspense/selective hydration, post-hydration async scheduling, renderer-owned router) listed as deferred.
 - `docs/roadmap.md`: update the SSR next-phase item to record the implemented ordered-streaming slice.
 - `readme.md` + `readme.zh-CN.md`: update the sentences that say streaming SSR is outside the contract.
 
-- [ ] **Step 4: Run docs-contract gates**
+- [x] **Step 4: Run docs-contract gates**
 
 Run: `pnpm vitest run tests/unit/docs`
 Expected: PASS — if `public-contract-docs.test.ts` requires `renderToStream()` mentions in specific docs, satisfy exactly what the assertions ask for (read the failure output; it names the file and expected string).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add docs readme.md readme.zh-CN.md
@@ -880,14 +880,14 @@ git commit -m "docs: document renderToStream streaming SSR"
 
 ### Task 9: Full quality gate
 
-- [ ] **Step 1: Run the full validation chain**
+- [x] **Step 1: Run the full validation chain**
 
 Run: `pnpm format:check && pnpm typecheck && pnpm typecheck:jsxdev && pnpm lint && pnpm test && pnpm test:package`
 Expected: all PASS
 
-- [ ] **Step 2: Fix any formatting/lint drift with `pnpm format` and re-run**
+- [x] **Step 2: Fix any formatting/lint drift with `pnpm format` and re-run**
 
-- [ ] **Step 3: Final commit if fixes were needed**
+- [x] **Step 3: Final commit if fixes were needed**
 
 ```bash
 git add -A && git commit -m "chore: format and lint renderToStream slice"
