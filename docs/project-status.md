@@ -104,8 +104,13 @@ These exclusions are deliberate scope decisions for a readable, teaching-oriente
   streams the same byte order sequentially with inline first-registration styles, eager start, and no
   consumer backpressure; `renderToStream(source, { mode: "out-of-order" })` streams async
   boundaries as resolution-order replacement scripts with `defineAsyncComponent({ loader, fallback })`
-  fallbacks and non-rejecting failure semantics, but
-  direct renderer-owned router integration, Suspense/selective hydration, ambient instance APIs after async
+  fallbacks and non-rejecting failure semantics. The Suspense/selective hydration slice is now
+  implemented as a beta feature: the `Suspense` built-in component coordinates async subtrees behind
+  one fallback in CSR and both streaming modes (one `so:b` boundary per Suspense subtree in
+  out-of-order mode), and `hydrateAsync(container, { selective: true })` hydrates ready parts
+  immediately, patches boundary content on loader resolution, replays buffered interactions after
+  settlement, and keeps the fallback on loader failure without rejecting. Even so,
+  direct renderer-owned router integration, ambient instance APIs after async
   suspension, async update scheduling after initial hydration, and full production pipeline
   automation remain deferred. Explicit router-aware SSR and router-aware hydration now use
   readiness, server context, and snapshot verification composition.
@@ -357,7 +362,7 @@ Solace intentionally does not yet include:
   Direct renderer-owned SSR/hydration integration remains deferred. Auth and permissions remain
   deferred.
 - Automatic hydration mismatch recovery beyond explicit `{ recover: true }`,
-  direct renderer-owned router options for SSR/SSG/hydration, Suspense/selective hydration, ambient
+  direct renderer-owned router options for SSR/SSG/hydration, ambient
   instance APIs after async suspension, async update scheduling after initial hydration, and fully
   automated production SSR pipelines.
 - A first-party UI component library.

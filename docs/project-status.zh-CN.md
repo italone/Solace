@@ -73,8 +73,8 @@ beta 范围边界；SSR/hydration 已覆盖 buffered async initial rendering，
 - Router 仍处 beta，但稳定切片已经成形。当前 slice 已覆盖基础 SPA 工作流、`isReady()`、canonical snapshots 和 request-scoped server context；auth 和 permissions 仍未纳入，router options 与 route record fields 会被明确拒绝，避免把 route `meta` 误认为 enforcement；直接 renderer-owned SSR/hydration option 仍被推迟。
 - SSR/hydration 已覆盖 buffered async initial rendering 和顺序/乱序流式切片。`renderToStringAsync()`、
   `generateStaticSiteAsync()` 和 `hydrateAsync()` 已覆盖 async initial trees；`renderToStream()`
-  以相同字节顺序顺序流式输出，样式在首次注册处内联、eager 启动、不处理消费者 backpressure；`renderToStream(source, { mode: "out-of-order" })` 以解析顺序的内联替换脚本流式输出 async 边界，配合 `defineAsyncComponent({ loader, fallback })` fallback 和不拒绝流的失败语义，但
-  renderer-owned 直接 router integration、Suspense/selective hydration、async suspension 后的 ambient instance
+  以相同字节顺序顺序流式输出，样式在首次注册处内联、eager 启动、不处理消费者 backpressure；`renderToStream(source, { mode: "out-of-order" })` 以解析顺序的内联替换脚本流式输出 async 边界，配合 `defineAsyncComponent({ loader, fallback })` fallback 和不拒绝流的失败语义。Suspense/selective hydration 切片现已作为 beta 能力实现：内置 `Suspense` 组件在 CSR 与两种 streaming 模式下用一个 fallback 协调 async 子树（乱序模式下每棵 Suspense 子树一个 `so:b` 边界），`hydrateAsync(container, { selective: true })` 立即水合就绪部分、在 loader 解析后 patch 边界内容、落定后回放缓冲的交互，loader 失败时保留 fallback 且不 reject。尽管如此，
+  renderer-owned 直接 router integration、async suspension 后的 ambient instance
   APIs、initial hydration 后的 async update scheduling 和完整 production pipeline automation 仍保持
   deferred。
 - 内部模块不稳定。兼容性承诺只覆盖文档化公开入口，`src/**`、`dist/**` 和内部 diagnostics/instrumentation 不适合外部依赖。
@@ -275,8 +275,7 @@ Solace 当前有意不包含：
 - 完整的一方 router 契约。当前 beta router 覆盖 static routes、dynamic params、wildcard fallback routes、query strings、web/hash history、nested routes、parent-to-child redirects、global 和 route-level guards、initial history navigation pipeline、重复 current-route navigation、redirect-to-current 和当前 history-listener guard skip/no-op 处理、stale async navigation result protection、rejected-guard history recovery、invalid history location recovery、invalid initial history fallback、创建期 options/history adapter 和 route record/component validation、global `beforeEach()` 注册校验、route `redirect-rejected` 错误、`lazyRoute()` components、已暴露的 `lazy-load-failed` 错误、浏览器接管的 `RouterLink` targets/downloads、`RouterView` 和 composition helpers；route names、aliases、route props、named locations、`createMemoryHistory()`、history-aware `RouterLink` href 覆盖、alias/canonical matching 以及 scroll behavior 已进入稳定切片。显式 readiness、server context 与 snapshot verification 组合已经支持，但 renderer-owned 直接 SSR/hydration 集成、auth 和 permissions 仍被推迟。
 - 显式 `{ recover: true }`
   之外的 hydration mismatch 自动恢复、router-aware
-  workflow 之外的 renderer-owned 直接 SSR/SSG/hydration router options、Suspense/selective
-  hydration、async suspension 后的 ambient instance APIs、initial hydration 后的 async update
+  workflow 之外的 renderer-owned 直接 SSR/SSG/hydration router options、async suspension 后的 ambient instance APIs、initial hydration 后的 async update
   scheduling，以及完整 production SSR pipeline automation。
 - 一方 UI component library。
 - 生产级 DevTools 浏览器扩展发布形态、component tree inspector、dependency graph、flame

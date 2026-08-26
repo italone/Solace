@@ -94,7 +94,7 @@ beta and SFC/Vite APIs experimental without silently removing their documented e
 
 The current public contract intentionally rejects still-deferred integration surfaces instead of
 silently accepting options that Solace does not implement. Router auth, permissions,
-direct router options on SSR/hydration, Suspense/selective hydration, and
+direct router options on SSR/hydration, and
 async update scheduling remain outside the beta contract. Sequential and out-of-order streaming SSR
 through `renderToStream()` are available as beta server entries; see the section below. Composable router
 readiness, server context, and route
@@ -239,7 +239,8 @@ options such as `manifest`, `clientEntry`, `router`, or `stream` to `renderToStr
 `TypeError`.
 Hydration options must be a non-array object, and `recover` must be boolean when provided.
 `renderToString()` context, when provided, must be a plain object.
-Hydration options accept only `recover`, and `renderToString()` options accept only `context` and
+Hydration options accept only `recover` and `selective` (the latter on `hydrateAsync()` only; see
+the Suspense section), and `renderToString()` options accept only `context` and
 `provides`; unknown own option fields throw a `TypeError` naming the field.
 Async or thenable render trees, including direct sources, SSG route sources, and async child values,
 are rejected by the synchronous `renderToString()`, `generateStaticSite()`, `hydrate()`, `render()`,
@@ -272,8 +273,9 @@ fixed initial result, and promised children are one-shot values. `provide()`, `i
 registration, and `useStyle()` are supported before the first suspension and inside the resolved
 synchronous render function. Ambient component-instance APIs in continuation code after `await` are
 outside the beta.4 contract. Sequential and out-of-order streaming SSR are available through `renderToStream()`;
-direct router options on SSR/hydration and
-Suspense/selective hydration remain deferred; async update scheduling remains deferred.
+Suspense boundaries and selective hydration are available as a beta slice (see the section below);
+direct router options on SSR/hydration remain deferred and
+async update scheduling remains deferred.
 
 ### `renderToStream(source, options?)`
 
@@ -303,7 +305,7 @@ consumer backpressure in this slice. Options accept only `context`, `provides`, 
 below); unknown own option fields — including `manifest`, `clientEntry`, and `router` — throw a
 `TypeError` naming the field. In the default ordered mode, render errors reject the stream (the
 underlying `ReadableStream` errors via `controller.error()`), which may surface after partial bytes
-have already been emitted. Suspense/selective hydration, direct renderer-owned router options, and
+have already been emitted. Direct renderer-owned router options and
 consumer backpressure are not implemented.
 
 #### Out-of-order streaming
@@ -334,8 +336,62 @@ deduplicated by the shared style sink. If a boundary's loader fails, the fallbac
 `<!--so:b:N failed:message-->` failure comment is emitted, and the stream is not rejected — unlike
 ordered mode, where a render error after a successful load still rejects the whole stream. Hydration is unaffected: the inline
 scripts execute while the document streams, so the DOM is final before client code runs and
-`hydrateAsync()` is unchanged. Suspense, selective hydration, and consumer backpressure remain
-non-goals of this slice.
+`hydrateAsync()` is unchanged. Consumer backpressure remains a non-goal of this slice.
+
+### Suspense and selective hydration
+
+`Suspense` is a built-in component for coordinating an async subtree behind one fallback:
+
+```tsx
+import { defineAsyncComponent, h, Suspense } from "@italone/solace";
+
+const AsyncPart = defineAsyncComponent({ loader: async () => () => <strong>ready</strong> });
+const tree = h(Suspense, { fallback: h("p", null, "loading…") }, [
+  h("b", null, "sync"),
+  h(AsyncPart),
+]);
+```
+
+`h(Suspense, { fallback }, children)` renders the fallback while any async component in its subtree
+is unresolved; the fallback is swapped for the children when every subtree loader has resolved. The
+whole subtree — including synchronous children — appears after resolution, so sync children do not
+flash beside the fallback. Nested Suspense boundaries are independent: an inner boundary keeps its
+own fallback while the outer one swaps. Suspense also works in pure client-side rendering without
+SSR. If a subtree loader fails, the fallback is kept and the failure is reported via `console.error`;
+rendering is not rejected.
+
+On the server, ordered `renderToStream()` (and buffered `renderToStringAsync()`) await the Suspense
+subtree's loaders inline, so the resolved children appear in the document. Out-of-order mode emits
+ONE `so:b` boundary per Suspense subtree, reusing the existing async-component protocol: fallback
+markup inside `<!--so:b:N-->` / `<!--/so:b:N-->` markers, `<!--so:r:N-->` replacement scripts flushed
+in resolution order, failure comments that keep the fallback without rejecting the stream, and
+`useStyle()` styles emitted inside the replacement payload.
+
+`hydrateAsync(container, { selective: true })` opts into selective hydration:
+
+```tsx
+import { Suspense, createApp, h } from "@italone/solace";
+
+await createApp(() =>
+  h(Suspense, { fallback: h("p", null, "loading…") }, [h(AsyncPart)]),
+).hydrateAsync(document.querySelector("#app") as Element, { selective: true });
+```
+
+The `selective` option defaults to `false`, which preserves the whole-tree contract:
+`hydrateAsync()` prepares the complete async tree before matching server DOM. With `selective: true`,
+parts of the tree that are already ready hydrate immediately, while unresolved async components and
+Suspense subtrees hydrate against their fallback DOM inside the `so:b` marker ranges; when a loader
+resolves, the boundary's content is patched in place and the comment markers are stripped after the
+boundary settles. While selective hydration is in progress, user interactions (`click`,
+`pointerdown`, `keydown`, `input`, and `change`) are captured at the container root and replayed with
+their typed payloads after settlement; a buffered event whose target has left the DOM is dropped. If
+a loader fails, the fallback is kept and the failure is logged via `console.error` — the hydration
+promise is not rejected. `{ recover: true }` is honored in selective mode as in whole-tree
+hydration. The synchronous `hydrate()` throws when passed `selective: true`; selective hydration is
+a `hydrateAsync()`-only option.
+
+Non-goals of this slice: no SuspenseList, no scheduler priorities, and no transition hooks on the
+fallback swap.
 
 ### Router-aware SSR and hydration composition
 

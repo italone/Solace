@@ -68,8 +68,8 @@ event snapshots 的示例，或运行 `examples/devtools-extension` 浏览器 De
 ## Deferred Beta 边界
 
 当前公共契约会主动拒绝仍处于 deferred 状态的集成入口，而不是静默接受 Solace 尚未实现的
-options。Router auth、permissions、router-aware SSR、router-aware hydration、
-Suspense/selective hydration 和 async update scheduling 仍不属于 beta 契约。`renderToStream()`
+options。Router auth、permissions、router-aware SSR、router-aware hydration
+和 async update scheduling 仍不属于 beta 契约。`renderToStream()`
 提供的顺序流式（sequential）与乱序（out-of-order）streaming SSR 已作为 beta server entry 提供，见下文章节。Route `meta` 是给
 应用代码和示例使用的开发者自定义数据，不是认证或权限执行机制。使用 `auth` 或 `permissions`
 字段的 router options 或 route records 会被明确的 deferred-boundary 错误拒绝；本地 UX routing
@@ -202,7 +202,8 @@ const result = renderToString(h("p", null, "server"));
 integration options 会抛出 `TypeError`。
 Hydration options 必须是非数组对象；提供 `recover` 时，它必须是 boolean。
 `renderToString()` 的 `context` 如果提供，必须是 plain object。
-Hydration options 只接受 `recover`，`renderToString()` options 只接受 `context` 和 `provides`；
+Hydration options 只接受 `recover` 和 `selective`（后者仅用于 `hydrateAsync()`，见 Suspense
+章节），`renderToString()` options 只接受 `context` 和 `provides`；
 未知的自有 option 字段会抛出包含字段名的 `TypeError`。
 同步 `renderToString()`、`generateStaticSite()`、`hydrate()`、`render()` 和 `mount()` 会拒绝
 async 或 thenable render tree，包括 direct sources、SSG route sources 和 async child values。
@@ -234,9 +235,9 @@ Async setup 在 initial preparation 中采用 setup-once 语义。解析为同�
 promised children 是 one-shot values。`provide()`、`inject()`、lifecycle registration 和
 `useStyle()` 可在第一次 suspension 前，以及解析后的同步 render function 内使用；它们不属于
 `await` 之后 continuation code 的 ambient component-instance API 契约。顺序流式（sequential）
-与乱序（out-of-order）streaming SSR 已通过 `renderToStream()` 提供；SSR/hydration 上的直接 router
-option、Suspense/selective hydration 仍保持
-deferred；async update scheduling 仍保持 deferred。
+与乱序（out-of-order）streaming SSR 已通过 `renderToStream()` 提供；Suspense 边界与 selective
+hydration 已作为 beta 切片提供（见下文章节）；SSR/hydration 上的直接 router
+option 和 async update scheduling 仍保持 deferred。
 
 ### `renderToStream(source, options?)`
 
@@ -264,7 +265,7 @@ backpressure。options 只接受 `context`、`provides` 和 `mode`（`"ordered"`
 版本字节一致；`"out-of-order"` 见下文）；未知自有字段 —— 包括 `manifest`、
 `clientEntry` 和 `router` —— 会抛出带字段名的 `TypeError`。默认的 ordered 模式下，渲染错误会通过
 `controller.error()` 拒绝流，此时部分字节可能已经发射。
-Suspense/selective hydration、renderer-owned 直接 router options 和消费者 backpressure 均未
+renderer-owned 直接 router options 和消费者 backpressure 均未
 实现。
 
 #### 乱序（out-of-order）streaming
@@ -291,8 +292,57 @@ const stream = renderToStream(h("section", null, h(AsyncMessage)), { mode: "out-
 内联发射在替换 payload 中，并由共享的 style sink 去重。如果 loader 失败，fallback 标记会
 保留，并发射 `<!--so:b:N failed:message-->` 失败注释，流不会被拒绝 —— 这与 ordered 模式
 不同，后者在 loader 成功后若渲染出错仍会拒绝整个流。hydration 不受影响：内联脚本在文档流式输出期间执行，
-因此客户端代码运行前 DOM 已是最终状态，`hydrateAsync()` 保持不变。Suspense、selective
-hydration 和消费者 backpressure 仍不属于本切片的目标。
+因此客户端代码运行前 DOM 已是最终状态，`hydrateAsync()` 保持不变。消费者 backpressure 仍不属于本切片的目标。
+
+### Suspense 与 selective hydration
+
+`Suspense` 是一个内置组件，用于在一个 fallback 后面协调整棵 async 子树：
+
+```tsx
+import { defineAsyncComponent, h, Suspense } from "@italone/solace";
+
+const AsyncPart = defineAsyncComponent({ loader: async () => () => <strong>ready</strong> });
+const tree = h(Suspense, { fallback: h("p", null, "loading…") }, [
+  h("b", null, "sync"),
+  h(AsyncPart),
+]);
+```
+
+`h(Suspense, { fallback }, children)` 会在子树中任一 async component 未解析时渲染 fallback；
+当子树内全部 loader 解析完成后，fallback 会被替换为 children。整棵子树 —— 包括同步
+children —— 都在解析后才出现，因此同步 children 不会与 fallback 并存闪烁。嵌套的
+Suspense 边界相互独立：内层边界保持自己的 fallback，而外层先行切换。Suspense 同样适用于
+不涉及 SSR 的纯客户端渲染。如果子树的 loader 失败，fallback 会被保留，并通过
+`console.error` 报告失败；渲染不会被 reject。
+
+在服务端，ordered 模式的 `renderToStream()`（以及缓冲式的 `renderToStringAsync()`）会内联
+await Suspense 子树的 loader，因此解析后的 children 会直接出现在文档中。乱序模式会为每棵
+Suspense 子树发射一个 `so:b` 边界，复用现有的 async component 协议：`<!--so:b:N-->` /
+`<!--/so:b:N-->` 标记内的 fallback 标记、按解析顺序 flush 的 `<!--so:r:N-->` 替换脚本、保留
+fallback 且不拒绝流的失败注释，以及发射在替换 payload 内的 `useStyle()` 样式。
+
+`hydrateAsync(container, { selective: true })` 可启用 selective hydration：
+
+```tsx
+import { Suspense, createApp, h } from "@italone/solace";
+
+await createApp(() =>
+  h(Suspense, { fallback: h("p", null, "loading…") }, [h(AsyncPart)]),
+).hydrateAsync(document.querySelector("#app") as Element, { selective: true });
+```
+
+`selective` 选项默认为 `false`，保持整树契约：`hydrateAsync()` 先准备完整的 async tree 再匹配
+server DOM。传入 `selective: true` 后，已就绪的部分会立即水合；未解析的 async components 与
+Suspense 子树在 `so:b` 标记范围内针对其 fallback DOM 水合；loader 解析后，边界内容会被原地
+patch，边界落定后注释标记会被移除。selective hydration 进行期间，用户交互（`click`、
+`pointerdown`、`keydown`、`input` 和 `change`）会在 container 根部被捕获，落定后携带原有类型化
+payload 回放；target 已离开 DOM 的缓冲事件会被丢弃。loader 失败时保留 fallback 并通过
+`console.error` 记录失败 —— hydration promise 不会被 reject。selective 模式同样支持
+`{ recover: true }`，语义与整树水合一致。同步的 `hydrate()` 在传入 `selective: true` 时会抛错；
+selective hydration 是仅限 `hydrateAsync()` 的选项。
+
+本切片的非目标：不提供 SuspenseList、不提供 scheduler priorities，也不在 fallback 切换上提供
+transition hooks。
 
 ### Router-aware SSR 与 hydration 组合
 
