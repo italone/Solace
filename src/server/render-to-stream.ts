@@ -4,6 +4,7 @@ import {
   type ComponentInstance,
 } from "../component/component";
 import { getAsyncComponentMetadata } from "../component/async-component";
+import { Suspense, collectAsyncLoaders, isSuspense } from "../component/suspense";
 import type { Provides } from "../component/provide";
 import { h } from "../vnode/h";
 import { createServerStyleSink, withStyleSink, type ServerStyleSink } from "../component/style";
@@ -224,6 +225,19 @@ async function* streamComponent(
   appProvides: Provides | null,
   ctx: StreamContext,
 ): AsyncGenerator<string> {
+  if (isSuspense(vnode.type)) {
+    const { loaders, allResolved } = collectAsyncLoaders(vnode.children as never);
+    if (ctx.mode === "out-of-order") {
+      yield* streamSuspenseBoundary(vnode, loaders, allResolved, parentComponent, appProvides, ctx);
+      return;
+    }
+    if (!allResolved) {
+      await Promise.all(loaders.map((load) => load()));
+    }
+    yield* streamLoadedComponent(vnode, parentComponent, appProvides, ctx);
+    return;
+  }
+
   const metadata = getAsyncComponentMetadata(vnode.type);
   if (metadata !== undefined) {
     if (ctx.mode === "out-of-order") {
@@ -253,6 +267,40 @@ async function* streamOutOfOrderBoundary(
     yield* streamVNode(fallback, parentComponent, appProvides, ctx);
   }
   yield boundaryEndMarker(id);
+}
+
+async function* streamSuspenseBoundary(
+  vnode: VNode,
+  loaders: (() => Promise<unknown>)[],
+  allResolved: boolean,
+  parentComponent: ComponentInstance | null,
+  appProvides: Provides | null,
+  ctx: StreamContext,
+): AsyncGenerator<string> {
+  const id = ctx.nextBoundaryId();
+  // The boundary readiness is the whole subtree: resolve to the Suspense
+  // component itself so the flush path renders h(Suspense, props, children)
+  // with every loader already settled (collectAsyncLoaders sees peek() hit).
+  const load = allResolved
+    ? Promise.resolve(Suspense)
+    : Promise.all(loaders.map((l) => l())).then(() => Suspense);
+  const boundary = createPendingBoundary(id, load, vnode.props, vnode.children);
+  ctx.pending.push(boundary);
+
+  yield boundaryStartMarker(id);
+  const fallback = resolveFallbackVNode(vnode);
+  if (fallback !== null) {
+    yield* streamVNode(fallback, parentComponent, appProvides, ctx);
+  }
+  yield boundaryEndMarker(id);
+}
+
+function resolveFallbackVNode(vnode: VNode): VNode | null {
+  const fallback = (vnode.props as { fallback?: VNode | (() => VNode) } | null)?.fallback;
+  if (fallback === undefined) {
+    return null;
+  }
+  return typeof fallback === "function" ? fallback() : fallback;
 }
 
 async function* streamLoadedComponent(

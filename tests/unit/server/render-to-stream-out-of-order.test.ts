@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { defineAsyncComponent, Fragment, h, useStyle } from "../../../src";
+import { defineAsyncComponent, Fragment, h, Suspense, useStyle } from "../../../src";
 import { renderToStream } from "../../../src/server";
 import { buildReplacementScript } from "../../../src/server/stream-boundary";
 import { collectStream } from "./stream-test-utils";
@@ -187,5 +187,64 @@ describe("renderToStream out-of-order replacement", () => {
     const script = buildReplacementScript(1, "<p></script></p>");
     expect(script).toContain("<\\/script>");
     expect(script).not.toContain("</script><");
+  });
+});
+
+describe("renderToStream Suspense boundaries", () => {
+  it("emits one so:b boundary for the whole Suspense subtree in out-of-order mode", async () => {
+    let release: (() => void) | undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const A = defineAsyncComponent(() => gate.then(() => () => h("i", null, "a")));
+    const B = defineAsyncComponent(async () => () => h("b", null, "b"));
+
+    const stream = renderToStream(
+      h(Suspense, { fallback: h("p", null, "loading…") }, [h(A), h(B)]),
+      { mode: "out-of-order" },
+    );
+    const reader = stream.getReader();
+    const decoder = new TextDecoder();
+    const firstRead = await reader.read();
+    const prefix = decoder.decode(firstRead.value ?? new Uint8Array());
+    expect(prefix).toContain("<!--so:b:1-->");
+    expect(prefix).toContain("<p>loading…</p>");
+    expect(prefix).toContain("<!--/so:b:1-->");
+    expect(prefix).not.toContain("so:b:2");
+
+    release!();
+    let streamed = prefix;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      streamed += decoder.decode(value, { stream: true });
+    }
+    expect(streamed).toContain("so:r:1");
+    expect(streamed.slice(streamed.indexOf("so:r:1"))).toContain("<i>a</i>");
+    expect(streamed.slice(streamed.indexOf("so:r:1"))).toContain("<b>b</b>");
+  });
+
+  it("awaits the subtree inline in ordered mode (no markers)", async () => {
+    const A = defineAsyncComponent(async () => () => h("i", null, "a"));
+    const streamed = await collectStream(
+      renderToStream(h(Suspense, { fallback: h("p", null, "loading…") }, [h(A)])),
+    );
+    expect(streamed).toBe("<i>a</i>");
+  });
+
+  it("numbers nested Suspense boundaries independently", async () => {
+    const Inner = defineAsyncComponent(async () => () => h("i", null, "inner"));
+    const Outer = defineAsyncComponent(async () => () => h("b", null, "outer"));
+    const streamed = await collectStream(
+      renderToStream(
+        h(Suspense, { fallback: h("p", null, "o…") }, [
+          h(Outer),
+          h(Suspense, { fallback: h("p", null, "i…") }, [h(Inner)]),
+        ]),
+        { mode: "out-of-order" },
+      ),
+    );
+    expect(streamed).toContain("so:b:1");
+    expect(streamed).toContain("so:b:2");
   });
 });
