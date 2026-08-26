@@ -20,6 +20,7 @@ export type HydrationSource = VNode | ComponentTransport;
 export type AsyncHydrationSource = HydrationSource | AsyncComponentType;
 export interface HydrationOptions {
   recover?: boolean;
+  selective?: boolean;
 }
 type RenderContainer = Element & {
   _solaceRenderEffect?: ReactiveEffect<void>;
@@ -50,6 +51,9 @@ export function hydrate(
   options: HydrationOptions = {},
 ): void {
   assertNoDeferredIntegrationOptions(options);
+  if (options.selective === true) {
+    throw new TypeError("Selective hydration requires hydrateAsync(); hydrate() is synchronous.");
+  }
   assertNoAsyncHydrationSource(source);
   const renderContainer = container as RenderContainer;
   const styleSink = createDocumentStyleSink(container.ownerDocument);
@@ -244,6 +248,10 @@ function assertNoDeferredIntegrationOptions(options: HydrationOptions): void {
     throw new TypeError("Hydration recover option must be a boolean");
   }
 
+  if (options.selective !== undefined && typeof options.selective !== "boolean") {
+    throw new TypeError("Hydration selective option must be a boolean");
+  }
+
   if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
     throw new TypeError(
       "Hydration manifest integration is deferred; compose assets in an app-local shell or adapter.",
@@ -262,7 +270,9 @@ function assertNoDeferredIntegrationOptions(options: HydrationOptions): void {
     );
   }
 
-  const unknownKey = Reflect.ownKeys(options).find((key) => key !== "recover");
+  const unknownKey = Reflect.ownKeys(options).find(
+    (key) => key !== "recover" && key !== "selective",
+  );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown hydration option: ${String(unknownKey)}`);
   }
