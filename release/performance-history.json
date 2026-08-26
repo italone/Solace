@@ -3,8 +3,8 @@
   "sources": {
     "browser": {
       "path": ".benchmark-history/browser.jsonl",
-      "sha256": "f7f16ea0edcb88b1c313df7de6e5bb52920bbd75d0eef9092acdeb2f96bdbb0f",
-      "recordCount": 222
+      "sha256": "39520ebe24137d9231080f55c4725064e04c4a0d25eef7e52cf59c06b9cd9ed2",
+      "recordCount": 234
     },
     "jsdom": {
       "path": ".benchmark-history/jsdom.jsonl",
@@ -14,11 +14,11 @@
   },
   "browserScenarios": {
     "keyed-reorder:reverse": {
-      "recordCount": 22,
-      "distinctRunCount": 22,
-      "distinctDateCount": 3,
+      "recordCount": 24,
+      "distinctRunCount": 24,
+      "distinctDateCount": 5,
       "firstRunAt": "2026-07-23T03:34:18.546Z",
-      "lastRunAt": "2026-08-24T06:09:34.483Z",
+      "lastRunAt": "2026-08-26T06:53:25.365Z",
       "runAt": [
         "2026-07-23T03:34:18.546Z",
         "2026-07-23T03:34:18.685Z",
@@ -41,15 +41,17 @@
         "2026-07-23T09:09:42.733Z",
         "2026-07-23T09:09:42.852Z",
         "2026-08-18T03:13:28.260Z",
-        "2026-08-24T06:09:34.483Z"
+        "2026-08-24T06:09:34.483Z",
+        "2026-08-25T01:45:09.016Z",
+        "2026-08-26T06:53:25.365Z"
       ]
     },
     "keyed-reorder:shift-window": {
-      "recordCount": 22,
-      "distinctRunCount": 22,
-      "distinctDateCount": 3,
+      "recordCount": 24,
+      "distinctRunCount": 24,
+      "distinctDateCount": 5,
       "firstRunAt": "2026-07-23T03:34:18.640Z",
-      "lastRunAt": "2026-08-24T06:09:34.607Z",
+      "lastRunAt": "2026-08-26T06:53:25.667Z",
       "runAt": [
         "2026-07-23T03:34:18.640Z",
         "2026-07-23T03:34:18.765Z",
@@ -72,15 +74,17 @@
         "2026-07-23T09:09:42.814Z",
         "2026-07-23T09:09:42.934Z",
         "2026-08-18T03:13:28.364Z",
-        "2026-08-24T06:09:34.607Z"
+        "2026-08-24T06:09:34.607Z",
+        "2026-08-25T01:45:09.120Z",
+        "2026-08-26T06:53:25.667Z"
       ]
     },
     "keyed-reorder:shuffle": {
-      "recordCount": 22,
-      "distinctRunCount": 22,
-      "distinctDateCount": 3,
+      "recordCount": 24,
+      "distinctRunCount": 24,
+      "distinctDateCount": 5,
       "firstRunAt": "2026-07-23T03:34:18.621Z",
-      "lastRunAt": "2026-08-24T06:09:34.584Z",
+      "lastRunAt": "2026-08-26T06:53:25.622Z",
       "runAt": [
         "2026-07-23T03:34:18.621Z",
         "2026-07-23T03:34:18.746Z",
@@ -103,15 +107,17 @@
         "2026-07-23T09:09:42.794Z",
         "2026-07-23T09:09:42.913Z",
         "2026-08-18T03:13:28.342Z",
-        "2026-08-24T06:09:34.584Z"
+        "2026-08-24T06:09:34.584Z",
+        "2026-08-25T01:45:09.099Z",
+        "2026-08-26T06:53:25.622Z"
       ]
     },
     "keyed-reorder:sorted": {
-      "recordCount": 22,
-      "distinctRunCount": 22,
-      "distinctDateCount": 3,
+      "recordCount": 24,
+      "distinctRunCount": 24,
+      "distinctDateCount": 5,
       "firstRunAt": "2026-07-23T03:34:18.573Z",
-      "lastRunAt": "2026-08-24T06:09:34.522Z",
+      "lastRunAt": "2026-08-26T06:53:25.514Z",
       "runAt": [
         "2026-07-23T03:34:18.573Z",
         "2026-07-23T03:34:18.704Z",
@@ -134,15 +140,17 @@
         "2026-07-23T09:09:42.752Z",
         "2026-07-23T09:09:42.871Z",
         "2026-08-18T03:13:28.291Z",
-        "2026-08-24T06:09:34.522Z"
+        "2026-08-24T06:09:34.522Z",
+        "2026-08-25T01:45:09.049Z",
+        "2026-08-26T06:53:25.514Z"
       ]
     },
     "keyed-reorder:swap-neighbors": {
-      "recordCount": 22,
-      "distinctRunCount": 22,
-      "distinctDateCount": 3,
+      "recordCount": 24,
+      "distinctRunCount": 24,
+      "distinctDateCount": 5,
       "firstRunAt": "2026-07-23T03:34:18.597Z",
-      "lastRunAt": "2026-08-24T06:09:34.551Z",
+      "lastRunAt": "2026-08-26T06:53:25.560Z",
       "runAt": [
         "2026-07-23T03:34:18.597Z",
         "2026-07-23T03:34:18.724Z",
@@ -165,15 +173,17 @@
         "2026-07-23T09:09:42.772Z",
         "2026-07-23T09:09:42.891Z",
         "2026-08-18T03:13:28.316Z",
-        "2026-08-24T06:09:34.551Z"
+        "2026-08-24T06:09:34.551Z",
+        "2026-08-25T01:45:09.073Z",
+        "2026-08-26T06:53:25.560Z"
       ]
     },
     "large-list": {
-      "recordCount": 92,
-      "distinctRunCount": 92,
-      "distinctDateCount": 8,
+      "recordCount": 94,
+      "distinctRunCount": 94,
+      "distinctDateCount": 10,
       "firstRunAt": "2026-07-16T01:54:42.874Z",
-      "lastRunAt": "2026-08-24T06:09:34.453Z",
+      "lastRunAt": "2026-08-26T06:53:25.310Z",
       "runAt": [
         "2026-07-16T01:54:42.874Z",
         "2026-07-16T01:55:38.508Z",
@@ -266,7 +276,9 @@
         "2026-07-23T09:09:42.716Z",
         "2026-07-23T09:09:42.835Z",
         "2026-08-18T03:13:28.233Z",
-        "2026-08-24T06:09:34.453Z"
+        "2026-08-24T06:09:34.453Z",
+        "2026-08-25T01:45:08.987Z",
+        "2026-08-26T06:53:25.310Z"
       ]
     }
   },
