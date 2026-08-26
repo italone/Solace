@@ -87,7 +87,9 @@ describe("buildSnapshotScript", () => {
     expect(script.indexOf("</script>")).toBe(script.lastIndexOf("</script>"));
   });
 
-  it("neutralizes closing script sequences inside the payload", async () => {
+  // The serializer escapes "<" (to <), so hostile "</script>" text never
+  // survives serialization; this verifies that escaping end to end.
+  it("serializer-escaped hostile route names cannot terminate the payload", async () => {
     const hostileRoutes = [
       { path: "/", name: "home", component: () => h("p", null, "home") },
       { path: "/evil", name: "x</script>y", component: () => h("p", null, "evil") },

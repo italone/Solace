@@ -19,6 +19,12 @@ export {
   type RouterServerContextOptions,
 } from "./router-context";
 export {
+  buildSnapshotScript,
+  resolveRouterSSR,
+  type ResolvedRouterSSR,
+  type RouterSSROptions,
+} from "./router-ssr";
+export {
   createRouterSnapshot,
   parseRouterSnapshot,
   RouterHydrationError,

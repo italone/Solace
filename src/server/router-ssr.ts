@@ -61,6 +61,9 @@ export async function resolveRouterSSR(options: RouterSSROptions): Promise<Resol
 }
 
 export function buildSnapshotScript(snapshot: RouterSnapshot): string {
+  // Defense in depth: serializeRouterSnapshot already escapes "<", so this
+  // only guards against a future serializer regression letting "</script"
+  // terminate the payload early.
   const payload = serializeRouterSnapshot(snapshot).replace(/<\/(script)/gi, "<\\/$1");
   return (
     `<script id="__solace-router-snapshot">` +
