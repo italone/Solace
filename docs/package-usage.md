@@ -379,17 +379,41 @@ serialization escapes script-sensitive characters, parsing validates the exact v
 and `RouterHydrationError` fails closed on the first route mismatch. Application code owns any fresh
 mount recovery. Existing `{ recover: true }` remains limited to DOM hydration mismatch.
 
+The async renderer entries also accept a renderer-owned `router` option that performs the same
+composition internally and embeds the snapshot for `hydrateAsync()` to verify:
+
+```tsx
+import { RouterView, createApp, createRouter, createWebHistory } from "@italone/solace";
+import type { RouteRecord } from "@italone/solace";
+import { renderToStringAsync } from "@italone/solace/server";
+
+const routes: RouteRecord[] = [{ path: "/", name: "home", component: () => <p>home</p> }];
+const identifyRecord = (record: RouteRecord) => record.name ?? record.path;
+
+const { html } = await renderToStringAsync(() => <RouterView />, {
+  router: { url: "/", routes, identifyRecord },
+});
+
+// Browser:
+const router = createRouter({ history: createWebHistory(), routes });
+const app = createApp(App).use(router);
+await app.hydrateAsync(container, { router, routerIdentifyRecord: identifyRecord });
+```
+
 The public loop includes sequential streaming SSR through `renderToStream()` plus out-of-order
-streaming via `renderToStream(source, { mode: "out-of-order" })`, and the Suspense/selective
+streaming via `renderToStream(source, { mode: "out-of-order" })`, the Suspense/selective
 hydration beta slice via `h(Suspense, { fallback }, children)` with
-`hydrateAsync(container, { selective: true })`. It does not include
-filesystem SSG output, route crawling, direct
-renderer-owned router options, or automatic router snapshot recovery.
+`hydrateAsync(container, { selective: true })`, and renderer-owned router SSR via the `router`
+option on `renderToStream()`/`renderToStringAsync()` with `hydrateAsync(container, { router,
+routerIdentifyRecord })`. It does not include
+filesystem SSG output, route crawling, router-aware SSG or sync-entry
+router options, or automatic router snapshot recovery.
 
 Passing only one of `manifest` or `clientEntry` to `generateStaticSite()` throws a `TypeError`; pass
 both to make the shell receive resolved production asset tags. Route-level `manifest`,
-`clientEntry`, and `router` fields are rejected. App-level renderer `router` remains unsupported;
-use `createRouterServerContext()` for request-scoped SSR composition, or convert narrow static
+`clientEntry`, and `router` fields are rejected. App-level SSG `router` remains unsupported;
+use the renderer `router` option on `renderToStream()`/`renderToStringAsync()` for request-scoped
+SSR, `createRouterServerContext()` for manual composition, or convert narrow static
 records with `createStaticRoutesFromRouter()` for explicit SSG routes.
 Route paths must be strings before rendering starts, so malformed SSG route inputs fail with a stable
 `TypeError`.
@@ -508,7 +532,8 @@ adapters, nested route records, redirects, global `beforeEach` guards, route-lev
 guards, route `meta`, route names, aliases, route props, named locations, `createMemoryHistory()`,
 `lazyRoute()` route components, `RouterLink`, `RouterView`, and `scrollBehavior` after successful
 navigations. It also exposes `router.isReady()` plus canonical route snapshot primitives for explicit
-SSR/hydration composition. The beta router still defers auth, permissions, direct renderer-owned
+SSR/hydration composition, and the async renderer entries accept a renderer-owned `router` option.
+The beta router still defers auth, permissions, router-aware SSG, and sync-entry
 router options (out-of-order streaming SSR is available through
 `renderToStream(source, { mode: "out-of-order" })`, and Suspense/selective hydration through
 `h(Suspense, { fallback }, children)` with `hydrateAsync(container, { selective: true })`). `props: true`

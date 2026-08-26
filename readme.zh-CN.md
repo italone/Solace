@@ -20,7 +20,7 @@ Solace 聚焦于小型运行时核心：响应式状态、调度渲染、VNode d
 Solace 当前处于 `0.1.0` beta 线。当前工作区准备本地、尚未发布的 `0.1.0-beta.6` candidate。
 npm `latest` 仍是 `0.0.5`，npm `beta` 是 `0.1.0-beta.5`。beta.5 release 增加 typed
 JSX/TSX 组件契约、更完整的 adoption 门禁，以及可组合的 router-aware SSR/hydration primitives，
-但不增加 streaming 或 renderer-owned 直接 router options。发布之后 `main` 上的后续加固强化了
+但不增加 streaming。当前工作区在 async renderer 入口上补充了 renderer-owned router SSR。发布之后 `main` 上的后续加固强化了
 JSX typed 具名 slot 契约、router stable-slice 边界覆盖、DevTools store action timeline 与 QA
 checklist，以及 benchmark history 证据，但没有扩大 beta 契约。
 
@@ -48,7 +48,7 @@ sequential in-memory SSG，以及 `hydrateAsync()` 的 prepare-then-commit 浏�
 Router-aware SSR/hydration 已通过显式 readiness、server context 和 snapshot 组合提供。顺序流式
 （sequential）streaming SSR 已作为 beta server entry 通过 `renderToStream()` 提供：字节顺序与
 `renderToStringAsync().html` 一致，样式在首次注册处内联发射，渲染 eager 启动且不处理消费者
-backpressure。乱序（out-of-order）streaming SSR 可通过 `renderToStream(source, { mode: "out-of-order" })` 使用，配合 `defineAsyncComponent({ loader, fallback })` fallback 与按解析顺序的替换脚本。Renderer-owned 直接 router options、initial hydration 之后的 async update scheduling、
+backpressure。乱序（out-of-order）streaming SSR 可通过 `renderToStream(source, { mode: "out-of-order" })` 使用，配合 `defineAsyncComponent({ loader, fallback })` fallback 与按解析顺序的替换脚本。Router-aware SSG 与同步入口的 router options、initial hydration 之后的 async update scheduling、
 一方 UI 组件、生产级 DevTools 发布形态和内部模块兼容性承诺仍不在冻结后的生产契约内。上述排除项是面向可读性/教学定位的刻意范围决策，而非未完成工作；重新评估标准见 [docs/roadmap.md](./docs/roadmap.md)。
 
 ## 公开契约门禁
@@ -58,8 +58,10 @@ backpressure。乱序（out-of-order）streaming SSR 可通过 `renderToStream(s
 `createRouterServerContext()` 提供可组合的 router-aware SSR 与 router-aware hydration，并通过
 `renderToStream()` 提供顺序流式 streaming SSR，并通过 `renderToStream(source, { mode: "out-of-order" })`
 提供乱序 streaming SSR，并提供 `h(Suspense, { fallback }, children)` 加 `hydrateAsync(container,
-{ selective: true })` 的 Suspense/selective hydration beta 切片；仍推迟
-auth、permissions、renderer-owned 直接 router options，以及 initial hydration 之后的 async update scheduling。Router `auth` 和
+{ selective: true })` 的 Suspense/selective hydration beta 切片，还通过 `renderToStream()`/
+`renderToStringAsync()` 的 `router` option 配合 `hydrateAsync(container, { router,
+routerIdentifyRecord })` 提供 renderer-owned router SSR；仍推迟
+auth、permissions、router-aware SSG 与同步入口的 router options，以及 initial hydration 之后的 async update scheduling。Router `auth` 和
 `permissions` options 或 route
 record fields 会被明确拒绝，不会被当作隐式客户端授权能力。
 SSR、hydration 和 SSG option objects 也会通过包含字段名的 `TypeError` 拒绝未知自有字段，

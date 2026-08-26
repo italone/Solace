@@ -8,7 +8,8 @@ line:
 - Reactive core, scheduler, renderer, function components, events, store, JSX/TSX runtime, DevTools API, examples, and release gates.
 - All tests passing, coverage above thresholds, package exports validated.
 - Completed stable prerequisites: medium-app validation and the compatibility and deprecation policy.
-- Composable router-aware SSR/hydration primitives are implemented; direct renderer integration and
+- Composable router-aware SSR/hydration primitives are implemented, and the async renderer entries
+  now accept a renderer-owned `router` option; router-aware SSG, sync-entry router options, and
   production DevTools remain deferred.
 
 ## Next Phase: Beta
@@ -32,8 +33,9 @@ output; each requires a separate public API and compatibility review.
    wildcard fallback routes, query strings, web/hash/memory history, nested routes, redirects, route
    names, aliases, route props, named locations, global and route-level guards, explicit
    `lazyRoute()` components, `RouterLink`, `RouterView`, `useRoute`, `useRouter`, and scroll
-   behavior plus `isReady()`, canonical snapshots, and request-scoped server contexts; keep direct
-   SSR/SSG/hydration renderer options, auth, and permissions deferred until separately designed.
+   behavior plus `isReady()`, canonical snapshots, request-scoped server contexts, and the
+   renderer-owned `router` option on the async renderer entries; keep router-aware SSG,
+   synchronous-entry router options, auth, and permissions deferred until separately designed.
 4. **Mandatory public API gates** — keep package export tests, packed-consumer smoke, browser e2e, and release readiness required for public API changes; these are completed stable prerequisites.
 5. **SSR / hydration minimum loop** — implemented through `@italone/solace/server` and
    `createApp(App).hydrate(container)` for synchronous VNode/component trees, including
@@ -48,7 +50,12 @@ output; each requires a separate public API and compatibility review.
    filesystem output and route crawling deferred while preserving collected `renderToString()`
    styles, production asset tags, and explicit-path router records through the shell contract.
 7. **SSR/SSG/hydration next phase** — the composable router-aware slice now settles request routers,
-   serializes canonical snapshots, and verifies before hydration. The sequential streaming SSR slice
+   serializes canonical snapshots, and verifies before hydration. The renderer-owned router slice
+   (see [`2026-08-26-renderer-owned-router-design.md`](./superpowers/specs/2026-08-26-renderer-owned-router-design.md))
+   is now implemented on top of it: `renderToStream()` and `renderToStringAsync()` accept a `router`
+   option that settles a request-scoped memory router, injects its `provides`, and embeds the
+   serialized route snapshot, while `hydrateAsync(container, { router, routerIdentifyRecord })`
+   verifies the embedded snapshot before hydrating and removes the transport script. The sequential streaming SSR slice
    is implemented as `renderToStream()` on `@italone/solace/server`: it streams the exact
    `renderToStringAsync().html` byte order, flushes completed prefixes before async components
    resolve, emits `useStyle()` styles inline at first registration, starts rendering eagerly, and
@@ -63,7 +70,7 @@ output; each requires a separate public API and compatibility review.
    `hydrateAsync(container, { selective: true })` hydrates ready parts immediately, patches boundary
    content on loader resolution, strips markers after settlement, and replays buffered interactions
    (click/pointerdown/keydown/input/change) with typed payloads. Keep route crawling, filesystem
-   output, and direct renderer-owned router options deferred.
+   output, router-aware SSG, and synchronous-entry router options deferred.
 8. **Browser DevTools extension UI** — the first example panel is implemented under
    `examples/devtools-extension`; continue hardening extension packaging, the browser extension QA
    checklist, richer event contracts, and future inspectors without reading private runtime state.

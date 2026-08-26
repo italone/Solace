@@ -77,7 +77,10 @@ The router exports in the package root are beta APIs for small SPA examples. Nes
 redirects, global `beforeEach` guards, route-level `beforeEnter` guards, route `meta`, route names,
 aliases, route props, named locations, memory history, and explicit route lazy components through
 `lazyRoute()` are supported. Router scroll behavior through the `scrollBehavior` option is supported
-after successful navigations. Auth, permissions, SSR/SSG/hydration router integration, and a
+after successful navigations. Renderer-owned router SSR is supported on `renderToStream()`,
+`renderToStringAsync()`, and `hydrateAsync()` through the `router` option (see the section below);
+SSG and the synchronous `renderToString()`/`hydrate()` entries keep deferring router options.
+Auth, permissions, router-aware SSG, and a
 long-term router compatibility policy remain deferred. Passing still-deferred router options throws
 a `TypeError` instead of silently widening the beta contract.
 
@@ -94,11 +97,12 @@ beta and SFC/Vite APIs experimental without silently removing their documented e
 
 The current public contract intentionally rejects still-deferred integration surfaces instead of
 silently accepting options that Solace does not implement. Router auth, permissions,
-direct router options on SSR/hydration, and
+renderer-owned router options on SSG and the synchronous SSR/hydration entries, and
 async update scheduling remain outside the beta contract. Sequential and out-of-order streaming SSR
-through `renderToStream()` are available as beta server entries; see the section below. Composable router
-readiness, server context, and route
-snapshot primitives are available without widening those renderer options. Route `meta` is developer-authored data for
+through `renderToStream()` are available as beta server entries; see the section below. Renderer-owned
+router SSR through the `router` option on `renderToStream()`, `renderToStringAsync()`, and
+`hydrateAsync()`, plus composable router readiness, server context, and route
+snapshot primitives, are available for the async renderer entries. Route `meta` is developer-authored data for
 application code and examples; it is not an authentication or permission enforcement mechanism.
 Router options or route records that use `auth` or `permissions` fields are rejected with explicit
 deferred-boundary errors; use application guards for local UX routing and backend authorization for
@@ -106,10 +110,14 @@ enforcement. Public API work that widens any of these boundaries must update REA
 package-usage, package boundary tests, consumer smoke coverage, and the release gate in the same
 change.
 
-The first router integration is composable rather than renderer-owned. See the
+The first router integration was composable; the async renderer entries now also accept a
+renderer-owned `router` option. See the
 [router-aware SSR and hydration design](./superpowers/specs/2026-08-14-router-aware-ssr-hydration-design.md)
 for the request-scoped memory history, canonical route snapshot, server context, and hydration
-verification flow. SSR, SSG, and hydration continue rejecting direct `router` options.
+verification flow, and the
+[renderer-owned router design](./superpowers/specs/2026-08-26-renderer-owned-router-design.md) for
+the renderer option slice. SSG, the synchronous `renderToString()`, and `hydrate()` continue
+rejecting direct `router` options.
 
 ## App
 
@@ -240,13 +248,15 @@ options such as `manifest`, `clientEntry`, `router`, or `stream` to `renderToStr
 Hydration options must be a non-array object, and `recover` must be boolean when provided.
 `renderToString()` context, when provided, must be a plain object.
 Hydration options accept only `recover` and `selective` (the latter on `hydrateAsync()` only; see
-the Suspense section), and `renderToString()` options accept only `context` and
-`provides`; unknown own option fields throw a `TypeError` naming the field.
+the Suspense section); `hydrateAsync()` additionally accepts `router` and `routerIdentifyRecord`
+(see the renderer-owned router section below), while `renderToString()` options accept only
+`context` and `provides`; unknown own option fields throw a `TypeError` naming the field.
 Async or thenable render trees, including direct sources, SSG route sources, and async child values,
 are rejected by the synchronous `renderToString()`, `generateStaticSite()`, `hydrate()`, `render()`,
 and `mount()` APIs. Existing synchronous APIs retain their return types; use the explicit async
 entries instead of relying on implicit promise widening. Passing deferred `manifest`, `clientEntry`,
-`router`, or `stream` fields to `hydrate()` or `hydrateAsync()` is also rejected at runtime.
+`router`, or `stream` fields to `hydrate()` is also rejected at runtime; `hydrateAsync()` accepts
+`router` plus `routerIdentifyRecord` (see the renderer-owned router section) and rejects the rest.
 Hydration mismatch errors include structured `kind`, `path`, `expected`, and `actual` fields so
 callers can distinguish missing nodes, extra nodes, element tag mismatches, and text mismatches.
 
@@ -274,7 +284,8 @@ registration, and `useStyle()` are supported before the first suspension and ins
 synchronous render function. Ambient component-instance APIs in continuation code after `await` are
 outside the beta.4 contract. Sequential and out-of-order streaming SSR are available through `renderToStream()`;
 Suspense boundaries and selective hydration are available as a beta slice (see the section below);
-direct router options on SSR/hydration remain deferred and
+the renderer-owned `router` option is available (see the section below), SSG and synchronous-entry
+router options remain deferred, and
 async update scheduling remains deferred.
 
 ### `renderToStream(source, options?)`
@@ -300,13 +311,14 @@ return new Response(stream, { headers: { "content-type": "text/html; charset=utf
 ```
 
 Rendering starts eagerly when `renderToStream()` is called; the returned stream does not support
-consumer backpressure in this slice. Options accept only `context`, `provides`, and `mode`
+consumer backpressure in this slice. Options accept only `context`, `provides`, `mode`, and `router`
 (`"ordered"` is the default and byte-identical to previous releases; `"out-of-order"` is described
-below); unknown own option fields — including `manifest`, `clientEntry`, and `router` — throw a
+below; `router` is described in the renderer-owned router section); unknown own option fields —
+including `manifest` and `clientEntry` — throw a
 `TypeError` naming the field. In the default ordered mode, render errors reject the stream (the
 underlying `ReadableStream` errors via `controller.error()`), which may surface after partial bytes
-have already been emitted. Direct renderer-owned router options and
-consumer backpressure are not implemented.
+have already been emitted. Router option snapshot scripts flush after the stream boundary in
+ordered and out-of-order modes. Consumer backpressure is not implemented.
 
 #### Out-of-order streaming
 
@@ -453,6 +465,54 @@ sorted, query arrays retain item order, and nullish router query inputs remain o
 router contract. Serialization escapes script-sensitive characters; parsing rejects malformed,
 unknown, or unsupported fields. `RouterHydrationError` reports the first mismatching field. Router
 snapshot recovery is application-owned and separate from DOM-only `{ recover: true }`.
+
+### Renderer-owned router SSR and hydration
+
+`renderToStream()` and `renderToStringAsync()` accept a `router` option that moves the composition
+above into the renderer. The option builds a fresh request-scoped memory-history router per call,
+awaits its readiness, injects the server context `provides`, and appends the serialized route
+snapshot to the rendered output, so applications no longer wire those steps by hand:
+
+```tsx
+import { RouterView } from "@italone/solace";
+import type { RouteRecord } from "@italone/solace";
+import { renderToStringAsync } from "@italone/solace/server";
+
+const routes: RouteRecord[] = [{ path: "/", name: "home", component: () => <p>home</p> }];
+const identifyRecord = (record: RouteRecord) => record.name ?? record.path;
+
+const { html } = await renderToStringAsync(() => <RouterView />, {
+  router: { url: "/", routes, identifyRecord },
+});
+```
+
+`router` accepts only `url` (the request path the memory history starts from), `routes` (beta
+`RouteRecord[]`), `identifyRecord` (required; the same record identity callback used for snapshots),
+and an optional `configure(router)` callback for synchronous global guard registration. Combining
+`router` with `provides` throws a `TypeError`; the server context owns injection keys in this mode.
+The snapshot is appended as
+`<script id="__solace-router-snapshot">window.__SOLACE_ROUTER_SNAPSHOT__=<json>;</script>` — after
+pending async boundaries are flushed when streaming, and at the end of the buffered html otherwise.
+The payload is neutralized against `</script` termination.
+
+On the client, pass the installed router and the same identity callback to `hydrateAsync()`:
+
+```tsx
+const app = createApp(App).use(router);
+await app.hydrateAsync(container, { router, routerIdentifyRecord: identifyRecord });
+```
+
+`routerIdentifyRecord` is required whenever `router` is set (snapshot verification needs it), and
+`routerIdentifyRecord` without `router` is rejected. The flow awaits `router.isReady()`, reads the
+payload from the embedded script (falling back to the `window.__SOLACE_ROUTER_SNAPSHOT__` global),
+parses and verifies it against the client route with the same canonical snapshot rules as the
+composable flow, removes the script element, and only then hydrates. A missing payload throws a
+`TypeError` naming `script#__solace-router-snapshot`; a client/server mismatch throws
+`RouterHydrationError` before any `{ recover: true }` handling. Router-aware selective hydration is
+not supported yet; combining `router` with `selective: true` throws a `TypeError` directing you to
+ordered hydration.
+`generateStaticSite()` and the synchronous `renderToString()`/`hydrate()` entries keep rejecting
+`router` options; the composable APIs above remain available as an escape hatch.
 
 ### `generateStaticSite(options)`
 

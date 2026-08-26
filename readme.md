@@ -20,8 +20,8 @@ Solace focuses on a small runtime core: reactive state, scheduled rendering, VNo
 Solace is currently on the `0.1.0` beta line. This working tree prepares a local, unpublished
 `0.1.0-beta.6` candidate; npm `latest` remains `0.0.5`, and npm `beta` is
 `0.1.0-beta.5`. The beta.5 release adds typed JSX/TSX component contracts, broader adoption
-gates, and composable router-aware SSR/hydration primitives without adding streaming or direct
-renderer-owned router options. Post-release hardening on `main` strengthened the JSX typed
+gates, and composable router-aware SSR/hydration primitives without adding streaming. The current
+working tree adds renderer-owned router SSR on the async renderer entries. Post-release hardening on `main` strengthened the JSX typed
 named-slot contract, router stable-slice edge coverage, DevTools store action timeline and QA
 checklists, and benchmark history evidence without widening the beta contract.
 
@@ -55,7 +55,8 @@ and snapshot composition. Sequential streaming SSR is available as a beta server
 `renderToStream()`, which streams the exact `renderToStringAsync().html` byte order with inline
 first-registration styles, eager start, and no consumer backpressure, plus out-of-order streaming
 via `renderToStream(source, { mode: "out-of-order" })` with `defineAsyncComponent({ loader, fallback })`
-fallbacks and resolution-order replacement scripts. Direct renderer-owned router options, async update scheduling after initial
+fallbacks and resolution-order replacement scripts. Router-aware SSG and synchronous-entry router
+options, async update scheduling after initial
 hydration, first-party UI components, production DevTools distribution, and compatibility guarantees
 for internal modules remain outside the frozen production contract. These exclusions are deliberate
 scope decisions for a readable, teaching-oriented runtime — not incomplete work; revisit criteria are
@@ -69,8 +70,9 @@ router-aware SSR and router-aware hydration through `router.isReady()`, canonica
 `createRouterServerContext()`, and sequential streaming SSR through `renderToStream()`, and out-of-order streaming SSR via
 `renderToStream(source, { mode: "out-of-order" })`, and the Suspense/selective hydration beta
 slice through `h(Suspense, { fallback }, children)` plus `hydrateAsync(container, { selective:
-true })`. It still
-defers auth, permissions, direct renderer-owned router
+true })`, and renderer-owned router SSR through the `router` option on `renderToStream()`/
+`renderToStringAsync()` with `hydrateAsync(container, { router, routerIdentifyRecord })`. It still
+defers auth, permissions, router-aware SSG and synchronous-entry router
 options, and async update scheduling after
 initial hydration.
 Router `auth` and `permissions` options or route record fields are explicitly rejected instead of

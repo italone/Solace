@@ -56,7 +56,7 @@ beta 线兼容性契约仍有意保持较窄。文档化公开入口应在 patch
 
 `.solace` compiler 契约是可选、窄、实验性的辅助能力。它当前限于文档化的 Vite plugin 和 `@italone/solace/sfc` 类型声明入口，不是 Solace 的主要组件模型。parser、生成 JavaScript 形状和内部 compiler modules 仍属于辅助编译器表面背后的实现细节。scoped style 会通过公开的 `useStyle()` runtime helper 注册，但生成模块形状和 compiler 内部实现不属于兼容性目标。Vite plugin 还没有公开 options；传入 options 会抛出 `TypeError`，避免暗示语法扩展。SFC block attributes 和自定义顶层 blocks 会被拒绝；文档化 block model 仍是一个 `<template>`、可选 `<script>` 和可选 `<style>`。无效 `.solace` 文件的公开 diagnostics surface 是 Vite transform failure，当前 transform policy 会有意返回 `map: null`，不发布 source maps。不要导入 `@italone/solace/compiler`、`@italone/solace/router` 或 `@italone/solace/dist/**` 这类 compiler/router deep subpaths。
 
-包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。当前支持 nested route records、redirects、全局 `beforeEach` guards、route-level `beforeEnter` guards、route `meta`、route names、aliases、route props、named locations、`createMemoryHistory()`，通过 `lazyRoute()` 声明的 route lazy components，以及成功导航后的 `scrollBehavior`。auth、permissions、SSR/SSG/hydration router integration 和长期 router 兼容策略仍被推迟。传入仍 deferred 的 router options 会抛出 `TypeError`，而不是静默扩大 beta contract。
+包根入口中的 router exports 属于 beta API，面向小型 SPA 示例。当前支持 nested route records、redirects、全局 `beforeEach` guards、route-level `beforeEnter` guards、route `meta`、route names、aliases、route props、named locations、`createMemoryHistory()`，通过 `lazyRoute()` 声明的 route lazy components，以及成功导航后的 `scrollBehavior`。`renderToStream()`、`renderToStringAsync()` 和 `hydrateAsync()` 已通过 `router` option 支持 renderer-owned router SSR（见下文章节）；SSG 和同步 `renderToString()`/`hydrate()` 入口的 router options 仍被推迟。auth、permissions、router-aware SSG 和长期 router 兼容策略仍被推迟。传入仍 deferred 的 router options 会抛出 `TypeError`，而不是静默扩大 beta contract。
 
 大多数应用应从包根入口导入。`@italone/solace/server` 只应在 server-side 代码中使用。JSX
 子路径通常只通过 `jsxImportSource` 或 bundler 生成导入使用。只有在构建 instrumentation 或需要
@@ -68,8 +68,11 @@ event snapshots 的示例，或运行 `examples/devtools-extension` 浏览器 De
 ## Deferred Beta 边界
 
 当前公共契约会主动拒绝仍处于 deferred 状态的集成入口，而不是静默接受 Solace 尚未实现的
-options。Router auth、permissions、router-aware SSR、router-aware hydration
-和 async update scheduling 仍不属于 beta 契约。`renderToStream()`
+options。Router auth、permissions、router-aware SSG、SSG 与同步 SSR/hydration 入口上的
+renderer-owned router options
+和 async update scheduling 仍不属于 beta 契约。`renderToStream()` 与 `renderToStringAsync()`
+通过 `router` option 提供 renderer-owned router SSR，`hydrateAsync()` 通过 `router` 配合
+`routerIdentifyRecord` 完成 verify-before-hydrate（见下文章节）；`renderToStream()`
 提供的顺序流式（sequential）与乱序（out-of-order）streaming SSR 已作为 beta server entry 提供，见下文章节。Route `meta` 是给
 应用代码和示例使用的开发者自定义数据，不是认证或权限执行机制。使用 `auth` 或 `permissions`
 字段的 router options 或 route records 会被明确的 deferred-boundary 错误拒绝；本地 UX routing
@@ -77,10 +80,13 @@ options。Router auth、permissions、router-aware SSR、router-aware hydration
 工作，都需要在同一变更中同步 README、project-status、package-usage、package boundary tests、
 consumer smoke 覆盖和发布门禁。
 
-下一阶段 router integration 仍只处于设计状态。请阅读
+第一组 router integration 是可组合的；async renderer 入口现在也接受 renderer-owned `router`
+option。请阅读
 [router-aware SSR 与 hydration 设计](./superpowers/specs/2026-08-14-router-aware-ssr-hydration-design.md)
-现已落地第一组可组合 primitives：request-scoped memory history、canonical route snapshot、server
-context 和 hydration verification。SSR、SSG 和 hydration 仍继续拒绝直接 `router` options。
+了解 request-scoped memory history、canonical route snapshot、server
+context 和 hydration verification，并参阅
+[renderer-owned router 设计](./superpowers/specs/2026-08-26-renderer-owned-router-design.md)
+了解 renderer option 切片。SSG、同步 `renderToString()` 和 `hydrate()` 仍继续拒绝直接 `router` options。
 
 ## App
 
@@ -203,12 +209,13 @@ integration options 会抛出 `TypeError`。
 Hydration options 必须是非数组对象；提供 `recover` 时，它必须是 boolean。
 `renderToString()` 的 `context` 如果提供，必须是 plain object。
 Hydration options 只接受 `recover` 和 `selective`（后者仅用于 `hydrateAsync()`，见 Suspense
-章节），`renderToString()` options 只接受 `context` 和 `provides`；
+章节）；`hydrateAsync()` 额外接受 `router` 和 `routerIdentifyRecord`（见下文 renderer-owned
+router 章节），`renderToString()` options 只接受 `context` 和 `provides`；
 未知的自有 option 字段会抛出包含字段名的 `TypeError`。
 同步 `renderToString()`、`generateStaticSite()`、`hydrate()`、`render()` 和 `mount()` 会拒绝
 async 或 thenable render tree，包括 direct sources、SSG route sources 和 async child values。
 这些现有同步 API 保持原有同步返回类型；需要 async tree 时应使用显式 async 入口。向
-`hydrate()` 或 `hydrateAsync()` 传入 deferred `manifest`、`clientEntry`、`router` 或 `stream`
+`hydrate()` 传入 deferred `manifest`、`clientEntry`、`router` 或 `stream`
 字段也会在运行时直接拒绝。
 Hydration mismatch 错误会带结构化的 `kind`、`path`、`expected` 和 `actual` 字段，便于
 区分 missing node、extra node、元素标签不一致和文本不一致。
@@ -236,8 +243,8 @@ promised children 是 one-shot values。`provide()`、`inject()`、lifecycle reg
 `useStyle()` 可在第一次 suspension 前，以及解析后的同步 render function 内使用；它们不属于
 `await` 之后 continuation code 的 ambient component-instance API 契约。顺序流式（sequential）
 与乱序（out-of-order）streaming SSR 已通过 `renderToStream()` 提供；Suspense 边界与 selective
-hydration 已作为 beta 切片提供（见下文章节）；SSR/hydration 上的直接 router
-option 和 async update scheduling 仍保持 deferred。
+hydration 已作为 beta 切片提供（见下文章节）；renderer-owned `router` option 可用（见下文
+章节）；SSG 与同步入口的 router option 和 async update scheduling 仍保持 deferred。
 
 ### `renderToStream(source, options?)`
 
@@ -261,11 +268,11 @@ return new Response(stream, { headers: { "content-type": "text/html; charset=utf
 ```
 
 `renderToStream()` 被调用时渲染立即开始（eager start）；本切片返回的流不处理消费者
-backpressure。options 只接受 `context`、`provides` 和 `mode`（`"ordered"` 为默认值，与之前的
-版本字节一致；`"out-of-order"` 见下文）；未知自有字段 —— 包括 `manifest`、
-`clientEntry` 和 `router` —— 会抛出带字段名的 `TypeError`。默认的 ordered 模式下，渲染错误会通过
-`controller.error()` 拒绝流，此时部分字节可能已经发射。
-renderer-owned 直接 router options 和消费者 backpressure 均未
+backpressure。options 只接受 `context`、`provides`、`mode` 和 `router`（`"ordered"` 为默认值，与之前的
+版本字节一致；`"out-of-order"` 见下文；`router` 见下文 renderer-owned router 章节）；未知自有字段 ——
+包括 `manifest` 和 `clientEntry` —— 会抛出带字段名的 `TypeError`。默认的 ordered 模式下，渲染错误会通过
+`controller.error()` 拒绝流，此时部分字节可能已经发射。router option 的 snapshot script 会在
+ordered 与 out-of-order 模式下于 async 边界 flush 之后追加。消费者 backpressure 仍未
 实现。
 
 #### 乱序（out-of-order）streaming
@@ -392,6 +399,51 @@ item order，并继续沿用 router 对 nullish query input 的省略语义。�
 字符；解析会拒绝 malformed、unknown 或不支持版本。`RouterHydrationError` 指出第一个 mismatch
 字段。router snapshot recovery 由应用显式负责，与仅处理 DOM mismatch 的 `{ recover: true }`
 分离。
+
+### Renderer-owned router SSR 与 hydration
+
+`renderToStream()` 和 `renderToStringAsync()` 接受 `router` option，把上述组合流程收进
+renderer。该 option 会为每次调用构建全新的 request-scoped memory-history router，等待其
+readiness，注入 server context 的 `provides`，并把序列化后的 route snapshot 附加到渲染输出，
+应用不再需要手工编排这些步骤：
+
+```tsx
+import { RouterView } from "@italone/solace";
+import type { RouteRecord } from "@italone/solace";
+import { renderToStringAsync } from "@italone/solace/server";
+
+const routes: RouteRecord[] = [{ path: "/", name: "home", component: () => <p>home</p> }];
+const identifyRecord = (record: RouteRecord) => record.name ?? record.path;
+
+const { html } = await renderToStringAsync(() => <RouterView />, {
+  router: { url: "/", routes, identifyRecord },
+});
+```
+
+`router` 只接受 `url`（memory history 的起始请求路径）、`routes`（beta `RouteRecord[]`）、
+`identifyRecord`（必填；与 snapshot 使用的 record identity callback 相同），以及可选的
+`configure(router)` 回调用于同步注册全局 guards。`router` 与 `provides` 组合会抛出
+`TypeError`；此模式下 injection keys 由 server context 负责。snapshot 会以
+`<script id="__solace-router-snapshot">window.__SOLACE_ROUTER_SNAPSHOT__=<json>;</script>`
+的形式附加 —— 流式渲染时在 pending async 边界 flush 之后，缓冲渲染时追加在 html 末尾。
+payload 会对 `</script` 终止做中和处理。
+
+浏览器侧把已安装的 router 和同一个 identity callback 传给 `hydrateAsync()`：
+
+```tsx
+const app = createApp(App).use(router);
+await app.hydrateAsync(container, { router, routerIdentifyRecord: identifyRecord });
+```
+
+只要传入 `router` 就必须提供 `routerIdentifyRecord`（snapshot verification 需要它）；只有
+`routerIdentifyRecord` 而没有 `router` 会被拒绝。流程会先 await `router.isReady()`，从内嵌
+script 读取 payload（缺省时回退到 `window.__SOLACE_ROUTER_SNAPSHOT__` 全局变量），按与组合式
+流程相同的 canonical snapshot 规则解析并与客户端 route 比对，随后移除该 script 元素，最后才
+hydrate。缺少 payload 会抛出点名 `script#__solace-router-snapshot` 的 `TypeError`；客户端/
+服务端不一致会在任何 `{ recover: true }` 处理之前抛出 `RouterHydrationError`。router-aware
+selective hydration 暂不支持；`router` 与 `selective: true` 组合会抛出 `TypeError`，提示改用
+ordered hydration。`generateStaticSite()` 和同步 `renderToString()`/`hydrate()` 入口继续拒绝
+`router` options；上述组合式 API 仍可作为逃生通道使用。
 
 ### `generateStaticSite(options)`
 
