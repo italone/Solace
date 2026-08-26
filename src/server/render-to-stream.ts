@@ -4,7 +4,13 @@ import {
   type ComponentInstance,
 } from "../component/component";
 import { getAsyncComponentMetadata } from "../component/async-component";
-import { Suspense, collectAsyncLoaders, isSuspense } from "../component/suspense";
+import {
+  Suspense,
+  collectAsyncLoaders,
+  isSuspense,
+  resolveSuspenseFallback,
+  type SuspenseProps,
+} from "../component/suspense";
 import type { Provides } from "../component/provide";
 import { h } from "../vnode/h";
 import { createServerStyleSink, withStyleSink, type ServerStyleSink } from "../component/style";
@@ -21,7 +27,7 @@ import {
 import { ShapeFlags } from "../shared/flags";
 import { escapeHtml } from "../shared/html";
 import { isThenable } from "../shared/utils";
-import type { ComponentType, VNode } from "../vnode/vnode";
+import type { ComponentType, VNode, VNodeChildren } from "../vnode/vnode";
 import type { RenderToStringAsyncSource } from "./render-to-string";
 import {
   assertSafeHtmlName,
@@ -226,7 +232,7 @@ async function* streamComponent(
   ctx: StreamContext,
 ): AsyncGenerator<string> {
   if (isSuspense(vnode.type)) {
-    const { loaders, allResolved } = collectAsyncLoaders(vnode.children as never);
+    const { loaders, allResolved } = collectAsyncLoaders(vnode.children as VNodeChildren);
     if (ctx.mode === "out-of-order") {
       yield* streamSuspenseBoundary(vnode, loaders, allResolved, parentComponent, appProvides, ctx);
       return;
@@ -288,19 +294,11 @@ async function* streamSuspenseBoundary(
   ctx.pending.push(boundary);
 
   yield boundaryStartMarker(id);
-  const fallback = resolveFallbackVNode(vnode);
+  const fallback = resolveSuspenseFallback(vnode.props as SuspenseProps);
   if (fallback !== null) {
     yield* streamVNode(fallback, parentComponent, appProvides, ctx);
   }
   yield boundaryEndMarker(id);
-}
-
-function resolveFallbackVNode(vnode: VNode): VNode | null {
-  const fallback = (vnode.props as { fallback?: VNode | (() => VNode) } | null)?.fallback;
-  if (fallback === undefined) {
-    return null;
-  }
-  return typeof fallback === "function" ? fallback() : fallback;
 }
 
 async function* streamLoadedComponent(

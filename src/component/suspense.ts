@@ -7,6 +7,12 @@ export interface SuspenseProps {
   fallback?: VNode | (() => VNode);
 }
 
+export function resolveSuspenseFallback(props: SuspenseProps): VNode | null {
+  const fallback = props.fallback;
+  if (fallback === undefined) return null;
+  return typeof fallback === "function" ? fallback() : fallback;
+}
+
 const suspenseMarker = Symbol("solace.suspense");
 
 export function isSuspense(type: unknown): boolean {
@@ -95,9 +101,7 @@ export const Suspense: ComponentType<SuspenseProps> = (props, { slots }) => {
   }
 
   return () => {
-    const fallback = props.fallback;
-    const fallbackVNode =
-      fallback === undefined ? null : typeof fallback === "function" ? fallback() : fallback;
+    const fallbackVNode = resolveSuspenseFallback(props);
 
     if (resolved) {
       return h(Fragment, null, children);
