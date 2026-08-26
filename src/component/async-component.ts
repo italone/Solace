@@ -47,7 +47,12 @@ export function defineAsyncComponent<Props extends object>(
 
   const component: ComponentType<Props> = (props, { slots }) => {
     const instance = getCurrentInstance();
-    const update = instance?.update ?? null;
+    // Bind the update lazily: during hydration the instance's update is
+    // installed only after the first render, so capturing it eagerly would
+    // freeze a null update and loader resolution could never patch the DOM.
+    const update = (): void => {
+      instance?.update?.();
+    };
 
     return () => {
       const children = normalizeSlotChildren(slots.default?.());
@@ -57,15 +62,26 @@ export function defineAsyncComponent<Props extends object>(
       }
 
       if (loadError !== null) {
-        return options.errorComponent
-          ? renderComponent(options.errorComponent, props, children)
-          : h(Fragment, null, []);
+        if (options.errorComponent) {
+          return renderComponent(options.errorComponent, props, children);
+        }
+
+        const fallback = options.fallback;
+        if (fallback !== undefined) {
+          return typeof fallback === "function" ? fallback() : fallback;
+        }
+
+        return h(Fragment, null, []);
       }
 
       if (pendingRequest === null && retryTimer === null && loadError === null) {
         startLoad(update);
       }
 
+      const fallback = options.fallback;
+      if (fallback !== undefined) {
+        return typeof fallback === "function" ? fallback() : fallback;
+      }
       return options.loadingComponent && isLoadingVisible
         ? renderComponent(options.loadingComponent, props, children)
         : h(Fragment, null, []);
@@ -151,7 +167,7 @@ export function defineAsyncComponent<Props extends object>(
     });
   }
 
-  function startLoad(update: (() => void) | null): void {
+  function startLoad(update: () => void): void {
     const attemptId = activeAttemptId + 1;
     activeAttemptId = attemptId;
 
@@ -185,7 +201,7 @@ export function defineAsyncComponent<Props extends object>(
       });
   }
 
-  function handleLoadFailure(error: unknown, attemptId: number, update: (() => void) | null): void {
+  function handleLoadFailure(error: unknown, attemptId: number, update: () => void): void {
     if (attemptId !== activeAttemptId || resolvedComponent !== null || loadError !== null) {
       return;
     }
@@ -210,7 +226,12 @@ export function defineAsyncComponent<Props extends object>(
     }
 
     loadError = error;
-    update?.();
+    if (options.errorComponent === undefined && options.fallback !== undefined) {
+      // The streamed fallback stays in place; surface the failure so silent
+      // stuck boundaries are diagnosable.
+      console.error(error);
+    }
+    update();
   }
 
   function startDelayTimer(

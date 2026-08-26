@@ -81,7 +81,11 @@ function isVNodeValue(value: unknown): value is VNode {
 
 export const Suspense: ComponentType<SuspenseProps> = (props, { slots }) => {
   const instance = getCurrentInstance();
-  const update = instance?.update ?? null;
+  // Bind lazily: during hydration the instance update is installed only after
+  // the first render, so an eagerly captured update would be null forever.
+  const update = (): void => {
+    instance?.update?.();
+  };
   const children = (slots.default?.() ?? null) as VNodeChildren;
   const { loaders, allResolved } = collectAsyncLoaders(children);
 

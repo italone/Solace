@@ -105,6 +105,10 @@ export async function hydrateAsync(
 ): Promise<void> {
   assertHydrationContainer(container);
   assertNoDeferredIntegrationOptions(options);
+  if (options.selective === true) {
+    await hydrateSelectively(source, container as RenderContainer, appProvides);
+    return;
+  }
   const prepared = await prepareAsyncSource(source, {
     appProvides,
     collectStyles: true,
@@ -137,6 +141,54 @@ export async function hydrateAsync(
     }
 
     throw error;
+  }
+}
+
+async function hydrateSelectively(
+  source: AsyncHydrationSource,
+  renderContainer: RenderContainer,
+  appProvides: Provides | null,
+): Promise<void> {
+  const vnode = typeof source === "function" ? h(source as ComponentTransport) : source;
+  const styleSink = createDocumentStyleSink(renderContainer.ownerDocument);
+  const context: HydrationContext = { hydratedInstances: [] };
+
+  stopReactiveRender(renderContainer);
+
+  try {
+    withStyleSink(styleSink, () => {
+      const next = hydrateVNode(vnode, renderContainer.firstChild, null, appProvides, context);
+      assertNoExtraDomNode(next, "root[1]");
+    });
+  } catch (error) {
+    stopHydratedComponentUpdates(context);
+    throw error;
+  }
+
+  renderContainer._solaceVNode = vnode;
+  await settlePendingBoundaries(renderContainer);
+}
+
+async function settlePendingBoundaries(renderContainer: RenderContainer): Promise<void> {
+  // Hydrated async/Suspense instances re-render through their own update
+  // machinery when loaders resolve; give those microtasks (and the scheduler
+  // queue) a turn before stripping the now-replaced boundary markers.
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  removeBoundaryMarkers(renderContainer);
+}
+
+function removeBoundaryMarkers(container: Element): void {
+  const doc = container.ownerDocument ?? document;
+  const walker = doc.createTreeWalker(container, NodeFilter.SHOW_COMMENT, null);
+  const removals: Comment[] = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode as Comment;
+    if (/^\/?so:b:\d+$/.test(node.nodeValue ?? "")) {
+      removals.push(node);
+    }
+  }
+  for (const node of removals) {
+    node.parentNode?.removeChild(node);
   }
 }
 
