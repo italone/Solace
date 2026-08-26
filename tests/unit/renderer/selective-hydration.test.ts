@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { defineAsyncComponent, Fragment, h, Suspense } from "../../../src";
 import { createApp } from "../../../src/app";
+import { SolaceHydrationError } from "../../../src/renderer/renderer";
 
 describe("hydration comment tolerance", () => {
   it("skips non-boundary comment nodes during the walk", async () => {
@@ -92,6 +93,26 @@ describe("selective hydration", () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(container.querySelector("i")?.textContent).toBe("inner");
     expect(container.innerHTML).not.toContain("so:b:1");
+  });
+
+  it("recovers by client-rendering when a selective walk mismatches and recover is true", async () => {
+    const App = () => h("p", null, "client");
+    const container = document.createElement("div");
+    container.innerHTML = "<span>server</span>";
+    document.body.appendChild(container);
+    await createApp(App).hydrateAsync(container, { selective: true, recover: true });
+    expect(container.querySelector("p")?.textContent).toBe("client");
+    expect(container.querySelector("span")).toBeNull();
+  });
+
+  it("throws on selective mismatch without recover", async () => {
+    const App = () => h("p", null, "client");
+    const container = document.createElement("div");
+    container.innerHTML = "<span>server</span>";
+    document.body.appendChild(container);
+    await expect(createApp(App).hydrateAsync(container, { selective: true })).rejects.toThrow(
+      SolaceHydrationError,
+    );
   });
 
   it("keeps the fallback and does not reject when a boundary loader fails", async () => {

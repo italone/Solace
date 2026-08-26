@@ -1,4 +1,5 @@
 import { ReactiveEffect } from "../reactivity/effect";
+import { getAsyncComponentMetadata } from "../component/async-component";
 import { queueJob } from "../scheduler/scheduler";
 import type { Provides } from "../component/provide";
 import { prepareAsyncSource, type PreparedVNode } from "../shared/async-tree";
@@ -106,7 +107,7 @@ export async function hydrateAsync(
   assertHydrationContainer(container);
   assertNoDeferredIntegrationOptions(options);
   if (options.selective === true) {
-    await hydrateSelectively(source, container as RenderContainer, appProvides);
+    await hydrateSelectively(source, container as RenderContainer, appProvides, options);
     return;
   }
   const prepared = await prepareAsyncSource(source, {
@@ -148,12 +149,18 @@ async function hydrateSelectively(
   source: AsyncHydrationSource,
   renderContainer: RenderContainer,
   appProvides: Provides | null,
+  options: HydrationOptions,
 ): Promise<void> {
   const vnode = typeof source === "function" ? h(source as ComponentTransport) : source;
   const styleSink = createDocumentStyleSink(renderContainer.ownerDocument);
   const context: HydrationContext = { hydratedInstances: [] };
 
   stopReactiveRender(renderContainer);
+
+  // Kick off async loader requests before the walk so ready parts hydrate
+  // immediately while loads resolve in the background.
+  const pendingLoads: Promise<unknown>[] = [];
+  collectPendingLoads(vnode, pendingLoads);
 
   try {
     withStyleSink(styleSink, () => {
@@ -162,19 +169,46 @@ async function hydrateSelectively(
     });
   } catch (error) {
     stopHydratedComponentUpdates(context);
+
+    if (shouldRecoverHydrationMismatch(error, options)) {
+      renderContainer.textContent = "";
+      renderContainer._solaceVNode = null;
+      withStyleSink(styleSink, () => renderVNode(vnode, renderContainer, appProvides));
+      return;
+    }
+
     throw error;
   }
 
   renderContainer._solaceVNode = vnode;
-  await settlePendingBoundaries(renderContainer);
+  await settlePendingBoundaries(renderContainer, pendingLoads);
 }
 
-async function settlePendingBoundaries(renderContainer: RenderContainer): Promise<void> {
+async function settlePendingBoundaries(
+  renderContainer: RenderContainer,
+  pendingLoads: Promise<unknown>[],
+): Promise<void> {
   // Hydrated async/Suspense instances re-render through their own update
-  // machinery when loaders resolve; give those microtasks (and the scheduler
-  // queue) a turn before stripping the now-replaced boundary markers.
+  // machinery when loaders resolve. Await every pending loader, then give the
+  // scheduler queue one turn before stripping the now-replaced boundary markers.
+  await Promise.allSettled(pendingLoads);
   await new Promise((resolve) => setTimeout(resolve, 0));
   removeBoundaryMarkers(renderContainer);
+}
+
+function collectPendingLoads(node: unknown, out: Promise<unknown>[]): void {
+  if (node === null || node === undefined || typeof node === "string") return;
+  if (Array.isArray(node)) {
+    for (const child of node) collectPendingLoads(child, out);
+    return;
+  }
+  if (typeof node !== "object" || !("shapeFlag" in node)) return;
+  const vnode = node as VNode;
+  const metadata = getAsyncComponentMetadata(vnode.type);
+  if (metadata !== undefined && metadata.peek() === null) {
+    out.push(metadata.load().catch(() => undefined));
+  }
+  collectPendingLoads(vnode.children, out);
 }
 
 function removeBoundaryMarkers(container: Element): void {
