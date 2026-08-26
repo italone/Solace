@@ -360,8 +360,10 @@ own fallback while the outer one swaps. Suspense also works in pure client-side 
 SSR. If a subtree loader fails, the fallback is kept and the failure is reported via `console.error`;
 rendering is not rejected.
 
-On the server, ordered `renderToStream()` (and buffered `renderToStringAsync()`) await the Suspense
-subtree's loaders inline, so the resolved children appear in the document. Out-of-order mode emits
+On the server, ordered `renderToStream()` awaits the Suspense subtree's loaders inline, so the
+resolved children appear in the document. The buffered APIs (`renderToString()` and
+`renderToStringAsync()`) do not await Suspense subtrees: they emit the fallback markup for unresolved
+boundaries. Out-of-order mode emits
 ONE `so:b` boundary per Suspense subtree, reusing the existing async-component protocol: fallback
 markup inside `<!--so:b:N-->` / `<!--/so:b:N-->` markers, `<!--so:r:N-->` replacement scripts flushed
 in resolution order, failure comments that keep the fallback without rejecting the stream, and
@@ -386,7 +388,9 @@ boundary settles. While selective hydration is in progress, user interactions (`
 `pointerdown`, `keydown`, `input`, and `change`) are captured at the container root and replayed with
 their typed payloads after settlement; a buffered event whose target has left the DOM is dropped. If
 a loader fails, the fallback is kept and the failure is logged via `console.error` — the hydration
-promise is not rejected. `{ recover: true }` is honored in selective mode as in whole-tree
+promise is not rejected. Because buffered interactions are replayed as dispatched events, native
+default actions are not re-applied: `keydown`/`input` defaults (such as text insertion) on
+already-hydrated elements are suppressed until all boundaries settle. `{ recover: true }` is honored in selective mode as in whole-tree
 hydration. The synchronous `hydrate()` throws when passed `selective: true`; selective hydration is
 a `hydrateAsync()`-only option.
 

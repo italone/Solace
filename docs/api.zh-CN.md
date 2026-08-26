@@ -315,8 +315,9 @@ Suspense 边界相互独立：内层边界保持自己的 fallback，而外层�
 不涉及 SSR 的纯客户端渲染。如果子树的 loader 失败，fallback 会被保留，并通过
 `console.error` 报告失败；渲染不会被 reject。
 
-在服务端，ordered 模式的 `renderToStream()`（以及缓冲式的 `renderToStringAsync()`）会内联
-await Suspense 子树的 loader，因此解析后的 children 会直接出现在文档中。乱序模式会为每棵
+在服务端，ordered 模式的 `renderToStream()` 会内联 await Suspense 子树的 loader，因此解析后
+的 children 会直接出现在文档中。缓冲式 API（`renderToString()` 与 `renderToStringAsync()`）
+不会 await Suspense 子树：它们会为未解析的边界输出 fallback 标记。乱序模式会为每棵
 Suspense 子树发射一个 `so:b` 边界，复用现有的 async component 协议：`<!--so:b:N-->` /
 `<!--/so:b:N-->` 标记内的 fallback 标记、按解析顺序 flush 的 `<!--so:r:N-->` 替换脚本、保留
 fallback 且不拒绝流的失败注释，以及发射在替换 payload 内的 `useStyle()` 样式。
@@ -337,7 +338,9 @@ Suspense 子树在 `so:b` 标记范围内针对其 fallback DOM 水合；loader 
 patch，边界落定后注释标记会被移除。selective hydration 进行期间，用户交互（`click`、
 `pointerdown`、`keydown`、`input` 和 `change`）会在 container 根部被捕获，落定后携带原有类型化
 payload 回放；target 已离开 DOM 的缓冲事件会被丢弃。loader 失败时保留 fallback 并通过
-`console.error` 记录失败 —— hydration promise 不会被 reject。selective 模式同样支持
+`console.error` 记录失败 —— hydration promise 不会被 reject。由于缓冲交互是以派发事件的形式
+回放的，原生默认行为不会被重新执行：所有边界落定前，已水合元素上的 `keydown`/`input` 默认行为
+（如文本插入）会被抑制。selective 模式同样支持
 `{ recover: true }`，语义与整树水合一致。同步的 `hydrate()` 在传入 `selective: true` 时会抛错；
 selective hydration 是仅限 `hydrateAsync()` 的选项。
 
