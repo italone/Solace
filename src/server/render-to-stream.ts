@@ -30,6 +30,12 @@ import { isThenable } from "../shared/utils";
 import type { ComponentType, VNode, VNodeChildren } from "../vnode/vnode";
 import type { RenderToStringAsyncSource } from "./render-to-string";
 import {
+  assertRouterSSROption,
+  buildSnapshotScript,
+  resolveRouterSSR,
+  type RouterSSROptions,
+} from "./router-ssr";
+import {
   assertSafeHtmlName,
   hasOwn,
   isPlainObject,
@@ -48,6 +54,7 @@ export interface RenderToStreamOptions {
   context?: Record<string, unknown>;
   provides?: Provides;
   mode?: "ordered" | "out-of-order";
+  router?: RouterSSROptions;
 }
 
 type StreamMode = "ordered" | "out-of-order";
@@ -86,7 +93,12 @@ export function renderToStream(
   return new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        const ctx = createStreamContext(options.mode ?? "ordered", options.provides ?? null);
+        const routerSSR =
+          options.router !== undefined ? await resolveRouterSSR(options.router) : null;
+        const ctx = createStreamContext(
+          options.mode ?? "ordered",
+          routerSSR !== null ? routerSSR.provides : (options.provides ?? null),
+        );
         const iterator = streamSource(source, ctx)[Symbol.asyncIterator]();
         let buffer = "";
 
@@ -129,6 +141,10 @@ export function renderToStream(
           buffer += chunk;
           controller.enqueue(encoder.encode(buffer));
           buffer = "";
+        }
+
+        if (routerSSR !== null) {
+          buffer += buildSnapshotScript(routerSSR.snapshot);
         }
 
         if (buffer !== "") {
@@ -425,14 +441,15 @@ function assertStreamOptions(options: RenderToStreamOptions): void {
     );
   }
 
-  if (hasOwn(options, "router")) {
-    throw new TypeError(
-      "Router-aware SSR integration is deferred; pass explicit render sources instead.",
-    );
+  if (options.router !== undefined) {
+    assertRouterSSROption(options.router);
+    if (options.provides !== undefined) {
+      throw new TypeError("SSR router option cannot be combined with provides");
+    }
   }
 
   const unknownKey = Reflect.ownKeys(options).find(
-    (key) => key !== "context" && key !== "provides" && key !== "mode",
+    (key) => key !== "context" && key !== "provides" && key !== "mode" && key !== "router",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown SSR streaming option: ${String(unknownKey)}`);

@@ -17,9 +17,9 @@ describe("renderToStream options", () => {
     );
   });
 
-  it("rejects deferred router and manifest options", () => {
+  it("rejects invalid router options and the deferred manifest option", () => {
     expect(() => renderToStream(h("p", null, "x"), { router: {} } as never)).toThrow(
-      "Router-aware SSR integration is deferred",
+      "SSR router url must be a string",
     );
     expect(() => renderToStream(h("p", null, "x"), { manifest: {} } as never)).toThrow(
       "SSR manifest integration is deferred",
