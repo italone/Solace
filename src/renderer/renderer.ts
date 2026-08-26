@@ -15,6 +15,7 @@ import {
   stopHydratedComponentUpdates,
   type HydrationContext,
 } from "./hydration";
+import { attachSelectiveEventBuffer } from "./selective-events";
 
 export type RenderSource = VNode | (() => VNode);
 export type HydrationSource = VNode | ComponentTransport;
@@ -162,26 +163,37 @@ async function hydrateSelectively(
   const pendingLoads: Promise<unknown>[] = [];
   collectPendingLoads(vnode, pendingLoads);
 
-  try {
-    withStyleSink(styleSink, () => {
-      const next = hydrateVNode(vnode, renderContainer.firstChild, null, appProvides, context);
-      assertNoExtraDomNode(next, "root[1]");
-    });
-  } catch (error) {
-    stopHydratedComponentUpdates(context);
+  const eventBuffer = attachSelectiveEventBuffer(renderContainer);
+  let settled = false;
 
-    if (shouldRecoverHydrationMismatch(error, options)) {
-      renderContainer.textContent = "";
-      renderContainer._solaceVNode = null;
-      withStyleSink(styleSink, () => renderVNode(vnode, renderContainer, appProvides));
-      return;
+  try {
+    try {
+      withStyleSink(styleSink, () => {
+        const next = hydrateVNode(vnode, renderContainer.firstChild, null, appProvides, context);
+        assertNoExtraDomNode(next, "root[1]");
+      });
+    } catch (error) {
+      stopHydratedComponentUpdates(context);
+
+      if (shouldRecoverHydrationMismatch(error, options)) {
+        renderContainer.textContent = "";
+        renderContainer._solaceVNode = null;
+        withStyleSink(styleSink, () => renderVNode(vnode, renderContainer, appProvides));
+        return;
+      }
+
+      throw error;
     }
 
-    throw error;
+    renderContainer._solaceVNode = vnode;
+    await settlePendingBoundaries(renderContainer, pendingLoads);
+    settled = true;
+  } finally {
+    if (settled) {
+      eventBuffer.replay();
+    }
+    eventBuffer.detach();
   }
-
-  renderContainer._solaceVNode = vnode;
-  await settlePendingBoundaries(renderContainer, pendingLoads);
 }
 
 async function settlePendingBoundaries(
