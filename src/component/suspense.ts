@@ -104,14 +104,10 @@ export const Suspense: ComponentType<SuspenseProps> = (props, { slots }) => {
     }
 
     if (fallbackVNode === null) {
-      return h(Fragment, null, children);
+      return h(Fragment, null, []);
     }
 
-    const childrenWithFallback: VNode[] = Array.isArray(children)
-      ? [...children]
-      : [children as VNode];
-    childrenWithFallback.push(fallbackVNode);
-    return h(Fragment, null, childrenWithFallback);
+    return fallbackVNode;
   };
 };
 

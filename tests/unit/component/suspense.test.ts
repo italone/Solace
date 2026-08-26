@@ -22,12 +22,13 @@ describe("Suspense component", () => {
       container,
     );
 
-    expect(collectText(container)).toContain("first");
     expect(collectText(container)).toContain("loading…");
+    expect(collectText(container)).not.toContain("first");
     expect(collectText(container)).not.toContain("late");
 
     release!();
     await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(collectText(container)).toContain("first");
     expect(collectText(container)).toContain("late");
     expect(collectText(container)).not.toContain("loading…");
   });
