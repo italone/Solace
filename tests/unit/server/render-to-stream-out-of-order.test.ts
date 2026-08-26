@@ -247,4 +247,16 @@ describe("renderToStream Suspense boundaries", () => {
     expect(streamed).toContain("so:b:1");
     expect(streamed).toContain("so:b:2");
   });
+
+  it("keeps the Suspense fallback and emits a failure comment when a subtree loader rejects", async () => {
+    const Bad = defineAsyncComponent(() => Promise.reject(new Error("boom")));
+    const streamed = await collectStream(
+      renderToStream(h(Suspense, { fallback: h("p", null, "loading…") }, [h(Bad)]), {
+        mode: "out-of-order",
+      }),
+    );
+    expect(streamed).toContain("<p>loading…</p>");
+    expect(streamed).toContain("failed:boom");
+    expect(streamed).not.toContain("so:r:1");
+  });
 });
