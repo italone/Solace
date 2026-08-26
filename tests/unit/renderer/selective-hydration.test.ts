@@ -41,4 +41,12 @@ describe("hydration comment tolerance", () => {
       createApp(() => h("p", null, "x")).hydrateAsync(container, { teleport: true } as never),
     ).rejects.toThrow("Unknown hydration option: teleport");
   });
+
+  it("rejects selective: true on the synchronous hydrate()", () => {
+    const container = document.createElement("div");
+    container.innerHTML = "<p>x</p>";
+    expect(() =>
+      createApp(() => h("p", null, "x")).hydrate(container, { selective: true }),
+    ).toThrow("Selective hydration requires hydrateAsync(); hydrate() is synchronous.");
+  });
 });
