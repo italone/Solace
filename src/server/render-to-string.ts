@@ -11,6 +11,12 @@ import { escapeHtml } from "../shared/html";
 import { isThenable } from "../shared/utils";
 import type { AsyncComponentType, ComponentTransport, VNode } from "../vnode/vnode";
 import {
+  assertRouterSSROption,
+  buildSnapshotScript,
+  resolveRouterSSR,
+  type RouterSSROptions,
+} from "./router-ssr";
+import {
   assertSafeHtmlName,
   hasOwn,
   isPlainObject,
@@ -22,6 +28,10 @@ import {
 export interface RenderToStringOptions {
   context?: Record<string, unknown>;
   provides?: Provides;
+}
+
+export interface RenderToStringAsyncOptions extends RenderToStringOptions {
+  router?: RouterSSROptions;
 }
 
 export interface RenderToStringResult {
@@ -55,16 +65,23 @@ export function renderToString(
 
 export async function renderToStringAsync(
   source: RenderToStringAsyncSource,
-  options: RenderToStringOptions = {},
+  options: RenderToStringAsyncOptions = {},
 ): Promise<RenderToStringResult> {
-  assertNoDeferredIntegrationOptions(options);
+  assertAsyncSSROptions(options);
+  const routerSSR =
+    options.router !== undefined ? await resolveRouterSSR(options.router) : null;
   const prepared = await prepareAsyncSource(source, {
-    appProvides: options.provides ?? null,
+    appProvides: routerSSR !== null ? routerSSR.provides : (options.provides ?? null),
     collectStyles: true,
   });
 
+  let html = renderPreparedVNodeToString(prepared.root);
+  if (routerSSR !== null) {
+    html += buildSnapshotScript(routerSSR.snapshot);
+  }
+
   return {
-    html: renderPreparedVNodeToString(prepared.root),
+    html,
     styles: prepared.styles,
   };
 }
@@ -186,23 +203,7 @@ function assertNoAsyncSSRSource(value: unknown): void {
 }
 
 function assertNoDeferredIntegrationOptions(options: RenderToStringOptions): void {
-  if (options === null || typeof options !== "object" || Array.isArray(options)) {
-    throw new TypeError("SSR options must be an object");
-  }
-
-  if (options.context !== undefined && !isPlainObject(options.context)) {
-    throw new TypeError("SSR context must be a plain object");
-  }
-
-  if (options.provides !== undefined && !(options.provides instanceof Map)) {
-    throw new TypeError("SSR provides must be a Map");
-  }
-
-  if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
-    throw new TypeError(
-      "SSR manifest integration is deferred; compose assets in an app-local shell or adapter.",
-    );
-  }
+  assertBaseSSROptions(options);
 
   if (hasOwn(options, "router")) {
     throw new TypeError(
@@ -221,5 +222,49 @@ function assertNoDeferredIntegrationOptions(options: RenderToStringOptions): voi
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown SSR option: ${String(unknownKey)}`);
+  }
+}
+
+function assertAsyncSSROptions(options: RenderToStringAsyncOptions): void {
+  assertBaseSSROptions(options);
+
+  if (options.router !== undefined) {
+    assertRouterSSROption(options.router);
+    if (options.provides !== undefined) {
+      throw new TypeError("SSR router option cannot be combined with provides");
+    }
+  }
+
+  if (hasOwn(options, "stream")) {
+    throw new TypeError(
+      "Streaming SSR is deferred; renderToString() currently returns a complete string result.",
+    );
+  }
+
+  const unknownKey = Reflect.ownKeys(options).find(
+    (key) => key !== "context" && key !== "provides" && key !== "router",
+  );
+  if (unknownKey !== undefined) {
+    throw new TypeError(`Unknown SSR option: ${String(unknownKey)}`);
+  }
+}
+
+function assertBaseSSROptions(options: RenderToStringOptions): void {
+  if (options === null || typeof options !== "object" || Array.isArray(options)) {
+    throw new TypeError("SSR options must be an object");
+  }
+
+  if (options.context !== undefined && !isPlainObject(options.context)) {
+    throw new TypeError("SSR context must be a plain object");
+  }
+
+  if (options.provides !== undefined && !(options.provides instanceof Map)) {
+    throw new TypeError("SSR provides must be a Map");
+  }
+
+  if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
+    throw new TypeError(
+      "SSR manifest integration is deferred; compose assets in an app-local shell or adapter.",
+    );
   }
 }

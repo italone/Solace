@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { RouterView, h, type RouteRecord } from "../../../src";
-import { renderToStream } from "../../../src/server";
+import { renderToStream, renderToStringAsync } from "../../../src/server";
 import { collectStream } from "./stream-test-utils";
 
 const routes: RouteRecord[] = [
@@ -47,5 +47,35 @@ describe("renderToStream router option", () => {
     );
     expect(streamed).toContain("home");
     expect(streamed).toContain("__solace-router-snapshot");
+  });
+});
+
+describe("renderToStringAsync router option", () => {
+  it("returns html with the route content and appended snapshot script", async () => {
+    const result = await renderToStringAsync(RouterApp, {
+      router: { url: "/user/7", routes, identifyRecord: identify },
+    });
+    expect(result.html).toContain("user");
+    expect(result.html.endsWith("</script>")).toBe(true);
+    expect(result.html).toContain('<script id="__solace-router-snapshot">');
+    expect(result.html).toContain("window.__SOLACE_ROUTER_SNAPSHOT__=");
+    expect(result.html.indexOf("__solace-router-snapshot")).toBeGreaterThan(
+      result.html.indexOf("user"),
+    );
+  });
+
+  it("rejects router plus provides", async () => {
+    await expect(
+      renderToStringAsync(() => h("p", null, "x"), {
+        router: { url: "/", routes, identifyRecord: identify },
+        provides: new Map(),
+      }),
+    ).rejects.toThrow("SSR router option cannot be combined with provides");
+  });
+
+  it("rejects invalid router options", async () => {
+    await expect(
+      renderToStringAsync(() => h("p", null, "x"), { router: { routes: [] } as never }),
+    ).rejects.toThrow("SSR router url must be a string");
   });
 });
