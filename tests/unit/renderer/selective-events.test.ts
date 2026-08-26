@@ -70,4 +70,59 @@ describe("SelectiveEventBuffer", () => {
     expect(onClick).toHaveBeenCalledTimes(1);
     document.body.removeChild(container);
   });
+
+  it("replays keydown events with their key payload", () => {
+    const container = document.createElement("div");
+    container.innerHTML = '<button id="k">go</button>';
+    document.body.appendChild(container);
+    const seen: string[] = [];
+    const button = container.querySelector("#k") as HTMLButtonElement;
+    button.addEventListener("keydown", (e) => seen.push((e as KeyboardEvent).key));
+
+    const handle = attachSelectiveEventBuffer(container);
+    button.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    expect(seen).toEqual([]);
+
+    handle.replay();
+    expect(seen).toEqual(["Enter"]);
+    handle.detach();
+    document.body.removeChild(container);
+  });
+
+  it("replays input events as input events", () => {
+    const container = document.createElement("div");
+    container.innerHTML = '<input id="inp" />';
+    document.body.appendChild(container);
+    const seen: string[] = [];
+    const input = container.querySelector("#inp") as HTMLInputElement;
+    input.addEventListener("input", (e) => seen.push(e.type));
+
+    const handle = attachSelectiveEventBuffer(container);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(seen).toEqual([]);
+    handle.replay();
+    expect(seen).toEqual(["input"]);
+    handle.detach();
+    document.body.removeChild(container);
+  });
+
+  it("replays click events with mouse coordinates", () => {
+    const container = document.createElement("div");
+    container.innerHTML = '<button id="m">go</button>';
+    document.body.appendChild(container);
+    const seen: Array<{ x: number; y: number }> = [];
+    const button = container.querySelector("#m") as HTMLButtonElement;
+    button.addEventListener("click", (e) =>
+      seen.push({ x: (e as MouseEvent).clientX, y: (e as MouseEvent).clientY }),
+    );
+
+    const handle = attachSelectiveEventBuffer(container);
+    button.dispatchEvent(new MouseEvent("click", { bubbles: true, clientX: 12, clientY: 34 }));
+    expect(seen).toEqual([]);
+
+    handle.replay();
+    expect(seen).toEqual([{ x: 12, y: 34 }]);
+    handle.detach();
+    document.body.removeChild(container);
+  });
 });

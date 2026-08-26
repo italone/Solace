@@ -3,6 +3,61 @@ const BUFFERED_EVENT_TYPES = ["click", "pointerdown", "keydown", "input", "chang
 interface BufferedEvent {
   target: Node;
   type: string;
+  event: Event;
+}
+
+function rebuildEvent(entry: BufferedEvent): Event {
+  const original = entry.event;
+  const init: EventInit = { bubbles: true, cancelable: true };
+  if (typeof KeyboardEvent === "function" && original instanceof KeyboardEvent) {
+    return new KeyboardEvent(entry.type, {
+      ...init,
+      key: original.key,
+      code: original.code,
+      ctrlKey: original.ctrlKey,
+      shiftKey: original.shiftKey,
+      altKey: original.altKey,
+      metaKey: original.metaKey,
+      repeat: original.repeat,
+    });
+  }
+  if (typeof PointerEvent === "function" && original instanceof PointerEvent) {
+    return new PointerEvent(entry.type, {
+      ...init,
+      clientX: original.clientX,
+      clientY: original.clientY,
+      button: original.button,
+      buttons: original.buttons,
+      ctrlKey: original.ctrlKey,
+      shiftKey: original.shiftKey,
+      altKey: original.altKey,
+      metaKey: original.metaKey,
+      pointerId: original.pointerId,
+      pointerType: original.pointerType,
+      isPrimary: original.isPrimary,
+    });
+  }
+  if (typeof MouseEvent === "function" && original instanceof MouseEvent) {
+    return new MouseEvent(entry.type, {
+      ...init,
+      clientX: original.clientX,
+      clientY: original.clientY,
+      button: original.button,
+      buttons: original.buttons,
+      ctrlKey: original.ctrlKey,
+      shiftKey: original.shiftKey,
+      altKey: original.altKey,
+      metaKey: original.metaKey,
+    });
+  }
+  if (typeof InputEvent === "function" && original instanceof InputEvent) {
+    return new InputEvent(entry.type, {
+      ...init,
+      data: original.data,
+      inputType: original.inputType,
+    });
+  }
+  return new Event(entry.type, init);
 }
 
 export interface SelectiveEventBufferHandle {
@@ -16,7 +71,7 @@ export function attachSelectiveEventBuffer(container: Element): SelectiveEventBu
   const listener = (event: Event): void => {
     event.preventDefault();
     event.stopPropagation();
-    buffer.push({ target: event.target as Node, type: event.type });
+    buffer.push({ target: event.target as Node, type: event.type, event });
   };
 
   const addListeners = (): void => {
@@ -43,7 +98,7 @@ export function attachSelectiveEventBuffer(container: Element): SelectiveEventBu
         if (!entry.target.isConnected) {
           continue;
         }
-        entry.target.dispatchEvent(new Event(entry.type, { bubbles: true, cancelable: true }));
+        entry.target.dispatchEvent(rebuildEvent(entry));
       }
       buffer.length = 0;
     },
