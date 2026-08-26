@@ -319,6 +319,19 @@ const stream = renderToStream(App, { mode: "out-of-order" });
 return new Response(stream, { headers: { "content-type": "text/html; charset=utf-8" } });
 ```
 
+Out-of-order mode also streams `Suspense` subtrees: each unresolved `Suspense` becomes one `so:b`
+boundary carrying its fallback, reusing the async-component replacement protocol. In the browser,
+`hydrateAsync(container, { selective: true })` hydrates ready parts immediately and patches Suspense
+or async boundaries when their loaders resolve, replaying interactions that were buffered during
+settlement:
+
+```tsx
+import { Suspense, createApp, h } from "@italone/solace";
+
+const App = () => h(Suspense, { fallback: h("p", null, "loading…") }, [h(Header), h(AsyncRoute)]);
+await createApp(App).hydrateAsync(container, { selective: true });
+```
+
 Router-aware SSR and hydration use explicit composition rather than a renderer option. The server
 creates one request-scoped context, renders with its injection map, and serializes the canonical
 snapshot. This provides router-aware SSR and router-aware hydration while direct renderer options
@@ -367,9 +380,11 @@ and `RouterHydrationError` fails closed on the first route mismatch. Application
 mount recovery. Existing `{ recover: true }` remains limited to DOM hydration mismatch.
 
 The public loop includes sequential streaming SSR through `renderToStream()` plus out-of-order
-streaming via `renderToStream(source, { mode: "out-of-order" })`. It does not include
+streaming via `renderToStream(source, { mode: "out-of-order" })`, and the Suspense/selective
+hydration beta slice via `h(Suspense, { fallback }, children)` with
+`hydrateAsync(container, { selective: true })`. It does not include
 filesystem SSG output, route crawling, direct
-renderer-owned router options, Suspense/selective hydration, or automatic router snapshot recovery.
+renderer-owned router options, or automatic router snapshot recovery.
 
 Passing only one of `manifest` or `clientEntry` to `generateStaticSite()` throws a `TypeError`; pass
 both to make the shell receive resolved production asset tags. Route-level `manifest`,
@@ -494,8 +509,9 @@ guards, route `meta`, route names, aliases, route props, named locations, `creat
 `lazyRoute()` route components, `RouterLink`, `RouterView`, and `scrollBehavior` after successful
 navigations. It also exposes `router.isReady()` plus canonical route snapshot primitives for explicit
 SSR/hydration composition. The beta router still defers auth, permissions, direct renderer-owned
-router options and Suspense/selective hydration (out-of-order streaming SSR is available through
-`renderToStream(source, { mode: "out-of-order" })`). `props: true`
+router options (out-of-order streaming SSR is available through
+`renderToStream(source, { mode: "out-of-order" })`, and Suspense/selective hydration through
+`h(Suspense, { fallback }, children)` with `hydrateAsync(container, { selective: true })`). `props: true`
 passes route params, plain object props are used as-is, and function props are evaluated from the
 matched route. Named locations preserve canonical path generation, and alias URLs preserve canonical
 matched/name behavior.

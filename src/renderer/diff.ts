@@ -86,6 +86,9 @@ function mountFragment(
       }
       insert(fragment, container, anchor);
       vnode.el = getFragmentRoot(vnode);
+      if (vnode.el === null) {
+        vnode.el = mountFragmentAnchor(container, anchor);
+      }
       return;
     }
 
@@ -95,6 +98,15 @@ function mountFragment(
   }
 
   vnode.el = getFragmentRoot(vnode);
+  if (vnode.el === null) {
+    vnode.el = mountFragmentAnchor(container, anchor);
+  }
+}
+
+function mountFragmentAnchor(container: Node, anchor: Node | null): Text {
+  const placeholder = document.createTextNode("");
+  insert(placeholder, container, anchor);
+  return placeholder;
 }
 
 function canBatchMountFragment(children: VNode[]): boolean {

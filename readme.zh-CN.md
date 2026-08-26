@@ -57,9 +57,9 @@ backpressure。乱序（out-of-order）streaming SSR 可通过 `renderToStream(s
 和 consumer smoke 覆盖同步。当前 beta 契约已通过 `router.isReady()`、canonical snapshots 和
 `createRouterServerContext()` 提供可组合的 router-aware SSR 与 router-aware hydration，并通过
 `renderToStream()` 提供顺序流式 streaming SSR，并通过 `renderToStream(source, { mode: "out-of-order" })`
-提供乱序 streaming SSR；仍推迟
-auth、permissions、renderer-owned 直接 router options、Suspense/selective
-hydration，以及 initial hydration 之后的 async update scheduling。Router `auth` 和
+提供乱序 streaming SSR，并提供 `h(Suspense, { fallback }, children)` 加 `hydrateAsync(container,
+{ selective: true })` 的 Suspense/selective hydration beta 切片；仍推迟
+auth、permissions、renderer-owned 直接 router options，以及 initial hydration 之后的 async update scheduling。Router `auth` 和
 `permissions` options 或 route
 record fields 会被明确拒绝，不会被当作隐式客户端授权能力。
 SSR、hydration 和 SSG option objects 也会通过包含字段名的 `TypeError` 拒绝未知自有字段，

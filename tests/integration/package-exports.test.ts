@@ -99,6 +99,7 @@ describe("package exports", () => {
       "RouterLink",
       "RouterNavigationError",
       "RouterView",
+      "Suspense",
       "computed",
       "createApp",
       "createMemoryHistory",

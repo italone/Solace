@@ -59,6 +59,7 @@ export function hydrateVNode(
 ): Node | null {
   assertNoAsyncHydrationTree(vnode);
 
+  node = skipComments(node);
   if (node === null) {
     throwHydrationMismatch({
       kind: "missing-node",
@@ -81,7 +82,7 @@ export function hydrateVNode(
     return hydrateFragment(vnode, node, parentComponent, appProvides, context, path);
   }
 
-  return node.nextSibling;
+  return skipComments(node.nextSibling);
 }
 
 export function hydratePreparedVNode(
@@ -93,6 +94,7 @@ export function hydratePreparedVNode(
   path = "root",
 ): Node | null {
   const { vnode } = prepared;
+  node = skipComments(node);
   if (node === null) {
     throwHydrationMismatch({
       kind: "missing-node",
@@ -115,7 +117,7 @@ export function hydratePreparedVNode(
     return hydratePreparedFragment(prepared, node, parentComponent, appProvides, context, path);
   }
 
-  return node.nextSibling;
+  return skipComments(node.nextSibling);
 }
 
 function hydratePreparedElement(
@@ -151,14 +153,14 @@ function hydratePreparedElement(
         message: `Hydration mismatch at path ${textPath}: expected text "${children}" but found "${node.textContent ?? ""}"`,
       });
     }
-    return node.nextSibling;
+    return skipComments(node.nextSibling);
   }
 
   if (Array.isArray(children)) {
     const childPath = describeElementTextPath(path, vnode);
     const next = hydratePreparedChildren(
       children,
-      node.firstChild,
+      skipComments(node.firstChild),
       parentComponent,
       appProvides,
       context,
@@ -167,7 +169,7 @@ function hydratePreparedElement(
     assertNoExtraDomNode(next, `${childPath}[${children.length}]`);
   }
 
-  return node.nextSibling;
+  return skipComments(node.nextSibling);
 }
 
 function hydratePreparedComponent(
@@ -228,7 +230,7 @@ function hydratePreparedFragment(
 
 function hydratePreparedChildren(
   children: PreparedVNode[],
-  firstNode: ChildNode | null,
+  firstNode: Node | null,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
   context: HydrationContext | null,
@@ -236,6 +238,7 @@ function hydratePreparedChildren(
 ): Node | null {
   let current: Node | null = firstNode;
   for (const [index, child] of children.entries()) {
+    current = skipComments(current);
     current = hydratePreparedVNode(
       child,
       current,
@@ -246,7 +249,7 @@ function hydratePreparedChildren(
     );
   }
 
-  return current;
+  return skipComments(current);
 }
 
 function hydrateElement(
@@ -282,14 +285,14 @@ function hydrateElement(
         message: `Hydration mismatch at path ${textPath}: expected text "${expected}" but found "${node.textContent ?? ""}"`,
       });
     }
-    return node.nextSibling;
+    return skipComments(node.nextSibling);
   }
 
   if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
     const childPath = describeElementTextPath(path, vnode);
     const next = hydrateChildren(
       vnode.children as VNode[],
-      node.firstChild,
+      skipComments(node.firstChild),
       parentComponent,
       appProvides,
       context,
@@ -298,7 +301,7 @@ function hydrateElement(
     assertNoExtraDomNode(next, `${childPath}[${(vnode.children as VNode[]).length}]`);
   }
 
-  return node.nextSibling;
+  return skipComments(node.nextSibling);
 }
 
 function hydrateComponent(
@@ -421,7 +424,7 @@ function hydrateFragment(
 
 function hydrateChildren(
   children: VNode[],
-  firstNode: ChildNode | null,
+  firstNode: Node | null,
   parentComponent: ComponentInstance | null,
   appProvides: Provides | null,
   context: HydrationContext | null,
@@ -429,6 +432,7 @@ function hydrateChildren(
 ): Node | null {
   let current: Node | null = firstNode;
   for (const [index, child] of children.entries()) {
+    current = skipComments(current);
     current = hydrateVNode(
       child,
       current,
@@ -439,7 +443,7 @@ function hydrateChildren(
     );
   }
 
-  return current;
+  return skipComments(current);
 }
 
 function hydrateProps(el: Element, props: VNodeProps | null): void {
@@ -480,6 +484,14 @@ export function assertNoExtraDomNode(node: Node | null, path: string): void {
     actual: describeDomNode(node),
     message: `Hydration mismatch at path ${path}: expected no DOM node but found ${describeDomNode(node)}`,
   });
+}
+
+function skipComments(node: Node | null): Node | null {
+  let current = node;
+  while (current !== null && current.nodeType === Node.COMMENT_NODE) {
+    current = current.nextSibling;
+  }
+  return current;
 }
 
 function throwHydrationMismatch(details: HydrationMismatchDetails): never {

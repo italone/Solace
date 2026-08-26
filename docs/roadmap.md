@@ -57,8 +57,13 @@ output; each requires a separate public API and compatibility review.
    `defineAsyncComponent({ loader, fallback })` fallbacks and flushes `<!--so:r:N-->` replacement
    scripts in resolution order after the document; loader failures keep the fallback and emit a
    failure comment without rejecting the stream, and the DOM is final before client hydration runs.
-   Keep Suspense/selective
-   hydration, route crawling, filesystem output, and direct renderer-owned router options deferred.
+   The Suspense/selective hydration slice is now implemented on top of it: the `Suspense` built-in
+   component coordinates async subtrees behind one fallback (CSR and both streaming modes; ordered
+   mode awaits the subtree inline, out-of-order mode emits one `so:b` boundary per Suspense), and
+   `hydrateAsync(container, { selective: true })` hydrates ready parts immediately, patches boundary
+   content on loader resolution, strips markers after settlement, and replays buffered interactions
+   (click/pointerdown/keydown/input/change) with typed payloads. Keep route crawling, filesystem
+   output, and direct renderer-owned router options deferred.
 8. **Browser DevTools extension UI** — the first example panel is implemented under
    `examples/devtools-extension`; continue hardening extension packaging, the browser extension QA
    checklist, richer event contracts, and future inspectors without reading private runtime state.
@@ -82,9 +87,11 @@ output; each requires a separate public API and compatibility review.
 - Production-grade DevTools extension distribution and advanced inspectors.
 - Long-term compatibility guarantees for private internal modules.
 - UI library or plugin marketplace work as a 1.0 admission requirement.
-- Suspense / selective hydration (out-of-order streaming SSR is implemented via
-  `renderToStream(tree, { mode: "out-of-order" })`) — revisit after 1.0, requires dedicated design
-  doc.
+- SuspenseList, scheduler priorities, and transition hooks on the Suspense fallback swap — the
+  Suspense/selective hydration slice itself is now implemented (`h(Suspense, { fallback },
+children)` plus `hydrateAsync(container, { selective: true })` on top of `renderToStream(tree, {
+mode: "out-of-order" })`); these sub-items remain out of scope — revisit after 1.0 with a
+  dedicated design doc.
 
 ## How to Propose Changes
 

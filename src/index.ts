@@ -10,6 +10,8 @@ export { h } from "./vnode/h";
 export { Fragment } from "./vnode/vnode";
 export { onMounted, onUnmounted, onUpdated } from "./component/lifecycle";
 export { defineAsyncComponent } from "./component/async-component";
+export { Suspense } from "./component/suspense";
+export type { SuspenseProps } from "./component/suspense";
 export { defineComponent } from "./component/define-component";
 export { inject, provide } from "./component/provide";
 export { createStore } from "./store/store";

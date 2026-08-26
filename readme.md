@@ -67,9 +67,11 @@ Public API changes should keep README, project-status, API, package-usage, packa
 consumer smoke coverage aligned before release. The beta contract now exposes composable
 router-aware SSR and router-aware hydration through `router.isReady()`, canonical snapshots, and
 `createRouterServerContext()`, and sequential streaming SSR through `renderToStream()`, and out-of-order streaming SSR via
-`renderToStream(source, { mode: "out-of-order" })`. It still
+`renderToStream(source, { mode: "out-of-order" })`, and the Suspense/selective hydration beta
+slice through `h(Suspense, { fallback }, children)` plus `hydrateAsync(container, { selective:
+true })`. It still
 defers auth, permissions, direct renderer-owned router
-options, Suspense/selective hydration, and async update scheduling after
+options, and async update scheduling after
 initial hydration.
 Router `auth` and `permissions` options or route record fields are explicitly rejected instead of
 being treated as implicit client authorization.

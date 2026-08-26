@@ -1,4 +1,5 @@
 import { ReactiveEffect } from "../reactivity/effect";
+import { getAsyncComponentMetadata } from "../component/async-component";
 import { queueJob } from "../scheduler/scheduler";
 import type { Provides } from "../component/provide";
 import { prepareAsyncSource, type PreparedVNode } from "../shared/async-tree";
@@ -14,12 +15,14 @@ import {
   stopHydratedComponentUpdates,
   type HydrationContext,
 } from "./hydration";
+import { attachSelectiveEventBuffer } from "./selective-events";
 
 export type RenderSource = VNode | (() => VNode);
 export type HydrationSource = VNode | ComponentTransport;
 export type AsyncHydrationSource = HydrationSource | AsyncComponentType;
 export interface HydrationOptions {
   recover?: boolean;
+  selective?: boolean;
 }
 type RenderContainer = Element & {
   _solaceRenderEffect?: ReactiveEffect<void>;
@@ -50,6 +53,9 @@ export function hydrate(
   options: HydrationOptions = {},
 ): void {
   assertNoDeferredIntegrationOptions(options);
+  if (options.selective === true) {
+    throw new TypeError("Selective hydration requires hydrateAsync(); hydrate() is synchronous.");
+  }
   assertNoAsyncHydrationSource(source);
   const renderContainer = container as RenderContainer;
   const styleSink = createDocumentStyleSink(container.ownerDocument);
@@ -101,6 +107,10 @@ export async function hydrateAsync(
 ): Promise<void> {
   assertHydrationContainer(container);
   assertNoDeferredIntegrationOptions(options);
+  if (options.selective === true) {
+    await hydrateSelectively(source, container as RenderContainer, appProvides, options);
+    return;
+  }
   const prepared = await prepareAsyncSource(source, {
     appProvides,
     collectStyles: true,
@@ -133,6 +143,98 @@ export async function hydrateAsync(
     }
 
     throw error;
+  }
+}
+
+async function hydrateSelectively(
+  source: AsyncHydrationSource,
+  renderContainer: RenderContainer,
+  appProvides: Provides | null,
+  options: HydrationOptions,
+): Promise<void> {
+  const vnode = typeof source === "function" ? h(source as ComponentTransport) : source;
+  const styleSink = createDocumentStyleSink(renderContainer.ownerDocument);
+  const context: HydrationContext = { hydratedInstances: [] };
+
+  stopReactiveRender(renderContainer);
+
+  // Kick off async loader requests before the walk so ready parts hydrate
+  // immediately while loads resolve in the background.
+  const pendingLoads: Promise<unknown>[] = [];
+  collectPendingLoads(vnode, pendingLoads);
+
+  const eventBuffer = attachSelectiveEventBuffer(renderContainer);
+  let settled = false;
+
+  try {
+    try {
+      withStyleSink(styleSink, () => {
+        const next = hydrateVNode(vnode, renderContainer.firstChild, null, appProvides, context);
+        assertNoExtraDomNode(next, "root[1]");
+      });
+    } catch (error) {
+      stopHydratedComponentUpdates(context);
+
+      if (shouldRecoverHydrationMismatch(error, options)) {
+        renderContainer.textContent = "";
+        renderContainer._solaceVNode = null;
+        withStyleSink(styleSink, () => renderVNode(vnode, renderContainer, appProvides));
+        return;
+      }
+
+      throw error;
+    }
+
+    renderContainer._solaceVNode = vnode;
+    await settlePendingBoundaries(renderContainer, pendingLoads);
+    settled = true;
+  } finally {
+    if (settled) {
+      eventBuffer.replay();
+    }
+    eventBuffer.detach();
+  }
+}
+
+async function settlePendingBoundaries(
+  renderContainer: RenderContainer,
+  pendingLoads: Promise<unknown>[],
+): Promise<void> {
+  // Hydrated async/Suspense instances re-render through their own update
+  // machinery when loaders resolve. Await every pending loader, then give the
+  // scheduler queue one turn before stripping the now-replaced boundary markers.
+  await Promise.allSettled(pendingLoads);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  removeBoundaryMarkers(renderContainer);
+}
+
+function collectPendingLoads(node: unknown, out: Promise<unknown>[]): void {
+  if (node === null || node === undefined || typeof node === "string") return;
+  if (Array.isArray(node)) {
+    for (const child of node) collectPendingLoads(child, out);
+    return;
+  }
+  if (typeof node !== "object" || !("shapeFlag" in node)) return;
+  const vnode = node as VNode;
+  const metadata = getAsyncComponentMetadata(vnode.type);
+  if (metadata !== undefined && metadata.peek() === null) {
+    out.push(metadata.load().catch(() => undefined));
+  }
+  collectPendingLoads(vnode.children, out);
+}
+
+function removeBoundaryMarkers(container: Element): void {
+  const doc = container.ownerDocument ?? document;
+  const walker = doc.createTreeWalker(container, NodeFilter.SHOW_COMMENT, null);
+  const removals: Comment[] = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode as Comment;
+    if (/^\/?so:b:\d+$/.test(node.nodeValue ?? "")) {
+      removals.push(node);
+    }
+  }
+  for (const node of removals) {
+    node.parentNode?.removeChild(node);
   }
 }
 
@@ -244,6 +346,10 @@ function assertNoDeferredIntegrationOptions(options: HydrationOptions): void {
     throw new TypeError("Hydration recover option must be a boolean");
   }
 
+  if (options.selective !== undefined && typeof options.selective !== "boolean") {
+    throw new TypeError("Hydration selective option must be a boolean");
+  }
+
   if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
     throw new TypeError(
       "Hydration manifest integration is deferred; compose assets in an app-local shell or adapter.",
@@ -262,7 +368,9 @@ function assertNoDeferredIntegrationOptions(options: HydrationOptions): void {
     );
   }
 
-  const unknownKey = Reflect.ownKeys(options).find((key) => key !== "recover");
+  const unknownKey = Reflect.ownKeys(options).find(
+    (key) => key !== "recover" && key !== "selective",
+  );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown hydration option: ${String(unknownKey)}`);
   }
