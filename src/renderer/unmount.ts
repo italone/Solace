@@ -36,6 +36,9 @@ export function unmount(vnode: VNode): void {
     if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
       unmountChildren(vnode.children as VNode[]);
     }
+    if (vnode.el !== null) {
+      remove(vnode.el);
+    }
     return;
   }
 
