@@ -6,6 +6,13 @@ import { prepareAsyncSource, type PreparedVNode } from "../shared/async-tree";
 import { createDocumentStyleSink, withStyleSink, type StyleSink } from "../component/style";
 import { h } from "../vnode/h";
 import type { AsyncComponentType, ComponentTransport, VNode } from "../vnode/vnode";
+import type { Router } from "../router/types";
+import {
+  createRouterSnapshot,
+  parseRouterSnapshot,
+  verifyRouterSnapshot,
+  type RouteRecordIdentity,
+} from "../router/snapshot";
 import { patch } from "./diff";
 import {
   assertNoExtraDomNode,
@@ -23,6 +30,8 @@ export type AsyncHydrationSource = HydrationSource | AsyncComponentType;
 export interface HydrationOptions {
   recover?: boolean;
   selective?: boolean;
+  router?: Router;
+  routerIdentifyRecord?: RouteRecordIdentity;
 }
 type RenderContainer = Element & {
   _solaceRenderEffect?: ReactiveEffect<void>;
@@ -108,8 +117,17 @@ export async function hydrateAsync(
   assertHydrationContainer(container);
   assertNoDeferredIntegrationOptions(options);
   if (options.selective === true) {
+    if (options.router !== undefined) {
+      throw new TypeError(
+        "Router-aware selective hydration is not supported yet; use ordered hydration.",
+      );
+    }
     await hydrateSelectively(source, container as RenderContainer, appProvides, options);
     return;
+  }
+  if (options.router !== undefined) {
+    const identifyRecord = requireRouterIdentifyRecord(options);
+    await prepareRouterHydration(options.router, container, identifyRecord);
   }
   const prepared = await prepareAsyncSource(source, {
     appProvides,
@@ -356,10 +374,23 @@ function assertNoDeferredIntegrationOptions(options: HydrationOptions): void {
     );
   }
 
-  if (hasOwn(options, "router")) {
-    throw new TypeError(
-      "Router-aware hydration integration is deferred; pass explicit render sources instead.",
-    );
+  if (options.router !== undefined) {
+    const router = options.router as unknown as Record<string, unknown>;
+    if (
+      router === null ||
+      typeof router !== "object" ||
+      typeof router.isReady !== "function" ||
+      typeof router.currentRoute !== "object"
+    ) {
+      throw new TypeError("Hydration router option must be a Router instance");
+    }
+    if (typeof options.routerIdentifyRecord !== "function") {
+      throw new TypeError(
+        "Hydration routerIdentifyRecord must be a function when router is provided",
+      );
+    }
+  } else if (options.routerIdentifyRecord !== undefined) {
+    throw new TypeError("Hydration routerIdentifyRecord requires the router option");
   }
 
   if (hasOwn(options, "stream")) {
@@ -369,7 +400,7 @@ function assertNoDeferredIntegrationOptions(options: HydrationOptions): void {
   }
 
   const unknownKey = Reflect.ownKeys(options).find(
-    (key) => key !== "recover" && key !== "selective",
+    (key) => key !== "recover" && key !== "selective" && key !== "router" && key !== "routerIdentifyRecord",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown hydration option: ${String(unknownKey)}`);
@@ -380,6 +411,55 @@ function assertHydrationContainer(container: Element): void {
   if (!(container instanceof Element)) {
     throw new TypeError("Hydration container must be an Element");
   }
+}
+
+const SNAPSHOT_SCRIPT_ID = "__solace-router-snapshot";
+const SNAPSHOT_MARKER = "window.__SOLACE_ROUTER_SNAPSHOT__=";
+
+function requireRouterIdentifyRecord(options: HydrationOptions): RouteRecordIdentity {
+  if (typeof options.routerIdentifyRecord !== "function") {
+    throw new TypeError(
+      "Hydration routerIdentifyRecord must be a function when router is provided",
+    );
+  }
+  return options.routerIdentifyRecord;
+}
+
+async function prepareRouterHydration(
+  router: Router,
+  container: Element,
+  identifyRecord: RouteRecordIdentity,
+): Promise<void> {
+  await router.isReady();
+
+  let payload: string | null = readSnapshotScriptPayload(container);
+  if (payload === null) {
+    const globalValue = (
+      globalThis as unknown as Record<string, unknown>
+    ).__SOLACE_ROUTER_SNAPSHOT__;
+    if (globalValue === undefined) {
+      throw new TypeError(
+        `Router hydration requires an embedded snapshot payload (script#${SNAPSHOT_SCRIPT_ID} or window.__SOLACE_ROUTER_SNAPSHOT__).`,
+      );
+    }
+    payload = typeof globalValue === "string" ? globalValue : JSON.stringify(globalValue);
+  }
+
+  const serverSnapshot = parseRouterSnapshot(payload);
+  const clientSnapshot = createRouterSnapshot(router.currentRoute.value, identifyRecord);
+  verifyRouterSnapshot(serverSnapshot, clientSnapshot);
+
+  container.querySelector(`script#${SNAPSHOT_SCRIPT_ID}`)?.remove();
+}
+
+function readSnapshotScriptPayload(container: Element): string | null {
+  const script = container.querySelector(`script#${SNAPSHOT_SCRIPT_ID}`);
+  const text = script?.textContent ?? null;
+  if (text === null || !text.includes(SNAPSHOT_MARKER)) {
+    return null;
+  }
+  const start = text.indexOf(SNAPSHOT_MARKER) + SNAPSHOT_MARKER.length;
+  return text.slice(start, text.lastIndexOf(";") >= start ? text.lastIndexOf(";") : undefined);
 }
 
 function renderReactiveSource(

@@ -162,7 +162,7 @@ describe("hydrate", () => {
 
     expect(() =>
       hydrate(h("button", null, "server"), container, null, { router: {} } as never),
-    ).toThrow(/Router-aware hydration integration is deferred/);
+    ).toThrow(TypeError("Hydration router option must be a Router instance"));
 
     expect(() =>
       hydrate(h("button", null, "server"), container, null, { stream: true } as never),
