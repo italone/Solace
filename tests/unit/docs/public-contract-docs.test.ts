@@ -171,11 +171,15 @@ describe("public contract documentation", () => {
     expect(projectStatus).toContain("Repository package version: local `0.1.0-beta.6` candidate");
     expect(projectStatus).toContain("Published npm `beta`: `0.1.0-beta.5`");
     expect(projectStatus).toContain("local `v0.1.0-beta.5` tag points to release commit `afe459e`");
-    expect(projectStatus).toContain("The remote\n`v0.1.0-beta.5` tag was rechecked on 2026-08-27 and matches the local tag");
+    expect(projectStatus).toContain(
+      "The remote\n`v0.1.0-beta.5` tag was rechecked on 2026-08-27 and matches the local tag",
+    );
     expect(projectStatusZh).toContain("仓库 package 版本：本地 `0.1.0-beta.6` candidate");
     expect(projectStatusZh).toContain("npm `beta` 已发布版本：`0.1.0-beta.5`");
     expect(projectStatusZh).toContain("本地 `v0.1.0-beta.5` tag 指向发布提交 `afe459e`");
-    expect(projectStatusZh).toContain("已复核远端 `v0.1.0-beta.5` tag，与本地一致并 peel 到同一发布提交");
+    expect(projectStatusZh).toContain(
+      "已复核远端 `v0.1.0-beta.5` tag，与本地一致并 peel 到同一发布提交",
+    );
     expect(projectStatus).toContain("86 Vitest files / 742 tests");
     expect(projectStatus).toContain("92.34% statements");
     expect(projectStatus).toMatch(/87\.24%\s+branches/);
