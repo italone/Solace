@@ -29,6 +29,8 @@ import { escapeHtml } from "../shared/html";
 import { isThenable } from "../shared/utils";
 import type { ComponentType, VNode, VNodeChildren } from "../vnode/vnode";
 import type { RenderToStringAsyncSource } from "./render-to-string";
+import { assertSSRAssetOptions, buildSSRAssetTags } from "./ssr-assets";
+import type { StaticAssetManifest } from "./static-assets";
 import {
   assertRouterSSROption,
   buildSnapshotScript,
@@ -55,6 +57,8 @@ export interface RenderToStreamOptions {
   provides?: Provides;
   mode?: "ordered" | "out-of-order";
   router?: RouterSSROptions;
+  manifest?: StaticAssetManifest;
+  clientEntry?: string;
 }
 
 type StreamMode = "ordered" | "out-of-order";
@@ -141,6 +145,10 @@ export function renderToStream(
           buffer += chunk;
           controller.enqueue(encoder.encode(buffer));
           buffer = "";
+        }
+
+        if (options.manifest !== undefined && options.clientEntry !== undefined) {
+          buffer += buildSSRAssetTags(options.manifest, options.clientEntry);
         }
 
         if (routerSSR !== null) {
@@ -435,11 +443,7 @@ function assertStreamOptions(options: RenderToStreamOptions): void {
     throw new TypeError('SSR streaming mode must be "ordered" or "out-of-order"');
   }
 
-  if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
-    throw new TypeError(
-      "SSR manifest integration is deferred; compose assets in an app-local shell or adapter.",
-    );
-  }
+  assertSSRAssetOptions(options);
 
   if (options.router !== undefined) {
     assertRouterSSROption(options.router);
@@ -449,7 +453,13 @@ function assertStreamOptions(options: RenderToStreamOptions): void {
   }
 
   const unknownKey = Reflect.ownKeys(options).find(
-    (key) => key !== "context" && key !== "provides" && key !== "mode" && key !== "router",
+    (key) =>
+      key !== "context" &&
+      key !== "provides" &&
+      key !== "mode" &&
+      key !== "router" &&
+      key !== "manifest" &&
+      key !== "clientEntry",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown SSR streaming option: ${String(unknownKey)}`);
