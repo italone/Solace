@@ -405,7 +405,11 @@ The 2026-08-27 beta.6 publish used `pnpm release:publish:beta`, which reran the 
 (including publishable readiness and the exact beta.2 upgrade smoke) before
 `changeset publish --tag beta`. Post-publish registry checks confirm npm reports
 `latest -> 0.0.5` and `beta -> 0.1.0-beta.6`; the local and remote `v0.1.0-beta.6` tags are
-identical and point to release commit `72e98dd`; the publish tarball contained 53 files.
+identical and point to release commit `72e98dd`; the publish tarball contained 53 files. The
+post-publish registry beta smoke installed `@italone/solace@beta` from npm, imported all eight
+protected public entries, rendered `<p>beta.6 registry smoke</p>` through the server entry, and
+confirmed that the private `@italone/solace/dist/index.js` deep path remains blocked
+(`ERR_PACKAGE_PATH_NOT_EXPORTED`).
 
 `@italone/solace@0.1.0-beta.5` has been published to npm with the `beta` dist-tag. Post-publish
 registry checks confirm npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.5`. The local tag

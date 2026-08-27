@@ -313,7 +313,9 @@ dist-tag 指向 `0.1.0-beta.6`。2026-08-27 的 beta.6 发布使用了 `pnpm rel
 在 `changeset publish --tag beta` 前重跑了完整发布门禁（含 publishable readiness 和精确
 beta.2 升级 smoke）。发布后 registry 检查确认 `latest -> 0.0.5` 和
 `beta -> 0.1.0-beta.6`；本地与远端 `v0.1.0-beta.6` tag 一致并指向发布提交 `72e98dd`；
-发布 tarball 包含 53 个文件。
+发布 tarball 包含 53 个文件。发布后的 registry beta smoke 从 npm 安装 `@italone/solace@beta`，
+导入八个受保护的公开入口，通过 server entry 渲染 `<p>beta.6 registry smoke</p>`，并确认私有
+`@italone/solace/dist/index.js` 深路径仍被阻断（`ERR_PACKAGE_PATH_NOT_EXPORTED`）。
 
 `@italone/solace@0.1.0-beta.5` 已发布到 npm，并且
 `beta` dist-tag 已指向 `0.1.0-beta.5`。本地 tag 指向发布提交 `afe459e`；2026-08-27
