@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   Fragment,
+  createMemoryHistory,
+  createRouter,
   defineAsyncComponent,
   h,
   nextTick,
@@ -167,6 +169,26 @@ describe("hydrate", () => {
     expect(() =>
       hydrate(h("button", null, "server"), container, null, { stream: true } as never),
     ).toThrow(/Hydration streaming integration is deferred/);
+  });
+
+  it("rejects a well-formed router option on synchronous hydration", () => {
+    const container = document.createElement("div");
+    container.innerHTML = "<button>server</button>";
+
+    const router = createRouter({
+      history: createMemoryHistory("/"),
+      routes: [{ path: "/", name: "home", component: () => h("p", null, "home") }],
+    });
+
+    expect(() =>
+      hydrate(h("button", null, "server"), container, null, {
+        router,
+        routerIdentifyRecord: (record) => record.name ?? record.path,
+      }),
+    ).toThrow(
+      TypeError("Router-aware hydration requires hydrateAsync(); hydrate() is synchronous."),
+    );
+    expect((container as { _solaceRenderEffect?: unknown })._solaceRenderEffect).toBeUndefined();
   });
 
   it("rejects unknown hydration options at runtime", () => {

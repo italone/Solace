@@ -65,6 +65,11 @@ export function hydrate(
   if (options.selective === true) {
     throw new TypeError("Selective hydration requires hydrateAsync(); hydrate() is synchronous.");
   }
+  if (options.router !== undefined) {
+    throw new TypeError(
+      "Router-aware hydration requires hydrateAsync(); hydrate() is synchronous.",
+    );
+  }
   assertNoAsyncHydrationSource(source);
   const renderContainer = container as RenderContainer;
   const styleSink = createDocumentStyleSink(container.ownerDocument);
