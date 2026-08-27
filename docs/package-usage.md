@@ -239,13 +239,13 @@ Hydration reuses existing `style[data-s-id]` tags for matching `useStyle()` regi
 on structural mismatches by default. Pass `{ recover: true }` to explicitly replace mismatched
 server DOM with the client VNode tree while keeping later reactive updates on the normal renderer
 path. Without `{ recover: true }`, failed hydration cleans up the root hydration effect before
-rethrowing the mismatch. Passing deferred integration options such as `manifest`, `clientEntry`,
-`router`, or `stream` to `renderToString()` throws a `TypeError`, and `hydrate()` rejects matching
+rethrowing the mismatch. Passing deferred integration options such as `router`, or `stream` to `renderToString()` throws a `TypeError`, and `hydrate()` rejects matching
 manifest/router/streaming integration fields at runtime.
 Hydration options must be a non-array object, and `recover` must be boolean when provided.
 `renderToString()` context, when provided, must be a plain object.
-Hydration options accept only `recover`, and `renderToString()` options accept only `context` and
-`provides`; unknown own option fields throw a `TypeError` naming the field.
+Hydration options accept only `recover`, and `renderToString()` options accept only `context`,
+`provides`, `manifest`, and `clientEntry` (the asset pair must be provided together; see below);
+unknown own option fields throw a `TypeError` naming the field.
 Hydration mismatch errors expose stable path information plus `kind`, `expected`, and `actual`
 fields so missing nodes, extra nodes, element tag mismatches, and text mismatches can be diagnosed
 without guessing from a single message string.
@@ -456,6 +456,30 @@ const assets = resolveStaticAssets({
 assets.modulePreloads;
 assets.stylesheets;
 assets.scripts;
+```
+
+For production SSR, pass the same manifest and the client entry chunk id to any of the three SSR
+renderers instead of composing asset tags by hand. The options must be provided together —
+supplying only one throws `TypeError("SSR manifest and clientEntry must be provided together")` —
+and validation is delegated to `resolveStaticAssets()`, so its existing static-asset messages
+propagate unchanged. Tag order is `<link rel="modulepreload">` tags, then `<link rel="stylesheet">`
+tags, then the entry `<script type="module">`; buffered output orders `content → asset tags →
+router snapshot script`, and the stream path enqueues the tags at the tail, before the snapshot
+script. The option composes with the renderer `router` option and `mode: "out-of-order"`. Keep the
+injected tags outside the hydrated container — hydration rejects tags inside it as extra nodes
+(`SolaceHydrationError` "expected no DOM node but found `<link>`"). Build tooling (a build CLI or
+manifest generation) is out of scope; the app's build produces the manifest.
+
+```ts
+const manifest = {
+  "src/main.ts": { file: "assets/main.js", css: ["assets/main.css"], imports: ["_vendor.js"] },
+  "_vendor.js": { file: "assets/vendor.js" },
+};
+
+const { html, styles } = renderToString(h(App), {
+  manifest,
+  clientEntry: "src/main.ts",
+});
 ```
 
 ```tsx

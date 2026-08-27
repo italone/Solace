@@ -116,8 +116,11 @@ routerIdentifyRecord })` awaits readiness, verifies the embedded snapshot agains
   route, removes the script, and only then hydrates. Router-aware selective hydration is rejected.
   Even so,
   ambient instance APIs after async
-  suspension, async update scheduling after initial hydration, router-aware SSG, and full production pipeline
-  automation remain deferred. Explicit router-aware SSR and router-aware hydration also remain
+  suspension, async update scheduling after initial hydration, and router-aware SSG remain deferred.
+  The production pipeline row is no longer fully deferred: all three SSR renderers accept `manifest`
+  plus `clientEntry` for runtime production asset injection (modulepreload/stylesheet/entry script
+  tags appended after the content, before the router snapshot script), while build CLI automation
+  stays out of scope — the app's build produces the manifest. Explicit router-aware SSR and router-aware hydration also remain
   available through readiness, server context, and snapshot verification composition.
 - Internal modules are unstable. Compatibility promises cover documented public entries only; `src/**`, `dist/**`, and internal diagnostics/instrumentation are not suitable external dependencies.
 

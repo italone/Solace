@@ -60,8 +60,10 @@ backpressure。乱序（out-of-order）streaming SSR 可通过 `renderToStream(s
 提供乱序 streaming SSR，并提供 `h(Suspense, { fallback }, children)` 加 `hydrateAsync(container,
 { selective: true })` 的 Suspense/selective hydration beta 切片，还通过 `renderToStream()`/
 `renderToStringAsync()` 的 `router` option 配合 `hydrateAsync(container, { router,
-routerIdentifyRecord })` 提供 renderer-owned router SSR；仍推迟
-auth、permissions、router-aware SSG 与同步入口的 router options，以及 initial hydration 之后的 async update scheduling。Router `auth` 和
+routerIdentifyRecord })` 提供 renderer-owned router SSR，并通过三个 SSR renderer 上成对的
+`manifest` 加 `clientEntry` options 提供生产 asset injection；仍推迟
+auth、permissions、router-aware SSG 与同步入口的 router options、initial hydration 之后的 async
+update scheduling，以及 build CLI asset 工具链（manifest 由应用的构建产出）。Router `auth` 和
 `permissions` options 或 route
 record fields 会被明确拒绝，不会被当作隐式客户端授权能力。
 SSR、hydration 和 SSG option objects 也会通过包含字段名的 `TypeError` 拒绝未知自有字段，
