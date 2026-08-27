@@ -3,8 +3,8 @@
   "sources": {
     "browser": {
       "path": ".benchmark-history/browser.jsonl",
-      "sha256": "39520ebe24137d9231080f55c4725064e04c4a0d25eef7e52cf59c06b9cd9ed2",
-      "recordCount": 234
+      "sha256": "c101db6025d9afe2fdcea7b89a00fd2fe9bd5990a36675044aeee00552fd66f6",
+      "recordCount": 240
     },
     "jsdom": {
       "path": ".benchmark-history/jsdom.jsonl",
@@ -14,11 +14,11 @@
   },
   "browserScenarios": {
     "keyed-reorder:reverse": {
-      "recordCount": 24,
-      "distinctRunCount": 24,
-      "distinctDateCount": 5,
+      "recordCount": 25,
+      "distinctRunCount": 25,
+      "distinctDateCount": 6,
       "firstRunAt": "2026-07-23T03:34:18.546Z",
-      "lastRunAt": "2026-08-26T06:53:25.365Z",
+      "lastRunAt": "2026-08-27T01:59:43.499Z",
       "runAt": [
         "2026-07-23T03:34:18.546Z",
         "2026-07-23T03:34:18.685Z",
@@ -43,15 +43,16 @@
         "2026-08-18T03:13:28.260Z",
         "2026-08-24T06:09:34.483Z",
         "2026-08-25T01:45:09.016Z",
-        "2026-08-26T06:53:25.365Z"
+        "2026-08-26T06:53:25.365Z",
+        "2026-08-27T01:59:43.499Z"
       ]
     },
     "keyed-reorder:shift-window": {
-      "recordCount": 24,
-      "distinctRunCount": 24,
-      "distinctDateCount": 5,
+      "recordCount": 25,
+      "distinctRunCount": 25,
+      "distinctDateCount": 6,
       "firstRunAt": "2026-07-23T03:34:18.640Z",
-      "lastRunAt": "2026-08-26T06:53:25.667Z",
+      "lastRunAt": "2026-08-27T01:59:43.599Z",
       "runAt": [
         "2026-07-23T03:34:18.640Z",
         "2026-07-23T03:34:18.765Z",
@@ -76,15 +77,16 @@
         "2026-08-18T03:13:28.364Z",
         "2026-08-24T06:09:34.607Z",
         "2026-08-25T01:45:09.120Z",
-        "2026-08-26T06:53:25.667Z"
+        "2026-08-26T06:53:25.667Z",
+        "2026-08-27T01:59:43.599Z"
       ]
     },
     "keyed-reorder:shuffle": {
-      "recordCount": 24,
-      "distinctRunCount": 24,
-      "distinctDateCount": 5,
+      "recordCount": 25,
+      "distinctRunCount": 25,
+      "distinctDateCount": 6,
       "firstRunAt": "2026-07-23T03:34:18.621Z",
-      "lastRunAt": "2026-08-26T06:53:25.622Z",
+      "lastRunAt": "2026-08-27T01:59:43.578Z",
       "runAt": [
         "2026-07-23T03:34:18.621Z",
         "2026-07-23T03:34:18.746Z",
@@ -109,15 +111,16 @@
         "2026-08-18T03:13:28.342Z",
         "2026-08-24T06:09:34.584Z",
         "2026-08-25T01:45:09.099Z",
-        "2026-08-26T06:53:25.622Z"
+        "2026-08-26T06:53:25.622Z",
+        "2026-08-27T01:59:43.578Z"
       ]
     },
     "keyed-reorder:sorted": {
-      "recordCount": 24,
-      "distinctRunCount": 24,
-      "distinctDateCount": 5,
+      "recordCount": 25,
+      "distinctRunCount": 25,
+      "distinctDateCount": 6,
       "firstRunAt": "2026-07-23T03:34:18.573Z",
-      "lastRunAt": "2026-08-26T06:53:25.514Z",
+      "lastRunAt": "2026-08-27T01:59:43.528Z",
       "runAt": [
         "2026-07-23T03:34:18.573Z",
         "2026-07-23T03:34:18.704Z",
@@ -142,15 +145,16 @@
         "2026-08-18T03:13:28.291Z",
         "2026-08-24T06:09:34.522Z",
         "2026-08-25T01:45:09.049Z",
-        "2026-08-26T06:53:25.514Z"
+        "2026-08-26T06:53:25.514Z",
+        "2026-08-27T01:59:43.528Z"
       ]
     },
     "keyed-reorder:swap-neighbors": {
-      "recordCount": 24,
-      "distinctRunCount": 24,
-      "distinctDateCount": 5,
+      "recordCount": 25,
+      "distinctRunCount": 25,
+      "distinctDateCount": 6,
       "firstRunAt": "2026-07-23T03:34:18.597Z",
-      "lastRunAt": "2026-08-26T06:53:25.560Z",
+      "lastRunAt": "2026-08-27T01:59:43.551Z",
       "runAt": [
         "2026-07-23T03:34:18.597Z",
         "2026-07-23T03:34:18.724Z",
@@ -175,15 +179,16 @@
         "2026-08-18T03:13:28.316Z",
         "2026-08-24T06:09:34.551Z",
         "2026-08-25T01:45:09.073Z",
-        "2026-08-26T06:53:25.560Z"
+        "2026-08-26T06:53:25.560Z",
+        "2026-08-27T01:59:43.551Z"
       ]
     },
     "large-list": {
-      "recordCount": 94,
-      "distinctRunCount": 94,
-      "distinctDateCount": 10,
+      "recordCount": 95,
+      "distinctRunCount": 95,
+      "distinctDateCount": 11,
       "firstRunAt": "2026-07-16T01:54:42.874Z",
-      "lastRunAt": "2026-08-26T06:53:25.310Z",
+      "lastRunAt": "2026-08-27T01:59:43.472Z",
       "runAt": [
         "2026-07-16T01:54:42.874Z",
         "2026-07-16T01:55:38.508Z",
@@ -278,7 +283,8 @@
         "2026-08-18T03:13:28.233Z",
         "2026-08-24T06:09:34.453Z",
         "2026-08-25T01:45:08.987Z",
-        "2026-08-26T06:53:25.310Z"
+        "2026-08-26T06:53:25.310Z",
+        "2026-08-27T01:59:43.472Z"
       ]
     }
   },
