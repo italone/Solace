@@ -250,8 +250,8 @@ peeled ref 解引用到发布提交 `fbe6984`。
 e2e tests 和 2 个 DevTools extension e2e tests，覆盖率为 92.97% statements / 88.11% branches /
 95.21% functions / 93.25% lines。registry 检查确认 `latest -> 0.0.5` 和
 `beta -> 0.1.0-beta.5`；registry smoke 导入八个受保护的公开入口，验证 server entry 渲染，并确认
-私有 deep path 仍被阻断。本地 `v0.1.0-beta.5` tag 指向发布提交 `afe459e`。由于发布后审计期间
-无法连接 GitHub，远端 `v0.1.0-beta.5` tag 仍待复核。
+私有 deep path 仍被阻断。本地 `v0.1.0-beta.5` tag 指向发布提交 `afe459e`。2026-08-27
+已复核远端 `v0.1.0-beta.5` tag，与本地一致并 peel 到同一发布提交。
 
 ## 公共 API 边界
 
@@ -302,8 +302,9 @@ Solace 当前有意不包含：
 
 发布独立于仓库就绪度。`@italone/solace@0.0.5` 已发布到 npm，并且 `latest`
 dist-tag 指向 `0.0.5`。`@italone/solace@0.1.0-beta.5` 已发布到 npm，并且
-`beta` dist-tag 已指向 `0.1.0-beta.5`。本地 tag 指向发布提交 `afe459e`；由于验证环境无法连接
-GitHub，远端 tag 仍待复核。后续任何发布或同步声明前仍应重新核对 Git 状态、远端 tag 和 npm registry。
+`beta` dist-tag 已指向 `0.1.0-beta.5`。本地 tag 指向发布提交 `afe459e`；2026-08-27
+已复核远端 tag，与本地一致并 peel 到同一发布提交。后续任何发布或同步声明前仍应重新核对
+Git 状态、远端 tag 和 npm registry。
 
 未来发布任何后续版本前：
 

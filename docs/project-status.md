@@ -323,9 +323,9 @@ The gate passed 81 Vitest files / 702 tests, 16 package tests, 24 browser e2e te
 extension e2e tests with coverage of 92.97% statements / 88.11% branches / 95.21% functions /
 93.25% lines. Registry checks confirm `latest -> 0.0.5` and `beta -> 0.1.0-beta.5`; the registry
 smoke imported all eight protected public entries, rendered through the server entry, and confirmed
-that the private deep path remains blocked. The local `v0.1.0-beta.5` tag points to release commit `afe459e`.
-Remote `v0.1.0-beta.5` tag verification remains pending because live GitHub connectivity was
-unavailable during the post-publish audit.
+that the private deep path remains blocked. The local `v0.1.0-beta.5` tag points to release commit `afe459e`. The remote
+`v0.1.0-beta.5` tag was rechecked on 2026-08-27 and matches the local tag, peeling to the same
+release commit.
 
 ## Public API Boundary
 
