@@ -19,13 +19,14 @@ const packageJson = {
 
 const manifest = {
   schemaVersion: 1,
-  stableAdmission: false,
+  stableAdmission: true,
   entries: [
-    { key: ".", path: "@italone/solace", maturity: "beta", scope: "runtime" },
+    { key: ".", path: "@italone/solace", maturity: "stable", scope: "runtime" },
     {
       key: "./devtools",
       path: "@italone/solace/devtools",
       maturity: "beta",
+      excludedFromStableBoundary: true,
       scope: "devtools",
     },
     {
@@ -46,22 +47,29 @@ const manifest = {
       maturity: "stable",
       scope: "metadata",
     },
-    { key: "./server", path: "@italone/solace/server", maturity: "beta", scope: "server" },
+    { key: "./server", path: "@italone/solace/server", maturity: "stable", scope: "server" },
     {
       key: "./sfc",
       path: "@italone/solace/sfc",
       maturity: "experimental",
+      excludedFromStableBoundary: true,
       scope: "sfc",
     },
-    { key: "./vite", path: "@italone/solace/vite", maturity: "experimental", scope: "vite" },
+    {
+      key: "./vite",
+      path: "@italone/solace/vite",
+      maturity: "experimental",
+      excludedFromStableBoundary: true,
+      scope: "vite",
+    },
   ],
 };
 
 describe("public contract manifest", () => {
-  it("accepts an explicit beta contract that matches package exports", () => {
+  it("accepts a stable-admitted contract with explicit exclusions", () => {
     expect(evaluatePublicContract({ packageJson, manifest })).toMatchObject({
       valid: true,
-      stableAdmission: false,
+      stableAdmission: true,
       errors: [],
     });
   });
@@ -78,13 +86,50 @@ describe("public contract manifest", () => {
     expect(result.errors.join(" ")).toContain("missing manifest entries: ./vite");
   });
 
-  it("rejects stable admission while beta entries remain", () => {
+  it("rejects stable admission while non-excluded beta entries remain", () => {
     const result = evaluatePublicContract({
       packageJson,
-      manifest: { ...manifest, stableAdmission: true },
+      manifest: {
+        ...manifest,
+        entries: manifest.entries.map((entry) =>
+          entry.key === "./server" ? { ...entry, maturity: "beta" } : entry,
+        ),
+      },
     });
     expect(result.valid).toBe(false);
-    expect(result.errors.join(" ")).toContain("stable admission requires every entry to be stable");
+    expect(result.errors.join(" ")).toContain(
+      "stable admission requires every entry to be stable or explicitly excluded",
+    );
+  });
+
+  it("rejects an entry that is both stable and excluded from the stable boundary", () => {
+    const result = evaluatePublicContract({
+      packageJson,
+      manifest: {
+        ...manifest,
+        entries: manifest.entries.map((entry) =>
+          entry.key === "./sfc" ? { ...entry, maturity: "stable" } : entry,
+        ),
+      },
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors.join(" ")).toContain(
+      "./sfc cannot be stable and excluded from the stable boundary",
+    );
+  });
+
+  it("rejects drift of the exclusion flag from the frozen boundary", () => {
+    const result = evaluatePublicContract({
+      packageJson,
+      manifest: {
+        ...manifest,
+        entries: manifest.entries.map((entry) =>
+          entry.key === "./vite" ? { ...entry, excludedFromStableBoundary: false } : entry,
+        ),
+      },
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors.join(" ")).toContain("./vite excludedFromStableBoundary must remain true");
   });
 
   it("rejects invalid maturity values", () => {
@@ -117,14 +162,14 @@ describe("public contract manifest", () => {
         ...manifest,
         entries: manifest.entries.map((entry) =>
           entry.key === "./server"
-            ? { ...entry, path: "@italone/solace/wrong", maturity: "stable" }
+            ? { ...entry, path: "@italone/solace/wrong", maturity: "beta" }
             : entry,
         ),
       },
     });
     expect(result.valid).toBe(false);
     expect(result.errors.join(" ")).toContain("./server path must remain @italone/solace/server");
-    expect(result.errors.join(" ")).toContain("./server maturity must remain beta");
+    expect(result.errors.join(" ")).toContain("./server maturity must remain stable");
   });
 
   it("accepts the checked-in frozen public contract", async () => {
@@ -137,6 +182,6 @@ describe("public contract manifest", () => {
         packageJson: JSON.parse(packageSource),
         manifest: JSON.parse(manifestSource),
       }),
-    ).toEqual({ valid: true, stableAdmission: false, errors: [] });
+    ).toEqual({ valid: true, stableAdmission: true, errors: [] });
   });
 });

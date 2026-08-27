@@ -28,7 +28,10 @@ Current repository state:
   synchronization claim.
 - Phase: published beta.5 contract and adoption release. The Router stable slice,
   buffered async initial SSR/hydration, sequential async SSG, and the first browser DevTools
-  extension timeline panel are implemented, but the project is not a full production contract.
+  extension timeline panel are implemented. As of 2026-08-27 the public contract manifest
+  declares a stable 1.0 boundary for the root runtime and `./server` entry points, with
+  `./devtools`, `./sfc`, and `./vite` explicitly excluded from the stable boundary
+  (`excludedFromStableBoundary`), so those surfaces remain beta/experimental.
 
 The 2026-08-18 next-steps work completed Tasks 1, 2, 3, 5, and 6 without widening the beta
 contract: the DevTools browser extension QA and inspected-origin checklists were recorded, the

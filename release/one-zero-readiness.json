@@ -108,7 +108,7 @@
     "testedOrigins": []
   },
   "contract": {
-    "stableAdmission": false,
+    "stableAdmission": true,
     "evidence": "release/public-contract.json"
   },
   "migrationPolicy": {

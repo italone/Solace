@@ -1,14 +1,26 @@
 const MATURITIES = new Set(["stable", "beta", "experimental"]);
 
 export const FROZEN_PUBLIC_CONTRACT = Object.freeze({
-  ".": { path: "@italone/solace", maturity: "beta" },
-  "./devtools": { path: "@italone/solace/devtools", maturity: "beta" },
+  ".": { path: "@italone/solace", maturity: "stable" },
+  "./devtools": {
+    path: "@italone/solace/devtools",
+    maturity: "beta",
+    excludedFromStableBoundary: true,
+  },
   "./jsx-dev-runtime": { path: "@italone/solace/jsx-dev-runtime", maturity: "stable" },
   "./jsx-runtime": { path: "@italone/solace/jsx-runtime", maturity: "stable" },
   "./package.json": { path: "@italone/solace/package.json", maturity: "stable" },
-  "./server": { path: "@italone/solace/server", maturity: "beta" },
-  "./sfc": { path: "@italone/solace/sfc", maturity: "experimental" },
-  "./vite": { path: "@italone/solace/vite", maturity: "experimental" },
+  "./server": { path: "@italone/solace/server", maturity: "stable" },
+  "./sfc": {
+    path: "@italone/solace/sfc",
+    maturity: "experimental",
+    excludedFromStableBoundary: true,
+  },
+  "./vite": {
+    path: "@italone/solace/vite",
+    maturity: "experimental",
+    excludedFromStableBoundary: true,
+  },
 });
 
 export function evaluatePublicContract({ packageJson, manifest }) {
@@ -65,12 +77,23 @@ export function evaluatePublicContract({ packageJson, manifest }) {
     if (entry.maturity !== frozenEntry.maturity) {
       errors.push(`${entry.key} maturity must remain ${frozenEntry.maturity}`);
     }
+    const excluded = entry.excludedFromStableBoundary === true;
+    if (excluded !== (frozenEntry.excludedFromStableBoundary === true)) {
+      errors.push(
+        `${entry.key} excludedFromStableBoundary must remain ${frozenEntry.excludedFromStableBoundary === true}`,
+      );
+    }
+    if (excluded && entry.maturity === "stable") {
+      errors.push(`${entry.key} cannot be stable and excluded from the stable boundary`);
+    }
   }
 
-  const stableEntries = entries.filter((entry) => entry?.maturity !== "stable");
-  if (manifest?.stableAdmission === true && stableEntries.length > 0) {
+  const unstableEntries = entries.filter(
+    (entry) => entry?.maturity !== "stable" && entry?.excludedFromStableBoundary !== true,
+  );
+  if (manifest?.stableAdmission === true && unstableEntries.length > 0) {
     errors.push(
-      `stable admission requires every entry to be stable: ${stableEntries.map((entry) => entry.key).join(", ")}`,
+      `stable admission requires every entry to be stable or explicitly excluded from the stable boundary: ${unstableEntries.map((entry) => entry.key).join(", ")}`,
     );
   }
 

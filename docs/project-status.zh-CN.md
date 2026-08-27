@@ -65,7 +65,9 @@ SFC 仍是可选、窄、实验性的编译器表面，而不是主要框架方�
 memory history、scroll behavior、readiness、canonical snapshots 和 request-scoped SSR context
 已经进入稳定切片，async renderer 入口也已支持 renderer-owned router SSR，但 auth、permissions 和
 router-aware SSG 仍是显式的 beta 范围边界；SSR/hydration 已覆盖 buffered async initial rendering，
-但仍不是完整生产契约。
+2026-08-27 起，公共契约 manifest 已声明稳定 1.0 边界：根运行时与 `./server` 入口为 stable，
+`./devtools`、`./sfc`、`./vite` 通过 `excludedFromStableBoundary` 显式排除在稳定边界之外，
+保持 beta/experimental。
 项目今天已经可用且文档齐全，但这些子系统仍然有意保持在冻结生产契约之前的范围内。
 
 - 生态能力仍薄。没有一方 UI component library、稳定 plugin ecosystem、生产级 DevTools 发布形态；大型应用指南仍只是早期落地指导，还不是经过大量实战沉淀的生态层，`docs/ecosystem.md` 已把 beta 线 UI library 和 plugin 决策显式化。仓库内 DevTools 扩展示例现在只允许本地 6174 demo origins；生产 distribution 仍需明确审查 inspected origins。

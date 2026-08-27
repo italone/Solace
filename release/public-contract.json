@@ -1,17 +1,18 @@
 {
   "schemaVersion": 1,
-  "stableAdmission": false,
+  "stableAdmission": true,
   "entries": [
     {
       "key": ".",
       "path": "@italone/solace",
-      "maturity": "beta",
+      "maturity": "stable",
       "scope": "Stable synchronous runtime; Router and async APIs remain beta."
     },
     {
       "key": "./devtools",
       "path": "@italone/solace/devtools",
       "maturity": "beta",
+      "excludedFromStableBoundary": true,
       "scope": "Instrumentation listener and recorder APIs."
     },
     {
@@ -35,19 +36,21 @@
     {
       "key": "./server",
       "path": "@italone/solace/server",
-      "maturity": "beta",
+      "maturity": "stable",
       "scope": "SSR, SSG, and hydration helpers."
     },
     {
       "key": "./sfc",
       "path": "@italone/solace/sfc",
       "maturity": "experimental",
+      "excludedFromStableBoundary": true,
       "scope": "Narrow .solace type shim."
     },
     {
       "key": "./vite",
       "path": "@italone/solace/vite",
       "maturity": "experimental",
+      "excludedFromStableBoundary": true,
       "scope": "Narrow .solace Vite transform plugin."
     }
   ]
