@@ -137,12 +137,6 @@ function acceptAsyncHydrationRootComponent(): void {
 // @ts-expect-error direct GenerateStaticSiteOptions.router is unsupported; router-aware SSG adapters are exposed as createStaticRoutesFromRouter()
 acceptSSGOptions({ routes: [{ path: "/", source: h("p") }], router: {} });
 
-// @ts-expect-error renderToString does not read production manifests
-acceptRenderOptions({ manifest: {} });
-
-// @ts-expect-error renderToString does not infer client entries
-acceptRenderOptions({ clientEntry: "/src/main.ts" });
-
 // @ts-expect-error router-aware SSR integration is deferred
 acceptRenderOptions({ router: {} });
 

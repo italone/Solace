@@ -10,6 +10,8 @@ import { prepareAsyncSource, type PreparedVNode } from "../shared/async-tree";
 import { escapeHtml } from "../shared/html";
 import { isThenable } from "../shared/utils";
 import type { AsyncComponentType, ComponentTransport, VNode } from "../vnode/vnode";
+import type { StaticAssetManifest } from "./static-assets";
+import { assertSSRAssetOptions, buildSSRAssetTags } from "./ssr-assets";
 import {
   assertRouterSSROption,
   buildSnapshotScript,
@@ -28,6 +30,8 @@ import {
 export interface RenderToStringOptions {
   context?: Record<string, unknown>;
   provides?: Provides;
+  manifest?: StaticAssetManifest;
+  clientEntry?: string;
 }
 
 export interface RenderToStringAsyncOptions extends RenderToStringOptions {
@@ -53,12 +57,16 @@ export function renderToString(
   assertNoAsyncSSRSource(source);
   const vnode = normalizeSource(source);
   const sink = createServerStyleSink();
-  const html = withStyleSink(sink, () =>
+  const rendered = withStyleSink(sink, () =>
     renderVNodeToString(vnode, null, options.provides ?? null),
   );
+  const tail =
+    options.manifest !== undefined && options.clientEntry !== undefined
+      ? buildSSRAssetTags(options.manifest, options.clientEntry)
+      : "";
 
   return {
-    html,
+    html: rendered + tail,
     styles: sink.styles,
   };
 }
@@ -75,6 +83,9 @@ export async function renderToStringAsync(
   });
 
   let html = renderPreparedVNodeToString(prepared.root);
+  if (options.manifest !== undefined && options.clientEntry !== undefined) {
+    html += buildSSRAssetTags(options.manifest, options.clientEntry);
+  }
   if (routerSSR !== null) {
     html += buildSnapshotScript(routerSSR.snapshot);
   }
@@ -217,7 +228,11 @@ function assertNoDeferredIntegrationOptions(options: RenderToStringOptions): voi
   }
 
   const unknownKey = Reflect.ownKeys(options).find(
-    (key) => key !== "context" && key !== "provides",
+    (key) =>
+      key !== "context" &&
+      key !== "provides" &&
+      key !== "manifest" &&
+      key !== "clientEntry",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown SSR option: ${String(unknownKey)}`);
@@ -241,7 +256,12 @@ function assertAsyncSSROptions(options: RenderToStringAsyncOptions): void {
   }
 
   const unknownKey = Reflect.ownKeys(options).find(
-    (key) => key !== "context" && key !== "provides" && key !== "router",
+    (key) =>
+      key !== "context" &&
+      key !== "provides" &&
+      key !== "router" &&
+      key !== "manifest" &&
+      key !== "clientEntry",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown SSR option: ${String(unknownKey)}`);
@@ -261,9 +281,5 @@ function assertBaseSSROptions(options: RenderToStringOptions): void {
     throw new TypeError("SSR provides must be a Map");
   }
 
-  if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
-    throw new TypeError(
-      "SSR manifest integration is deferred; compose assets in an app-local shell or adapter.",
-    );
-  }
+  assertSSRAssetOptions(options);
 }
