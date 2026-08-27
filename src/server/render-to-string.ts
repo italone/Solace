@@ -228,11 +228,7 @@ function assertNoDeferredIntegrationOptions(options: RenderToStringOptions): voi
   }
 
   const unknownKey = Reflect.ownKeys(options).find(
-    (key) =>
-      key !== "context" &&
-      key !== "provides" &&
-      key !== "manifest" &&
-      key !== "clientEntry",
+    (key) => key !== "context" && key !== "provides" && key !== "manifest" && key !== "clientEntry",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown SSR option: ${String(unknownKey)}`);

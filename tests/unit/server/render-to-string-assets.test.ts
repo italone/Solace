@@ -9,7 +9,10 @@ const manifest = {
 
 describe("renderToString asset options", () => {
   it("appends asset tags after the content", () => {
-    const result = renderToString(() => h("p", null, "x"), { manifest, clientEntry: "src/main.ts" });
+    const result = renderToString(() => h("p", null, "x"), {
+      manifest,
+      clientEntry: "src/main.ts",
+    });
     expect(result.html).toContain("<p>x</p>");
     expect(result.html).toContain('<link rel="stylesheet" href="/assets/main.css">');
     expect(result.html).toContain('<script type="module" src="/assets/main.js"></script>');
@@ -34,7 +37,9 @@ describe("renderToStringAsync asset options", () => {
     expect(result.html).toContain("y");
     expect(result.html).toContain("assets/main.js");
     expect(result.html).toContain("__solace-router-snapshot");
-    expect(result.html.indexOf("assets/main.js")).toBeLessThan(result.html.indexOf("__solace-router-snapshot"));
+    expect(result.html.indexOf("assets/main.js")).toBeLessThan(
+      result.html.indexOf("__solace-router-snapshot"),
+    );
   });
 
   it("rejects clientEntry without manifest", () => {

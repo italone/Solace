@@ -1,13 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import {
-  RouterLink,
-  RouterView,
-  createApp,
-  createMemoryHistory,
-  createRouter,
-  h,
-} from "../../src";
+import { RouterLink, RouterView, createApp, createMemoryHistory, createRouter, h } from "../../src";
 import type { RouteRecord, RouteRecordIdentity } from "../../src";
 import { renderToStream } from "../../src/server";
 

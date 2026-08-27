@@ -39,7 +39,6 @@ import {
 } from "./router-ssr";
 import {
   assertSafeHtmlName,
-  hasOwn,
   isPlainObject,
   isVNode,
   normalizeSource,
