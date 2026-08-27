@@ -400,7 +400,11 @@ function assertNoDeferredIntegrationOptions(options: HydrationOptions): void {
   }
 
   const unknownKey = Reflect.ownKeys(options).find(
-    (key) => key !== "recover" && key !== "selective" && key !== "router" && key !== "routerIdentifyRecord",
+    (key) =>
+      key !== "recover" &&
+      key !== "selective" &&
+      key !== "router" &&
+      key !== "routerIdentifyRecord",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown hydration option: ${String(unknownKey)}`);
@@ -434,9 +438,8 @@ async function prepareRouterHydration(
 
   let payload: string | null = readSnapshotScriptPayload(container);
   if (payload === null) {
-    const globalValue = (
-      globalThis as unknown as Record<string, unknown>
-    ).__SOLACE_ROUTER_SNAPSHOT__;
+    const globalValue = (globalThis as unknown as Record<string, unknown>)
+      .__SOLACE_ROUTER_SNAPSHOT__;
     if (globalValue === undefined) {
       throw new TypeError(
         `Router hydration requires an embedded snapshot payload (script#${SNAPSHOT_SCRIPT_ID} or window.__SOLACE_ROUTER_SNAPSHOT__).`,

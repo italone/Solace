@@ -43,8 +43,7 @@ function seedSnapshotGlobal(html: string): void {
     html.indexOf(SNAPSHOT_MARKER) + SNAPSHOT_MARKER.length,
     html.lastIndexOf(";"),
   );
-  (window as unknown as Record<string, unknown>).__SOLACE_ROUTER_SNAPSHOT__ =
-    JSON.parse(payload);
+  (window as unknown as Record<string, unknown>).__SOLACE_ROUTER_SNAPSHOT__ = JSON.parse(payload);
 }
 
 function clearSnapshotGlobal(): void {
@@ -95,9 +94,7 @@ describe("hydrateAsync router option", () => {
     await expect(
       app.hydrateAsync(container, { router, routerIdentifyRecord: identifyRecord }),
     ).rejects.toThrow(RouterHydrationError);
-    expect(container.querySelector("script")?.textContent ?? "").toContain(
-      SNAPSHOT_MARKER,
-    );
+    expect(container.querySelector("script")?.textContent ?? "").toContain(SNAPSHOT_MARKER);
   });
 
   it("throws when no snapshot payload is present", async () => {

@@ -68,8 +68,7 @@ export async function renderToStringAsync(
   options: RenderToStringAsyncOptions = {},
 ): Promise<RenderToStringResult> {
   assertAsyncSSROptions(options);
-  const routerSSR =
-    options.router !== undefined ? await resolveRouterSSR(options.router) : null;
+  const routerSSR = options.router !== undefined ? await resolveRouterSSR(options.router) : null;
   const prepared = await prepareAsyncSource(source, {
     appProvides: routerSSR !== null ? routerSSR.provides : (options.provides ?? null),
     collectStyles: true,

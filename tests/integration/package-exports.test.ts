@@ -220,6 +220,7 @@ describe("package exports", () => {
 
     expect(Object.keys(server).sort()).toEqual([
       "RouterHydrationError",
+      "buildSnapshotScript",
       "createRouterServerContext",
       "createRouterSnapshot",
       "createStaticRoutesFromRouter",
@@ -229,6 +230,7 @@ describe("package exports", () => {
       "renderToStream",
       "renderToString",
       "renderToStringAsync",
+      "resolveRouterSSR",
       "resolveStaticAssets",
       "serializeRouterSnapshot",
       "verifyRouterSnapshot",
@@ -510,6 +512,7 @@ describe("package exports", () => {
     expect(Object.keys(sfc)).toEqual([]);
     expect(Object.keys(server).sort()).toEqual([
       "RouterHydrationError",
+      "buildSnapshotScript",
       "createRouterServerContext",
       "createRouterSnapshot",
       "createStaticRoutesFromRouter",
@@ -519,6 +522,7 @@ describe("package exports", () => {
       "renderToStream",
       "renderToString",
       "renderToStringAsync",
+      "resolveRouterSSR",
       "resolveStaticAssets",
       "serializeRouterSnapshot",
       "verifyRouterSnapshot",

@@ -1,6 +1,14 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { RouterLink, RouterView, createApp, createMemoryHistory, createRouter, h, nextTick } from "../../src";
+import {
+  RouterLink,
+  RouterView,
+  createApp,
+  createMemoryHistory,
+  createRouter,
+  h,
+  nextTick,
+} from "../../src";
 import type { RouteRecord, RouteRecordIdentity } from "../../src";
 import { renderToStream, renderToStringAsync } from "../../src/server";
 
@@ -15,11 +23,7 @@ const routes: RouteRecord[] = [
 ];
 const App = () =>
   h("main", { id: "router-shell" }, [
-    h(
-      RouterLink,
-      { to: { path: "/" }, id: "home-link", target: "_self" },
-      "Home",
-    ),
+    h(RouterLink, { to: { path: "/" }, id: "home-link", target: "_self" }, "Home"),
     h(RouterView),
   ]);
 

@@ -108,10 +108,7 @@ describe("buildSnapshotScript", () => {
     const resolved = await resolveRouterSSR({ url: "/user/7", routes, identifyRecord: identify });
     const script = buildSnapshotScript(resolved.snapshot);
     const marker = "window.__SOLACE_ROUTER_SNAPSHOT__=";
-    const payload = script.slice(
-      script.indexOf(marker) + marker.length,
-      script.lastIndexOf(";"),
-    );
+    const payload = script.slice(script.indexOf(marker) + marker.length, script.lastIndexOf(";"));
     expect(parseRouterSnapshot(payload).fullPath).toBe("/user/7");
   });
 });

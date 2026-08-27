@@ -33,9 +33,9 @@ describe("renderToStream router option", () => {
   });
 
   it("rejects invalid router options synchronously", () => {
-    expect(() =>
-      renderToStream(() => h("p", null, "x"), { router: { url: 1 } as never }),
-    ).toThrow("SSR router url must be a string");
+    expect(() => renderToStream(() => h("p", null, "x"), { router: { url: 1 } as never })).toThrow(
+      "SSR router url must be a string",
+    );
   });
 
   it("composes with out-of-order mode (snapshot after boundary flush)", async () => {
