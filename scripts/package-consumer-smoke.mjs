@@ -513,11 +513,7 @@ acceptRouteLocationRaw({ query: { tab: "profile" } });
 // @ts-expect-error router-aware SSG adapters are deferred
 acceptSSGOptions({ routes: [{ path: "/", source: h("p") }], router: {} });
 
-// @ts-expect-error renderToString does not read production manifests
-acceptRenderOptions({ manifest: {} });
-
-// @ts-expect-error renderToString does not infer client entries
-acceptRenderOptions({ clientEntry: "/src/main.ts" });
+acceptRenderOptions({ manifest: {}, clientEntry: "/src/main.ts" });
 
 // @ts-expect-error router-aware SSR integration is deferred
 acceptRenderOptions({ router: {} });
@@ -642,7 +638,7 @@ expectThrows("router invalid location path", () => router.resolve({ path: 42 }),
 expectThrows("router deferred location fields", () => router.resolve({ path: "/users/1", hash: "#profile" }), /Deferred router location field/);
 await expectRejects("router deferred push location fields", router.push({ path: "/users/1", name: "user" }), /Deferred router location field/);
 await expectRejects("router deferred replace location fields", router.replace({ path: "/users/1", params: { id: "1" } }), /Deferred router location field/);
-expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest integration is deferred/);
+expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest and clientEntry must be provided together/);
 expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
 expectThrows("SSR stream option", () => server.renderToString(api.h("p", null, "server"), { stream: true }), /Streaming SSR is deferred/);
 expectThrows("SSR invalid context", () => server.renderToString(api.h("p", null, "server"), { context: [] }), /SSR context must be a plain object/);
@@ -750,7 +746,7 @@ Promise.all([
   console.error(error);
   process.exitCode = 1;
 });
-expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest integration is deferred/);
+expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest and clientEntry must be provided together/);
 expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
 expectThrows("SSR stream option", () => server.renderToString(api.h("p", null, "server"), { stream: true }), /Streaming SSR is deferred/);
 expectThrows("SSR invalid context", () => server.renderToString(api.h("p", null, "server"), { context: [] }), /SSR context must be a plain object/);

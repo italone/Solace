@@ -243,14 +243,16 @@ mismatches by default. `createApp(App).hydrate(container, { recover: true })` ca
 `SolaceHydrationError`, replaces the mismatched container contents with the client VNode tree, and
 keeps later reactive updates on the normal renderer path. Without `recover: true`, failed hydration
 cleans up the root hydration effect before rethrowing the mismatch. Passing deferred integration
-options such as `manifest`, `clientEntry`, `router`, or `stream` to `renderToString()` throws a
-`TypeError`.
+options such as `router`, or `stream` to `renderToString()` throws a
+`TypeError`; `manifest` plus `clientEntry` are accepted together (see the SSR asset injection
+section below).
 Hydration options must be a non-array object, and `recover` must be boolean when provided.
 `renderToString()` context, when provided, must be a plain object.
 Hydration options accept only `recover` and `selective` (the latter on `hydrateAsync()` only; see
 the Suspense section); `hydrateAsync()` additionally accepts `router` and `routerIdentifyRecord`
 (see the renderer-owned router section below), while `renderToString()` options accept only
-`context` and `provides`; unknown own option fields throw a `TypeError` naming the field.
+`context`, `provides`, `manifest`, and `clientEntry` (the asset pair must be provided together; see
+the SSR asset injection section below); unknown own option fields throw a `TypeError` naming the field.
 Async or thenable render trees, including direct sources, SSG route sources, and async child values,
 are rejected by the synchronous `renderToString()`, `generateStaticSite()`, `hydrate()`, `render()`,
 and `mount()` APIs. Existing synchronous APIs retain their return types; use the explicit async
@@ -311,11 +313,11 @@ return new Response(stream, { headers: { "content-type": "text/html; charset=utf
 ```
 
 Rendering starts eagerly when `renderToStream()` is called; the returned stream does not support
-consumer backpressure in this slice. Options accept only `context`, `provides`, `mode`, and `router`
-(`"ordered"` is the default and byte-identical to previous releases; `"out-of-order"` is described
-below; `router` is described in the renderer-owned router section); unknown own option fields —
-including `manifest` and `clientEntry` — throw a
-`TypeError` naming the field. In the default ordered mode, render errors reject the stream (the
+consumer backpressure in this slice. Options accept only `context`, `provides`, `mode`, `router`,
+`manifest`, and `clientEntry` (`"ordered"` is the default and byte-identical to previous releases;
+`"out-of-order"` is described below; `router` is described in the renderer-owned router section;
+`manifest` plus `clientEntry` are described in the SSR asset injection section); unknown own option
+fields throw a `TypeError` naming the field. In the default ordered mode, render errors reject the stream (the
 underlying `ReadableStream` errors via `controller.error()`), which may surface after partial bytes
 have already been emitted. Router option snapshot scripts flush after the stream boundary in
 ordered and out-of-order modes. Consumer backpressure is not implemented.
@@ -513,6 +515,58 @@ not supported yet; combining `router` with `selective: true` throws a `TypeError
 ordered hydration.
 `generateStaticSite()` and the synchronous `renderToString()`/`hydrate()` entries keep rejecting
 `router` options; the composable APIs above remain available as an escape hatch.
+
+### SSR production asset injection
+
+All three SSR renderers — the synchronous `renderToString()`, `renderToStringAsync()`, and
+`renderToStream()` — accept `manifest` and `clientEntry` options that append production asset tags
+to the rendered output, so a production SSR app no longer needs app-local shell or adapter code to
+compose assets:
+
+```tsx
+import { h } from "@italone/solace";
+import type { StaticAssetManifest } from "@italone/solace/server";
+import { renderToStringAsync } from "@italone/solace/server";
+
+const manifest: StaticAssetManifest = {
+  "src/main.tsx": { file: "assets/main.js", css: ["assets/main.css"], imports: ["deps/vendor.js"] },
+  "deps/vendor.js": { file: "assets/vendor.js" },
+};
+
+const { html } = await renderToStringAsync(h("p", null, "server"), {
+  manifest,
+  clientEntry: "src/main.tsx",
+});
+```
+
+`manifest` is the SSG `StaticAssetManifest` (`Record<string, { file, css?, imports? }` — the same
+type `generateStaticSite()` and `resolveStaticAssets()` use) produced by the app's existing build
+tooling (for example Vite); Solace does not generate manifests. `clientEntry` is the manifest chunk
+id of the hydration entry script. The two options must be provided together — supplying only
+`manifest` or only `clientEntry` throws `TypeError("SSR manifest and clientEntry must be provided
+together")` synchronously (before stream construction on the stream path). Tag generation and its
+validation are delegated to `resolveStaticAssets()`, so manifest shape errors, missing chunk ids,
+and invalid `base` values propagate with the existing static-asset messages unchanged.
+
+Tags are emitted in a fixed order: `<link rel="modulepreload">` tags for imported chunks first,
+then `<link rel="stylesheet">` tags, then the entry `<script type="module">` tag. On the buffered
+renderers the tags are appended after the rendered content, ordered `content → asset tags → router
+snapshot script` when the `router` option is also present. On `renderToStream()` the tags are
+enqueued at the stream tail after the boundary flush loop and before the stream closes, in the same
+order relative to the router snapshot script (`asset tags → snapshot script`), and they compose
+with `mode: "out-of-order"` because they share the tail-emission point with the snapshot script.
+`manifest` plus `router` together is valid and is the full production flow; the option pair does
+not conflict with `provides` (asset injection does not use provides).
+
+**Hydration constraint:** the injected tags must sit outside the hydrated container. Mount or
+hydrate the app container so the asset tags remain siblings in the surrounding document — as a
+browser document naturally does when the renderer fragment is embedded in a page — because
+hydration rejects the tags as extra nodes if they land inside the hydrated container
+(`SolaceHydrationError` "expected no DOM node but found `<link>`").
+
+`generateStaticSite()` keeps its own existing `manifest`/`clientEntry` contract with the shell
+owning tag placement; SSG behavior is unchanged. Build tooling (a build CLI, bundler orchestration,
+or manifest generation) is out of scope for this slice.
 
 ### `generateStaticSite(options)`
 

@@ -372,10 +372,10 @@ describe("package exports", () => {
     const source = (() => api.h("p", null, "home")) as never;
 
     expect(() => server.renderToString(source, { manifest: {} } as never)).toThrow(
-      /SSR manifest integration is deferred/,
+      /SSR manifest and clientEntry must be provided together/,
     );
     expect(() => server.renderToString(source, { clientEntry: "/src/main.ts" } as never)).toThrow(
-      /SSR manifest integration is deferred/,
+      /SSR manifest and clientEntry must be provided together/,
     );
     expect(() => server.renderToString(source, { router: {} } as never)).toThrow(
       /Router-aware SSR integration is deferred/,

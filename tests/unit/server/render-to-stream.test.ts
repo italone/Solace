@@ -17,12 +17,12 @@ describe("renderToStream options", () => {
     );
   });
 
-  it("rejects invalid router options and the deferred manifest option", () => {
+  it("rejects invalid router options and a manifest without clientEntry", () => {
     expect(() => renderToStream(h("p", null, "x"), { router: {} } as never)).toThrow(
       "SSR router url must be a string",
     );
     expect(() => renderToStream(h("p", null, "x"), { manifest: {} } as never)).toThrow(
-      "SSR manifest integration is deferred",
+      "SSR manifest and clientEntry must be provided together",
     );
   });
 

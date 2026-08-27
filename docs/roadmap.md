@@ -43,8 +43,10 @@ output; each requires a separate public API and compatibility review.
    implemented as `renderToStream()`, and the out-of-order slice is implemented as
    `renderToStream(source, { mode: "out-of-order" })` with `defineAsyncComponent({ loader, fallback })`
    fallbacks, `<!--so:b:N-->` boundary markers, resolution-order inline replacement scripts, and
-   non-rejecting failure semantics; continue hardening mismatch policy,
-   async boundaries, full pipeline automation, and integration tests before
+   non-rejecting failure semantics; runtime production asset injection is implemented through the
+   `manifest` plus `clientEntry` option pair on all three SSR renderers (build CLI pipeline
+   automation stays out of scope; the app's build produces the manifest); continue hardening
+   mismatch policy, async boundaries, and integration tests before
    widening the contract.
 6. **SSG core** — implemented on top of `renderToString()` via `generateStaticSite()`; keep
    filesystem output and route crawling deferred while preserving collected `renderToString()`

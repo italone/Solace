@@ -81,8 +81,11 @@ router-aware SSG 仍是显式的 beta 范围边界；SSR/hydration 已覆盖 buf
   等待 readiness、校验内嵌 snapshot 与客户端 route 一致、移除该 script 后才水合。router-aware selective
   hydration 会被拒绝。尽管如此，
   async suspension 后的 ambient instance
-  APIs、initial hydration 后的 async update scheduling、router-aware SSG 和完整 production pipeline automation 仍保持
-  deferred。
+  APIs、initial hydration 后的 async update scheduling 和 router-aware SSG 仍保持
+  deferred。production pipeline 行不再完全 deferred：三个 SSR renderer 都接受 `manifest` 加
+  `clientEntry` 做运行时生产 asset injection（modulepreload/stylesheet/入口 script tags 追加在
+  内容之后、router snapshot script 之前），而 build CLI automation 仍在范围之外 —— manifest 由
+  应用的构建产出。
 - 内部模块不稳定。兼容性承诺只覆盖文档化公开入口，`src/**`、`dist/**` 和内部 diagnostics/instrumentation 不适合外部依赖。
 
 因此，Solace 当前适合学习、实验、小型 demo、框架机制验证和受控内部原型；不适合直接作为大型生产应用的基础框架，也不适合依赖内部模块或未文档化 deep subpaths。

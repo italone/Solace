@@ -70,11 +70,13 @@ router-aware SSR and router-aware hydration through `router.isReady()`, canonica
 `createRouterServerContext()`, and sequential streaming SSR through `renderToStream()`, and out-of-order streaming SSR via
 `renderToStream(source, { mode: "out-of-order" })`, and the Suspense/selective hydration beta
 slice through `h(Suspense, { fallback }, children)` plus `hydrateAsync(container, { selective:
-true })`, and renderer-owned router SSR through the `router` option on `renderToStream()`/
-`renderToStringAsync()` with `hydrateAsync(container, { router, routerIdentifyRecord })`. It still
-defers auth, permissions, router-aware SSG and synchronous-entry router
-options, and async update scheduling after
-initial hydration.
+true })`, renderer-owned router SSR through the `router` option on `renderToStream()`/
+`renderToStringAsync()` with `hydrateAsync(container, { router, routerIdentifyRecord })`, and
+production asset injection through the `manifest` plus `clientEntry` option pair on all three SSR
+renderers. It still
+defers auth, permissions, router-aware SSG, synchronous-entry router
+options, async update scheduling after
+initial hydration, and build CLI asset pipeline tooling (the app's build produces the manifest).
 Router `auth` and `permissions` options or route record fields are explicitly rejected instead of
 being treated as implicit client authorization.
 SSR, hydration, and SSG option objects also reject unknown own fields with a field-specific

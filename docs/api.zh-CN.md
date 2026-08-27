@@ -204,13 +204,15 @@ const result = renderToString(h("p", null, "server"));
 `createApp(App).hydrate(container, { recover: true })` 会捕获 `SolaceHydrationError`，
 用 client VNode tree 替换不匹配的容器内容，并让后续响应式更新继续走普通 renderer path。未传
 `recover: true` 时，失败的 hydration 会在重新抛出 mismatch 前清理 root hydration effect。
-向 `renderToString()` 传入 `manifest`、`clientEntry`、`router` 或 `stream` 这类 deferred
-integration options 会抛出 `TypeError`。
+向 `renderToString()` 传入 `router` 或 `stream` 这类 deferred
+integration options 会抛出 `TypeError`；`manifest` 与 `clientEntry` 需成对传入（见下文 SSR asset
+injection 章节）。
 Hydration options 必须是非数组对象；提供 `recover` 时，它必须是 boolean。
 `renderToString()` 的 `context` 如果提供，必须是 plain object。
 Hydration options 只接受 `recover` 和 `selective`（后者仅用于 `hydrateAsync()`，见 Suspense
 章节）；`hydrateAsync()` 额外接受 `router` 和 `routerIdentifyRecord`（见下文 renderer-owned
-router 章节），`renderToString()` options 只接受 `context` 和 `provides`；
+router 章节），`renderToString()` options 只接受 `context`、`provides`、`manifest` 和
+`clientEntry`（后两项必须成对提供；见下文 SSR asset injection 章节）；
 未知的自有 option 字段会抛出包含字段名的 `TypeError`。
 同步 `renderToString()`、`generateStaticSite()`、`hydrate()`、`render()` 和 `mount()` 会拒绝
 async 或 thenable render tree，包括 direct sources、SSG route sources 和 async child values。
@@ -268,9 +270,10 @@ return new Response(stream, { headers: { "content-type": "text/html; charset=utf
 ```
 
 `renderToStream()` 被调用时渲染立即开始（eager start）；本切片返回的流不处理消费者
-backpressure。options 只接受 `context`、`provides`、`mode` 和 `router`（`"ordered"` 为默认值，与之前的
-版本字节一致；`"out-of-order"` 见下文；`router` 见下文 renderer-owned router 章节）；未知自有字段 ——
-包括 `manifest` 和 `clientEntry` —— 会抛出带字段名的 `TypeError`。默认的 ordered 模式下，渲染错误会通过
+backpressure。options 只接受 `context`、`provides`、`mode`、`router`、`manifest` 和 `clientEntry`
+（`"ordered"` 为默认值，与之前的版本字节一致；`"out-of-order"` 见下文；`router` 见下文 renderer-owned
+router 章节；`manifest` 与 `clientEntry` 见下文 SSR asset injection 章节）；未知的自有字段会抛出
+带字段名的 `TypeError`。默认的 ordered 模式下，渲染错误会通过
 `controller.error()` 拒绝流，此时部分字节可能已经发射。router option 的 snapshot script 会在
 ordered 与 out-of-order 模式下于 async 边界 flush 之后追加。消费者 backpressure 仍未
 实现。
@@ -444,6 +447,53 @@ hydrate。缺少 payload 会抛出点名 `script#__solace-router-snapshot` 的 `
 selective hydration 暂不支持；`router` 与 `selective: true` 组合会抛出 `TypeError`，提示改用
 ordered hydration。`generateStaticSite()` 和同步 `renderToString()`/`hydrate()` 入口继续拒绝
 `router` options；上述组合式 API 仍可作为逃生通道使用。
+
+### SSR 生产 asset injection
+
+三个 SSR renderer —— 同步 `renderToString()`、`renderToStringAsync()` 和 `renderToStream()` ——
+都接受 `manifest` 和 `clientEntry` options，会在渲染输出末尾附加生产 asset tags，生产 SSR
+应用不再需要 app 本地的 shell/adapter 代码来组合 assets：
+
+```tsx
+import { h } from "@italone/solace";
+import type { StaticAssetManifest } from "@italone/solace/server";
+import { renderToStringAsync } from "@italone/solace/server";
+
+const manifest: StaticAssetManifest = {
+  "src/main.tsx": { file: "assets/main.js", css: ["assets/main.css"], imports: ["deps/vendor.js"] },
+  "deps/vendor.js": { file: "assets/vendor.js" },
+};
+
+const { html } = await renderToStringAsync(h("p", null, "server"), {
+  manifest,
+  clientEntry: "src/main.tsx",
+});
+```
+
+`manifest` 是 SSG 的 `StaticAssetManifest`（`Record<string, { file, css?, imports? }`，与
+`generateStaticSite()` 和 `resolveStaticAssets()` 使用的类型相同），由应用现有的构建工具
+（例如 Vite）产出；Solace 不负责生成 manifest。`clientEntry` 是 hydration 入口脚本对应的
+manifest chunk id。这两个 option 必须成对提供 —— 只传 `manifest` 或只传 `clientEntry` 会在
+同步阶段（流式路径在构建流之前）抛出 `TypeError("SSR manifest and clientEntry must be provided
+together")`。tag 生成及其校验委托给 `resolveStaticAssets()`，因此 manifest 结构错误、缺失的
+chunk id 和非法 `base` 都会原样传播现有的静态 asset 错误信息。
+
+tags 按固定顺序发射：先是为 imported chunks 生成的 `<link rel="modulepreload">`，随后是
+`<link rel="stylesheet">`，最后是入口 `<script type="module">`。缓冲式 renderer 会把 tags
+追加在渲染内容之后；同时提供 `router` option 时顺序为 `content → asset tags → router
+snapshot script`。`renderToStream()` 会在流尾部（boundary flush 循环之后、流关闭之前）入队
+这些 tags，相对 router snapshot script 的顺序相同（`asset tags → snapshot script`），并且可与
+`mode: "out-of-order"` 组合，因为它们与 snapshot script 共用同一个尾部发射点。`manifest` 与
+`router` 组合是合法的，也就是完整的生产流程；该 option 对不与 `provides` 冲突（asset
+injection 不使用 provides）。
+
+**Hydration 约束：**注入的 tags 必须位于被 hydrate 的容器之外。挂载/注水应用容器时应让
+asset tags 作为兄弟节点留在周围文档中 —— 正如把 renderer fragment 嵌入页面时浏览器文档的
+自然结构 —— 因为这些 tags 一旦落入被 hydrate 的容器内部，hydration 会把它们当作多余节点
+拒绝（`SolaceHydrationError` "expected no DOM node but found `<link>`"）。
+
+`generateStaticSite()` 保持自身现有的 `manifest`/`clientEntry` 契约，由 shell 负责 tag 摆放；
+SSG 行为不变。构建工具链（build CLI、bundler 编排或 manifest 生成）不在本切片范围内。
 
 ### `generateStaticSite(options)`
 
