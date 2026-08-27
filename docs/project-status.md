@@ -6,9 +6,8 @@ This document summarizes the current completion level of Solace as an open-sourc
 
 ## Summary
 
-Solace is now on the `0.1.0` beta line. This working tree prepares a local `0.1.0-beta.6`
-candidate; it is not published. npm `latest` remains the stable `@italone/solace@0.0.5` line, while
-published npm `beta` is `0.1.0-beta.5`.
+Solace is now on the `0.1.0` beta line. npm `latest` remains the stable `@italone/solace@0.0.5`
+line, while published npm `beta` is `0.1.0-beta.6`.
 It provides a working public API, package exports, examples, tests, benchmarks, and release checks.
 Its primary authoring path is JSX/TSX-first function components backed by explicit runtime APIs. It
 is suitable as a compact educational and experimental frontend framework, but it should not be
@@ -17,16 +16,17 @@ described as a mature production replacement for React, Vue, Svelte, or similar 
 Current repository state:
 
 - Package name: `@italone/solace`
-- Repository package version: local `0.1.0-beta.6` candidate
+- Repository package version: `0.1.0-beta.6` (published)
 - Published npm `latest`: `0.0.5`
-- Published npm `beta`: `0.1.0-beta.5`
-- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.5`
+- Published npm `beta`: `0.1.0-beta.6`
+- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.6`
 - Public package metadata: `"private": false`
 - Current branch: `main`
 - Remote state: recheck with `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
   synchronization claim.
-- Phase: published beta.5 contract and adoption release. The Router stable slice,
+- Phase: published beta.6 release (2026-08-27), adding renderer-owned router SSR, runtime SSR
+  asset injection, and the stable 1.0 public-contract boundary. The Router stable slice,
   buffered async initial SSR/hydration, sequential async SSG, and the first browser DevTools
   extension timeline panel are implemented. As of 2026-08-27 the public contract manifest
   declares a stable 1.0 boundary for the root runtime and `./server` entry points, with
@@ -400,6 +400,13 @@ These gaps should stay visible in promotional material so the project is positio
 ## Release Coordination State
 
 `@italone/solace@0.0.5` has been published to npm with the `latest` dist-tag.
+`@italone/solace@0.1.0-beta.6` has been published to npm with the `beta` dist-tag (2026-08-27).
+The 2026-08-27 beta.6 publish used `pnpm release:publish:beta`, which reran the full release gate
+(including publishable readiness and the exact beta.2 upgrade smoke) before
+`changeset publish --tag beta`. Post-publish registry checks confirm npm reports
+`latest -> 0.0.5` and `beta -> 0.1.0-beta.6`; the local and remote `v0.1.0-beta.6` tags are
+identical and point to release commit `72e98dd`; the publish tarball contained 53 files.
+
 `@italone/solace@0.1.0-beta.5` has been published to npm with the `beta` dist-tag. Post-publish
 registry checks confirm npm reports `latest -> 0.0.5` and `beta -> 0.1.0-beta.5`. The local tag
 points to release commit `afe459e`; remote tag verification remains pending because GitHub was not

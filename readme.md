@@ -17,13 +17,10 @@ Solace focuses on a small runtime core: reactive state, scheduled rendering, VNo
 
 ## Project Status
 
-Solace is currently on the `0.1.0` beta line. This working tree prepares a local, unpublished
-`0.1.0-beta.6` candidate; npm `latest` remains `0.0.5`, and npm `beta` is
-`0.1.0-beta.5`. The beta.5 release adds typed JSX/TSX component contracts, broader adoption
-gates, and composable router-aware SSR/hydration primitives without adding streaming. The current
-working tree adds renderer-owned router SSR on the async renderer entries. Post-release hardening on `main` strengthened the JSX typed
-named-slot contract, router stable-slice edge coverage, DevTools store action timeline and QA
-checklists, and benchmark history evidence without widening the beta contract.
+Solace is currently on the `0.1.0` beta line. npm `latest` remains `0.0.5`, and npm `beta` is
+`0.1.0-beta.6`. The beta.6 release adds renderer-owned router SSR on the async renderer entries,
+runtime production SSR asset injection, and a stable 1.0 public-contract boundary for the root
+runtime and `./server` entries.
 
 Use the local development workflow below to explore the framework. Install the default npm package
 when you want the latest stable line, install `@italone/solace@beta` when you want the beta line, and

@@ -1,6 +1,6 @@
 # @italone/solace
 
-## Unreleased / 0.1.0-beta.6 candidate
+## 0.1.0-beta.6 (2026-08-27)
 
 ### Patch Changes
 

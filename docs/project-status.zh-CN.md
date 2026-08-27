@@ -6,23 +6,22 @@
 
 ## 总览
 
-Solace 当前已经进入 `0.1.0` beta 线；当前工作区准备本地 `0.1.0-beta.6` candidate，但尚未发布。npm
-`latest` 仍是稳定 `@italone/solace@0.0.5` 线，npm `beta` 已发布版本是
-`0.1.0-beta.5`。它已经具备可运行的公共
+Solace 当前已经进入 `0.1.0` beta 线。npm `latest` 仍是稳定 `@italone/solace@0.0.5` 线，
+npm `beta` 已发布版本是 `0.1.0-beta.6`。它已经具备可运行的公共
 API、包导出、示例、测试、benchmark 和发布检查。它的主要编写路径是 JSX/TSX-first 函数组件，并由明确的运行时 API 支撑。Solace 适合作为一个小型、可阅读、可实验的前端框架进行推广，但不应被描述为
 React、Vue、Svelte 或同类生态的成熟生产替代品。
 
 当前本地仓库状态：
 
 - 包名：`@italone/solace`
-- 仓库 package 版本：本地 `0.1.0-beta.6` candidate
+- 仓库 package 版本：`0.1.0-beta.6`（已发布）
 - npm `latest` 已发布版本：`0.0.5`
-- npm `beta` 已发布版本：`0.1.0-beta.5`
-- npm dist-tags：`latest` 指向 `0.0.5`；`beta` 指向 `0.1.0-beta.5`
+- npm `beta` 已发布版本：`0.1.0-beta.6`
+- npm dist-tags：`latest` 指向 `0.0.5`；`beta` 指向 `0.1.0-beta.6`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
 - 本地分支状态：后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
-- 发布阶段：beta.5 契约与 adoption release 已发布；初始运行时范围已完成，Router 的稳定切片已落地，但整体仍不是完整生产契约；SSR/hydration minimum loop，以及首个浏览器
+- 发布阶段：beta.6 已于 2026-08-27 发布，包含 renderer-owned router SSR、运行时 SSR 资源注入和稳定 1.0 公共契约边界；初始运行时范围已完成，Router 的稳定切片已落地，但整体仍不是完整生产契约；SSR/hydration minimum loop，以及首个浏览器
   DevTools 扩展 timeline panel 已在仓库中实现
 
 ## 完成度映射
@@ -309,7 +308,14 @@ Solace 当前有意不包含：
 ## 发布协调状态
 
 发布独立于仓库就绪度。`@italone/solace@0.0.5` 已发布到 npm，并且 `latest`
-dist-tag 指向 `0.0.5`。`@italone/solace@0.1.0-beta.5` 已发布到 npm，并且
+dist-tag 指向 `0.0.5`。`@italone/solace@0.1.0-beta.6` 已于 2026-08-27 发布到 npm，`beta`
+dist-tag 指向 `0.1.0-beta.6`。2026-08-27 的 beta.6 发布使用了 `pnpm release:publish:beta`，
+在 `changeset publish --tag beta` 前重跑了完整发布门禁（含 publishable readiness 和精确
+beta.2 升级 smoke）。发布后 registry 检查确认 `latest -> 0.0.5` 和
+`beta -> 0.1.0-beta.6`；本地与远端 `v0.1.0-beta.6` tag 一致并指向发布提交 `72e98dd`；
+发布 tarball 包含 53 个文件。
+
+`@italone/solace@0.1.0-beta.5` 已发布到 npm，并且
 `beta` dist-tag 已指向 `0.1.0-beta.5`。本地 tag 指向发布提交 `afe459e`；2026-08-27
 已复核远端 tag，与本地一致并 peel 到同一发布提交。后续任何发布或同步声明前仍应重新核对
 Git 状态、远端 tag 和 npm registry。
