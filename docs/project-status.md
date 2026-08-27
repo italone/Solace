@@ -232,6 +232,16 @@ Console check, jsdom and Chromium benchmarks, 24 browser E2E tests, and 4 DevToo
 tests. This validates the beta.6 candidate gates, but does not supply the missing 1.0 adoption,
 five-date history, DevTools distribution, or stable-admission evidence.
 
+The 2026-08-27 full local `pnpm release:check` passed on the beta.6 candidate after the
+stable-contract boundary, SSR asset injection, and evidence-preparation work. It recorded
+108 Vitest files / 937 tests, 16 package tests, and coverage of 90.84% statements / 86.78%
+branches / 93.67% functions / 91.43% lines, plus package, adoption, and Operations Console
+smokes, DevTools extension packaging smoke, jsdom and Chromium benchmarks (performance
+regression: PASS), 24 browser E2E tests across Chromium, Firefox, and WebKit, and 5 DevTools
+extension E2E tests. A docs-contract test pinning the old "remote beta.5 tag pending" wording
+was updated after the remote `v0.1.0-beta.5` tag was rechecked and confirmed. The 1.0 evidence
+blockers (independent adoption, DevTools production distribution) are unchanged.
+
 The 2026-08-20 baseline refresh pushed the two outstanding DevTools packaging-gate docs commits to
 `origin/main` (synchronizing `main` with the remote) and reran the full `pnpm release:check` on the
 synchronized tree. The gate passed: 91 Vitest files / 816 tests, 16 package tests, coverage of

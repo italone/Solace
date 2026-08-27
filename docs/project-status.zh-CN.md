@@ -178,6 +178,14 @@ packed Operations Console 检查、jsdom 与 Chromium benchmark、24 个 browser
 DevTools extension E2E 测试也全部通过。这些结果验证了 beta.6 candidate 的现有门禁，但没有补齐
 1.0 所缺少的 adoption、五个独立日期 history、DevTools distribution 或 stable admission 证据。
 
+2026-08-27 的完整本地 `pnpm release:check` 已在 stable contract 边界、SSR asset injection 和证据准备
+工作完成后通过。记录 108 个 Vitest 文件 / 937 个测试、16 个 package tests，coverage 为 90.84%
+statements / 86.78% branches / 93.67% functions / 91.43% lines；package、adoption 和 Operations
+Console smoke、DevTools extension 打包 smoke、jsdom 与 Chromium benchmark（性能回归 PASS）、
+Chromium/Firefox/WebKit 共 24 个 browser E2E 测试和 5 个 DevTools extension E2E 测试全部通过。
+远端 `v0.1.0-beta.5` tag 复核确认后，固定旧"远端 tag 待复核"文案的 docs-contract 测试已同步更新。
+1.0 证据阻塞（独立 adoption、DevTools 生产分发）保持不变。
+
 2026-08-20 的基线刷新将两个待推送的 DevTools 打包门禁 docs 提交推送到 `origin/main`（本地与远端
 同步），并在同步后的工作树上重新执行了完整 `pnpm release:check`。门禁通过：91 个 Vitest 文件 /
 816 个测试、16 个 package tests，coverage 为 90.10% statements / 86.22% branches / 93.12%
