@@ -18,7 +18,7 @@ The package root exposes the documented runtime surface:
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | App        | `createApp`                                                                                                                                                                                                                                                                                            |
 | Reactivity | `reactive`, `ref`, `computed`, `effect`, `watch`, `watchEffect`                                                                                                                                                                                                                                        |
-| Rendering  | `h`, `render`, `Fragment`, `useStyle`                                                                                                                                                                                                                                                                  |
+| Rendering  | `h`, `render`, `Fragment`, `useStyle`, `SolaceHydrationError`                                                                                                                                                                                                                                          |
 | Components | `defineComponent`, `defineAsyncComponent`                                                                                                                                                                                                                                                              |
 | Context    | `provide`, `inject`                                                                                                                                                                                                                                                                                    |
 | Lifecycle  | `onMounted`, `onUpdated`, `onUnmounted`                                                                                                                                                                                                                                                                |
@@ -684,6 +684,11 @@ import { reactive } from "@italone/solace";
 const state = reactive({ count: 0 });
 state.count += 1;
 ```
+
+The proxy is shallow: only direct property writes on the wrapped object are tracked. Nested
+objects and arrays are returned as-is, so `state.items.push(...)` or `state.nested.count = 1`
+do not trigger updates. Replace the property instead (`state.items = [...state.items, item]`),
+or wrap nested state in its own `reactive()` / `ref()`.
 
 ### `ref(value)`
 

@@ -5,7 +5,7 @@ export { reactive } from "./reactivity/reactive";
 export { ref } from "./reactivity/ref";
 export { watch, watchEffect } from "./reactivity/watch";
 export { nextTick } from "./scheduler/scheduler";
-export { render } from "./renderer/renderer";
+export { render, SolaceHydrationError } from "./renderer/renderer";
 export { h } from "./vnode/h";
 export { Fragment } from "./vnode/vnode";
 export { onMounted, onUnmounted, onUpdated } from "./component/lifecycle";
