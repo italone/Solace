@@ -1,5 +1,14 @@
 # @italone/solace
 
+## 0.1.0-beta.7
+
+### Patch Changes
+
+- 1e2e30a: Add a same-runner base/head performance regression gate with commit and environment evidence while keeping 1.0 history requirements separate.
+- e1718c5: Freeze the documented stable, beta, and experimental public entry boundaries and enforce them in the release contract gate.
+- ab9f251: Harden beta.6 release evidence with machine-readable adoption, DevTools distribution, and public contract validation while preserving the beta and experimental API boundaries.
+- 30156f4: Export `SolaceHydrationError` from the package root so client hydration recovery can match it with `instanceof` instead of `error.name`, and document that `reactive()` is a shallow proxy whose nested and array mutations require immutable replacement.
+
 ## 0.1.0-beta.6 (2026-08-27)
 
 ### Patch Changes

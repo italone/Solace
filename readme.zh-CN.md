@@ -18,8 +18,9 @@ Solace 聚焦于小型运行时核心：响应式状态、调度渲染、VNode d
 ## 项目状态
 
 Solace 当前处于 `0.1.0` beta 线。npm `latest` 仍是 `0.0.5`，npm `beta` 是
-`0.1.0-beta.6`。beta.6 release 在 async renderer 入口上增加了 renderer-owned router SSR、
-运行时生产 SSR 资源注入，以及根运行时与 `./server` 入口的稳定 1.0 公共契约边界。
+`0.1.0-beta.7`。beta 线在 async renderer 入口上增加了 renderer-owned router SSR、
+运行时生产 SSR 资源注入、根运行时与 `./server` 入口的稳定 1.0 公共契约边界，
+以及 `SolaceHydrationError` 的根入口导出。
 
 目前可以通过下面的本地开发流程体验框架。需要使用最新稳定线时，可以安装默认 npm package；需要使用 beta 线时，可以安装 `@italone/solace@beta`；需要查看 `main` 上尚未发布的文档或运行时变更时，应直接使用仓库。
 

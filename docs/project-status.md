@@ -7,7 +7,7 @@ This document summarizes the current completion level of Solace as an open-sourc
 ## Summary
 
 Solace is now on the `0.1.0` beta line. npm `latest` remains the stable `@italone/solace@0.0.5`
-line, while published npm `beta` is `0.1.0-beta.6`.
+line, while published npm `beta` is `0.1.0-beta.7`.
 It provides a working public API, package exports, examples, tests, benchmarks, and release checks.
 Its primary authoring path is JSX/TSX-first function components backed by explicit runtime APIs. It
 is suitable as a compact educational and experimental frontend framework, but it should not be
@@ -16,17 +16,18 @@ described as a mature production replacement for React, Vue, Svelte, or similar 
 Current repository state:
 
 - Package name: `@italone/solace`
-- Repository package version: `0.1.0-beta.6` (published)
+- Repository package version: `0.1.0-beta.7` (published)
 - Published npm `latest`: `0.0.5`
-- Published npm `beta`: `0.1.0-beta.6`
-- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.6`
+- Published npm `beta`: `0.1.0-beta.7`
+- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.7`
 - Public package metadata: `"private": false`
 - Current branch: `main`
 - Remote state: recheck with `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
   synchronization claim.
-- Phase: published beta.6 release (2026-08-27), adding renderer-owned router SSR, runtime SSR
-  asset injection, and the stable 1.0 public-contract boundary. The Router stable slice,
+- Phase: published beta.7 release (2026-08-31), which adds the root `SolaceHydrationError`
+  export and shallow-`reactive()` documentation on top of the beta.6 renderer-owned router SSR,
+  runtime SSR asset injection, and the stable 1.0 public-contract boundary. The Router stable slice,
   buffered async initial SSR/hydration, sequential async SSG, and the first browser DevTools
   extension timeline panel are implemented. As of 2026-08-27 the public contract manifest
   declares a stable 1.0 boundary for the root runtime and `./server` entry points, with

@@ -1,0 +1,13 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@italone/solace": "0.1.0-beta.6"
+  },
+  "changesets": [
+    "cross-commit-performance-gate",
+    "frozen-contract-boundary",
+    "quiet-beta6-evidence",
+    "shallow-reactive-hydration-export-docs"
+  ]
+}

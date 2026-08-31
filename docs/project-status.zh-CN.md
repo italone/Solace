@@ -7,21 +7,21 @@
 ## 总览
 
 Solace 当前已经进入 `0.1.0` beta 线。npm `latest` 仍是稳定 `@italone/solace@0.0.5` 线，
-npm `beta` 已发布版本是 `0.1.0-beta.6`。它已经具备可运行的公共
+npm `beta` 已发布版本是 `0.1.0-beta.7`。它已经具备可运行的公共
 API、包导出、示例、测试、benchmark 和发布检查。它的主要编写路径是 JSX/TSX-first 函数组件，并由明确的运行时 API 支撑。Solace 适合作为一个小型、可阅读、可实验的前端框架进行推广，但不应被描述为
 React、Vue、Svelte 或同类生态的成熟生产替代品。
 
 当前本地仓库状态：
 
 - 包名：`@italone/solace`
-- 仓库 package 版本：`0.1.0-beta.6`（已发布）
+- 仓库 package 版本：`0.1.0-beta.7`（已发布）
 - npm `latest` 已发布版本：`0.0.5`
-- npm `beta` 已发布版本：`0.1.0-beta.6`
-- npm dist-tags：`latest` 指向 `0.0.5`；`beta` 指向 `0.1.0-beta.6`
+- npm `beta` 已发布版本：`0.1.0-beta.7`
+- npm dist-tags：`latest` 指向 `0.0.5`；`beta` 指向 `0.1.0-beta.7`
 - 公开包元数据：已启用，`"private": false`
 - 当前分支：`main`
 - 本地分支状态：后续发布、同步或声明远端状态前，需重新运行 `git fetch origin main`、`git status --short --branch` 和 `git rev-list --left-right --count origin/main...HEAD`。
-- 发布阶段：beta.6 已于 2026-08-27 发布，包含 renderer-owned router SSR、运行时 SSR 资源注入和稳定 1.0 公共契约边界；初始运行时范围已完成，Router 的稳定切片已落地，但整体仍不是完整生产契约；SSR/hydration minimum loop，以及首个浏览器
+- 发布阶段：beta.7 已于 2026-08-31 发布，在 beta.6 的 renderer-owned router SSR、运行时 SSR 资源注入和稳定 1.0 公共契约边界之上，增加了根入口 `SolaceHydrationError` 导出与浅层 `reactive()` 文档；初始运行时范围已完成，Router 的稳定切片已落地，但整体仍不是完整生产契约；SSR/hydration minimum loop，以及首个浏览器
   DevTools 扩展 timeline panel 已在仓库中实现
 
 ## 完成度映射
