@@ -16,7 +16,7 @@ JSX/TSX 和明确的运行时 API。运行时能力从包根入口导入，serve
 | 领域       | API                                                                                                                                                                                                                                                                                                    |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | App        | `createApp`                                                                                                                                                                                                                                                                                            |
-| Reactivity | `reactive`、`ref`、`computed`、`effect`、`watch`、`watchEffect`                                                                                                                                                                                                                                        |
+| Reactivity | `reactive`、`shallowReactive`、`ref`、`computed`、`effect`、`watch`、`watchEffect`                                                                                                                                                                                                                     |
 | Rendering  | `h`、`render`、`Fragment`、`useStyle`、`SolaceHydrationError`                                                                                                                                                                                                                                          |
 | Components | `defineComponent`、`defineAsyncComponent`                                                                                                                                                                                                                                                              |
 | Context    | `provide`、`inject`                                                                                                                                                                                                                                                                                    |
@@ -601,7 +601,18 @@ const state = reactive({ count: 0 });
 state.count += 1;
 ```
 
-该 proxy 是浅层的：只有对被包装对象的直接属性写入会被追踪。嵌套对象和数组会原样返回，因此 `state.items.push(...)` 或 `state.nested.count = 1` 不会触发更新。请改为替换整个属性（`state.items = [...state.items, item]`），或为嵌套状态单独使用 `reactive()` / `ref()`。
+该 proxy 是深层的：嵌套的普通对象和数组在读取时（或被赋值时）会被惰性包装为缓存的响应式 proxy，因此 `state.items.push(...)` 或 `state.nested.count = 1` 这类嵌套变更也会触发更新。包装保持身份稳定（`reactive(x) === reactive(x)`，多次读取同一嵌套对象返回同一 proxy），对已是响应式 proxy 的对象调用 `reactive()` 会原样返回该 proxy。`Date` 等非普通对象值会原样返回。
+
+### `shallowReactive(target)`
+
+创建浅层响应式 proxy：只有对被包装对象的直接属性写入会被追踪。嵌套对象和数组会原样返回，因此 `state.items.push(...)` 或 `state.nested.count = 1` 不会触发更新。请改为替换整个属性（`state.items = [...state.items, item]`），或为嵌套状态单独使用 `reactive()` / `ref()`。
+
+```ts
+import { shallowReactive } from "@italone/solace";
+
+const state = shallowReactive({ items: [] as number[] });
+state.items = [...state.items, 1]; // 触发依赖更新
+```
 
 ### `ref(value)`
 

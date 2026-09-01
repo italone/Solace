@@ -17,7 +17,7 @@ explicitly.
   object/array value is lazily wrapped in a reactive proxy before being returned. On property
   **set**, an object/array value being assigned is wrapped eagerly.
 - Proxy cache: a module-level `WeakMap<object, Proxy>` guarantees `state.nested ===
-  state.nested` across reads and `reactive(x) === reactive(x)`. This is a correctness
+state.nested` across reads and `reactive(x) === reactive(x)`. This is a correctness
   requirement, not an optimization — duplicate proxies would break identity comparisons in
   effects and diffing.
 - `reactive()` on an already-reactive proxy returns the same proxy (idempotent).

@@ -279,6 +279,13 @@ describe("public contract documentation", () => {
       expect(doc).toContain("ComponentSetupContext<Events, SlotMap>");
     }
 
+    expect(api).toContain("### `reactive(target)`");
+    expect(api).toContain("### `shallowReactive(target)`");
+    expect(apiZh).toContain("### `reactive(target)`");
+    expect(apiZh).toContain("### `shallowReactive(target)`");
+    expect(api).toContain("`reactive`, `shallowReactive`, `ref`");
+    expect(apiZh).toContain("`reactive`、`shallowReactive`、`ref`");
+
     expect(packageUsage).toContain("[Compatibility and deprecation policy](./compatibility.md)");
     expect(packageUsage).toContain("[兼容性与弃用策略](./compatibility.zh-CN.md)");
     expect(compatibility).toContain("0.1.x");

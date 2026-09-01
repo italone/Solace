@@ -1,7 +1,7 @@
 export { computed } from "./reactivity/computed";
 export { createApp } from "./app";
 export { effect } from "./reactivity/effect";
-export { reactive } from "./reactivity/reactive";
+export { reactive, shallowReactive } from "./reactivity/reactive";
 export { ref } from "./reactivity/ref";
 export { watch, watchEffect } from "./reactivity/watch";
 export { nextTick } from "./scheduler/scheduler";

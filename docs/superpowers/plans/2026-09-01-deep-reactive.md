@@ -13,6 +13,7 @@
 ### Task 1: Deep reactive core
 
 **Files:**
+
 - Modify: `src/reactivity/reactive.ts`
 - Test: `tests/unit/reactivity/deep-reactive.test.ts`
 
@@ -68,6 +69,7 @@ git commit -m "feat: make reactive() deep with cached nested proxies and add sha
 ### Task 2: Export, docs, contract sync
 
 **Files:**
+
 - Modify: `src/index.ts` (add `shallowReactive` to the reactivity export line)
 - Modify: `tests/integration/package-exports.test.ts` (add `shallowReactive` to both the `toMatchObject` and sorted-key arrays)
 - Modify: `docs/api.md` and `docs/api.zh-CN.md`: update the `reactive(target)` shallow-proxy paragraph to describe deep behavior; add a `### shallowReactive(target)` section (EN+zh) mirroring the old text; add `shallowReactive` to the Reactivity row of the root API table in both languages
@@ -85,6 +87,7 @@ git commit -m "feat: export shallowReactive and document deep reactive semantics
 ### Task 3: Store integration regression + changeset
 
 **Files:**
+
 - Test: `tests/unit/store/deep-state.test.ts`
 - Create: `.changeset/deep-reactive.md`
 

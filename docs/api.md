@@ -17,7 +17,7 @@ The package root exposes the documented runtime surface:
 | Area       | APIs                                                                                                                                                                                                                                                                                                   |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | App        | `createApp`                                                                                                                                                                                                                                                                                            |
-| Reactivity | `reactive`, `ref`, `computed`, `effect`, `watch`, `watchEffect`                                                                                                                                                                                                                                        |
+| Reactivity | `reactive`, `shallowReactive`, `ref`, `computed`, `effect`, `watch`, `watchEffect`                                                                                                                                                                                                                     |
 | Rendering  | `h`, `render`, `Fragment`, `useStyle`, `SolaceHydrationError`                                                                                                                                                                                                                                          |
 | Components | `defineComponent`, `defineAsyncComponent`                                                                                                                                                                                                                                                              |
 | Context    | `provide`, `inject`                                                                                                                                                                                                                                                                                    |
@@ -685,10 +685,27 @@ const state = reactive({ count: 0 });
 state.count += 1;
 ```
 
-The proxy is shallow: only direct property writes on the wrapped object are tracked. Nested
-objects and arrays are returned as-is, so `state.items.push(...)` or `state.nested.count = 1`
-do not trigger updates. Replace the property instead (`state.items = [...state.items, item]`),
-or wrap nested state in its own `reactive()` / `ref()`.
+The proxy is deep: nested plain objects and arrays are lazily wrapped in cached reactive
+proxies when read (or eagerly when assigned), so nested mutations such as
+`state.items.push(...)` or `state.nested.count = 1` trigger updates. Wrapping is
+identity-stable (`reactive(x) === reactive(x)`, and reading the same nested object twice
+returns the same proxy), and calling `reactive()` on an already-reactive proxy returns that
+proxy unchanged. Non-plain values such as `Date` instances are returned as-is.
+
+### `shallowReactive(target)`
+
+Creates a shallow reactive proxy: only direct property writes on the wrapped object are
+tracked. Nested objects and arrays are returned as-is, so `state.items.push(...)` or
+`state.nested.count = 1` do not trigger updates. Replace the property instead
+(`state.items = [...state.items, item]`), or wrap nested state in its own `reactive()` /
+`ref()`.
+
+```ts
+import { shallowReactive } from "@italone/solace";
+
+const state = shallowReactive({ items: [] as number[] });
+state.items = [...state.items, 1]; // triggers dependents
+```
 
 ### `ref(value)`
 
