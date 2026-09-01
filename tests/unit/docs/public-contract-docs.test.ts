@@ -164,16 +164,20 @@ describe("public contract documentation", () => {
     expect(projectStatusZh).toContain("93.25% lines");
     expect(projectStatusZh).toMatch(/Chromium、Firefox、WebKit 共 24 个\s+browser e2e 测试/);
     expect(projectStatusZh).toMatch(/2\s+个仅\s+Chromium\s+的\s+DevTools\s+extension\s+e2e\s+测试/);
-    expect(readme).toContain("npm `beta` is\n`0.1.0-beta.7`");
-    expect(readmeZh).toContain("npm `beta` 是\n`0.1.0-beta.7`");
-    expect(projectStatus).toContain("Repository package version: `0.1.0-beta.7` (published)");
-    expect(projectStatus).toContain("Published npm `beta`: `0.1.0-beta.7`");
+    expect(readme).toContain("npm `beta` is\n`0.1.0-beta.6`");
+    expect(readmeZh).toContain("npm `beta` 是\n`0.1.0-beta.6`");
+    expect(projectStatus).toContain(
+      "Repository package version: `0.1.0-beta.7` (release candidate; npm publish pending)",
+    );
+    expect(projectStatus).toContain("Published npm `beta`: `0.1.0-beta.6`");
     expect(projectStatus).toContain("local `v0.1.0-beta.5` tag points to release commit `afe459e`");
     expect(projectStatus).toContain(
       "The remote\n`v0.1.0-beta.5` tag was rechecked on 2026-08-27 and matches the local tag",
     );
-    expect(projectStatusZh).toContain("仓库 package 版本：`0.1.0-beta.7`（已发布）");
-    expect(projectStatusZh).toContain("npm `beta` 已发布版本：`0.1.0-beta.7`");
+    expect(projectStatusZh).toContain(
+      "仓库 package 版本：`0.1.0-beta.7`（发布候选，npm 发布待完成）",
+    );
+    expect(projectStatusZh).toContain("npm `beta` 已发布版本：`0.1.0-beta.6`");
     expect(projectStatusZh).toContain("本地 `v0.1.0-beta.5` tag 指向发布提交 `afe459e`");
     expect(projectStatusZh).toContain(
       "已复核远端 `v0.1.0-beta.5` tag，与本地一致并 peel 到同一发布提交",
