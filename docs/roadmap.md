@@ -61,7 +61,8 @@ output; each requires a separate public API and compatibility review.
    is implemented as `renderToStream()` on `@italone/solace/server`: it streams the exact
    `renderToStringAsync().html` byte order, flushes completed prefixes before async components
    resolve, emits `useStyle()` styles inline at first registration, starts rendering eagerly, and
-   does not handle consumer backpressure. The out-of-order streaming slice is now implemented on
+   applies consumer backpressure (production parks when the stream queue is full and resumes on
+   pull). The out-of-order streaming slice is now implemented on
    top of it: `mode: "out-of-order"` emits `<!--so:b:N-->` boundary markers with
    `defineAsyncComponent({ loader, fallback })` fallbacks and flushes `<!--so:r:N-->` replacement
    scripts in resolution order after the document; loader failures keep the fallback and emit a

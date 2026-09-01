@@ -312,15 +312,17 @@ const stream = renderToStream(h("section", null, h(AsyncMessage)));
 return new Response(stream, { headers: { "content-type": "text/html; charset=utf-8" } });
 ```
 
-Rendering starts eagerly when `renderToStream()` is called; the returned stream does not support
-consumer backpressure in this slice. Options accept only `context`, `provides`, `mode`, `router`,
+Rendering starts eagerly when `renderToStream()` is called. The returned stream applies consumer
+backpressure: production pauses once the stream queue is full and resumes when the consumer pulls.
+Options accept only `context`, `provides`, `mode`, `router`,
 `manifest`, and `clientEntry` (`"ordered"` is the default and byte-identical to previous releases;
 `"out-of-order"` is described below; `router` is described in the renderer-owned router section;
 `manifest` plus `clientEntry` are described in the SSR asset injection section); unknown own option
 fields throw a `TypeError` naming the field. In the default ordered mode, render errors reject the stream (the
 underlying `ReadableStream` errors via `controller.error()`), which may surface after partial bytes
 have already been emitted. Router option snapshot scripts flush after the stream boundary in
-ordered and out-of-order modes. Consumer backpressure is not implemented.
+ordered and out-of-order modes. Byte order and chunk content are unchanged; backpressure only
+parks the producer while the consumer is not reading.
 
 #### Out-of-order streaming
 
@@ -350,7 +352,7 @@ deduplicated by the shared style sink. If a boundary's loader fails, the fallbac
 `<!--so:b:N failed:message-->` failure comment is emitted, and the stream is not rejected — unlike
 ordered mode, where a render error after a successful load still rejects the whole stream. Hydration is unaffected: the inline
 scripts execute while the document streams, so the DOM is final before client code runs and
-`hydrateAsync()` is unchanged. Consumer backpressure remains a non-goal of this slice.
+`hydrateAsync()` is unchanged.
 
 ### Suspense and selective hydration
 

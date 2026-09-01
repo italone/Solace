@@ -269,14 +269,12 @@ const stream = renderToStream(h("section", null, h(AsyncMessage)));
 return new Response(stream, { headers: { "content-type": "text/html; charset=utf-8" } });
 ```
 
-`renderToStream()` 被调用时渲染立即开始（eager start）；本切片返回的流不处理消费者
-backpressure。options 只接受 `context`、`provides`、`mode`、`router`、`manifest` 和 `clientEntry`
+`renderToStream()` 被调用时渲染立即开始。返回的流支持消费者 backpressure：流队列写满后生产暂停，消费者 pull 时恢复。options 只接受 `context`、`provides`、`mode`、`router`、`manifest` 和 `clientEntry`
 （`"ordered"` 为默认值，与之前的版本字节一致；`"out-of-order"` 见下文；`router` 见下文 renderer-owned
 router 章节；`manifest` 与 `clientEntry` 见下文 SSR asset injection 章节）；未知的自有字段会抛出
 带字段名的 `TypeError`。默认的 ordered 模式下，渲染错误会通过
 `controller.error()` 拒绝流，此时部分字节可能已经发射。router option 的 snapshot script 会在
-ordered 与 out-of-order 模式下于 async 边界 flush 之后追加。消费者 backpressure 仍未
-实现。
+ordered 与 out-of-order 模式下于 async 边界 flush 之后追加。字节顺序与 chunk 内容不变；backpressure 只在消费者停止读取时挂起生产。
 
 #### 乱序（out-of-order）streaming
 
@@ -302,7 +300,7 @@ const stream = renderToStream(h("section", null, h(AsyncMessage)), { mode: "out-
 内联发射在替换 payload 中，并由共享的 style sink 去重。如果 loader 失败，fallback 标记会
 保留，并发射 `<!--so:b:N failed:message-->` 失败注释，流不会被拒绝 —— 这与 ordered 模式
 不同，后者在 loader 成功后若渲染出错仍会拒绝整个流。hydration 不受影响：内联脚本在文档流式输出期间执行，
-因此客户端代码运行前 DOM 已是最终状态，`hydrateAsync()` 保持不变。消费者 backpressure 仍不属于本切片的目标。
+因此客户端代码运行前 DOM 已是最终状态，`hydrateAsync()` 保持不变。
 
 ### Suspense 与 selective hydration
 

@@ -50,7 +50,7 @@ in-memory SSG through `generateStaticSiteAsync()`, and prepare-then-commit brows
 `hydrateAsync()`. Router-aware SSR/hydration is available through explicit readiness, server-context,
 and snapshot composition. Sequential streaming SSR is available as a beta server entry through
 `renderToStream()`, which streams the exact `renderToStringAsync().html` byte order with inline
-first-registration styles, eager start, and no consumer backpressure, plus out-of-order streaming
+first-registration styles, eager start, and consumer backpressure, plus out-of-order streaming
 via `renderToStream(source, { mode: "out-of-order" })` with `defineAsyncComponent({ loader, fallback })`
 fallbacks and resolution-order replacement scripts. Router-aware SSG and synchronous-entry router
 options, async update scheduling after initial

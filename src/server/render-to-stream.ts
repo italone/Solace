@@ -93,76 +93,114 @@ export function renderToStream(
   assertStreamOptions(options);
   const encoder = new TextEncoder();
 
+  // Backpressure: production enqueues chunks only while the stream queue is
+  // below the high water mark; a full queue parks the producer until the
+  // consumer pulls. Pull signals and cancellation are routed through these
+  // closures so the async production loop below can await them.
+  let pullSignal: (() => void) | null = null;
+  let cancelled = false;
+  const waitForPull = (): Promise<void> =>
+    new Promise((resolve) => {
+      pullSignal = resolve;
+    });
+
   return new ReadableStream<Uint8Array>({
-    async start(controller) {
-      try {
-        const routerSSR =
-          options.router !== undefined ? await resolveRouterSSR(options.router) : null;
-        const ctx = createStreamContext(
-          options.mode ?? "ordered",
-          routerSSR !== null ? routerSSR.provides : (options.provides ?? null),
-        );
-        const iterator = streamSource(source, ctx)[Symbol.asyncIterator]();
-        let buffer = "";
-
-        for (;;) {
-          const nextPromise = iterator.next();
-          let settled = false;
-          void nextPromise.then(
-            () => {
-              settled = true;
-            },
-            () => {
-              settled = true;
-            },
-          );
-
-          // Give synchronously-produced chunks a few microtask turns to arrive;
-          // a generator suspended on a real await will not settle within them.
-          for (let turn = 0; turn < MAX_SYNCHRONOUS_MICROTASK_ROUNDS && !settled; turn += 1) {
-            await null;
-          }
-
-          if (!settled && buffer !== "") {
-            controller.enqueue(encoder.encode(buffer));
-            buffer = "";
-          }
-
-          const result = await nextPromise;
-          if (result.done) {
-            break;
-          }
-          buffer += result.value;
-        }
-
-        if (buffer !== "") {
-          controller.enqueue(encoder.encode(buffer));
-          buffer = "";
-        }
-
-        for await (const chunk of flushPendingBoundaries(ctx)) {
-          buffer += chunk;
-          controller.enqueue(encoder.encode(buffer));
-          buffer = "";
-        }
-
-        if (options.manifest !== undefined && options.clientEntry !== undefined) {
-          buffer += buildSSRAssetTags(options.manifest, options.clientEntry);
-        }
-
-        if (routerSSR !== null) {
-          buffer += buildSnapshotScript(routerSSR.snapshot);
-        }
-
-        if (buffer !== "") {
-          controller.enqueue(encoder.encode(buffer));
-        }
-        controller.close();
-      } catch (error) {
-        controller.error(error);
-      }
+    pull() {
+      const signal = pullSignal;
+      pullSignal = null;
+      signal?.();
+    },
+    cancel() {
+      cancelled = true;
+      const signal = pullSignal;
+      pullSignal = null;
+      signal?.();
+    },
+    start(controller) {
+      void produce(controller);
     },
   });
+
+  async function produce(controller: ReadableStreamDefaultController<Uint8Array>): Promise<void> {
+    const enqueue = async (chunk: string): Promise<void> => {
+      if (!cancelled && controller.desiredSize !== null && controller.desiredSize <= 0) {
+        await waitForPull();
+      }
+      if (cancelled) {
+        throw new Error("Solace stream cancelled");
+      }
+      controller.enqueue(encoder.encode(chunk));
+    };
+
+    try {
+      const routerSSR =
+        options.router !== undefined ? await resolveRouterSSR(options.router) : null;
+      const ctx = createStreamContext(
+        options.mode ?? "ordered",
+        routerSSR !== null ? routerSSR.provides : (options.provides ?? null),
+      );
+      const iterator = streamSource(source, ctx)[Symbol.asyncIterator]();
+      let buffer = "";
+
+      for (;;) {
+        const nextPromise = iterator.next();
+        let settled = false;
+        void nextPromise.then(
+          () => {
+            settled = true;
+          },
+          () => {
+            settled = true;
+          },
+        );
+
+        // Give synchronously-produced chunks a few microtask turns to arrive;
+        // a generator suspended on a real await will not settle within them.
+        for (let turn = 0; turn < MAX_SYNCHRONOUS_MICROTASK_ROUNDS && !settled; turn += 1) {
+          await null;
+        }
+
+        if (!settled && buffer !== "") {
+          await enqueue(buffer);
+          buffer = "";
+        }
+
+        const result = await nextPromise;
+        if (result.done) {
+          break;
+        }
+        buffer += result.value;
+      }
+
+      if (buffer !== "") {
+        await enqueue(buffer);
+        buffer = "";
+      }
+
+      for await (const chunk of flushPendingBoundaries(ctx)) {
+        buffer += chunk;
+        await enqueue(buffer);
+        buffer = "";
+      }
+
+      if (options.manifest !== undefined && options.clientEntry !== undefined) {
+        buffer += buildSSRAssetTags(options.manifest, options.clientEntry);
+      }
+
+      if (routerSSR !== null) {
+        buffer += buildSnapshotScript(routerSSR.snapshot);
+      }
+
+      if (buffer !== "") {
+        await enqueue(buffer);
+      }
+      controller.close();
+    } catch (error) {
+      if (!cancelled) {
+        controller.error(error);
+      }
+    }
+  }
 }
 
 async function* streamSource(
