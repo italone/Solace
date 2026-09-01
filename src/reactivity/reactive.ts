@@ -3,6 +3,7 @@ import { track, trigger } from "./effect";
 
 const proxyCache = new WeakMap<object, object>();
 const rawCache = new WeakMap<object, object>();
+const ITERATE_KEY = Symbol("Solace.iterate");
 
 function isPlainObjectOrArray(value: object): boolean {
   if (Array.isArray(value)) {
@@ -113,6 +114,7 @@ export function reactive<T extends object>(target: T): T {
     },
     set(target, key, value, receiver) {
       const rawValue = unwrapProxy(value);
+      const existed = Reflect.has(target, key);
       const oldValue = Reflect.get(target, key, receiver);
       const arrayTarget = Array.isArray(target) ? (target as unknown[]) : undefined;
       const oldLength = arrayTarget?.length;
@@ -122,11 +124,37 @@ export function reactive<T extends object>(target: T): T {
         trigger(target, key);
       }
 
+      if (!existed) {
+        trigger(target, ITERATE_KEY);
+      }
+
       if (arrayTarget !== undefined && arrayTarget.length !== oldLength) {
         trigger(target, "length");
       }
 
       return result;
+    },
+    deleteProperty(target, key) {
+      const existed = Reflect.has(target, key);
+      const deleted = Reflect.deleteProperty(target, key);
+
+      if (deleted && existed) {
+        trigger(target, key);
+        trigger(target, ITERATE_KEY);
+        if (Array.isArray(target)) {
+          trigger(target, "length");
+        }
+      }
+
+      return deleted;
+    },
+    has(target, key) {
+      track(target, key);
+      return Reflect.has(target, key);
+    },
+    ownKeys(target) {
+      track(target, ITERATE_KEY);
+      return Reflect.ownKeys(target);
     },
   });
 

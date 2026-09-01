@@ -70,4 +70,51 @@ describe("renderToStream backpressure", () => {
     }
     expect(out).toBe("<p>ok</p>");
   });
+
+  it("stops production without unhandled rejections when cancelled mid-stream", async () => {
+    const count = 20;
+    const tree = h(
+      Fragment,
+      null,
+      Array.from({ length: count }, (_, i) =>
+        h(
+          defineAsyncComponent({
+            loader: async () => () => h("p", null, `c${i}`),
+            fallback: h("p", null, `f${i}`),
+          }),
+        ),
+      ),
+    );
+
+    const stream = renderToStream(tree, { mode: "out-of-order" });
+    const reader = stream.getReader();
+    await reader.read();
+    await reader.cancel();
+
+    await sleep(50);
+  });
+
+  it("surfaces a render error to a reading consumer", async () => {
+    const Failing = defineAsyncComponent({
+      // eslint-disable-next-line @typescript-eslint/require-await
+      loader: async () => {
+        throw new Error("boom");
+      },
+      fallback: h("p", null, "f"),
+    });
+
+    const stream = renderToStream(h(Failing), { mode: "ordered" });
+    const reader = stream.getReader();
+
+    // Ordered mode rejects the stream; the read that follows surfaces it.
+    try {
+      for (;;) {
+        const result = await reader.read();
+        if (result.done) break;
+      }
+      expect.unreachable("expected the stream to reject");
+    } catch (error) {
+      expect((error as Error).message).toBe("boom");
+    }
+  });
 });

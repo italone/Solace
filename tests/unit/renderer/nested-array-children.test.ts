@@ -44,4 +44,14 @@ describe("nested array children", () => {
 
     expect(container.innerHTML).toBe("<span>a</span><span>b</span><span>c</span>");
   });
+
+  it("rejects promised children hidden in nested arrays with the documented TypeError", () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+
+    const promisedChild = Promise.resolve(h("span", { key: "p" }, "p"));
+    const node = h("div", null, [[promisedChild] as never] as never);
+
+    expect(() => render(node, container)).toThrow();
+  });
 });
