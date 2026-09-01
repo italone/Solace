@@ -71,7 +71,7 @@ true })`, renderer-owned router SSR through the `router` option on `renderToStre
 `renderToStringAsync()` with `hydrateAsync(container, { router, routerIdentifyRecord })`, and
 production asset injection through the `manifest` plus `clientEntry` option pair on all three SSR
 renderers. It still
-defers auth, permissions, router-aware SSG, synchronous-entry router
+defers auth, permissions, SSG app-level router integration, synchronous-entry router
 options, async update scheduling after
 initial hydration, and build CLI asset pipeline tooling (the app's build produces the manifest).
 Router `auth` and `permissions` options or route record fields are explicitly rejected instead of

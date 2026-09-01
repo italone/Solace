@@ -9,7 +9,8 @@ line:
 - All tests passing, coverage above thresholds, package exports validated.
 - Completed stable prerequisites: medium-app validation and the compatibility and deprecation policy.
 - Composable router-aware SSR/hydration primitives are implemented, and the async renderer entries
-  now accept a renderer-owned `router` option; router-aware SSG, sync-entry router options, and
+  now accept a renderer-owned `router` option, and router-aware SSG is implemented through
+  `generateStaticSiteAsync()` route-level `router` options; sync-entry router options and
   production DevTools remain deferred.
 
 ## Next Phase: Beta
@@ -33,9 +34,10 @@ output; each requires a separate public API and compatibility review.
    wildcard fallback routes, query strings, web/hash/memory history, nested routes, redirects, route
    names, aliases, route props, named locations, global and route-level guards, explicit
    `lazyRoute()` components, `RouterLink`, `RouterView`, `useRoute`, `useRouter`, and scroll
-   behavior plus `isReady()`, canonical snapshots, request-scoped server contexts, and the
-   renderer-owned `router` option on the async renderer entries; keep router-aware SSG,
-   synchronous-entry router options, auth, and permissions deferred until separately designed.
+   behavior plus `isReady()`, canonical snapshots, request-scoped server contexts, the
+   renderer-owned `router` option on the async renderer entries, and route-level `router` options
+   on `generateStaticSiteAsync()` entries; keep synchronous-entry router options, auth, and
+   permissions deferred until separately designed.
 4. **Mandatory public API gates** — keep package export tests, packed-consumer smoke, browser e2e, and release readiness required for public API changes; these are completed stable prerequisites.
 5. **SSR / hydration minimum loop** — implemented through `@italone/solace/server` and
    `createApp(App).hydrate(container)` for synchronous VNode/component trees, including
@@ -72,8 +74,9 @@ output; each requires a separate public API and compatibility review.
    mode awaits the subtree inline, out-of-order mode emits one `so:b` boundary per Suspense), and
    `hydrateAsync(container, { selective: true })` hydrates ready parts immediately, patches boundary
    content on loader resolution, strips markers after settlement, and replays buffered interactions
-   (click/pointerdown/keydown/input/change) with typed payloads. Keep route crawling, filesystem
-   output, router-aware SSG, and synchronous-entry router options deferred.
+   (click/pointerdown/keydown/input/change) with typed payloads. Router-aware SSG is implemented
+   through `generateStaticSiteAsync()` route-level `router` options. Keep route crawling,
+   filesystem output, and synchronous-entry router options deferred.
 8. **Browser DevTools extension UI** — the first example panel is implemented under
    `examples/devtools-extension`; continue hardening extension packaging, the browser extension QA
    checklist, richer event contracts, and future inspectors without reading private runtime state.

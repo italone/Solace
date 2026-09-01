@@ -60,7 +60,7 @@ backpressure（流队列写满时生产挂起）。乱序（out-of-order）strea
 `renderToStringAsync()` 的 `router` option 配合 `hydrateAsync(container, { router,
 routerIdentifyRecord })` 提供 renderer-owned router SSR，并通过三个 SSR renderer 上成对的
 `manifest` 加 `clientEntry` options 提供生产 asset injection；仍推迟
-auth、permissions、router-aware SSG 与同步入口的 router options、initial hydration 之后的 async
+auth、permissions、app 级 SSG router 集成与同步入口的 router options、initial hydration 之后的 async
 update scheduling，以及 build CLI asset 工具链（manifest 由应用的构建产出）。Router `auth` 和
 `permissions` options 或 route
 record fields 会被明确拒绝，不会被当作隐式客户端授权能力。

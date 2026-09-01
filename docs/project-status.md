@@ -84,10 +84,10 @@ SFC remains an optional, narrow, experimental compiler surface rather than the p
 direction. Router names, aliases, props, memory history, scroll behavior, readiness, canonical
 snapshots, and request-scoped SSR context are now in the stable slice, renderer-owned router SSR is
 supported on the async renderer entries, but auth, permissions, and
-router-aware SSG remain explicit beta scope boundaries.
+app-level SSG router integration and sync-entry router options remain explicit beta scope boundaries.
 SSR/hydration now includes buffered async initial rendering plus sequential and out-of-order streaming SSR (beta), but it is not a full production
 contract. The project is usable and documented today, while these subsystems remain intentionally
-scoped short of router-aware SSG and async scheduling after initial hydration.
+scoped short of app-level SSG router integration and async scheduling after initial hydration.
 
 These exclusions are deliberate scope decisions for a readable, teaching-oriented runtime — not incomplete work. Revisit criteria are recorded in `docs/roadmap.md`; each would require a dedicated design doc before implementation.
 
@@ -120,7 +120,8 @@ routerIdentifyRecord })` awaits readiness, verifies the embedded snapshot agains
   route, removes the script, and only then hydrates. Router-aware selective hydration is rejected.
   Even so,
   ambient instance APIs after async
-  suspension, async update scheduling after initial hydration, and router-aware SSG remain deferred.
+  suspension and async update scheduling after initial hydration remain deferred; router-aware SSG is
+  implemented on `generateStaticSiteAsync()` route-level `router` options.
   The production pipeline row is no longer fully deferred: all three SSR renderers accept `manifest`
   plus `clientEntry` for runtime production asset injection (modulepreload/stylesheet/entry script
   tags appended after the content, before the router snapshot script), while build CLI automation
