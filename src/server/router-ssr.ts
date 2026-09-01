@@ -48,6 +48,32 @@ export function assertRouterSSROption(router: unknown): asserts router is Router
   }
 }
 
+const SSG_ROUTER_OPTION_KEYS = new Set(["routes", "identifyRecord", "configure"]);
+
+export type RouterSSGOptions = Omit<RouterSSROptions, "url">;
+
+export function assertRouterSSGOption(router: unknown): asserts router is RouterSSGOptions {
+  if (router === null || typeof router !== "object" || Array.isArray(router)) {
+    throw new TypeError("SSR router option must be an object");
+  }
+  const record = router as Record<string, unknown>;
+  const unknownKey = Reflect.ownKeys(record).find(
+    (key) => typeof key !== "string" || !SSG_ROUTER_OPTION_KEYS.has(key),
+  );
+  if (unknownKey !== undefined) {
+    throw new TypeError(`Unknown SSR router option: ${String(unknownKey)}`);
+  }
+  if (!Array.isArray(record.routes)) {
+    throw new TypeError("SSR router routes must be an array");
+  }
+  if (typeof record.identifyRecord !== "function") {
+    throw new TypeError("SSR router identifyRecord must be a function");
+  }
+  if (record.configure !== undefined && typeof record.configure !== "function") {
+    throw new TypeError("SSR router configure must be a function");
+  }
+}
+
 export async function resolveRouterSSR(options: RouterSSROptions): Promise<ResolvedRouterSSR> {
   assertRouterSSROption(options);
   const context = await createRouterServerContext(options);

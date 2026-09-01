@@ -538,6 +538,14 @@ const site = await generateStaticSiteAsync({
 组合完整 shell 时，把 `styles.join("")` 放入文档 `<head>`。首个 SSG core 仅为内存 API。
 filesystem output、route crawling、app-level router 和 CLI integration 仍不在当前公共契约内。
 
+异步 route entry 还可以携带 `router` option：`{ routes, identifyRecord, configure? }`（没有
+`url` —— route 的 `path` 就是 url）。带 router 的 route 会在其 `path` 上 settle 一个请求级 memory
+router，注入 server context `provides`，并把序列化 route snapshot script
+（`script#__solace-router-snapshot`）追加到渲染出的 `body`，与 `renderToStringAsync()` 的 router
+路径字节一致。客户端用 `hydrateAsync(container, { router, routerIdentifyRecord })` 配对完成
+verify-before-hydration。不带 `router` 的 route 渲染行为不变；同步 `generateStaticSite()` 仍拒绝
+route 级 `router` 字段。
+
 ### `resolveStaticAssets(options)`
 
 `resolveStaticAssets({ manifest, entry, base })` 会把 Vite-like production manifest 和 client

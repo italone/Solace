@@ -620,6 +620,15 @@ Place `styles.join("")` in the document `<head>` when composing a full shell. Th
 in-memory only. Filesystem output, route crawling, app-level `router`, and CLI integration remain
 outside the current public contract.
 
+Async route entries may additionally carry a `router` option: `{ routes, identifyRecord,
+configure? }` (no `url` — the route's `path` is the url). Each router-backed route settles a
+request-scoped memory router at its `path`, injects the server context `provides`, and appends the
+serialized route snapshot script (`script#__solace-router-snapshot`) to the rendered `body`,
+byte-identical to the `renderToStringAsync()` router path. Pair it on the client with
+`hydrateAsync(container, { router, routerIdentifyRecord })` for verify-before-hydration. Routes
+without `router` render exactly as before, and the synchronous `generateStaticSite()` still
+rejects route-level `router` fields.
+
 ### `resolveStaticAssets(options)`
 
 `resolveStaticAssets({ manifest, entry, base })` converts a Vite-like production manifest and a

@@ -1,6 +1,7 @@
 import type { Provides } from "../component/provide";
 import type { RenderToStringAsyncSource, RenderToStringSource } from "./render-to-string";
 import { renderToString, renderToStringAsync } from "./render-to-string";
+import { assertRouterSSGOption, type RouterSSGOptions } from "./router-ssr";
 import {
   resolveStaticAssets,
   type StaticAssetManifest,
@@ -16,6 +17,7 @@ export interface StaticRoute {
 
 export interface AsyncStaticRoute extends Omit<StaticRoute, "source"> {
   source: RenderToStringAsyncSource;
+  router?: RouterSSGOptions;
 }
 
 export interface StaticPage {
@@ -104,16 +106,21 @@ export async function generateStaticSiteAsync(
   const pages: StaticPage[] = [];
 
   for (const route of options.routes) {
-    assertNoDeferredRouteIntegrationOptions(route);
+    assertAsyncRouteIntegrationOptions(route);
     assertStaticRouteContext(route.context);
     assertStaticRouteProvides(route.provides);
     assertStaticRoutePath(route.path, seenPaths);
 
     const context = { ...(route.context ?? {}) };
-    const rendered = await renderToStringAsync(route.source, {
-      context: { ...context },
-      provides: route.provides,
-    });
+    const rendered =
+      route.router !== undefined
+        ? await renderToStringAsync(route.source, {
+            router: { url: route.path, ...route.router },
+          })
+        : await renderToStringAsync(route.source, {
+            context: { ...context },
+            provides: route.provides,
+          });
     const body = rendered.html;
     const styles = [...rendered.styles];
     const html = options.shell
@@ -229,12 +236,36 @@ function assertNoDeferredRouteIntegrationOptions(route: StaticRoute | AsyncStati
 
   if (hasOwn(route, "router")) {
     throw new TypeError(
-      "Router-aware SSG route integration is deferred; pass explicit route sources instead.",
+      "Router-aware SSG route integration is deferred on the synchronous entry; use generateStaticSiteAsync().",
     );
   }
 
   const unknownKey = Reflect.ownKeys(route).find(
     (key) => key !== "path" && key !== "source" && key !== "context" && key !== "provides",
+  );
+  if (unknownKey !== undefined) {
+    throw new TypeError(`Unknown SSG route field: ${String(unknownKey)}`);
+  }
+}
+
+function assertAsyncRouteIntegrationOptions(route: AsyncStaticRoute): void {
+  if (hasOwn(route, "manifest") || hasOwn(route, "clientEntry")) {
+    throw new TypeError(
+      "SSG route manifest integration is deferred; compose assets in an app-local shell or adapter.",
+    );
+  }
+
+  if (route.router !== undefined) {
+    assertRouterSSGOption(route.router);
+  }
+
+  const unknownKey = Reflect.ownKeys(route).find(
+    (key) =>
+      key !== "path" &&
+      key !== "source" &&
+      key !== "context" &&
+      key !== "provides" &&
+      key !== "router",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown SSG route field: ${String(unknownKey)}`);
