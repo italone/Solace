@@ -97,6 +97,7 @@ export function createVNode(
   if (typeof children === "string") {
     shapeFlag |= ShapeFlags.TEXT_CHILDREN;
   } else if (Array.isArray(children)) {
+    children = flattenChildren(children);
     shapeFlag |= ShapeFlags.ARRAY_CHILDREN;
   } else if (children !== null && !isVNodeSlots(children)) {
     children = [children as VNodeChild | AsyncVNodeChild];
@@ -124,6 +125,23 @@ function getShapeFlag(type: VNodeType): ShapeFlags {
 
 function normalizeKey(key: unknown): string | number | null {
   return typeof key === "string" || typeof key === "number" ? key : null;
+}
+
+// JSX children mapping can interleave mapped arrays with standalone children,
+// producing nested arrays like [[li, li], li]. The renderer only walks flat
+// VNode arrays, so flatten before flagging ARRAY_CHILDREN.
+function flattenChildren(
+  children: readonly (VNodeChild | AsyncVNodeChild)[],
+): (VNodeChild | AsyncVNodeChild)[] {
+  const flattened: (VNodeChild | AsyncVNodeChild)[] = [];
+  for (const child of children) {
+    if (Array.isArray(child)) {
+      flattened.push(...flattenChildren(child));
+    } else {
+      flattened.push(child);
+    }
+  }
+  return flattened;
 }
 
 function isVNodeSlots(children: AsyncComponentVNodeChildren): children is VNodeSlots {

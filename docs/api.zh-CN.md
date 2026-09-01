@@ -692,7 +692,7 @@ h("button", { onClick: save }, "Save");
 支持的 children 形态：
 
 - `string`：文本 children。
-- `VNode` 或 `VNode[]`：嵌套渲染 children。
+- `VNode` 或 `VNode[]`：嵌套渲染 children。嵌套数组（例如映射列表与独立 children 混排）会被自动展平。
 - `null`：无 children。
 - slot 对象：组件 children。
 

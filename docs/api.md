@@ -783,7 +783,8 @@ h("button", { onClick: save }, "Save");
 Supported children shapes:
 
 - `string` for text children.
-- `VNode` or `VNode[]` for nested rendered children.
+- `VNode` or `VNode[]` for nested rendered children. Nested arrays (for example a mapped list
+  interleaved with standalone children) are flattened automatically.
 - `null` for no children.
 - Slot objects for component children.
 
