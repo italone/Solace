@@ -142,7 +142,7 @@ describe("renderToString", () => {
     }
   });
 
-  it("rejects mismatched asset pairs and deferred router integration options", () => {
+  it("rejects mismatched asset pairs and streaming options", () => {
     expect(() => renderToString(h("p", null, "server"), { manifest: {} } as never)).toThrow(
       /SSR manifest and clientEntry must be provided together/,
     );
@@ -152,7 +152,7 @@ describe("renderToString", () => {
     ).toThrow(/SSR manifest and clientEntry must be provided together/);
 
     expect(() => renderToString(h("p", null, "server"), { router: {} } as never)).toThrow(
-      /Router-aware SSR integration is deferred/,
+      "SSR router url must be a string",
     );
     expect(() => renderToString(h("p", null, "server"), { stream: true } as never)).toThrow(
       /Streaming SSR is deferred/,

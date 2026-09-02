@@ -16,6 +16,7 @@ import {
   assertRouterSSROption,
   buildSnapshotScript,
   resolveRouterSSR,
+  resolveRouterSSRSync,
   type RouterSSROptions,
 } from "./router-ssr";
 import {
@@ -30,13 +31,12 @@ import {
 export interface RenderToStringOptions {
   context?: Record<string, unknown>;
   provides?: Provides;
+  router?: RouterSSROptions;
   manifest?: StaticAssetManifest;
   clientEntry?: string;
 }
 
-export interface RenderToStringAsyncOptions extends RenderToStringOptions {
-  router?: RouterSSROptions;
-}
+export type RenderToStringAsyncOptions = RenderToStringOptions;
 
 export interface RenderToStringResult {
   html: string;
@@ -51,22 +51,30 @@ export type RenderToStringAsyncSource =
 
 export function renderToString(
   source: RenderToStringSource,
-  options: RenderToStringOptions = {},
+  options: RenderToStringAsyncOptions = {},
 ): RenderToStringResult {
-  assertNoDeferredIntegrationOptions(options);
+  assertRouterAwareSSROptions(options);
   assertNoAsyncSSRSource(source);
+  const routerSSR = options.router !== undefined ? resolveRouterSSRSync(options.router) : null;
   const vnode = normalizeSource(source);
   const sink = createServerStyleSink();
   const rendered = withStyleSink(sink, () =>
-    renderVNodeToString(vnode, null, options.provides ?? null),
+    renderVNodeToString(
+      vnode,
+      null,
+      routerSSR !== null ? routerSSR.provides : (options.provides ?? null),
+    ),
   );
-  const tail =
-    options.manifest !== undefined && options.clientEntry !== undefined
-      ? buildSSRAssetTags(options.manifest, options.clientEntry)
-      : "";
+  let html = rendered;
+  if (options.manifest !== undefined && options.clientEntry !== undefined) {
+    html += buildSSRAssetTags(options.manifest, options.clientEntry);
+  }
+  if (routerSSR !== null) {
+    html += buildSnapshotScript(routerSSR.snapshot);
+  }
 
   return {
-    html: rendered + tail,
+    html,
     styles: sink.styles,
   };
 }
@@ -75,7 +83,7 @@ export async function renderToStringAsync(
   source: RenderToStringAsyncSource,
   options: RenderToStringAsyncOptions = {},
 ): Promise<RenderToStringResult> {
-  assertAsyncSSROptions(options);
+  assertRouterAwareSSROptions(options);
   const routerSSR = options.router !== undefined ? await resolveRouterSSR(options.router) : null;
   const prepared = await prepareAsyncSource(source, {
     appProvides: routerSSR !== null ? routerSSR.provides : (options.provides ?? null),
@@ -212,30 +220,7 @@ function assertNoAsyncSSRSource(value: unknown): void {
   }
 }
 
-function assertNoDeferredIntegrationOptions(options: RenderToStringOptions): void {
-  assertBaseSSROptions(options);
-
-  if (hasOwn(options, "router")) {
-    throw new TypeError(
-      "Router-aware SSR integration is deferred; pass explicit render sources instead.",
-    );
-  }
-
-  if (hasOwn(options, "stream")) {
-    throw new TypeError(
-      "Streaming SSR is deferred; renderToString() currently returns a complete string result.",
-    );
-  }
-
-  const unknownKey = Reflect.ownKeys(options).find(
-    (key) => key !== "context" && key !== "provides" && key !== "manifest" && key !== "clientEntry",
-  );
-  if (unknownKey !== undefined) {
-    throw new TypeError(`Unknown SSR option: ${String(unknownKey)}`);
-  }
-}
-
-function assertAsyncSSROptions(options: RenderToStringAsyncOptions): void {
+function assertRouterAwareSSROptions(options: RenderToStringAsyncOptions): void {
   assertBaseSSROptions(options);
 
   if (options.router !== undefined) {
