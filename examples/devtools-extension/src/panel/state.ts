@@ -289,6 +289,8 @@ function summarizeDevtoolsEvent(event: DevtoolsEvent): string {
       return `${event.targetType} ${event.keyType} triggered ${event.effectCount} effects`;
     case "renderer:element":
       return `${event.operation} <${event.tag}>`;
+    case "router:navigation":
+      return `${event.from} -> ${event.to} ${event.status}`;
     case "store:action":
       return `${event.name} ${event.status} in ${event.durationMs}ms`;
   }

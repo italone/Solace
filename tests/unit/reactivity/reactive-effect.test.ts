@@ -121,7 +121,7 @@ describe("reactive and effect", () => {
 
     expect(observed).toBe(2);
 
-    expect(events).toEqual([
+    expect(events).toMatchObject([
       {
         type: "reactivity:trigger",
         targetType: "object",
@@ -156,7 +156,7 @@ describe("reactive and effect", () => {
 
     expect(observed).toBe(2);
 
-    expect(events).toEqual([
+    expect(events).toMatchObject([
       {
         type: "reactivity:trigger",
         targetType: "object",

@@ -50,6 +50,9 @@ function flushJobs(): void {
         queuedJobs: flushedJobs,
         dedupedJobs,
         durationMs: Math.max(0, now() - startedAt),
+        // Placeholders until Task 3 adds real stale-skip counting.
+        skippedStaleJobs: 0,
+        distinctCauses: 0,
       });
     }
 

@@ -238,7 +238,9 @@ function copyDevtoolsEvent(event: unknown): DevtoolsExtensionEventMessage["event
       if (
         !isNumber(event.queuedJobs) ||
         !isNumber(event.dedupedJobs) ||
-        !isNumber(event.durationMs)
+        !isNumber(event.durationMs) ||
+        !isNumber(event.skippedStaleJobs) ||
+        !isNumber(event.distinctCauses)
       ) {
         return undefined;
       }
@@ -247,6 +249,8 @@ function copyDevtoolsEvent(event: unknown): DevtoolsExtensionEventMessage["event
         queuedJobs: event.queuedJobs,
         dedupedJobs: event.dedupedJobs,
         durationMs: event.durationMs,
+        skippedStaleJobs: event.skippedStaleJobs,
+        distinctCauses: event.distinctCauses,
       };
 
     case "reactivity:trigger":
@@ -255,7 +259,8 @@ function copyDevtoolsEvent(event: unknown): DevtoolsExtensionEventMessage["event
         !isString(event.keyType) ||
         !isNumber(event.effectCount) ||
         !isNumber(event.scheduledEffects) ||
-        !isNumber(event.runEffects)
+        !isNumber(event.runEffects) ||
+        !isNumber(event.correlationId)
       ) {
         return undefined;
       }
@@ -266,6 +271,7 @@ function copyDevtoolsEvent(event: unknown): DevtoolsExtensionEventMessage["event
         effectCount: event.effectCount,
         scheduledEffects: event.scheduledEffects,
         runEffects: event.runEffects,
+        correlationId: event.correlationId,
       };
 
     case "renderer:element":

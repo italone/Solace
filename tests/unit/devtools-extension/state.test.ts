@@ -44,6 +44,8 @@ describe("devtools extension panel state", () => {
         queuedJobs: 2,
         dedupedJobs: 1,
         durationMs: 3,
+        skippedStaleJobs: 0,
+        distinctCauses: 0,
       },
       {
         type: "component:update",
@@ -58,6 +60,7 @@ describe("devtools extension panel state", () => {
         effectCount: 3,
         scheduledEffects: 2,
         runEffects: 1,
+        correlationId: 1,
       },
       {
         type: "renderer:element",
@@ -215,6 +218,8 @@ describe("devtools extension panel state", () => {
         queuedJobs: 2,
         dedupedJobs: 1,
         durationMs: 3,
+        skippedStaleJobs: 0,
+        distinctCauses: 0,
       } satisfies DevtoolsEvent,
     ].reduce((panelState, event, index) => {
       return recordDevtoolsEvent(panelState, event, { now: index + 1 });
@@ -244,6 +249,8 @@ describe("devtools extension panel state", () => {
         queuedJobs: 2,
         dedupedJobs: 1,
         durationMs: 3,
+        skippedStaleJobs: 0,
+        distinctCauses: 0,
       },
       { now: 2 },
     );
@@ -260,6 +267,8 @@ describe("devtools extension panel state", () => {
         queuedJobs: 2,
         dedupedJobs: 1,
         durationMs: 3,
+        skippedStaleJobs: 0,
+        distinctCauses: 0,
       } satisfies DevtoolsEvent,
     ].reduce((panelState, event, index) => {
       return recordDevtoolsEvent(panelState, event, { now: index + 1 });
@@ -283,6 +292,8 @@ describe("devtools extension panel state", () => {
         queuedJobs: 2,
         dedupedJobs: 1,
         durationMs: 3,
+        skippedStaleJobs: 0,
+        distinctCauses: 0,
       } satisfies DevtoolsEvent,
     ].reduce((panelState, event, index) => {
       return recordDevtoolsEvent(panelState, event, { now: index + 1 });

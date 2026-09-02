@@ -17,6 +17,7 @@ const allowedKeysByType: Record<DevtoolsEvent["type"], string[]> = {
   "component:unmount": ["id", "name", "parentId", "type"],
   "component:emit": ["event", "handlerCount", "id", "name", "type"],
   "reactivity:trigger": [
+    "correlationId",
     "effectCount",
     "keyType",
     "runEffects",
@@ -25,7 +26,15 @@ const allowedKeysByType: Record<DevtoolsEvent["type"], string[]> = {
     "type",
   ],
   "renderer:element": ["operation", "tag", "type"],
-  "scheduler:flush": ["dedupedJobs", "durationMs", "queuedJobs", "type"],
+  "router:navigation": ["from", "status", "to", "type"],
+  "scheduler:flush": [
+    "dedupedJobs",
+    "distinctCauses",
+    "durationMs",
+    "queuedJobs",
+    "skippedStaleJobs",
+    "type",
+  ],
   "store:action": ["durationMs", "name", "status", "type"],
 };
 

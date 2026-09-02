@@ -23,6 +23,8 @@ const schedulerFlush: DevtoolsEvent = {
   queuedJobs: 2,
   dedupedJobs: 1,
   durationMs: 3,
+  skippedStaleJobs: 0,
+  distinctCauses: 0,
 };
 
 describe("devtools extension timeline panel", () => {

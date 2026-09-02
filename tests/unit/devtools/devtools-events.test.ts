@@ -3,9 +3,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   clearDevtoolsListeners,
   createDevtoolsRecorder,
+  DEVTOOLS_CONTRACT_VERSION,
   emitDevtoolsEvent,
   hasDevtoolsListeners,
+  nextDevtoolsCorrelationId,
   onDevtoolsEvent,
+  serializeDevtoolsEvent,
   type DevtoolsEvent,
 } from "../../../src/devtools/events";
 
@@ -187,5 +190,87 @@ describe("devtools event bus", () => {
     expect(() => createDevtoolsRecorder({ limit: 1.5 })).toThrow(
       "DevTools recorder limit must be a positive integer",
     );
+  });
+});
+
+describe("devtools event contract serialization", () => {
+  it("serializes router:navigation to exactly the contracted fields", () => {
+    const serialized = serializeDevtoolsEvent({
+      type: "router:navigation",
+      to: "/about",
+      from: "/",
+      status: "start",
+    });
+
+    expect(serialized).toMatchObject({
+      type: "router:navigation",
+      to: "/about",
+      from: "/",
+      status: "start",
+    });
+    expect(Object.keys(serialized)).toHaveLength(4);
+  });
+
+  it("serializes reactivity:trigger with correlationId", () => {
+    const serialized = serializeDevtoolsEvent({
+      type: "reactivity:trigger",
+      targetType: "object",
+      keyType: "string",
+      effectCount: 1,
+      scheduledEffects: 1,
+      runEffects: 0,
+      correlationId: 7,
+    });
+
+    expect(serialized).toMatchObject({ type: "reactivity:trigger", correlationId: 7 });
+  });
+
+  it("passes correlationId through component:update when present", () => {
+    const serialized = serializeDevtoolsEvent({
+      type: "component:update",
+      id: 1,
+      name: "Counter",
+      parentId: null,
+      correlationId: 3,
+    });
+
+    expect(serialized).toMatchObject({ type: "component:update", correlationId: 3 });
+  });
+
+  it("omits correlationId from component:update when absent", () => {
+    const serialized = serializeDevtoolsEvent({
+      type: "component:update",
+      id: 1,
+      name: "Counter",
+      parentId: null,
+    });
+
+    expect("correlationId" in serialized).toBe(false);
+  });
+
+  it("serializes scheduler:flush with skippedStaleJobs and distinctCauses", () => {
+    const serialized = serializeDevtoolsEvent({
+      type: "scheduler:flush",
+      queuedJobs: 2,
+      dedupedJobs: 1,
+      durationMs: 0,
+      skippedStaleJobs: 1,
+      distinctCauses: 2,
+    });
+
+    expect(serialized).toMatchObject({ skippedStaleJobs: 1, distinctCauses: 2 });
+  });
+
+  it("allocates strictly increasing correlation ids", () => {
+    let previous = nextDevtoolsCorrelationId();
+    for (let index = 0; index < 2; index += 1) {
+      const next = nextDevtoolsCorrelationId();
+      expect(next).toBeGreaterThan(previous);
+      previous = next;
+    }
+  });
+
+  it("pins the DevTools contract version", () => {
+    expect(DEVTOOLS_CONTRACT_VERSION).toBe(1);
   });
 });

@@ -1,9 +1,31 @@
+export const DEVTOOLS_CONTRACT_VERSION = 1 as const;
+
+let correlationCounter = 0;
+
+export function nextDevtoolsCorrelationId(): number {
+  correlationCounter += 1;
+  return correlationCounter;
+}
+
 export type DevtoolsEvent =
   | { type: "component:mount"; id: number; name: string; parentId: number | null }
-  | { type: "component:update"; id: number; name: string; parentId: number | null }
+  | {
+      type: "component:update";
+      id: number;
+      name: string;
+      parentId: number | null;
+      correlationId?: number;
+    }
   | { type: "component:unmount"; id: number; name: string; parentId: number | null }
   | { type: "component:emit"; id: number; name: string; event: string; handlerCount: number }
-  | { type: "scheduler:flush"; queuedJobs: number; dedupedJobs: number; durationMs: number }
+  | {
+      type: "scheduler:flush";
+      queuedJobs: number;
+      dedupedJobs: number;
+      durationMs: number;
+      skippedStaleJobs: number;
+      distinctCauses: number;
+    }
   | {
       type: "reactivity:trigger";
       targetType: string;
@@ -11,6 +33,13 @@ export type DevtoolsEvent =
       effectCount: number;
       scheduledEffects: number;
       runEffects: number;
+      correlationId: number;
+    }
+  | {
+      type: "router:navigation";
+      to: string;
+      from: string;
+      status: "start" | "success" | "redirect" | "error" | "cancelled";
     }
   | {
       type: "renderer:element";
@@ -99,13 +128,21 @@ export function createDevtoolsRecorder(options: DevtoolsRecorderOptions = {}): D
 export function serializeDevtoolsEvent(event: DevtoolsEvent): DevtoolsEvent {
   switch (event.type) {
     case "component:mount":
-    case "component:update":
     case "component:unmount":
       return {
         type: event.type,
         id: event.id,
         name: event.name,
         parentId: event.parentId,
+      };
+
+    case "component:update":
+      return {
+        type: event.type,
+        id: event.id,
+        name: event.name,
+        parentId: event.parentId,
+        ...(event.correlationId !== undefined ? { correlationId: event.correlationId } : {}),
       };
 
     case "component:emit":
@@ -117,12 +154,22 @@ export function serializeDevtoolsEvent(event: DevtoolsEvent): DevtoolsEvent {
         handlerCount: event.handlerCount,
       };
 
+    case "router:navigation":
+      return {
+        type: event.type,
+        to: event.to,
+        from: event.from,
+        status: event.status,
+      };
+
     case "scheduler:flush":
       return {
         type: event.type,
         queuedJobs: event.queuedJobs,
         dedupedJobs: event.dedupedJobs,
         durationMs: event.durationMs,
+        skippedStaleJobs: event.skippedStaleJobs,
+        distinctCauses: event.distinctCauses,
       };
 
     case "reactivity:trigger":
@@ -133,6 +180,7 @@ export function serializeDevtoolsEvent(event: DevtoolsEvent): DevtoolsEvent {
         effectCount: event.effectCount,
         scheduledEffects: event.scheduledEffects,
         runEffects: event.runEffects,
+        correlationId: event.correlationId,
       };
 
     case "renderer:element":

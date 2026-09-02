@@ -1,4 +1,9 @@
-import { emitDevtoolsEvent, hasDevtoolsListeners, type DevtoolsEvent } from "../devtools/events";
+import {
+  emitDevtoolsEvent,
+  hasDevtoolsListeners,
+  nextDevtoolsCorrelationId,
+  type DevtoolsEvent,
+} from "../devtools/events";
 
 type Dep = Set<ReactiveEffect>;
 type Scheduler = () => void;
@@ -129,6 +134,8 @@ function emitReactivityTriggerDevtoolsEvent(
     effectCount: scheduledEffects + runEffects,
     scheduledEffects,
     runEffects,
+    // Placeholder until Task 4 threads real correlation through to component updates.
+    correlationId: nextDevtoolsCorrelationId(),
   });
 }
 
