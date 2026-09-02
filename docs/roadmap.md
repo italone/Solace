@@ -84,8 +84,12 @@ output; each requires a separate public API and compatibility review.
    is implemented through `router.isReadySync()` and the `renderToString()` `router` option. Keep
    route crawling and filesystem output deferred.
 8. **Browser DevTools extension UI** — the first example panel is implemented under
-   `examples/devtools-extension`; continue hardening extension packaging, the browser extension QA
-   checklist, richer event contracts, and future inspectors without reading private runtime state.
+   `examples/devtools-extension`, and richer event contracts are now implemented and versioned:
+   `router:navigation` summaries, `scheduler:flush` stale-job and distinct-cause signals,
+   reactivity-to-update correlation ids, and the `DEVTOOLS_CONTRACT_VERSION` handshake (the panel
+   connect message carries `contractVersion` and the background acks additively). Continue
+   hardening extension packaging, the browser extension QA checklist, and future inspectors
+   without reading private runtime state.
 9. **Production adoption guidance** — large-app patterns, performance tuning, migration notes. A
    first guide now exists in `docs/large-app.md` and `docs/large-app.zh-CN.md`; ecosystem and UI
    library decisions are recorded in `docs/ecosystem.md`; keep evolving both from real usage.

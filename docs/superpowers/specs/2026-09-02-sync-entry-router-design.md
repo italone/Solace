@@ -39,7 +39,7 @@ and the same canonical snapshot. Validation reuses `assertRouterSSROption`.
 ### 3. Entry contracts
 
 - `renderToString(source, options)` accepts `router: { url, routes, identifyRecord,
-  configure? }`. The resolved `provides` map replaces `options.provides` exactly as in
+configure? }`. The resolved `provides` map replaces `options.provides` exactly as in
   `renderToStringAsync` (combining `router` with `provides` keeps throwing), and the rendered
   html gets the byte-identical snapshot script (`script#__solace-router-snapshot`,
   `window.__SOLACE_ROUTER_SNAPSHOT__=...`).

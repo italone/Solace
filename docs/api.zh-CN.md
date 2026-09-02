@@ -1166,8 +1166,19 @@ transform error 抛出，并在可用时包含 diagnostic code、filename、line
 DevTools API 有意不从包根入口导出。请从 `@italone/solace/devtools` 导入。
 
 ```ts
-import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtools";
+import {
+  createDevtoolsRecorder,
+  DEVTOOLS_CONTRACT_VERSION,
+  onDevtoolsEvent,
+} from "@italone/solace/devtools";
 import type { DevtoolsEvent } from "@italone/solace/devtools";
 ```
+
+事件契约带有版本号：`DEVTOOLS_CONTRACT_VERSION` 当前为 `1`，新增可选字段或新增事件类型保持在当前版本内，
+删除、重命名或类型变更需要提升版本号。除最初的 component、scheduler、reactivity、renderer 和 store 摘要外，
+契约还包含 `router:navigation` 事件（`start`/`success`/`redirect`/`error`/`cancelled`，仅携带 `to`/`from`
+fullPath 字符串）、`scheduler:flush` 的 `skippedStaleJobs` 与 `distinctCauses` 字段、`reactivity:trigger` 的
+`correlationId`，以及 `component:update` 上可选的同名 id（无已知原因时不携带）。所有 payload 均保持为小型
+可序列化摘要。
 
 payload 边界和隐私约束见 [devtools.md](./devtools.md)。

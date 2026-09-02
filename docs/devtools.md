@@ -5,7 +5,7 @@ lifecycle, private runtime boundary, and safe constraints for future instrumenta
 
 ## Goals
 
-- Help developers inspect component, reactivity, scheduler, renderer, and store behavior.
+- Help developers inspect component, reactivity, scheduler, renderer, router, and store behavior.
 - Keep instrumentation opt-in.
 - Avoid stabilizing internal runtime objects as public API.
 - Avoid adding measurable overhead to production builds or benchmarks.
@@ -26,7 +26,7 @@ import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtool
 import type { DevtoolsEvent } from "@italone/solace/devtools";
 ```
 
-The public subpath exports listener and recorder APIs only. It does not export emit helpers, listener-state helpers,
+The public subpath exports listener and recorder APIs, plus the `DEVTOOLS_CONTRACT_VERSION` constant, only. It does not export emit helpers, listener-state helpers,
 global cleanup helpers, serializers, DOM nodes, VNode trees, component instances, props, reactive targets, store state,
 action arguments, or action results.
 
@@ -44,13 +44,14 @@ reuse them internally, and incidental runtime cleanup must not change the public
 
 ## Candidate Capabilities
 
-| Area       | Useful Signals                                         | Notes                                                                        |
-| ---------- | ------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| Components | mount, update, unmount, props, emits, lifecycle hooks  | Component lifecycle and emit summaries are emitted by the internal event bus |
-| Reactivity | effect creation, dependency tracking, triggers, stops  | Trigger summaries are emitted without raw targets, keys, or values           |
-| Scheduler  | queued jobs, flush duration, skipped stale jobs        | `scheduler:flush` summary is emitted by the internal event bus               |
-| Renderer   | element mount, prop patch, child diff, unmount         | Element summaries are emitted without DOM nodes or VNode trees               |
-| Store      | action calls, narrow state paths, getter recomputation | Action summaries are emitted without args, results, or state                 |
+| Area       | Useful Signals                                         | Notes                                                                             |
+| ---------- | ------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| Components | mount, update, unmount, props, emits, lifecycle hooks  | Component lifecycle and emit summaries are emitted by the internal event bus      |
+| Reactivity | effect creation, dependency tracking, triggers, stops  | Trigger summaries are emitted without raw targets, keys, or values                |
+| Router     | navigation start, success, redirect, error, cancelled  | `router:navigation` fullPath-only summaries are emitted by the internal event bus |
+| Scheduler  | queued jobs, flush duration, skipped stale jobs        | `scheduler:flush` summary is emitted by the internal event bus                    |
+| Renderer   | element mount, prop patch, child diff, unmount         | Element summaries are emitted without DOM nodes or VNode trees                    |
+| Store      | action calls, narrow state paths, getter recomputation | Action summaries are emitted without args, results, or state                      |
 
 ## Hook Boundary
 
@@ -60,10 +61,23 @@ public integrations subscribe through `@italone/solace/devtools`. The package ro
 ```ts
 type DevtoolsEvent =
   | { type: "component:mount"; id: number; name: string; parentId: number | null }
-  | { type: "component:update"; id: number; name: string; parentId: number | null }
+  | {
+      type: "component:update";
+      id: number;
+      name: string;
+      parentId: number | null;
+      correlationId?: number;
+    }
   | { type: "component:unmount"; id: number; name: string; parentId: number | null }
   | { type: "component:emit"; id: number; name: string; event: string; handlerCount: number }
-  | { type: "scheduler:flush"; queuedJobs: number; dedupedJobs: number; durationMs: number }
+  | {
+      type: "scheduler:flush";
+      queuedJobs: number;
+      dedupedJobs: number;
+      durationMs: number;
+      skippedStaleJobs: number;
+      distinctCauses: number;
+    }
   | {
       type: "reactivity:trigger";
       targetType: string;
@@ -71,6 +85,13 @@ type DevtoolsEvent =
       effectCount: number;
       scheduledEffects: number;
       runEffects: number;
+      correlationId: number;
+    }
+  | {
+      type: "router:navigation";
+      to: string;
+      from: string;
+      status: "start" | "success" | "redirect" | "error" | "cancelled";
     }
   | {
       type: "renderer:element";
@@ -89,9 +110,36 @@ type DevtoolsEvent =
 They do not include emitted arguments, raw props, handler functions, component instances, VNodes, DOM nodes, or user
 content.
 
-`scheduler:flush` summaries include executed job count, deduped queue attempt count, and flush duration only. They do
+`scheduler:flush` summaries include executed job count, deduped queue attempt count, flush duration, the number of jobs
+skipped as stale (`skippedStaleJobs`, scheduler jobs may return `false` to report "skipped as stale"), and the count of
+distinct causes (`distinctCauses`) that queued the flushed jobs. They do
 not include scheduler job functions, function names, stack traces, component instances, reactive effects, VNodes, DOM
 nodes, or user data.
+
+`router:navigation` events are small fullPath-only navigation summaries. A navigation emits a `start` event
+(`status: "start"`) once the target location resolves, followed by exactly one terminal event: `status: "success"` when
+the navigation lands on its initial target, `status: "redirect"` when route redirects land it elsewhere, `status:
+"cancelled"` when a guard cancels it, or `status: "error"` when navigation throws. Payloads carry `to`/`from` fullPath
+strings only — no params objects, matched route records, or navigation guards. When location resolution throws before a
+navigation can start, a terminal event may be emitted without a preceding `start` event for that navigation.
+
+`reactivity:trigger` events carry a `correlationId: number`, and `component:update` events carry an optional
+`correlationId`. The correlation semantics are narrow causality only: when a trigger queues scheduler update jobs, the
+jobs remember the trigger's `correlationId`, and update events caused by those jobs carry the same id so tooling can
+link a trigger to the updates it caused (for example, "related trigger #N" in the example panel). An absent
+`correlationId` on a `component:update` means no known cause; ids are never fabricated. The id is allocated only when
+a listener is registered and a trigger has scheduled effects, and nested triggers save and restore the outer
+correlation window so attribution stays with the innermost cause. Correlation ids do not carry targets, keys, values,
+or any other runtime state.
+
+## Contract Versioning
+
+The DevTools event contract is versioned. `DEVTOOLS_CONTRACT_VERSION` (currently `1`) is exported from
+`@italone/solace/devtools`. The example panel's connect message carries `contractVersion`, and the background relay
+acks additively. Additive field additions — new optional fields on existing events, or new event types — stay within
+the current version; removals, renames, or type changes require bumping the version in an intentional
+breaking-change plan. Contract payload additions must remain small serializable summaries and must update payload
+stability coverage as described under Public API Lifecycle.
 
 Future runtime modules should emit small serializable events only when a listener is registered. If no listener is registered, the runtime should do no meaningful extra work.
 
@@ -118,9 +166,15 @@ modules or bundling a second event bus.
 
 The initial panel scope is intentionally narrow:
 
-- Timeline rows for component, scheduler, reactivity, renderer, and store event families.
+- Timeline rows for component, scheduler, reactivity, renderer, router, and store event families.
 - Family filters, pause/resume, clear, selected-event details, and a bounded capture limit.
-- A detail pane that displays the serialized `DevtoolsEvent` payload exactly as received.
+- A detail pane that displays the serialized `DevtoolsEvent` payload exactly as received, including
+  `correlationId` linking a `reactivity:trigger` to the `component:update` events it caused
+  ("related trigger #N").
+- Router navigation summaries such as `/a → /c (redirect)` rendered from `router:navigation`
+  fullPath payloads.
+- A versioned panel handshake: the panel's connect message carries `contractVersion`
+  (`DEVTOOLS_CONTRACT_VERSION`), and the background relay acks additively.
 - Extension wiring through a DevTools page, content script, page bridge, background relay, and panel
   transport.
 - Tab-scoped activation: content scripts open a runtime port, but the page bridge is injected only
@@ -269,6 +323,14 @@ automatic updates, or a production-wide inspected-origin policy.
 17. **Browser extension timeline panel**: `examples/devtools-extension` builds a local DevTools
     panel that consumes only the public DevTools subpath and renders the existing serialized event
     summaries.
+18. **Router navigation summaries**: `router:navigation` emits fullPath-only start and terminal
+    statuses for each navigation.
+19. **Scheduler stale and cause signals**: `scheduler:flush` reports `skippedStaleJobs` and
+    `distinctCauses`.
+20. **Reactivity/update correlation**: `reactivity:trigger` carries a `correlationId` that
+    matching `component:update` events optionally include.
+21. **Versioned contract handshake**: `DEVTOOLS_CONTRACT_VERSION` is exported from the public
+    DevTools subpath and the example panel handshake carries it.
 
 ## Recommendation
 

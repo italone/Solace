@@ -1364,8 +1364,19 @@ DevTools APIs are intentionally not exported from the package root. Import them 
 `@italone/solace/devtools`.
 
 ```ts
-import { createDevtoolsRecorder, onDevtoolsEvent } from "@italone/solace/devtools";
+import {
+  createDevtoolsRecorder,
+  DEVTOOLS_CONTRACT_VERSION,
+  onDevtoolsEvent,
+} from "@italone/solace/devtools";
 import type { DevtoolsEvent } from "@italone/solace/devtools";
 ```
+
+The event contract is versioned: `DEVTOOLS_CONTRACT_VERSION` is currently `1`, additive field or event additions stay
+in-version, and removals, renames, or type changes require a version bump. Beyond the original component, scheduler,
+reactivity, renderer, and store summaries, the contract includes `router:navigation` events
+(`start`/`success`/`redirect`/`error`/`cancelled` with `to`/`from` fullPath strings), `scheduler:flush` fields
+`skippedStaleJobs` and `distinctCauses`, a `correlationId` on `reactivity:trigger`, and an optional matching
+`correlationId` on `component:update` (absent when no known cause). All payloads remain small serializable summaries.
 
 See [devtools.md](./devtools.md) for the payload boundary and privacy constraints.
