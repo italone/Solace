@@ -22,11 +22,7 @@ export interface RouterServerContext {
   provides: Map<string | symbol, unknown>;
 }
 
-export async function createRouterServerContext(
-  options: RouterServerContextOptions,
-): Promise<RouterServerContext> {
-  assertOptions(options);
-
+function createConfiguredRouter(options: RouterServerContextOptions): Router {
   const router = createRouter({
     history: createMemoryHistory(options.url),
     routes: options.routes,
@@ -35,14 +31,40 @@ export async function createRouterServerContext(
   if (isThenable(configurationResult)) {
     throw new TypeError("Router server context configure must be synchronous");
   }
+  return router;
+}
 
-  const route = await router.isReady();
+function buildContext(
+  router: Router,
+  route: RouteLocationNormalized,
+  options: RouterServerContextOptions,
+): RouterServerContext {
   const snapshot = createRouterSnapshot(route, options.identifyRecord);
   const provides = new Map(options.provides ?? []);
   provides.set(routerKey, router);
   provides.set(routeKey, router.currentRoute);
 
   return { router, route, snapshot, provides };
+}
+
+export async function createRouterServerContext(
+  options: RouterServerContextOptions,
+): Promise<RouterServerContext> {
+  assertOptions(options);
+
+  const router = createConfiguredRouter(options);
+  const route = await router.isReady();
+  return buildContext(router, route, options);
+}
+
+export function createRouterServerContextSync(
+  options: RouterServerContextOptions,
+): RouterServerContext {
+  assertOptions(options);
+
+  const router = createConfiguredRouter(options);
+  const route = router.isReadySync();
+  return buildContext(router, route, options);
 }
 
 function assertOptions(options: unknown): asserts options is RouterServerContextOptions {

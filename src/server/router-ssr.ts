@@ -4,7 +4,11 @@ import {
   type RouteRecordIdentity,
   type RouterSnapshot,
 } from "../router/snapshot";
-import { createRouterServerContext, type RouterServerContext } from "./router-context";
+import {
+  createRouterServerContext,
+  createRouterServerContextSync,
+  type RouterServerContext,
+} from "./router-context";
 
 export interface RouterSSROptions {
   url: string;
@@ -77,6 +81,18 @@ export function assertRouterSSGOption(router: unknown): asserts router is Router
 export async function resolveRouterSSR(options: RouterSSROptions): Promise<ResolvedRouterSSR> {
   assertRouterSSROption(options);
   const context = await createRouterServerContext(options);
+  return {
+    context,
+    router: context.router,
+    route: context.route,
+    snapshot: context.snapshot,
+    provides: context.provides,
+  };
+}
+
+export function resolveRouterSSRSync(options: RouterSSROptions): ResolvedRouterSSR {
+  assertRouterSSROption(options);
+  const context = createRouterServerContextSync(options);
   return {
     context,
     router: context.router,
