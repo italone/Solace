@@ -466,13 +466,15 @@ function hydrateProps(el: Element, props: VNodeProps | null): void {
   }
 }
 
+// value/checked are compared via DOM properties (live form state) rather than attributes,
+// on whatever element carries the prop.
 const FORM_VALUE_PROPS = new Set(["value", "checked"]);
 
 function assertHydrationAttributes(el: Element, props: VNodeProps | null, path: string): void {
   if (props === null) return;
   for (const [key, value] of Object.entries(props)) {
     if (key === "key" || key === "ref" || key === "style" || isEventProp(key)) continue;
-    const attribute = key === "className" ? "class" : key;
+    const attribute = key;
 
     if (value === undefined || value === null || value === false) {
       if (el.getAttribute(attribute) !== null) {

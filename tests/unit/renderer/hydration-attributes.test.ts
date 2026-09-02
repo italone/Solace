@@ -96,12 +96,32 @@ describe("hydrate attribute mismatches", () => {
     ).not.toThrow();
   });
 
-  it("maps className to the class attribute and detects mismatches", () => {
-    const container = createContainer('<p class="b"></p>');
+  it("compares className as the literal className attribute, matching renderer behavior", () => {
+    const container = createContainer('<p class="a"></p>');
     const error = captureHydrationError(() => hydrate(h("p", { className: "a" }), container));
 
     expect(error.kind).toBe("attribute-mismatch");
-    expect(error.attributeName).toBe("class");
+    expect(error.attributeName).toBe("className");
+  });
+
+  it("accepts a matching class attribute", () => {
+    const container = createContainer('<p class="a"></p>');
+    expect(() => hydrate(h("p", { class: "a" }), container)).not.toThrow();
+  });
+
+  it("stringifies numeric prop values instead of falsy-skipping them", () => {
+    const matchingContainer = createContainer('<input maxlength="0">');
+    expect(() => hydrate(h("input", { maxlength: 0 }), matchingContainer)).not.toThrow();
+
+    const differingContainer = createContainer('<input maxlength="1">');
+    const error = captureHydrationError(() =>
+      hydrate(h("input", { maxlength: 0 }), differingContainer),
+    );
+
+    expect(error.kind).toBe("attribute-mismatch");
+    expect(error.attributeName).toBe("maxlength");
+    expect(error.expected).toContain('"0"');
+    expect(error.actual).toContain('"1"');
   });
 
   it("compares form value and checked against DOM properties", () => {
