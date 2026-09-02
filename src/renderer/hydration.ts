@@ -16,8 +16,11 @@ import { patchProp } from "./dom";
 export type HydrationMismatchKind =
   "missing-node" | "extra-node" | "element-tag-mismatch" | "text-mismatch" | "attribute-mismatch";
 
+export type HydrationTextComparison = "exact" | "normalized-collapsing";
+
 export interface HydrationContext {
   hydratedInstances: ComponentInstance[];
+  textComparison?: HydrationTextComparison;
 }
 
 interface HydrationMismatchDetails {
@@ -49,6 +52,21 @@ export class SolaceHydrationError extends Error {
       this.attributeName = messageOrDetails.attributeName;
     }
   }
+}
+
+function textMatches(
+  expected: string,
+  actual: string | null,
+  context: HydrationContext | null,
+): boolean {
+  if (context?.textComparison === "normalized-collapsing") {
+    return normalizeText(expected) === normalizeText(actual ?? "");
+  }
+  return actual === expected;
+}
+
+function normalizeText(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
 }
 
 export function hydrateVNode(
@@ -147,7 +165,7 @@ function hydratePreparedElement(
   hydrateProps(node, vnode.props);
 
   if (typeof children === "string") {
-    if (node.textContent !== children) {
+    if (!textMatches(children, node.textContent, context)) {
       const textPath = describeElementTextPath(path, vnode);
       throwHydrationMismatch({
         kind: "text-mismatch",
@@ -281,7 +299,7 @@ function hydrateElement(
 
   if (vnode.shapeFlag & ShapeFlags.TEXT_CHILDREN) {
     const expected = vnode.children as string;
-    if (node.textContent !== expected) {
+    if (!textMatches(expected, node.textContent, context)) {
       const textPath = describeElementTextPath(path, vnode);
       throwHydrationMismatch({
         kind: "text-mismatch",

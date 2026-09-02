@@ -32,6 +32,7 @@ export interface HydrationOptions {
   selective?: boolean;
   router?: Router;
   routerIdentifyRecord?: RouteRecordIdentity;
+  textComparison?: "exact" | "normalized-collapsing";
 }
 type RenderContainer = Element & {
   _solaceRenderEffect?: ReactiveEffect<void>;
@@ -139,7 +140,10 @@ export async function hydrateAsync(
     collectStyles: true,
   });
   const renderContainer = container as RenderContainer;
-  const context: HydrationContext = { hydratedInstances: [] };
+  const context: HydrationContext = {
+    hydratedInstances: [],
+    textComparison: options.textComparison,
+  };
   const styleSink = createDocumentStyleSink(container.ownerDocument);
 
   stopReactiveRender(renderContainer);
@@ -161,7 +165,7 @@ export async function hydrateAsync(
     stopHydratedComponentUpdates(context);
 
     if (shouldRecoverHydrationMismatch(error, options)) {
-      recoverPreparedHydration(prepared.root, renderContainer, appProvides);
+      recoverPreparedHydration(prepared.root, renderContainer, appProvides, options);
       return;
     }
 
@@ -177,7 +181,10 @@ async function hydrateSelectively(
 ): Promise<void> {
   const vnode = typeof source === "function" ? h(source as ComponentTransport) : source;
   const styleSink = createDocumentStyleSink(renderContainer.ownerDocument);
-  const context: HydrationContext = { hydratedInstances: [] };
+  const context: HydrationContext = {
+    hydratedInstances: [],
+    textComparison: options.textComparison,
+  };
 
   stopReactiveRender(renderContainer);
 
@@ -265,6 +272,7 @@ function recoverPreparedHydration(
   prepared: PreparedVNode,
   container: RenderContainer,
   appProvides: Provides | null,
+  options: HydrationOptions,
 ): void {
   container.textContent = "";
   container._solaceVNode = null;
@@ -272,7 +280,10 @@ function recoverPreparedHydration(
   renderVNode(materialized, container, appProvides);
   resetPreparedHydrationState(prepared);
 
-  const context: HydrationContext = { hydratedInstances: [] };
+  const context: HydrationContext = {
+    hydratedInstances: [],
+    textComparison: options.textComparison,
+  };
   try {
     const next = hydratePreparedVNode(prepared, container.firstChild, null, appProvides, context);
     assertNoExtraDomNode(next, "root[1]");
@@ -334,7 +345,10 @@ function hydrateInitialTree(
   appProvides: Provides | null,
   options: HydrationOptions,
 ): void {
-  const context: HydrationContext = { hydratedInstances: [] };
+  const context: HydrationContext = {
+    hydratedInstances: [],
+    textComparison: options.textComparison,
+  };
 
   try {
     const next = hydrateVNode(vnode, container.firstChild, null, appProvides, context);
@@ -373,6 +387,16 @@ function assertNoDeferredIntegrationOptions(options: HydrationOptions): void {
     throw new TypeError("Hydration selective option must be a boolean");
   }
 
+  if (
+    options.textComparison !== undefined &&
+    options.textComparison !== "exact" &&
+    options.textComparison !== "normalized-collapsing"
+  ) {
+    throw new TypeError(
+      'Hydration textComparison option must be "exact" or "normalized-collapsing"',
+    );
+  }
+
   if (hasOwn(options, "manifest") || hasOwn(options, "clientEntry")) {
     throw new TypeError(
       "Hydration manifest integration is deferred; compose assets in an app-local shell or adapter.",
@@ -409,7 +433,8 @@ function assertNoDeferredIntegrationOptions(options: HydrationOptions): void {
       key !== "recover" &&
       key !== "selective" &&
       key !== "router" &&
-      key !== "routerIdentifyRecord",
+      key !== "routerIdentifyRecord" &&
+      key !== "textComparison",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown hydration option: ${String(unknownKey)}`);
