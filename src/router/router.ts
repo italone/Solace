@@ -1,4 +1,6 @@
 import type { App } from "../app";
+import type { DevtoolsEvent } from "../devtools/events";
+import { emitDevtoolsEvent, hasDevtoolsListeners } from "../devtools/events";
 import { inject } from "../component/provide";
 import { ref } from "../reactivity/ref";
 import { isThenable } from "../shared/utils";
@@ -51,6 +53,29 @@ export class RouterNavigationError extends Error {
   }
 }
 
+type NavigationStatus = Extract<DevtoolsEvent, { type: "router:navigation" }>["status"];
+
+function emitNavigationDevtoolsEvent(to: string, from: string, status: NavigationStatus): void {
+  if (!hasDevtoolsListeners()) {
+    return;
+  }
+
+  emitDevtoolsEvent({ type: "router:navigation", to, from, status });
+}
+
+function emitNavigationTerminalEvent(
+  finalRoute: RouteLocationNormalized,
+  initial: RouteLocationNormalized,
+  from: RouteLocationNormalized,
+): void {
+  if (finalRoute.redirectedFrom !== undefined && finalRoute.fullPath !== initial.fullPath) {
+    emitNavigationDevtoolsEvent(finalRoute.fullPath, initial.fullPath, "redirect");
+    return;
+  }
+
+  emitNavigationDevtoolsEvent(finalRoute.fullPath, from.fullPath, "success");
+}
+
 export function createRouter(options: RouterOptions): Router {
   assertRouterOptionsContract(options);
   const matcher = createMatcher(options.routes);
@@ -94,9 +119,18 @@ export function createRouter(options: RouterOptions): Router {
     isReadySync(): RouteLocationNormalized {
       const from = currentRoute.value;
       const initial = resolveLocation(options.history.location());
-      const finalRoute = resolveNavigationSync(initial, from);
+      emitNavigationDevtoolsEvent(initial.fullPath, from.fullPath, "start");
+
+      let finalRoute: RouteLocationNormalized | false;
+      try {
+        finalRoute = resolveNavigationSync(initial, from);
+      } catch (error) {
+        emitNavigationDevtoolsEvent(initial.fullPath, from.fullPath, "error");
+        throw error;
+      }
 
       if (finalRoute === false) {
+        emitNavigationDevtoolsEvent(initial.fullPath, from.fullPath, "cancelled");
         throw new RouterNavigationError(
           "Router initial navigation was cancelled",
           "guard-cancelled",
@@ -109,6 +143,7 @@ export function createRouter(options: RouterOptions): Router {
         writeHistory(() => options.history.replace(finalRoute.fullPath));
       }
 
+      emitNavigationTerminalEvent(finalRoute, initial, from);
       currentRoute.value = finalRoute;
       return finalRoute;
     },
@@ -154,11 +189,17 @@ export function createRouter(options: RouterOptions): Router {
     const activeNavigationId = ++navigationId;
     const from = currentRoute.value;
     readinessPromise = (async () => {
+      let terminalEmitted = false;
+      let toPath = options.history.location();
       try {
-        const initial = resolveLocation(options.history.location());
+        const initial = resolveLocation(toPath);
+        toPath = initial.fullPath;
+        emitNavigationDevtoolsEvent(initial.fullPath, from.fullPath, "start");
         const finalRoute = await resolveNavigation(initial, from);
 
         if (finalRoute === false) {
+          emitNavigationDevtoolsEvent(initial.fullPath, from.fullPath, "cancelled");
+          terminalEmitted = true;
           throw new RouterNavigationError(
             "Router initial navigation was cancelled",
             "guard-cancelled",
@@ -175,10 +216,16 @@ export function createRouter(options: RouterOptions): Router {
           writeHistory(() => options.history.replace(finalRoute.fullPath));
         }
 
+        emitNavigationTerminalEvent(finalRoute, initial, from);
+        terminalEmitted = true;
         currentRoute.value = finalRoute;
         await applyScrollBehavior(finalRoute, from, activeNavigationId);
         return finalRoute;
       } catch (error) {
+        if (!terminalEmitted) {
+          emitNavigationDevtoolsEvent(toPath, from.fullPath, "error");
+        }
+
         if (activeNavigationId === navigationId && options.history.location() !== from.fullPath) {
           writeHistory(() => options.history.replace(from.fullPath));
         }
@@ -194,45 +241,66 @@ export function createRouter(options: RouterOptions): Router {
     to: RouteLocationRaw,
     mode: "push" | "replace",
   ): Promise<RouteLocationNormalized> {
-    const initial = resolveLocation(to);
-    const activeNavigationId = ++navigationId;
     const from = currentRoute.value;
+
+    let initial: RouteLocationNormalized;
+    try {
+      initial = resolveLocation(to);
+    } catch (error) {
+      emitNavigationDevtoolsEvent(typeof to === "string" ? to : "", from.fullPath, "error");
+      throw error;
+    }
+
+    const activeNavigationId = ++navigationId;
 
     if (initial.fullPath === from.fullPath) {
       return from;
     }
 
-    const finalRoute = await resolveNavigation(initial, from);
+    emitNavigationDevtoolsEvent(initial.fullPath, from.fullPath, "start");
 
-    if (finalRoute === false) {
-      return from;
-    }
+    let finalRoute: RouteLocationNormalized | false;
+    try {
+      finalRoute = await resolveNavigation(initial, from);
 
-    if (activeNavigationId !== navigationId) {
-      return currentRoute.value;
-    }
+      if (finalRoute === false) {
+        emitNavigationDevtoolsEvent(initial.fullPath, from.fullPath, "cancelled");
+        return from;
+      }
 
-    if (finalRoute.fullPath === from.fullPath) {
-      return from;
-    }
-
-    const lazyComponents = getLazyRouteComponents(finalRoute);
-    if (lazyComponents.length > 0) {
-      await preloadLazyRouteComponents(lazyComponents, from, finalRoute);
+      const resolved = finalRoute;
 
       if (activeNavigationId !== navigationId) {
         return currentRoute.value;
       }
+
+      if (resolved.fullPath === from.fullPath) {
+        emitNavigationTerminalEvent(resolved, initial, from);
+        return from;
+      }
+
+      const lazyComponents = getLazyRouteComponents(resolved);
+      if (lazyComponents.length > 0) {
+        await preloadLazyRouteComponents(lazyComponents, from, resolved);
+
+        if (activeNavigationId !== navigationId) {
+          return currentRoute.value;
+        }
+      }
+
+      writeHistory(() => {
+        if (mode === "replace") {
+          options.history.replace(resolved.fullPath);
+        } else {
+          options.history.push(resolved.fullPath);
+        }
+      });
+    } catch (error) {
+      emitNavigationDevtoolsEvent(initial.fullPath, from.fullPath, "error");
+      throw error;
     }
 
-    writeHistory(() => {
-      if (mode === "replace") {
-        options.history.replace(finalRoute.fullPath);
-      } else {
-        options.history.push(finalRoute.fullPath);
-      }
-    });
-
+    emitNavigationTerminalEvent(finalRoute, initial, from);
     currentRoute.value = finalRoute;
     await applyScrollBehavior(finalRoute, from, activeNavigationId);
     return finalRoute;
