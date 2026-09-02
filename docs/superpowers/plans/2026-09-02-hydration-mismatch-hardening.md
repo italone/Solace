@@ -13,6 +13,7 @@
 ### Task 1: Attribute mismatch detection
 
 **Files:**
+
 - Modify: `src/renderer/hydration.ts`
 - Test: `tests/unit/renderer/hydration-attributes.test.ts`
 
@@ -81,7 +82,10 @@ describe("hydration attribute mismatch", () => {
 
   it("ignores event props and key/ref/style", () => {
     const container = containerWith("<div></div>");
-    hydrate(h("div", { onClick: () => {}, key: "k", ref: () => {}, style: "color:red" }), container);
+    hydrate(
+      h("div", { onClick: () => {}, key: "k", ref: () => {}, style: "color:red" }),
+      container,
+    );
   });
 
   it("maps className to the class attribute", () => {
@@ -134,7 +138,13 @@ function assertHydrationAttributes(el: Element, props: VNodeProps | null, path: 
 
     if (value === undefined || value === null || value === false) {
       if (el.getAttribute(attribute) !== null) {
-        throwAttributeMismatch(path, el, attribute, String(value), el.getAttribute(attribute) ?? "");
+        throwAttributeMismatch(
+          path,
+          el,
+          attribute,
+          String(value),
+          el.getAttribute(attribute) ?? "",
+        );
       }
       continue;
     }
@@ -196,6 +206,7 @@ git commit -m "feat: detect hydration attribute mismatches"
 ### Task 2: `textComparison` option
 
 **Files:**
+
 - Modify: `src/renderer/hydration.ts` (HydrationContext + two text compare sites)
 - Modify: `src/renderer/renderer.ts` (HydrationOptions, validation, context construction)
 - Test: `tests/unit/renderer/hydration-text-comparison.test.ts`
@@ -223,18 +234,24 @@ describe("hydration textComparison option", () => {
 
   it("normalized-collapsing accepts foldable whitespace", () => {
     const container = containerWith("<p>hello   world</p>");
-    hydrate(h("p", null, "hello world"), container, null, { textComparison: "normalized-collapsing" });
+    hydrate(h("p", null, "hello world"), container, null, {
+      textComparison: "normalized-collapsing",
+    });
   });
 
   it("normalized-collapsing trims outer whitespace", () => {
     const container = containerWith("<p>\n  hello world\n</p>");
-    hydrate(h("p", null, "hello world"), container, null, { textComparison: "normalized-collapsing" });
+    hydrate(h("p", null, "hello world"), container, null, {
+      textComparison: "normalized-collapsing",
+    });
   });
 
   it("normalized-collapsing still throws on real text difference", () => {
     const container = containerWith("<p>hello world</p>");
     expect(() =>
-      hydrate(h("p", null, "hello there"), container, null, { textComparison: "normalized-collapsing" }),
+      hydrate(h("p", null, "hello there"), container, null, {
+        textComparison: "normalized-collapsing",
+      }),
     ).toThrow("text-mismatch");
   });
 
@@ -258,7 +275,11 @@ Expected: FAIL (option not accepted / no normalization).
    `textComparison?: "exact" | "normalized-collapsing";`
    Add helper:
    ```ts
-   function textMatches(expected: string, actual: string | null, context: HydrationContext | null): boolean {
+   function textMatches(
+     expected: string,
+     actual: string | null,
+     context: HydrationContext | null,
+   ): boolean {
      if (context?.textComparison === "normalized-collapsing") {
        return normalizeText(expected) === normalizeText(actual ?? "");
      }
@@ -273,8 +294,14 @@ Expected: FAIL (option not accepted / no normalization).
    - Add `textComparison?: "exact" | "normalized-collapsing";` to `HydrationOptions`.
    - In `assertNoDeferredIntegrationOptions` add:
      ```ts
-     if (options.textComparison !== undefined && options.textComparison !== "exact" && options.textComparison !== "normalized-collapsing") {
-       throw new TypeError("Hydration textComparison option must be \"exact\" or \"normalized-collapsing\"");
+     if (
+       options.textComparison !== undefined &&
+       options.textComparison !== "exact" &&
+       options.textComparison !== "normalized-collapsing"
+     ) {
+       throw new TypeError(
+         'Hydration textComparison option must be "exact" or "normalized-collapsing"',
+       );
      }
      ```
    - Add `"textComparison"` to the allowed-unknown-keys list (around line 409).
@@ -303,6 +330,7 @@ replay target). No code change; the spec documents recovery settles without repl
 ### Task 4: Structure/edge tests + integration coverage
 
 **Files:**
+
 - Test: `tests/unit/renderer/hydration-structure.test.ts` (new)
 - Test: `tests/integration/ssr-hydration-mismatch.test.ts` (new — follow conventions of `tests/integration/ssr-hydration.test.ts`: renderToStringAsync + hydrateAsync against the produced html)
 
@@ -325,9 +353,9 @@ function containerWith(html: string): Element {
 describe("hydration structure mismatch", () => {
   it("throws on a single extra element in children list", () => {
     const container = containerWith("<ul><li>a</li><li>b</li><li>c</li></ul>");
-    expect(() => hydrate(h("ul", null, [h("li", null, "a"), h("li", null, "b")]), container)).toThrow(
-      /extra-node/,
-    );
+    expect(() =>
+      hydrate(h("ul", null, [h("li", null, "a"), h("li", null, "b")]), container),
+    ).toThrow(/extra-node/);
   });
 
   it("throws on a single missing element in children list", () => {
@@ -339,12 +367,15 @@ describe("hydration structure mismatch", () => {
 
   it("throws on text node vs element substitution", () => {
     const container = containerWith("<p><span>x</span></p>");
-    expect(() => hydrate(h("p", null, "text"), container)).toThrow(/text-mismatch|element-tag-mismatch/);
+    expect(() => hydrate(h("p", null, "text"), container)).toThrow(
+      /text-mismatch|element-tag-mismatch/,
+    );
   });
 });
 ```
 
 Integration tests: SSR an app with `renderToStringAsync()`, inject the html into a container, then `hydrateAsync()` — cover:
+
 1. attribute mismatch from server (server renders `<a href="/old">`, client expects `/new`) throws; with `recover: true` deopts and client markup wins.
 2. mismatch inside a pending out-of-order boundary (use `renderToStream(tree, { mode: "out-of-order" })` html + `defineAsyncComponent` fallback, `hydrateAsync(..., { selective: true })`): mismatch in the resolved subtree either throws or recovers per options — assert no unhandled rejection and final DOM is client-correct.
 3. router snapshot verified first, then a DOM mismatch still throws `SolaceHydrationError` (snapshot error does not mask it): follow the router-hydration test setup in `tests/unit/server/` or existing integration file.
@@ -364,6 +395,7 @@ git commit -m "test: hydration mismatch structure and SSR integration coverage"
 ### Task 5: Docs, changeset, full gates
 
 **Files:**
+
 - Modify: `docs/api.md`, `docs/api.zh-CN.md` (hydration sections)
 - Create: `.changeset/hydration-mismatch-hardening.md`
 - Modify: `docs/roadmap.md` (mismatch hardening note in item 5)
