@@ -292,76 +292,13 @@ git add src/renderer/hydration.ts src/renderer/renderer.ts tests/unit/renderer/h
 git commit -m "feat: add hydration textComparison option"
 ```
 
-### Task 3: Selective recover event replay + message formatting
+### Task 3: selective recover event replay — REMOVED (2026-09-02)
 
-**Files:**
-- Modify: `src/renderer/renderer.ts` (hydrateSelectively recover path)
-- Modify: `src/renderer/hydration.ts` (message formatting — none needed if Task 1/2 messages already one-line; verify only)
-- Test: `tests/unit/renderer/selective-hydration.test.ts` (extend)
-
-- [ ] **Step 1: Write failing test (append to selective-hydration.test.ts)**
-
-```ts
-it("replays buffered interactions after recover-on-mismatch", async () => {
-  const container = document.createElement("div");
-  container.innerHTML = "<div><p>stale server text</p></div>";
-  document.body.appendChild(container);
-
-  const clicks: string[] = [];
-  const App = () => h("div", null, h("button", { onClick: () => clicks.push("fired") }, "go"));
-
-  const button = container.querySelector("p")!; // click lands before recovery re-render
-  container.addEventListener("click", () => {}, true); // ensure buffer attached path exercised per existing tests
-
-  await hydrateAsync(h(App), container, null, { selective: true, recover: true });
-
-  // dispatch the buffered interaction the same way existing selective tests do
-  // (copy the event-dispatch helper usage from the replay tests in this file)
-  dispatchClick(container.querySelector("button")!);
-  expect(clicks).toEqual(["fired"]);
-});
-```
-
-Adapt to the file's existing helpers: find the current buffered-interaction replay test, mirror its event dispatch mechanism, but perform a real pre-settlement click on a stale node (e.g. the `<p>` or container before recovery) so it lands in the buffer, then assert the handler attached by the recovered client render fires.
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `pnpm vitest run tests/unit/renderer/selective-hydration.test.ts`
-Expected: FAIL — buffered event discarded.
-
-- [ ] **Step 3: Implement**
-
-In `hydrateSelectively` (src/renderer/renderer.ts), the recover branch currently `return`s inside the inner try without replaying. Change to set a `recovered` flag, and in the `finally` block treat a successful recovery like settlement:
-
-```ts
-let settled = false;
-let recovered = false;
-// ... in recover branch:
-renderContainer.textContent = "";
-renderContainer._solaceVNode = null;
-withStyleSink(styleSink, () => renderVNode(vnode, renderContainer, appProvides));
-recovered = true;
-return;
-// ... finally:
-if (settled || recovered) {
-  eventBuffer.replay();
-}
-eventBuffer.detach();
-```
-
-Also verify `SolaceHydrationError.message` from Tasks 1–2 reads as one line with kind/path/values; no further formatting work expected.
-
-- [ ] **Step 4: Run tests**
-
-Run: `pnpm vitest run tests/unit/renderer/selective-hydration.test.ts tests/unit/renderer`
-Expected: PASS.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add src/renderer/renderer.ts tests/unit/renderer/selective-hydration.test.ts
-git commit -m "feat: replay buffered events after selective hydration recovery"
-```
+Investigation during implementation proved the premise unreachable: in `hydrateSelectively`
+the buffer attach, mismatch walk, recover re-render, and replay check all execute in one
+synchronous block inside `hydrateAsync`, so no interaction can enter the buffer before the
+recover branch runs, and the recover deopt clears the container (disconnecting every possible
+replay target). No code change; the spec documents recovery settles without replay.
 
 ### Task 4: Structure/edge tests + integration coverage
 

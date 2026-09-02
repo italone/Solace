@@ -52,9 +52,12 @@ src/renderer/renderer.ts).
   path, and expected/actual summaries. The structured fields (`kind`, `path`, `expected`,
   `actual`, plus `attributeName` where applicable) are unchanged in shape; only readability of
   `message` improves.
-- Selective hydration + `recover: true`: after the full deopt re-render succeeds, replay the
-  buffered interactions (same typed payloads as normal settlement) and mark the walk settled.
-  Today the buffer is discarded and `settled` stays `false`.
+- Selective hydration + `recover: true` event replay: DROPPED after implementation
+  investigation (2026-09-02). The buffer attach, mismatch walk, recover re-render, and replay
+  check all run in one synchronous block inside `hydrateAsync`, so no interaction can enter the
+  buffer before the recover branch runs; additionally the recover deopt clears the container,
+  disconnecting every possible replay target. There is no reachable behavior change to make —
+  recovery intentionally settles without replay.
 - The full-deopt recovery strategy itself is unchanged.
 
 ## Testing
@@ -70,7 +73,8 @@ src/renderer/renderer.ts).
 - Integration: mismatch inside a pending out-of-order boundary; mismatch after router snapshot
   verification (snapshot mismatch still wins); SSR shell with attribute mismatch and
   `recover: true`.
-- Selective: recover-on-mismatch replays buffered events and settles.
+- Selective: recover-on-mismatch completes and the recovered DOM is client-correct (the
+  previously planned buffered-event replay is unreachable; see Changes).
 
 ## Contract impact
 
