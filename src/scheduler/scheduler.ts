@@ -1,13 +1,22 @@
 import { emitDevtoolsEvent, hasDevtoolsListeners } from "../devtools/events";
 
-export type SchedulerJob = () => void;
+export type SchedulerJob = () => void | false;
 
 const queue: SchedulerJob[] = [];
 const queuedJobs = new Set<SchedulerJob>();
+const jobCauses = new WeakMap<SchedulerJob, number>();
 const resolvedPromise = Promise.resolve();
 
 let currentFlushPromise: Promise<void> | null = null;
 let dedupedJobs = 0;
+
+export function associateJobCause(job: SchedulerJob, correlationId: number): void {
+  jobCauses.set(job, correlationId);
+}
+
+export function peekJobCause(job: SchedulerJob): number | undefined {
+  return jobCauses.get(job);
+}
 
 export function queueJob(job: SchedulerJob): void {
   if (queuedJobs.has(job)) {
@@ -36,11 +45,20 @@ function flushJobs(): void {
   const shouldEmitDevtoolsEvent = hasDevtoolsListeners();
   const startedAt = shouldEmitDevtoolsEvent ? now() : 0;
   let flushedJobs = 0;
+  let skippedStaleJobs = 0;
+  const causes = new Set<number>();
 
   try {
     for (let index = 0; index < queue.length; index += 1) {
       const job = queue[index];
-      job();
+      const cause = jobCauses.get(job);
+      jobCauses.delete(job);
+      if (cause !== undefined) {
+        causes.add(cause);
+      }
+      if (job() === false) {
+        skippedStaleJobs += 1;
+      }
       flushedJobs += 1;
     }
   } finally {
@@ -50,9 +68,8 @@ function flushJobs(): void {
         queuedJobs: flushedJobs,
         dedupedJobs,
         durationMs: Math.max(0, now() - startedAt),
-        // Placeholders until Task 3 adds real stale-skip counting.
-        skippedStaleJobs: 0,
-        distinctCauses: 0,
+        skippedStaleJobs,
+        distinctCauses: causes.size,
       });
     }
 

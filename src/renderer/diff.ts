@@ -149,10 +149,10 @@ function mountComponent(
 
   setupComponent(instance);
 
-  const componentUpdate = (): void => {
+  const componentUpdate = (): void | false => {
     try {
       if (instance.isUnmounted) {
-        return;
+        return false;
       }
 
       if (!instance.isMounted) {

@@ -371,10 +371,10 @@ function setupHydratedComponentUpdate(
   updateContainer: Node | null,
 ): void {
   let hasCollectedHydrationDependencies = false;
-  const componentUpdate = (): void => {
+  const componentUpdate = (): void | false => {
     try {
       if (instance.isUnmounted) {
-        return;
+        return false;
       }
 
       if (!hasCollectedHydrationDependencies) {

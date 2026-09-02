@@ -27,9 +27,15 @@ describe("scheduler", () => {
   it("runs jobs in the order they are queued", async () => {
     const calls: string[] = [];
 
-    queueJob(() => calls.push("first"));
-    queueJob(() => calls.push("second"));
-    queueJob(() => calls.push("third"));
+    queueJob(() => {
+      calls.push("first");
+    });
+    queueJob(() => {
+      calls.push("second");
+    });
+    queueJob(() => {
+      calls.push("third");
+    });
 
     await nextTick();
 
@@ -39,7 +45,9 @@ describe("scheduler", () => {
   it("resolves nextTick after queued jobs have flushed", async () => {
     const calls: string[] = [];
 
-    queueJob(() => calls.push("job"));
+    queueJob(() => {
+      calls.push("job");
+    });
 
     await nextTick();
     calls.push("tick");
@@ -50,7 +58,9 @@ describe("scheduler", () => {
   it("runs nextTick callbacks after queued jobs have flushed", async () => {
     const calls: string[] = [];
 
-    queueJob(() => calls.push("job"));
+    queueJob(() => {
+      calls.push("job");
+    });
 
     await nextTick(() => {
       calls.push("callback");
@@ -76,7 +86,9 @@ describe("scheduler", () => {
 
   it("runs a different job queued during the current flush", async () => {
     const calls: string[] = [];
-    const second = () => calls.push("second");
+    const second = () => {
+      calls.push("second");
+    };
 
     queueJob(() => {
       calls.push("first");

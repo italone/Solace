@@ -95,10 +95,13 @@ export function hydrate(
     queueJob(job);
   });
   const runner = reactiveEffect.run.bind(reactiveEffect);
-  const job = (): void => {
+  const job = (): void | false => {
     if (renderContainer._solaceRenderEffect === reactiveEffect) {
       runner();
+      return;
     }
+
+    return false;
   };
 
   renderContainer._solaceRenderEffect = reactiveEffect;
@@ -510,10 +513,13 @@ function renderReactiveSource(
     queueJob(job);
   });
   const runner = reactiveEffect.run.bind(reactiveEffect);
-  const job = (): void => {
+  const job = (): void | false => {
     if (container._solaceRenderEffect === reactiveEffect) {
       runner();
+      return;
     }
+
+    return false;
   };
 
   container._solaceRenderEffect = reactiveEffect;
