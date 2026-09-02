@@ -405,6 +405,9 @@ function setupHydratedComponentUpdate(
     }
 
     instance.isUpdateQueued = true;
+    // Forward wiring: hydrated components do not emit component:update today,
+    // but the cause is associated for parity with diff.ts/renderer.ts so a
+    // future hydrated-component devtools event gets correct attribution.
     const devtoolsCause = peekLastDevtoolsTriggerCorrelationId();
     if (devtoolsCause !== undefined && instance.update !== null) {
       associateJobCause(instance.update, devtoolsCause);

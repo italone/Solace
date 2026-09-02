@@ -10,22 +10,20 @@ export function nextDevtoolsCorrelationId(): number {
 /**
  * Correlation id of the reactivity trigger currently dispatching its effects.
  * Set by the reactivity trigger path before effect schedulers run (they may
- * queue scheduler jobs and stamp them with this cause) and cleared once the
- * trigger finishes. Peek-style on purpose: one trigger can schedule multiple
- * jobs, so every scheduler callback in the synchronous window reads the same id.
+ * queue scheduler jobs and stamp them with this cause) and restored to the
+ * outer trigger's id (or undefined) once the trigger finishes, so nested
+ * triggers do not steal attribution from the enclosing window. Peek-style on
+ * purpose: one trigger can schedule multiple jobs, so every scheduler callback
+ * in the synchronous window reads the same id.
  */
 let lastDevtoolsTriggerCorrelationId: number | undefined;
 
-export function setLastDevtoolsTriggerCorrelationId(correlationId: number): void {
+export function setLastDevtoolsTriggerCorrelationId(correlationId: number | undefined): void {
   lastDevtoolsTriggerCorrelationId = correlationId;
 }
 
 export function peekLastDevtoolsTriggerCorrelationId(): number | undefined {
   return lastDevtoolsTriggerCorrelationId;
-}
-
-export function clearLastDevtoolsTriggerCorrelationId(): void {
-  lastDevtoolsTriggerCorrelationId = undefined;
 }
 
 export type DevtoolsEvent =

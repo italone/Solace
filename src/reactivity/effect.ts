@@ -1,8 +1,8 @@
 import {
-  clearLastDevtoolsTriggerCorrelationId,
   emitDevtoolsEvent,
   hasDevtoolsListeners,
   nextDevtoolsCorrelationId,
+  peekLastDevtoolsTriggerCorrelationId,
   setLastDevtoolsTriggerCorrelationId,
   type DevtoolsEvent,
 } from "../devtools/events";
@@ -102,9 +102,12 @@ export function trigger(target: object, key: PropertyKey): void {
   let runEffects = 0;
   const correlationId = hasDevtoolsListeners() ? nextDevtoolsCorrelationId() : undefined;
 
+  let previousCause: number | undefined;
   if (correlationId !== undefined) {
     // Exposed while effect schedulers run so queued jobs can be associated
-    // with this trigger; cleared once the trigger finishes dispatching.
+    // with this trigger. The prior value is restored afterwards so effects
+    // still dispatching in an outer (nested) trigger window keep attribution.
+    previousCause = peekLastDevtoolsTriggerCorrelationId();
     setLastDevtoolsTriggerCorrelationId(correlationId);
   }
 
@@ -125,7 +128,7 @@ export function trigger(target: object, key: PropertyKey): void {
     });
   } finally {
     if (correlationId !== undefined) {
-      clearLastDevtoolsTriggerCorrelationId();
+      setLastDevtoolsTriggerCorrelationId(previousCause);
     }
   }
 
