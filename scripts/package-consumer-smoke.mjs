@@ -639,7 +639,7 @@ expectThrows("router deferred location fields", () => router.resolve({ path: "/u
 await expectRejects("router deferred push location fields", router.push({ path: "/users/1", name: "user" }), /Deferred router location field/);
 await expectRejects("router deferred replace location fields", router.replace({ path: "/users/1", params: { id: "1" } }), /Deferred router location field/);
 expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest and clientEntry must be provided together/);
-expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
+expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /SSR router url must be a string/);
 expectThrows("SSR stream option", () => server.renderToString(api.h("p", null, "server"), { stream: true }), /Streaming SSR is deferred/);
 expectThrows("SSR invalid context", () => server.renderToString(api.h("p", null, "server"), { context: [] }), /SSR context must be a plain object/);
 expectThrows("SSR unknown option", () => server.renderToString(api.h("p", null, "server"), { contex: {} }), /Unknown SSR option: contex/);
@@ -747,7 +747,7 @@ Promise.all([
   process.exitCode = 1;
 });
 expectThrows("SSR manifest option", () => server.renderToString(api.h("p", null, "server"), { manifest: {} }), /SSR manifest and clientEntry must be provided together/);
-expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /Router-aware SSR integration is deferred/);
+expectThrows("SSR router option", () => server.renderToString(api.h("p", null, "server"), { router: {} }), /SSR router url must be a string/);
 expectThrows("SSR stream option", () => server.renderToString(api.h("p", null, "server"), { stream: true }), /Streaming SSR is deferred/);
 expectThrows("SSR invalid context", () => server.renderToString(api.h("p", null, "server"), { context: [] }), /SSR context must be a plain object/);
 expectThrows("SSR unknown option", () => server.renderToString(api.h("p", null, "server"), { contex: {} }), /Unknown SSR option: contex/);

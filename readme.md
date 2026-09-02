@@ -52,8 +52,9 @@ and snapshot composition. Sequential streaming SSR is available as a beta server
 `renderToStream()`, which streams the exact `renderToStringAsync().html` byte order with inline
 first-registration styles, eager start, and consumer backpressure, plus out-of-order streaming
 via `renderToStream(source, { mode: "out-of-order" })` with `defineAsyncComponent({ loader, fallback })`
-fallbacks and resolution-order replacement scripts. Router-aware SSG and synchronous-entry router
-options, async update scheduling after initial
+fallbacks and resolution-order replacement scripts. Router-aware SSG (route-level `router`
+options on both SSG entries) and synchronous-entry router SSR (`renderToString()` with a `router`
+option backed by `router.isReadySync()`) are available, while async update scheduling after initial
 hydration, first-party UI components, production DevTools distribution, and compatibility guarantees
 for internal modules remain outside the frozen production contract. These exclusions are deliberate
 scope decisions for a readable, teaching-oriented runtime — not incomplete work; revisit criteria are
@@ -68,11 +69,13 @@ router-aware SSR and router-aware hydration through `router.isReady()`, canonica
 `renderToStream(source, { mode: "out-of-order" })`, and the Suspense/selective hydration beta
 slice through `h(Suspense, { fallback }, children)` plus `hydrateAsync(container, { selective:
 true })`, renderer-owned router SSR through the `router` option on `renderToStream()`/
-`renderToStringAsync()` with `hydrateAsync(container, { router, routerIdentifyRecord })`, and
+`renderToStringAsync()`/`renderToString()` (the synchronous entry settles via `router.isReadySync()`
+and requires synchronous guards) with `hydrateAsync(container, { router, routerIdentifyRecord })`,
+plus route-level `router` options on both SSG entries, and
 production asset injection through the `manifest` plus `clientEntry` option pair on all three SSR
 renderers. It still
-defers auth, permissions, SSG app-level router integration, synchronous-entry router
-options, async update scheduling after
+defers auth, permissions, SSG app-level router integration, the synchronous `hydrate()` router
+option, async update scheduling after
 initial hydration, and build CLI asset pipeline tooling (the app's build produces the manifest).
 Router `auth` and `permissions` options or route record fields are explicitly rejected instead of
 being treated as implicit client authorization.

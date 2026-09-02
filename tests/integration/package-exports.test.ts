@@ -382,7 +382,7 @@ describe("package exports", () => {
       /SSR manifest and clientEntry must be provided together/,
     );
     expect(() => server.renderToString(source, { router: {} } as never)).toThrow(
-      /Router-aware SSR integration is deferred/,
+      /SSR router url must be a string/,
     );
     expect(() => server.renderToString(source, { contex: {} } as never)).toThrow(
       TypeError("Unknown SSR option: contex"),

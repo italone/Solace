@@ -105,11 +105,11 @@ describe("public contract documentation", () => {
     expect(api).toContain("`renderToString()` context, when provided, must be a plain object");
     expect(api).toContain("unknown own option fields throw a `TypeError` naming the field");
     expect(apiZh).toContain("未知的自有 option 字段会抛出包含字段名的 `TypeError`");
-    expect(api).toContain("`router`, or `stream` to `renderToString()`");
+    expect(api).toContain("`stream` to `renderToString()`");
     expect(packageUsage).toContain(
       "`renderToString()` context, when provided, must be a plain object",
     );
-    expect(packageUsage).toContain("`router`, or `stream` to `renderToString()`");
+    expect(packageUsage).toContain("`stream` to `renderToString()`");
     expect(api).toContain("including direct sources, SSG route sources, and async child values");
     expect(apiZh).toContain("包括 direct sources、SSG route sources 和 async child values");
     expect(api).toContain("are rejected by the synchronous `renderToString()`");

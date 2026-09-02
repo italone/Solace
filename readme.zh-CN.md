@@ -46,7 +46,7 @@ sequential in-memory SSG，以及 `hydrateAsync()` 的 prepare-then-commit 浏�
 Router-aware SSR/hydration 已通过显式 readiness、server context 和 snapshot 组合提供。顺序流式
 （sequential）streaming SSR 已作为 beta server entry 通过 `renderToStream()` 提供：字节顺序与
 `renderToStringAsync().html` 一致，样式在首次注册处内联发射，渲染 eager 启动且支持消费者
-backpressure（流队列写满时生产挂起）。乱序（out-of-order）streaming SSR 可通过 `renderToStream(source, { mode: "out-of-order" })` 使用，配合 `defineAsyncComponent({ loader, fallback })` fallback 与按解析顺序的替换脚本。Router-aware SSG 与同步入口的 router options、initial hydration 之后的 async update scheduling、
+backpressure（流队列写满时生产挂起）。乱序（out-of-order）streaming SSR 可通过 `renderToStream(source, { mode: "out-of-order" })` 使用，配合 `defineAsyncComponent({ loader, fallback })` fallback 与按解析顺序的替换脚本。Router-aware SSG（两个 SSG 入口的 route 级 `router` option）与同步入口 router SSR（`renderToString()` 的 `router` option，经 `router.isReadySync()`，要求同步 guards）已经可用；initial hydration 之后的 async update scheduling、
 一方 UI 组件、生产级 DevTools 发布形态和内部模块兼容性承诺仍不在冻结后的生产契约内。上述排除项是面向可读性/教学定位的刻意范围决策，而非未完成工作；重新评估标准见 [docs/roadmap.md](./docs/roadmap.md)。
 
 ## 公开契约门禁
@@ -57,10 +57,12 @@ backpressure（流队列写满时生产挂起）。乱序（out-of-order）strea
 `renderToStream()` 提供顺序流式 streaming SSR，并通过 `renderToStream(source, { mode: "out-of-order" })`
 提供乱序 streaming SSR，并提供 `h(Suspense, { fallback }, children)` 加 `hydrateAsync(container,
 { selective: true })` 的 Suspense/selective hydration beta 切片，还通过 `renderToStream()`/
-`renderToStringAsync()` 的 `router` option 配合 `hydrateAsync(container, { router,
-routerIdentifyRecord })` 提供 renderer-owned router SSR，并通过三个 SSR renderer 上成对的
+`renderToStringAsync()`/`renderToString()`（同步入口经 `router.isReadySync()` settle，要求同步
+guards）的 `router` option 配合 `hydrateAsync(container, { router,
+routerIdentifyRecord })` 提供 renderer-owned router SSR，外加两个 SSG 入口的 route 级 `router`
+option，并通过三个 SSR renderer 上成对的
 `manifest` 加 `clientEntry` options 提供生产 asset injection；仍推迟
-auth、permissions、app 级 SSG router 集成与同步入口的 router options、initial hydration 之后的 async
+auth、permissions、app 级 SSG router 集成与同步 `hydrate()` 的 router option、initial hydration 之后的 async
 update scheduling，以及 build CLI asset 工具链（manifest 由应用的构建产出）。Router `auth` 和
 `permissions` options 或 route
 record fields 会被明确拒绝，不会被当作隐式客户端授权能力。
