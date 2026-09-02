@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { h } from "../../../src";
-import {
-  generateStaticSite,
-  generateStaticSiteAsync,
-} from "../../../src/server/generate-static-site";
+import { generateStaticSite } from "../../../src/server/generate-static-site";
 import { parseRouterSnapshot } from "../../../src/router/snapshot";
 import type { RouteRecord } from "../../../src/router/types";
 
@@ -15,9 +12,9 @@ const routes: RouteRecord[] = [
 
 const identifyRecord = (record: RouteRecord) => record.path;
 
-describe("router-aware generateStaticSiteAsync", () => {
-  it("renders a route with router state and embeds the snapshot script", async () => {
-    const result = await generateStaticSiteAsync({
+describe("router-aware generateStaticSite", () => {
+  it("renders a route with router state and embeds the snapshot script", () => {
+    const result = generateStaticSite({
       routes: [
         {
           path: "/about",
@@ -39,17 +36,17 @@ describe("router-aware generateStaticSiteAsync", () => {
     expect(snapshot.path).toBe("/about");
   });
 
-  it("still renders routes without a router exactly as before", async () => {
-    const result = await generateStaticSiteAsync({
+  it("still renders routes without a router exactly as before", () => {
+    const result = generateStaticSite({
       routes: [{ path: "/plain", source: () => h("p", null, "plain") }],
     });
 
     expect(result.pages[0].body).toBe("<p>plain</p>");
   });
 
-  it("rejects an unknown field inside the router option", async () => {
-    await expect(
-      generateStaticSiteAsync({
+  it("rejects an unknown field inside the router option", () => {
+    expect(() =>
+      generateStaticSite({
         routes: [
           {
             path: "/",
@@ -58,12 +55,12 @@ describe("router-aware generateStaticSiteAsync", () => {
           },
         ],
       }),
-    ).rejects.toThrow("Unknown SSR router option: url");
+    ).toThrow("Unknown SSR router option: url");
   });
 
-  it("rejects a router option with missing identifyRecord", async () => {
-    await expect(
-      generateStaticSiteAsync({
+  it("rejects a router option with missing identifyRecord", () => {
+    expect(() =>
+      generateStaticSite({
         routes: [
           {
             path: "/",
@@ -72,20 +69,26 @@ describe("router-aware generateStaticSiteAsync", () => {
           },
         ],
       }),
-    ).rejects.toThrow("identifyRecord");
+    ).toThrow("identifyRecord");
   });
 
-  it("accepts router on the synchronous entry", () => {
-    const result = generateStaticSite({
-      routes: [
-        {
-          path: "/",
-          source: () => h("p", null, "x"),
-          router: { routes, identifyRecord },
-        },
-      ],
-    });
+  it("keeps rejecting router on the top-level options", () => {
+    expect(() =>
+      generateStaticSite({
+        routes: [{ path: "/", source: () => h("p", null, "x") }],
+        router: {},
+      } as never),
+    ).toThrow("Router-aware SSG integration is deferred");
+  });
 
-    expect(result.pages[0].body).toContain("__SOLACE_ROUTER_SNAPSHOT__");
+  it("still rejects duplicate route paths alongside router options", () => {
+    expect(() =>
+      generateStaticSite({
+        routes: [
+          { path: "/dupe", source: () => h("p", null, "a"), router: { routes, identifyRecord } },
+          { path: "/dupe", source: () => h("p", null, "b"), router: { routes, identifyRecord } },
+        ],
+      }),
+    ).toThrow("Duplicate SSG route path: /dupe");
   });
 });

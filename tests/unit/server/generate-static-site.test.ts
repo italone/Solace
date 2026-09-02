@@ -311,7 +311,7 @@ describe("generateStaticSite", () => {
     ).toThrow(/Router-aware SSG integration is deferred/);
   });
 
-  it("rejects deferred route-level manifest and router integration options", () => {
+  it("rejects deferred route-level manifest options and invalid router options", () => {
     expect(() =>
       generateStaticSite({
         routes: [{ path: "/", source: h("p", null, "home"), manifest: {} }],
@@ -328,7 +328,7 @@ describe("generateStaticSite", () => {
       generateStaticSite({
         routes: [{ path: "/", source: h("p", null, "home"), router: {} }],
       } as never),
-    ).toThrow(/Router-aware SSG route integration is deferred/);
+    ).toThrow(/SSR router routes must be an array/);
   });
 
   it("rejects unknown SSG options", () => {

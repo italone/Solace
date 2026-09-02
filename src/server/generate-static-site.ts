@@ -13,6 +13,7 @@ export interface StaticRoute {
   source: RenderToStringSource;
   context?: Record<string, unknown>;
   provides?: Provides;
+  router?: RouterSSGOptions;
 }
 
 export interface AsyncStaticRoute extends Omit<StaticRoute, "source"> {
@@ -64,10 +65,13 @@ export function generateStaticSite(options: GenerateStaticSiteOptions): Generate
     assertStaticRoutePath(route.path, seenPaths);
 
     const context = { ...(route.context ?? {}) };
-    const rendered = renderToString(route.source, {
-      context: { ...context },
-      provides: route.provides,
-    });
+    const rendered =
+      route.router !== undefined
+        ? renderToString(route.source, { router: { url: route.path, ...route.router } })
+        : renderToString(route.source, {
+            context: { ...context },
+            provides: route.provides,
+          });
     const body = rendered.html;
     const styles = [...rendered.styles];
     const html = options.shell
@@ -234,14 +238,17 @@ function assertNoDeferredRouteIntegrationOptions(route: StaticRoute | AsyncStati
     );
   }
 
-  if (hasOwn(route, "router")) {
-    throw new TypeError(
-      "Router-aware SSG route integration is deferred on the synchronous entry; use generateStaticSiteAsync().",
-    );
+  if (route.router !== undefined) {
+    assertRouterSSGOption(route.router);
   }
 
   const unknownKey = Reflect.ownKeys(route).find(
-    (key) => key !== "path" && key !== "source" && key !== "context" && key !== "provides",
+    (key) =>
+      key !== "path" &&
+      key !== "source" &&
+      key !== "context" &&
+      key !== "provides" &&
+      key !== "router",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown SSG route field: ${String(unknownKey)}`);
