@@ -14,7 +14,7 @@ import { patch } from "./diff";
 import { patchProp } from "./dom";
 
 export type HydrationMismatchKind =
-  "missing-node" | "extra-node" | "element-tag-mismatch" | "text-mismatch";
+  "missing-node" | "extra-node" | "element-tag-mismatch" | "text-mismatch" | "attribute-mismatch";
 
 export interface HydrationContext {
   hydratedInstances: ComponentInstance[];
@@ -26,6 +26,7 @@ interface HydrationMismatchDetails {
   expected: string;
   actual: string;
   message: string;
+  attributeName?: string;
 }
 
 export class SolaceHydrationError extends Error {
@@ -33,7 +34,7 @@ export class SolaceHydrationError extends Error {
   readonly path?: string;
   readonly expected?: string;
   readonly actual?: string;
-
+  readonly attributeName?: string;
   constructor(messageOrDetails: string | HydrationMismatchDetails) {
     const message =
       typeof messageOrDetails === "string" ? messageOrDetails : messageOrDetails.message;
@@ -45,6 +46,7 @@ export class SolaceHydrationError extends Error {
       this.path = messageOrDetails.path;
       this.expected = messageOrDetails.expected;
       this.actual = messageOrDetails.actual;
+      this.attributeName = messageOrDetails.attributeName;
     }
   }
 }
@@ -138,6 +140,8 @@ function hydratePreparedElement(
       message: `Hydration mismatch at path ${path}: expected <${String(vnode.type)}> but found ${describeDomNode(node)}`,
     });
   }
+
+  assertHydrationAttributes(node, vnode.props, path);
 
   vnode.el = node;
   hydrateProps(node, vnode.props);
@@ -269,6 +273,8 @@ function hydrateElement(
       message: `Hydration mismatch at path ${path}: expected <${String(vnode.type)}> but found ${describeDomNode(node)}`,
     });
   }
+
+  assertHydrationAttributes(node, vnode.props, path);
 
   vnode.el = node;
   hydrateProps(node, vnode.props);
@@ -458,6 +464,63 @@ function hydrateProps(el: Element, props: VNodeProps | null): void {
 
     patchProp(el, key, null, value);
   }
+}
+
+const FORM_VALUE_PROPS = new Set(["value", "checked"]);
+
+function assertHydrationAttributes(el: Element, props: VNodeProps | null, path: string): void {
+  if (props === null) return;
+  for (const [key, value] of Object.entries(props)) {
+    if (key === "key" || key === "ref" || key === "style" || isEventProp(key)) continue;
+    const attribute = key === "className" ? "class" : key;
+
+    if (value === undefined || value === null || value === false) {
+      if (el.getAttribute(attribute) !== null) {
+        throwAttributeMismatch(
+          path,
+          el,
+          attribute,
+          String(value),
+          el.getAttribute(attribute) ?? "",
+        );
+      }
+      continue;
+    }
+    if (value === true) {
+      if (el.getAttribute(attribute) === null) {
+        throwAttributeMismatch(path, el, attribute, "true", "absent");
+      }
+      continue;
+    }
+    if (FORM_VALUE_PROPS.has(attribute)) {
+      const domValue = (el as unknown as Record<string, unknown>)[attribute];
+      if (String(domValue) !== String(value)) {
+        throwAttributeMismatch(path, el, attribute, String(value), String(domValue));
+      }
+      continue;
+    }
+    const actual = el.getAttribute(attribute);
+    if (actual !== String(value)) {
+      throwAttributeMismatch(path, el, attribute, String(value), actual ?? "absent");
+    }
+  }
+}
+
+function throwAttributeMismatch(
+  path: string,
+  el: Element,
+  attribute: string,
+  expected: string,
+  actual: string,
+): never {
+  throwHydrationMismatch({
+    kind: "attribute-mismatch",
+    path: `${path}/${el.tagName.toLowerCase()}`,
+    attributeName: attribute,
+    expected: `attribute "${attribute}" = "${expected}"`,
+    actual: `attribute "${attribute}" = "${actual}"`,
+    message: `Hydration mismatch at path ${path}/${el.tagName.toLowerCase()}: expected attribute "${attribute}" = "${expected}" but found "${actual}"`,
+  });
 }
 
 function describeVNode(vnode: VNode): string {

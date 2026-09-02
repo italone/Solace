@@ -282,7 +282,7 @@ describe("hydrate", () => {
     container.innerHTML = '<button data-server="yes">count: 0</button>';
     const button = container.querySelector("button");
     const onClick = vi.fn();
-    let dataServer = "no";
+    let dataServer = "yes";
     const App = () => {
       const renderedDataServer = dataServer;
       dataServer = "later";
