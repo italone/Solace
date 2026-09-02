@@ -176,6 +176,7 @@ createApp(App).hydrate(document.querySelector("#app") as Element, { recover: tru
 ```
 
 Hydration options must be a non-array object. `recover`, when provided, must be a boolean.
+`textComparison`, when provided, must be `"exact"` or `"normalized-collapsing"` (default `"exact"`).
 
 `hydrateAsync()` prepares a complete async initial tree before claiming server DOM. Preparation
 failure leaves the container untouched. It supports the same mismatch behavior and `{ recover:
@@ -248,7 +249,8 @@ options such as `router`, or `stream` to `renderToString()` throws a
 section below).
 Hydration options must be a non-array object, and `recover` must be boolean when provided.
 `renderToString()` context, when provided, must be a plain object.
-Hydration options accept only `recover` and `selective` (the latter on `hydrateAsync()` only; see
+Hydration options accept only `recover`, `textComparison`, and `selective` (the latter on
+`hydrateAsync()` only; see
 the Suspense section); `hydrateAsync()` additionally accepts `router` and `routerIdentifyRecord`
 (see the renderer-owned router section below), while `renderToString()` options accept only
 `context`, `provides`, `manifest`, and `clientEntry` (the asset pair must be provided together; see
@@ -260,7 +262,22 @@ entries instead of relying on implicit promise widening. Passing deferred `manif
 `router`, or `stream` fields to `hydrate()` is also rejected at runtime; `hydrateAsync()` accepts
 `router` plus `routerIdentifyRecord` (see the renderer-owned router section) and rejects the rest.
 Hydration mismatch errors include structured `kind`, `path`, `expected`, and `actual` fields so
-callers can distinguish missing nodes, extra nodes, element tag mismatches, and text mismatches.
+callers can distinguish missing nodes, extra nodes, element tag mismatches, text mismatches, and
+attribute mismatches.
+
+Attribute mismatches are detected one-directionally: each client prop is compared against the
+hydrated server DOM element, while extra attributes present only in the server HTML are ignored.
+`key`, `ref`, `style`, and event-handler props are skipped. A client prop with value `undefined`,
+`null`, or `false` must be absent from the server DOM; a prop with value `true` matches any present
+attribute regardless of its serialized value. Form controls compare `value` and `checked` through
+the live DOM properties rather than serialized attributes. An attribute mismatch throws a
+`SolaceHydrationError` with `kind: "attribute-mismatch"` and a structured `attributeName` field.
+
+Text mismatches compare exactly by default. Pass
+`hydrate(container, { textComparison: "normalized-collapsing" })` to tolerate whitespace-only
+differences: whitespace runs are folded to a single space and leading/trailing whitespace is trimmed
+on both sides before comparison. All other mismatch semantics (throw-on-mismatch default and
+`recover: true` deopt) are unchanged for both comparison modes.
 
 ### `renderToStringAsync(source, options?)`
 

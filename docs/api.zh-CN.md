@@ -207,9 +207,10 @@ const result = renderToString(h("p", null, "server"));
 向 `renderToString()` 传入 `router` 或 `stream` 这类 deferred
 integration options 会抛出 `TypeError`；`manifest` 与 `clientEntry` 需成对传入（见下文 SSR asset
 injection 章节）。
-Hydration options 必须是非数组对象；提供 `recover` 时，它必须是 boolean。
+Hydration options 必须是非数组对象；提供 `recover` 时，它必须是 boolean；提供
+`textComparison` 时，它必须是 `"exact"` 或 `"normalized-collapsing"`（默认 `"exact"`）。
 `renderToString()` 的 `context` 如果提供，必须是 plain object。
-Hydration options 只接受 `recover` 和 `selective`（后者仅用于 `hydrateAsync()`，见 Suspense
+Hydration options 只接受 `recover`、`textComparison` 和 `selective`（后者仅用于 `hydrateAsync()`，见 Suspense
 章节）；`hydrateAsync()` 额外接受 `router` 和 `routerIdentifyRecord`（见下文 renderer-owned
 router 章节），`renderToString()` options 只接受 `context`、`provides`、`manifest` 和
 `clientEntry`（后两项必须成对提供；见下文 SSR asset injection 章节）；
@@ -220,7 +221,19 @@ async 或 thenable render tree，包括 direct sources、SSG route sources 和 a
 `hydrate()` 传入 deferred `manifest`、`clientEntry`、`router` 或 `stream`
 字段也会在运行时直接拒绝。
 Hydration mismatch 错误会带结构化的 `kind`、`path`、`expected` 和 `actual` 字段，便于
-区分 missing node、extra node、元素标签不一致和文本不一致。
+区分 missing node、extra node、元素标签不一致、文本不一致和属性不一致。
+
+属性不一致采用单向检测：只把每个 client prop 与水合后的 server DOM 元素比较，server HTML
+中多出的属性会被忽略。`key`、`ref`、`style` 和事件处理 props 不参与比较。值为 `undefined`、
+`null` 或 `false` 的 client prop 要求该属性在 server DOM 中不存在；值为 `true` 的 prop 只要
+属性存在即视为匹配，不比较序列化值。表单控件的 `value` 与 `checked` 通过 live DOM properties
+比较，而不是序列化属性。属性不一致会抛出带有 `kind: "attribute-mismatch"` 和结构化
+`attributeName` 字段的 `SolaceHydrationError`。
+
+文本不一致默认进行精确比较。传入
+`hydrate(container, { textComparison: "normalized-collapsing" })` 可以容忍仅由空白字符造成的
+差异：比较前会把连续空白折叠为单个空格，并去除两侧的首尾空白。两种比较模式下的其余 mismatch
+语义（默认抛错与 `recover: true` deopt）保持不变。
 
 ### `renderToStringAsync(source, options?)`
 
