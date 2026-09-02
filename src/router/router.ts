@@ -1,6 +1,7 @@
 import type { App } from "../app";
 import { inject } from "../component/provide";
 import { ref } from "../reactivity/ref";
+import { isThenable } from "../shared/utils";
 import {
   historyHrefFormatterKey,
   hasHistoryHrefFormatter,
@@ -89,6 +90,27 @@ export function createRouter(options: RouterOptions): Router {
     },
     isReady() {
       return startInitialSettlement();
+    },
+    isReadySync(): RouteLocationNormalized {
+      const from = currentRoute.value;
+      const initial = resolveLocation(options.history.location());
+      const finalRoute = resolveNavigationSync(initial, from);
+
+      if (finalRoute === false) {
+        throw new RouterNavigationError(
+          "Router initial navigation was cancelled",
+          "guard-cancelled",
+          from,
+          initial,
+        );
+      }
+
+      if (finalRoute.fullPath !== initial.fullPath) {
+        writeHistory(() => options.history.replace(finalRoute.fullPath));
+      }
+
+      currentRoute.value = finalRoute;
+      return finalRoute;
     },
     async push(to: RouteLocationRaw) {
       return navigate(to, "push");
@@ -405,6 +427,89 @@ export function createRouter(options: RouterOptions): Router {
       }
       state.count += 1;
     }
+  }
+
+  function resolveNavigationSync(
+    initial: RouteLocationNormalized,
+    from: RouteLocationNormalized,
+    state: RedirectState = { count: 0 },
+  ): RouteLocationNormalized | false {
+    const redirected = resolveRedirects(initial, from, state);
+
+    if (state.redirectedFrom !== undefined && redirected.fullPath === from.fullPath) {
+      return redirected;
+    }
+
+    const guarded = runGuardsSync(redirected, from);
+
+    if (guarded === false) {
+      return false;
+    }
+
+    if (guarded === true) {
+      return redirected;
+    }
+
+    if (state.count >= redirectLimit) {
+      throw new RouterNavigationError(
+        "Router redirect loop detected",
+        "redirect-loop",
+        from,
+        redirected,
+      );
+    }
+
+    if (state.redirectedFrom === undefined) {
+      state.redirectedFrom = redirected;
+    }
+
+    let guardRedirect: RouteLocationNormalized;
+    try {
+      guardRedirect = resolveLocation(guarded);
+    } catch {
+      throw new RouterNavigationError("Router guard rejected", "guard-rejected", from, redirected);
+    }
+
+    state.count += 1;
+    return resolveNavigationSync(guardRedirect, from, state);
+  }
+
+  function runGuardsSync(
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized,
+  ): true | false | RouteLocationRaw {
+    const guards = [
+      ...beforeEachGuards,
+      ...to.matched.flatMap((record) => normalizeGuards(record.beforeEnter)),
+    ];
+
+    try {
+      for (const guard of guards) {
+        const result = guard(to, from);
+
+        if (isThenable(result)) {
+          throw new TypeError(
+            "Synchronous router settlement requires synchronous guards; use the async SSR entry",
+          );
+        }
+
+        if (result === false) {
+          return false;
+        }
+
+        if (result !== undefined && result !== true) {
+          return result;
+        }
+      }
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes("synchronous guards")) {
+        throw error;
+      }
+
+      throw new RouterNavigationError("Router guard rejected", "guard-rejected", from, to);
+    }
+
+    return true;
   }
 
   async function runGuards(
