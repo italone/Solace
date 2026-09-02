@@ -51,6 +51,7 @@ describe("devtools extension timeline panel", () => {
       "scheduler",
       "reactivity",
       "renderer",
+      "router",
       "store",
     ]);
     expect(getTimelineRows(container).map((row) => row.textContent)).toEqual([
@@ -80,6 +81,35 @@ describe("devtools extension timeline panel", () => {
     await nextTick();
 
     expect(getDetailsText(container)).toBe(JSON.stringify(componentMount, null, 2));
+  });
+
+  it("renders detail lines for router navigations and correlated updates", async () => {
+    const correlatedUpdate: DevtoolsEvent = {
+      type: "component:update",
+      id: 1,
+      name: "Counter",
+      parentId: null,
+      correlationId: 4,
+    };
+    const routerNavigation: DevtoolsEvent = {
+      type: "router:navigation",
+      to: "/c",
+      from: "/a",
+      status: "redirect",
+    };
+    const { container } = renderPanel(
+      [routerNavigation, correlatedUpdate].reduce((panelState, event, index) => {
+        return recordDevtoolsEvent(panelState, event, { now: index + 1 });
+      }, createPanelState()),
+    );
+
+    expect(getDetailLines(container)).toEqual(["related trigger #4"]);
+
+    getTimelineRows(container)[0]?.querySelector("button")?.click();
+    await nextTick();
+
+    expect(getDetailLines(container)).toEqual(["/a → /c (redirect)"]);
+    expect(getDetailsText(container)).toBe(JSON.stringify(routerNavigation, null, 2));
   });
 
   it("updates filtering, pause state, clear action, and recorder limit through the existing state helpers", async () => {
@@ -246,6 +276,12 @@ function getTimelineRows(container: ParentNode): HTMLLIElement[] {
 
 function getDetailsText(container: ParentNode): string {
   return container.querySelector("[data-testid='event-details'] pre")?.textContent ?? "";
+}
+
+function getDetailLines(container: ParentNode): string[] {
+  return Array.from(container.querySelectorAll("[data-testid='event-detail-line']")).map(
+    (line) => line.textContent ?? "",
+  );
 }
 
 function getLimitInput(container: ParentNode): HTMLInputElement | null {

@@ -1,4 +1,4 @@
-export { createDevtoolsRecorder, onDevtoolsEvent } from "./events";
+export { createDevtoolsRecorder, DEVTOOLS_CONTRACT_VERSION, onDevtoolsEvent } from "./events";
 export type {
   DevtoolsEvent,
   DevtoolsEventListener,

@@ -16,6 +16,7 @@ import type {
 type Unsubscribe = () => void;
 
 vi.mock("@italone/solace/devtools", () => ({
+  DEVTOOLS_CONTRACT_VERSION: 1,
   onDevtoolsEvent: vi.fn(),
 }));
 
@@ -432,6 +433,35 @@ describe("devtools extension bridge", () => {
     stop();
   });
 
+  it("acks panel connections with the echoed contract version", async () => {
+    const { createDevtoolsBackgroundRelay } =
+      await import("../../examples/devtools-extension/src/background");
+    const runtimeListeners = new Set<(port: BackgroundRuntimePort) => void>();
+    const runtime = {
+      onConnect: {
+        addListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.add(listener);
+        },
+        removeListener(listener: (port: BackgroundRuntimePort) => void) {
+          runtimeListeners.delete(listener);
+        },
+      },
+    } satisfies BackgroundRuntime;
+    const contentPort = createRuntimePort("solace-devtools-content", 7);
+    const panelPort = createRuntimePort("solace-devtools-panel");
+
+    createDevtoolsBackgroundRelay(runtime);
+    for (const listener of runtimeListeners) {
+      listener(contentPort);
+      listener(panelPort);
+    }
+
+    panelPort.emit({ type: "devtools:panel:connect", tabId: 7, contractVersion: 1 });
+
+    expect(panelPort.messages).toEqual([{ type: "devtools:panel:ack", contractVersion: 1 }]);
+    expect(contentPort.messages).toEqual([{ type: "devtools:content:connect" }]);
+  });
+
   it("activates content scripts only after a panel connects for the same tab", async () => {
     const { createDevtoolsBackgroundRelay } =
       await import("../../examples/devtools-extension/src/background");
@@ -501,6 +531,7 @@ describe("devtools extension bridge", () => {
     contentPort.emit({ type: "devtools:event", event: { type: "component:mount" } } as never);
 
     expect(panelPort.messages).toEqual([
+      { type: "devtools:panel:ack", contractVersion: 1 },
       {
         type: "devtools:event",
         event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
@@ -541,6 +572,7 @@ describe("devtools extension bridge", () => {
 
     expect(() => contentPort.emit({ type: "devtools:event", event: mountEvent })).not.toThrow();
     expect(panelPort.messages).toEqual([
+      { type: "devtools:panel:ack", contractVersion: 1 },
       {
         type: "devtools:event",
         event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
@@ -585,6 +617,7 @@ describe("devtools extension bridge", () => {
     expect(brokenPanelPort.messages).toEqual([]);
     expect(brokenPostMessage).toHaveBeenCalledTimes(1);
     expect(healthyPanelPort.messages).toEqual([
+      { type: "devtools:panel:ack", contractVersion: 1 },
       {
         type: "devtools:event",
         event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
@@ -675,6 +708,8 @@ describe("devtools extension bridge", () => {
     ]);
     expect(secondContentPort.messages).toEqual([{ type: "devtools:content:connect" }]);
     expect(panelPort.messages).toEqual([
+      { type: "devtools:panel:ack", contractVersion: 1 },
+      { type: "devtools:panel:ack", contractVersion: 1 },
       {
         type: "devtools:event",
         event: { type: "component:mount", id: 1, name: "Counter", parentId: null },
@@ -783,6 +818,7 @@ describe("devtools extension bridge", () => {
 
     expect(contentPort.messages).toEqual([{ type: "devtools:content:connect" }]);
     expect(panelPort.messages).toEqual([
+      { type: "devtools:panel:ack", contractVersion: 1 },
       {
         type: "devtools:event",
         event: { type: "component:mount", id: 1, name: "Counter", parentId: null },

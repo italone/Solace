@@ -1,6 +1,7 @@
 import type { DevtoolsEvent } from "@italone/solace/devtools";
 
-export type TimelineFamily = "component" | "scheduler" | "reactivity" | "renderer" | "store";
+export type TimelineFamily =
+  "component" | "scheduler" | "reactivity" | "renderer" | "router" | "store";
 
 export type PanelView = "timeline" | "components" | "store";
 
@@ -273,6 +274,18 @@ function getTimelineFamily(event: DevtoolsEvent): TimelineFamily {
   return event.type.slice(0, event.type.indexOf(":")) as TimelineFamily;
 }
 
+export function getTimelineDetailLines(event: DevtoolsEvent): string[] {
+  if (event.type === "router:navigation") {
+    return [`${event.from} → ${event.to} (${event.status})`];
+  }
+
+  if (event.type === "component:update" && event.correlationId !== undefined) {
+    return [`related trigger #${event.correlationId}`];
+  }
+
+  return [];
+}
+
 function summarizeDevtoolsEvent(event: DevtoolsEvent): string {
   switch (event.type) {
     case "component:mount":
@@ -290,7 +303,7 @@ function summarizeDevtoolsEvent(event: DevtoolsEvent): string {
     case "renderer:element":
       return `${event.operation} <${event.tag}>`;
     case "router:navigation":
-      return `${event.from} -> ${event.to} ${event.status}`;
+      return `${event.from} → ${event.to} (${event.status})`;
     case "store:action":
       return `${event.name} ${event.status} in ${event.durationMs}ms`;
   }

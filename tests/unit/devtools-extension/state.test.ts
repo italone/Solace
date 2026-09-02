@@ -6,6 +6,7 @@ import {
   createPanelState,
   filterTimeline,
   getComponentTreeNodes,
+  getTimelineDetailLines,
   getSelectedTimelineRow,
   recordDevtoolsEvent,
   selectTimelineEvent,
@@ -307,6 +308,81 @@ describe("devtools extension panel state", () => {
       }),
     ).toBeUndefined();
   });
+});
+
+it("supports the router family in timeline filters and summaries", () => {
+  const routerNavigation = {
+    type: "router:navigation",
+    to: "/c",
+    from: "/a",
+    status: "redirect",
+  } satisfies DevtoolsEvent;
+  const state = [
+    routerNavigation,
+    {
+      type: "router:navigation",
+      to: "/about",
+      from: "/",
+      status: "success",
+    } satisfies DevtoolsEvent,
+    componentMount,
+  ].reduce((panelState, event, index) => {
+    return recordDevtoolsEvent(panelState, event, { now: index + 1 });
+  }, createPanelState());
+
+  expect(filterTimeline(state.events, { family: "router" }).map((row) => row.event.type)).toEqual([
+    "router:navigation",
+    "router:navigation",
+  ]);
+  expect(filterTimeline(state.events, { family: "router" }).map((row) => row.summary)).toEqual([
+    "/a → /c (redirect)",
+    "/ → /about (success)",
+  ]);
+  expect(
+    filterTimeline(state.events, { family: "component" }).map((row) => row.event.type),
+  ).toEqual(["component:mount"]);
+});
+
+it("derives detail lines for router navigation and correlated component updates", () => {
+  expect(
+    getTimelineDetailLines({
+      type: "router:navigation",
+      to: "/c",
+      from: "/a",
+      status: "redirect",
+    }),
+  ).toEqual(["/a → /c (redirect)"]);
+
+  expect(
+    getTimelineDetailLines({
+      type: "component:update",
+      id: 1,
+      name: "Counter",
+      parentId: null,
+      correlationId: 3,
+    }),
+  ).toEqual(["related trigger #3"]);
+
+  expect(
+    getTimelineDetailLines({
+      type: "component:update",
+      id: 1,
+      name: "Counter",
+      parentId: null,
+    }),
+  ).toEqual([]);
+
+  expect(
+    getTimelineDetailLines({
+      type: "reactivity:trigger",
+      targetType: "reactive",
+      keyType: "set",
+      effectCount: 1,
+      scheduledEffects: 1,
+      runEffects: 1,
+      correlationId: 3,
+    }),
+  ).toEqual([]);
 });
 
 describe("component tree state", () => {

@@ -45,7 +45,18 @@ test("captures relayed DevTools events in the extension panel workflow", async (
           queuedJobs: 1,
           dedupedJobs: 0,
           durationMs: 2,
+          skippedStaleJobs: 0,
+          distinctCauses: 1,
         },
+      },
+      window.location.origin,
+    );
+  });
+  await page.evaluate(() => {
+    window.postMessage(
+      {
+        type: "devtools:event",
+        event: { type: "router:navigation", to: "/c", from: "/a", status: "redirect" },
       },
       window.location.origin,
     );
@@ -53,6 +64,8 @@ test("captures relayed DevTools events in the extension panel workflow", async (
 
   await expect(page.getByTestId("timeline-list")).toContainText("component:update");
   await expect(page.getByTestId("timeline-list")).toContainText("scheduler:flush");
+  await expect(page.getByTestId("timeline-list")).toContainText("router:navigation");
+  await expect(page.getByTestId("timeline-list")).toContainText("/a → /c (redirect)");
 
   await page.getByTestId("family-filters").getByRole("button", { name: "scheduler" }).click();
   await expect(page.getByTestId("timeline-list")).not.toContainText("component:update");

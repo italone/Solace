@@ -157,6 +157,9 @@ export function copyDevtoolsEvent(event: unknown): DevtoolsEvent | undefined {
         id: event.id,
         name: event.name,
         parentId: isNumber(event.parentId) ? event.parentId : null,
+        ...(event.type === "component:update" && isNumber(event.correlationId)
+          ? { correlationId: event.correlationId }
+          : {}),
       };
 
     case "component:emit":
@@ -215,6 +218,20 @@ export function copyDevtoolsEvent(event: unknown): DevtoolsEvent | undefined {
         runEffects: event.runEffects,
         correlationId: event.correlationId,
       };
+
+    case "router:navigation":
+      if (
+        !isString(event.to) ||
+        !isString(event.from) ||
+        (event.status !== "start" &&
+          event.status !== "success" &&
+          event.status !== "redirect" &&
+          event.status !== "error" &&
+          event.status !== "cancelled")
+      ) {
+        return undefined;
+      }
+      return { type: event.type, to: event.to, from: event.from, status: event.status };
 
     case "renderer:element":
       if (

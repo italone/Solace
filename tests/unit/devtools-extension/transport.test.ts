@@ -11,6 +11,7 @@ type PanelRuntimePort = Exclude<
 const onDevtoolsEvent = vi.fn();
 
 vi.mock("@italone/solace/devtools", () => ({
+  DEVTOOLS_CONTRACT_VERSION: 1,
   onDevtoolsEvent,
 }));
 
@@ -188,9 +189,73 @@ describe("devtools extension panel transport", () => {
       });
     }
 
-    expect(port.postMessage).toHaveBeenCalledWith({ type: "devtools:panel:connect", tabId: 7 });
+    expect(port.postMessage).toHaveBeenCalledWith({
+      type: "devtools:panel:connect",
+      tabId: 7,
+      contractVersion: 1,
+    });
     expect(observed).toEqual([
       { type: "component:update", id: 1, name: "Counter", parentId: null },
+    ]);
+
+    source.stop();
+  });
+
+  it("relays router navigations and correlated updates, ignoring handshake acks", async () => {
+    const { createPanelEventSource } =
+      await import("../../../examples/devtools-extension/src/panel/transport");
+    const observed: DevtoolsEvent[] = [];
+    const portListeners = new Set<(message: unknown) => void>();
+    const port = {
+      disconnect: vi.fn(),
+      onMessage: {
+        addListener(listener: (message: unknown) => void) {
+          portListeners.add(listener);
+        },
+        removeListener(listener: (message: unknown) => void) {
+          portListeners.delete(listener);
+        },
+      },
+      postMessage: vi.fn(),
+    } satisfies PanelRuntimePort;
+
+    const source = createPanelEventSource(
+      (event) => {
+        observed.push(event);
+      },
+      {
+        connectRuntime: () => port,
+        inspectedTabId: 7,
+      },
+    );
+
+    for (const listener of portListeners) {
+      listener({ type: "devtools:panel:ack", contractVersion: 1 });
+      listener({
+        type: "devtools:event",
+        event: { type: "router:navigation", to: "/c", from: "/a", status: "redirect" },
+      });
+      listener({
+        type: "devtools:event",
+        event: {
+          type: "component:update",
+          id: 1,
+          name: "Counter",
+          parentId: null,
+          correlationId: 4,
+        },
+      });
+    }
+
+    expect(observed).toEqual([
+      { type: "router:navigation", to: "/c", from: "/a", status: "redirect" },
+      {
+        type: "component:update",
+        id: 1,
+        name: "Counter",
+        parentId: null,
+        correlationId: 4,
+      },
     ]);
 
     source.stop();
@@ -227,6 +292,7 @@ describe("devtools extension panel transport", () => {
     expect(port.postMessage).toHaveBeenNthCalledWith(1, {
       type: "devtools:panel:connect",
       tabId: 7,
+      contractVersion: 1,
     });
     expect(port.postMessage).toHaveBeenNthCalledWith(2, {
       type: "devtools:control",

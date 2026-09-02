@@ -5,6 +5,7 @@ import {
   filterTimeline,
   getComponentTreeNodes,
   getSelectedTimelineRow,
+  getTimelineDetailLines,
   getStoreActionEntries,
   selectTimelineEvent,
   setPanelPaused,
@@ -24,6 +25,7 @@ export const timelineFamilies: TimelineFamily[] = [
   "scheduler",
   "reactivity",
   "renderer",
+  "router",
   "store",
 ];
 
@@ -169,6 +171,18 @@ export function TimelinePanel(props: TimelinePanelProps) {
                     "aria-label": "Selected event details",
                   },
                   [
+                    ...(selectedRow === undefined
+                      ? []
+                      : getTimelineDetailLines(selectedRow.event).map((line) =>
+                          h(
+                            "p",
+                            {
+                              class: "event-detail-line",
+                              "data-testid": "event-detail-line",
+                            },
+                            line,
+                          ),
+                        )),
                     h(
                       "pre",
                       null,

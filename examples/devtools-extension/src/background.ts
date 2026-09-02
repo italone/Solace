@@ -1,3 +1,5 @@
+import { DEVTOOLS_CONTRACT_VERSION } from "@italone/solace/devtools";
+
 import { copyDevtoolsEvent, DEVTOOLS_EXTENSION_EVENT_TYPE } from "./bridge";
 import type { DevtoolsExtensionEventMessage } from "./bridge";
 
@@ -5,11 +7,13 @@ export const DEVTOOLS_PANEL_PORT = "solace-devtools-panel";
 export const DEVTOOLS_CONTENT_PORT = "solace-devtools-content";
 const DEVTOOLS_CONTENT_CONNECT_TYPE = "devtools:content:connect";
 const DEVTOOLS_CONTENT_DISCONNECT_TYPE = "devtools:content:disconnect";
+const DEVTOOLS_PANEL_ACK_TYPE = "devtools:panel:ack";
 
 export type DevtoolsBackgroundMessage =
   | DevtoolsExtensionEventMessage
-  | { type: "devtools:panel:connect"; tabId: number }
+  | { type: "devtools:panel:connect"; tabId: number; contractVersion?: number }
   | { type: "devtools:control"; paused: boolean }
+  | { type: typeof DEVTOOLS_PANEL_ACK_TYPE; contractVersion: number }
   | { type: typeof DEVTOOLS_CONTENT_CONNECT_TYPE }
   | { type: typeof DEVTOOLS_CONTENT_DISCONNECT_TYPE };
 
@@ -91,6 +95,10 @@ export function createDevtoolsBackgroundRelay(runtime: BackgroundRuntime): Devto
           forwardToPorts(contentsByTab, tabId, { type: DEVTOOLS_CONTENT_DISCONNECT_TYPE });
         });
         if (didRegister) {
+          postToRegisteredPort(panelsByTab, message.tabId, port, {
+            type: DEVTOOLS_PANEL_ACK_TYPE,
+            contractVersion: resolveAckContractVersion(message.contractVersion),
+          });
           forwardToPorts(contentsByTab, message.tabId, { type: DEVTOOLS_CONTENT_CONNECT_TYPE });
         }
         return;
@@ -218,6 +226,10 @@ function getSenderTabId(port: RuntimePort): number | undefined {
 
 function isValidTabId(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value >= 0;
+}
+
+function resolveAckContractVersion(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : DEVTOOLS_CONTRACT_VERSION;
 }
 
 declare const chrome:

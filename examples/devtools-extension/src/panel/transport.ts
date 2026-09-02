@@ -1,3 +1,4 @@
+import { DEVTOOLS_CONTRACT_VERSION } from "@italone/solace/devtools";
 import type { DevtoolsEvent } from "@italone/solace/devtools";
 
 export interface PanelEventSource {
@@ -25,7 +26,7 @@ interface RuntimeEvent<T> {
 
 type PanelTransportMessage =
   | { type: "devtools:event"; event: DevtoolsEvent }
-  | { type: "devtools:panel:connect"; tabId: number }
+  | { type: "devtools:panel:connect"; tabId: number; contractVersion: number }
   | { type: "devtools:control"; paused: boolean };
 
 interface BrowserRuntime {
@@ -90,7 +91,11 @@ function createExtensionPanelEventSource(
 
   port.onMessage.addListener(handleMessage);
   try {
-    port.postMessage({ type: "devtools:panel:connect", tabId: inspectedTabId });
+    port.postMessage({
+      type: "devtools:panel:connect",
+      tabId: inspectedTabId,
+      contractVersion: DEVTOOLS_CONTRACT_VERSION,
+    });
   } catch {
     // Ignore stale extension ports so panel setup can continue safely.
   }
@@ -198,6 +203,9 @@ function copyDevtoolsEvent(event: unknown): DevtoolsEvent | undefined {
         id: event.id,
         name: event.name,
         parentId: isNumber(event.parentId) ? event.parentId : null,
+        ...(event.type === "component:update" && isNumber(event.correlationId)
+          ? { correlationId: event.correlationId }
+          : {}),
       };
 
     case "component:emit":
@@ -256,6 +264,20 @@ function copyDevtoolsEvent(event: unknown): DevtoolsEvent | undefined {
         runEffects: event.runEffects,
         correlationId: event.correlationId,
       };
+
+    case "router:navigation":
+      if (
+        !isString(event.to) ||
+        !isString(event.from) ||
+        (event.status !== "start" &&
+          event.status !== "success" &&
+          event.status !== "redirect" &&
+          event.status !== "error" &&
+          event.status !== "cancelled")
+      ) {
+        return undefined;
+      }
+      return { type: event.type, to: event.to, from: event.from, status: event.status };
 
     case "renderer:element":
       if (
