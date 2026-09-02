@@ -1,6 +1,7 @@
 import { ReactiveEffect } from "../reactivity/effect";
 import { getAsyncComponentMetadata } from "../component/async-component";
-import { queueJob } from "../scheduler/scheduler";
+import { associateJobCause, queueJob } from "../scheduler/scheduler";
+import { peekLastDevtoolsTriggerCorrelationId } from "../devtools/events";
 import type { Provides } from "../component/provide";
 import { prepareAsyncSource, type PreparedVNode } from "../shared/async-tree";
 import { createDocumentStyleSink, withStyleSink, type StyleSink } from "../component/style";
@@ -92,6 +93,10 @@ export function hydrate(
     });
   };
   const reactiveEffect = new ReactiveEffect(update, () => {
+    const devtoolsCause = peekLastDevtoolsTriggerCorrelationId();
+    if (devtoolsCause !== undefined) {
+      associateJobCause(job, devtoolsCause);
+    }
     queueJob(job);
   });
   const runner = reactiveEffect.run.bind(reactiveEffect);
@@ -510,6 +515,10 @@ function renderReactiveSource(
     withStyleSink(styleSink, () => renderVNode(source(), container, appProvides));
   };
   const reactiveEffect = new ReactiveEffect(update, () => {
+    const devtoolsCause = peekLastDevtoolsTriggerCorrelationId();
+    if (devtoolsCause !== undefined) {
+      associateJobCause(job, devtoolsCause);
+    }
     queueJob(job);
   });
   const runner = reactiveEffect.run.bind(reactiveEffect);

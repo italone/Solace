@@ -52,12 +52,16 @@ function flushJobs(): void {
     for (let index = 0; index < queue.length; index += 1) {
       const job = queue[index];
       const cause = jobCauses.get(job);
-      jobCauses.delete(job);
       if (cause !== undefined) {
         causes.add(cause);
       }
-      if (job() === false) {
-        skippedStaleJobs += 1;
+      try {
+        if (job() === false) {
+          skippedStaleJobs += 1;
+        }
+      } finally {
+        // Deleted after the run so the job itself can still peek its cause.
+        jobCauses.delete(job);
       }
       flushedJobs += 1;
     }

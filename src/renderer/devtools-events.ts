@@ -4,6 +4,7 @@ import { emitDevtoolsEvent, hasDevtoolsListeners } from "../devtools/events";
 export function emitComponentDevtoolsEvent(
   type: "component:mount" | "component:update" | "component:unmount",
   instance: ComponentInstance,
+  correlationId?: number,
 ): void {
   if (!hasDevtoolsListeners()) {
     return;
@@ -14,6 +15,7 @@ export function emitComponentDevtoolsEvent(
     id: instance.devtoolsId,
     name: getComponentDevtoolsName(instance),
     parentId: instance.parent?.devtoolsId ?? null,
+    ...(type === "component:update" && correlationId !== undefined ? { correlationId } : {}),
   });
 }
 

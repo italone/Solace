@@ -6,7 +6,8 @@ import {
 import type { Provides } from "../component/provide";
 import { isEventProp } from "../event/event";
 import { ReactiveEffect } from "../reactivity/effect";
-import { queueJob } from "../scheduler/scheduler";
+import { associateJobCause, queueJob } from "../scheduler/scheduler";
+import { peekLastDevtoolsTriggerCorrelationId } from "../devtools/events";
 import { ShapeFlags } from "../shared/flags";
 import type { PreparedVNode } from "../shared/async-tree";
 import type { VNode, VNodeProps } from "../vnode/vnode";
@@ -404,6 +405,10 @@ function setupHydratedComponentUpdate(
     }
 
     instance.isUpdateQueued = true;
+    const devtoolsCause = peekLastDevtoolsTriggerCorrelationId();
+    if (devtoolsCause !== undefined && instance.update !== null) {
+      associateJobCause(instance.update, devtoolsCause);
+    }
     queueJob(instance.update);
   });
 

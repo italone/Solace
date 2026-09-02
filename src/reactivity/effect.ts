@@ -1,7 +1,9 @@
 import {
+  clearLastDevtoolsTriggerCorrelationId,
   emitDevtoolsEvent,
   hasDevtoolsListeners,
   nextDevtoolsCorrelationId,
+  setLastDevtoolsTriggerCorrelationId,
   type DevtoolsEvent,
 } from "../devtools/events";
 
@@ -98,23 +100,40 @@ export function trigger(target: object, key: PropertyKey): void {
   const effects = new Set(dep);
   let scheduledEffects = 0;
   let runEffects = 0;
+  const correlationId = hasDevtoolsListeners() ? nextDevtoolsCorrelationId() : undefined;
 
-  effects.forEach((reactiveEffect) => {
-    if (!reactiveEffect.active) {
-      return;
+  if (correlationId !== undefined) {
+    // Exposed while effect schedulers run so queued jobs can be associated
+    // with this trigger; cleared once the trigger finishes dispatching.
+    setLastDevtoolsTriggerCorrelationId(correlationId);
+  }
+
+  try {
+    effects.forEach((reactiveEffect) => {
+      if (!reactiveEffect.active) {
+        return;
+      }
+
+      if (reactiveEffect.scheduler !== undefined) {
+        scheduledEffects += 1;
+        reactiveEffect.scheduler();
+        return;
+      }
+
+      runEffects += 1;
+      reactiveEffect.run();
+    });
+  } finally {
+    if (correlationId !== undefined) {
+      clearLastDevtoolsTriggerCorrelationId();
     }
+  }
 
-    if (reactiveEffect.scheduler !== undefined) {
-      scheduledEffects += 1;
-      reactiveEffect.scheduler();
-      return;
-    }
+  if (correlationId === undefined) {
+    return;
+  }
 
-    runEffects += 1;
-    reactiveEffect.run();
-  });
-
-  emitReactivityTriggerDevtoolsEvent(target, key, scheduledEffects, runEffects);
+  emitReactivityTriggerDevtoolsEvent(target, key, scheduledEffects, runEffects, correlationId);
 }
 
 function emitReactivityTriggerDevtoolsEvent(
@@ -122,11 +141,8 @@ function emitReactivityTriggerDevtoolsEvent(
   key: PropertyKey,
   scheduledEffects: number,
   runEffects: number,
+  correlationId: number,
 ): void {
-  if (!hasDevtoolsListeners()) {
-    return;
-  }
-
   emitDevtoolsEvent({
     type: "reactivity:trigger",
     targetType: getDevtoolsTargetType(target),
@@ -134,8 +150,7 @@ function emitReactivityTriggerDevtoolsEvent(
     effectCount: scheduledEffects + runEffects,
     scheduledEffects,
     runEffects,
-    // Placeholder until Task 4 threads real correlation through to component updates.
-    correlationId: nextDevtoolsCorrelationId(),
+    correlationId,
   });
 }
 

@@ -7,7 +7,8 @@ import {
 import { callHooks } from "../component/lifecycle";
 import type { Provides } from "../component/provide";
 import { ReactiveEffect } from "../reactivity/effect";
-import { queueJob } from "../scheduler/scheduler";
+import { associateJobCause, peekJobCause, queueJob } from "../scheduler/scheduler";
+import { peekLastDevtoolsTriggerCorrelationId } from "../devtools/events";
 import { ShapeFlags } from "../shared/flags";
 import { isThenable } from "../shared/utils";
 import type { VNode } from "../vnode/vnode";
@@ -175,7 +176,11 @@ function mountComponent(
       instance.subTree = nextTree;
       instance.vnode.el = nextTree.el;
       callHooks(instance.updated);
-      emitComponentDevtoolsEvent("component:update", instance);
+      emitComponentDevtoolsEvent(
+        "component:update",
+        instance,
+        instance.update !== null ? peekJobCause(instance.update) : undefined,
+      );
     } finally {
       instance.isUpdateQueued = false;
     }
@@ -186,6 +191,10 @@ function mountComponent(
     }
 
     instance.isUpdateQueued = true;
+    const devtoolsCause = peekLastDevtoolsTriggerCorrelationId();
+    if (devtoolsCause !== undefined && instance.update !== null) {
+      associateJobCause(instance.update, devtoolsCause);
+    }
     queueJob(instance.update);
   });
 

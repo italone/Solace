@@ -76,7 +76,12 @@ describe("devtools large-list recorder smoke", () => {
       ).toBe(true);
 
       for (const event of snapshot) {
-        expect(Object.keys(event).sort()).toEqual(allowedKeysByType[event.type].sort());
+        const keySet = new Set(allowedKeysByType[event.type]);
+        if ("correlationId" in event) {
+          keySet.add("correlationId");
+        }
+        const expectedKeys = [...keySet];
+        expect(Object.keys(event).sort()).toEqual(expectedKeys.sort());
         expect(JSON.parse(JSON.stringify(event))).toEqual(event);
 
         for (const [key, value] of Object.entries(event)) {
