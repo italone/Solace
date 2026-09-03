@@ -52,10 +52,11 @@ function runEffect<T>(reactiveEffect: ReactiveEffect<T>): T {
 }
 
 function cleanupEffect(reactiveEffect: ReactiveEffect): void {
-  reactiveEffect.deps.forEach((dep) => {
-    dep.delete(reactiveEffect);
-  });
-  reactiveEffect.deps.length = 0;
+  const deps = reactiveEffect.deps;
+  for (let index = 0; index < deps.length; index += 1) {
+    deps[index].delete(reactiveEffect);
+  }
+  deps.length = 0;
 }
 
 export function effect<T>(fn: () => T): () => T {
@@ -97,7 +98,11 @@ export function trigger(target: object, key: PropertyKey): void {
     return;
   }
 
-  const effects = new Set(dep);
+  // Snapshot as a plain array: cheaper than copying into a new Set, while
+  // preserving snapshot semantics — effects that re-track (delete + re-add)
+  // themselves mid-run are not visited twice, and effects added mid-trigger
+  // were not subscribed at trigger time and are skipped.
+  const effects = [...dep];
   let scheduledEffects = 0;
   let runEffects = 0;
   const correlationId = hasDevtoolsListeners() ? nextDevtoolsCorrelationId() : undefined;
@@ -112,20 +117,20 @@ export function trigger(target: object, key: PropertyKey): void {
   }
 
   try {
-    effects.forEach((reactiveEffect) => {
+    for (const reactiveEffect of effects) {
       if (!reactiveEffect.active) {
-        return;
+        continue;
       }
 
       if (reactiveEffect.scheduler !== undefined) {
         scheduledEffects += 1;
         reactiveEffect.scheduler();
-        return;
+        continue;
       }
 
       runEffects += 1;
       reactiveEffect.run();
-    });
+    }
   } finally {
     if (correlationId !== undefined) {
       setLastDevtoolsTriggerCorrelationId(previousCause);

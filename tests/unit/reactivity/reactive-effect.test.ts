@@ -5,6 +5,7 @@ import {
   onDevtoolsEvent,
   type DevtoolsEvent,
 } from "../../../src/devtools/events";
+import { ReactiveEffect } from "../../../src/reactivity/effect";
 import { effect, reactive, watch } from "../../../src/index";
 
 describe("reactive and effect", () => {
@@ -103,6 +104,105 @@ describe("reactive and effect", () => {
 
     expect(observed).toBe(20);
     expect(runs).toBe(3);
+  });
+
+  it("runs every subscribed effect when one effect tracks a new dependency mid-trigger", () => {
+    const state = reactive({ x: 1, y: 1 });
+    let aRuns = 0;
+    let bRuns = 0;
+    let yRuns = 0;
+
+    const a = new ReactiveEffect(() => {
+      aRuns += 1;
+      void state.x;
+      void state.y; // new track (state.y) happens inside the first run of this trigger
+    });
+    a.run();
+
+    const b = new ReactiveEffect(() => {
+      bRuns += 1;
+      void state.x;
+    });
+    b.run();
+
+    const yOnly = new ReactiveEffect(() => {
+      yRuns += 1;
+      void state.y;
+    });
+    yOnly.run();
+
+    state.x = 2;
+
+    expect(aRuns).toBe(2);
+    expect(bRuns).toBe(2);
+    // yOnly subscribed to state.y only after the trigger began re-tracking a;
+    // it must not run as part of the state.x trigger.
+    expect(yRuns).toBe(1);
+
+    state.y = 2;
+
+    expect(aRuns).toBe(3);
+    expect(yRuns).toBe(2);
+  });
+
+  it("keeps other effects running when an effect stops itself during its run", () => {
+    const state = reactive({ x: 1 });
+    let aRuns = 0;
+    let bRuns = 0;
+
+    const a = new ReactiveEffect(() => {
+      aRuns += 1;
+      void state.x;
+      if (aRuns > 1) {
+        a.stop(); // stops itself mid-trigger, on its second run
+      }
+    });
+    a.run();
+
+    const b = new ReactiveEffect(() => {
+      bRuns += 1;
+      void state.x;
+    });
+    b.run();
+
+    expect(() => {
+      state.x = 2;
+    }).not.toThrow();
+
+    expect(aRuns).toBe(2); // a ran once more, then stopped itself mid-trigger
+    expect(bRuns).toBe(2); // b still runs exactly once per trigger
+
+    state.x = 3;
+
+    expect(aRuns).toBe(2); // a is stopped and no longer tracked
+    expect(bRuns).toBe(3);
+  });
+
+  it("does not rerun an effect stopped by an earlier effect in the same trigger", () => {
+    const state = reactive({ x: 1 });
+    let aRuns = 0;
+    let bRuns = 0;
+
+    let b: ReactiveEffect | undefined;
+    const a = new ReactiveEffect(() => {
+      aRuns += 1;
+      void state.x;
+      b?.stop();
+    });
+    a.run(); // a is first in dep insertion order
+
+    b = new ReactiveEffect(() => {
+      bRuns += 1;
+      void state.x;
+    });
+    b.run();
+
+    state.x = 2;
+
+    expect(aRuns).toBe(2);
+    // Snapshot semantics: b was subscribed at trigger time, but stop() marks it
+    // inactive before its turn, so the trigger skips it.
+    expect(bRuns).toBe(1);
   });
 
   it("emits a devtools trigger summary for direct effect runs", () => {
