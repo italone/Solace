@@ -196,23 +196,39 @@ function patchKeyedChildren(
     recordKeyedReorderMiddleSegment();
   }
 
-  const oldKeyedChildren = new Map<string | number, KeyedChildRecord>();
+  let anyNewChildKeyed = false;
+  for (let index = newStart; index <= newEnd; index += 1) {
+    if (newChildren[index].key !== null) {
+      anyNewChildKeyed = true;
+      break;
+    }
+  }
+
+  // No keyed new child can ever match an entry in the map, so a fully-unkeyed
+  // middle segment skips the old-children scan entirely; every lookup in that
+  // case yields oldRecord null (all new children mount, all old unmount),
+  // which is identical to querying an empty map.
+  const oldKeyedChildren = anyNewChildKeyed ? new Map<string | number, KeyedChildRecord>() : null;
   const newIndexToOldIndexMap = new Array<number>(newEnd - newStart + 1).fill(0);
   let matchedOldCount = 0;
 
-  for (let index = oldStart; index <= oldEnd; index += 1) {
-    const oldChild = oldChildren[index];
-    if (oldChild.key !== null) {
-      oldKeyedChildren.set(oldChild.key, {
-        vnode: oldChild,
-        index,
-      });
+  if (oldKeyedChildren !== null) {
+    for (let index = oldStart; index <= oldEnd; index += 1) {
+      const oldChild = oldChildren[index];
+      if (oldChild.key !== null) {
+        oldKeyedChildren.set(oldChild.key, {
+          vnode: oldChild,
+          index,
+        });
+      }
     }
   }
 
   for (let index = newStart; index <= newEnd; index += 1) {
     const newChild = newChildren[index];
-    const oldRecord = oldKeyedChildren.get(newChild.key as string | number) ?? null;
+    const oldRecord =
+      (oldKeyedChildren?.get(newChild.key as string | number) as KeyedChildRecord | undefined) ??
+      null;
 
     if (oldRecord !== null) {
       matchedOldCount += 1;

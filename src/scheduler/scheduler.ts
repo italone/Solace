@@ -46,14 +46,14 @@ function flushJobs(): void {
   const startedAt = shouldEmitDevtoolsEvent ? now() : 0;
   let flushedJobs = 0;
   let skippedStaleJobs = 0;
-  const causes = new Set<number>();
+  let causes: Set<number> | null = null;
 
   try {
     for (let index = 0; index < queue.length; index += 1) {
       const job = queue[index];
       const cause = jobCauses.get(job);
       if (cause !== undefined) {
-        causes.add(cause);
+        (causes ??= new Set<number>()).add(cause);
       }
       try {
         if (job() === false) {
@@ -73,7 +73,7 @@ function flushJobs(): void {
         dedupedJobs,
         durationMs: Math.max(0, now() - startedAt),
         skippedStaleJobs,
-        distinctCauses: causes.size,
+        distinctCauses: causes?.size ?? 0,
       });
     }
 
