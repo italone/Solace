@@ -133,6 +133,19 @@ function normalizeKey(key: unknown): string | number | null {
 function flattenChildren(
   children: readonly (VNodeChild | AsyncVNodeChild)[],
 ): (VNodeChild | AsyncVNodeChild)[] {
+  // Fast path: flat arrays are the common case, so skip allocation and return
+  // the original reference after confirming no child is a nested array.
+  let isFlat = true;
+  for (const child of children) {
+    if (Array.isArray(child)) {
+      isFlat = false;
+      break;
+    }
+  }
+  if (isFlat) {
+    return children as (VNodeChild | AsyncVNodeChild)[];
+  }
+
   const flattened: (VNodeChild | AsyncVNodeChild)[] = [];
   for (const child of children) {
     if (Array.isArray(child)) {
