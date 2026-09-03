@@ -96,7 +96,6 @@ describe("renderToStream backpressure", () => {
 
   it("surfaces a render error to a reading consumer", async () => {
     const Failing = defineAsyncComponent({
-      // eslint-disable-next-line @typescript-eslint/require-await
       loader: async () => {
         throw new Error("boom");
       },

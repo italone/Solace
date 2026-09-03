@@ -183,18 +183,16 @@ describe("reactive and effect", () => {
     let aRuns = 0;
     let bRuns = 0;
 
-    let b: ReactiveEffect | undefined;
-    const a = new ReactiveEffect(() => {
-      aRuns += 1;
-      void state.x;
-      b?.stop();
-    });
-    a.run(); // a is first in dep insertion order
-
-    b = new ReactiveEffect(() => {
+    const b = new ReactiveEffect(() => {
       bRuns += 1;
       void state.x;
     });
+    const a = new ReactiveEffect(() => {
+      aRuns += 1;
+      void state.x;
+      b.stop();
+    });
+    a.run(); // a is first in dep insertion order
     b.run();
 
     state.x = 2;

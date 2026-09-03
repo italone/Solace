@@ -97,6 +97,38 @@ Conclusion:
   inserts, reducing high-movement DOM insert calls while preserving node identity. Next optimization work should focus
   on additional browser trend samples.
 
+## Benchmark-Driven Optimization Notes (2026-09-03)
+
+A benchmark-driven optimization pass reviewed hot renderer and reactivity paths. The changes are
+allocation-level only; behavior is identical and benchmark results were flat within noise. No
+performance claim is made for them.
+
+Changes applied:
+
+- `flattenChildren` returns the original children array when it is already flat instead of
+  allocating a copy. Semantics are identical because callers treat the result as read-only.
+- `trigger()` snapshots the dependency set as a plain array (`[...dep]`) instead of copying into a
+  new `Set`. Iteration semantics are identical: re-tracked effects are not double-run and
+  dependencies added mid-trigger are skipped.
+- The keyed-diff old-children key map is built only when any new child is keyed, and the scheduler
+  allocates its devtools cause set lazily. Review confirmed the key-map gate is defensive: fully
+  unkeyed and mixed lists are already routed away from the keyed path before the gate can trigger.
+
+Changes not needed:
+
+- The 10,000-row delete path was profiled and confirmed jsdom-DOM-bound. Raw jsdom `removeChild`
+  of the same 1,000 nodes costs about 225 ms, equal to the task's measured cost. Solace already
+  batches range removal into a detached `DocumentFragment` (`unmountChildrenRange`, see
+  `src/runtime/renderer/children.ts`), which is optimal for this path; no change was made.
+
+Benchmark reality:
+
+- Same-session A-B comparisons for every change were flat within noise (±5%).
+- Cross-day comparisons on this machine are invalid (±30% drift between sessions).
+- The design spec's "≥50% regression recovery" acceptance target (batched update 67.4 → ≤53 ms,
+  initial render 40.2 → ≤30 ms) is unmeasurable on this machine; the mid-August "regression" it
+  referenced may itself be machine drift. Record these targets as unverified, not as recovered.
+
 ## Browser Production Benchmark
 
 Command:
