@@ -119,7 +119,7 @@ Changes not needed:
 - The 10,000-row delete path was profiled and confirmed jsdom-DOM-bound. Raw jsdom `removeChild`
   of the same 1,000 nodes costs about 225 ms, equal to the task's measured cost. Solace already
   batches range removal into a detached `DocumentFragment` (`unmountChildrenRange`, see
-  `src/runtime/renderer/children.ts`), which is optimal for this path; no change was made.
+  `src/renderer/children.ts`), which is optimal for this path; no change was made.
 
 Benchmark reality:
 
