@@ -101,7 +101,7 @@
     "release:version": "changeset version",
     "release:candidate:check": "pnpm release:readiness -- --publishable && pnpm stable:app:upgrade && pnpm release:check",
     "release:check": "pnpm release:readiness && pnpm quality && pnpm test:coverage && pnpm package:smoke && pnpm adoption:smoke && pnpm stable:app && pnpm package:devtools-extension:smoke && pnpm benchmark && pnpm benchmark:browser && pnpm performance:regression && pnpm test:e2e && pnpm test:e2e:devtools-extension",
-    "release:publish:beta": "pnpm release:check && changeset publish --tag beta",
+    "release:publish:beta": "pnpm release:check && changeset publish",
     "release:publish": "pnpm release:one-zero:check && pnpm release:contract:check && pnpm release:check && changeset publish",
     "quality": "pnpm format:check && pnpm release:contract:check && pnpm build && pnpm typecheck && pnpm build:operations && pnpm typecheck:jsxdev && pnpm lint && pnpm test && pnpm test:package"
   },

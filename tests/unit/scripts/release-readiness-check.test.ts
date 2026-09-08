@@ -153,13 +153,13 @@ describe("release readiness check CLI", () => {
     expect(packageJson.scripts?.["release:publish:beta"]).not.toContain("registry:smoke");
   });
 
-  test("keeps beta releases off the latest npm dist-tag", async () => {
+  test("keeps beta releases on the pre-mode beta tag without a custom tag flag", async () => {
     const packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
       scripts?: Record<string, string>;
     };
 
     expect(packageJson.scripts?.["release:publish:beta"]).toBe(
-      "pnpm release:check && changeset publish --tag beta",
+      "pnpm release:check && changeset publish",
     );
   });
 
