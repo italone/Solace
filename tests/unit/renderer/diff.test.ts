@@ -386,6 +386,51 @@ describe("renderer diff", () => {
     });
   });
 
+  it("preserves order across multiple moved batches with stable separators", () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+
+    render(
+      h("ul", null, [
+        h("li", { key: "a" }, "A"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "e" }, "E"),
+        h("li", { key: "f" }, "F"),
+      ]),
+      container,
+    );
+
+    const before = new Map(
+      [...container.querySelectorAll("li")].map((li) => [li.textContent, li]),
+    );
+
+    // Full reversal: one child is LIS-stable, the other five form one moved batch.
+    render(
+      h("ul", null, [
+        h("li", { key: "f" }, "F"),
+        h("li", { key: "e" }, "E"),
+        h("li", { key: "d" }, "D"),
+        h("li", { key: "c" }, "C"),
+        h("li", { key: "b" }, "B"),
+        h("li", { key: "a" }, "A"),
+      ]),
+      container,
+    );
+
+    const after = [...container.querySelectorAll("li")];
+
+    expect(after.map((li) => li.textContent)).toEqual(["F", "E", "D", "C", "B", "A"]);
+    for (const text of ["F", "E", "D", "C", "B", "A"]) {
+      expect(before.get(text)?.isConnected).toBe(true);
+    }
+    expect(after[0]).toBe(before.get("F"));
+    expect(after[3]).toBe(before.get("C"));
+    expect(after[5]).toBe(before.get("A"));
+    container.remove();
+  });
+
   it("records keyed adjacent-swap move-path counters with zero anchor lookups", () => {
     const container = document.createElement("div");
 
