@@ -59,9 +59,9 @@ describe("component update benchmark", () => {
     expect(batchedContainer.querySelector('[data-index="0"]')?.textContent).toBe(
       `item 0: ${batchedState.count}`,
     );
-    expect(
-      batchedContainer.querySelector(`[data-index="${itemCount - 1}"]`)?.textContent,
-    ).toBe(`item ${itemCount - 1}: ${batchedState.count}`);
+    expect(batchedContainer.querySelector(`[data-index="${itemCount - 1}"]`)?.textContent).toBe(
+      `item ${itemCount - 1}: ${batchedState.count}`,
+    );
     expect(parentContainer.querySelector("[data-parent='count']")?.textContent).toBe(
       `parent: ${parentState.count}`,
     );

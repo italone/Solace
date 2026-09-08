@@ -402,9 +402,7 @@ describe("renderer diff", () => {
       container,
     );
 
-    const before = new Map(
-      [...container.querySelectorAll("li")].map((li) => [li.textContent, li]),
-    );
+    const before = new Map([...container.querySelectorAll("li")].map((li) => [li.textContent, li]));
 
     // Full reversal: one child is LIS-stable, the other five form one moved batch.
     render(
