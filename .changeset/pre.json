@@ -14,9 +14,11 @@
     "frozen-contract-boundary",
     "hydration-mismatch-hardening",
     "keyed-reorder-move-batch-push",
+    "oob-boundary-render-failure",
     "quiet-beta6-evidence",
     "router-aware-ssg",
     "shallow-reactive-hydration-export-docs",
+    "ssr-hang-guard",
     "stream-backpressure",
     "sync-entry-router"
   ]

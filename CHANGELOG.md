@@ -1,5 +1,12 @@
 # @italone/solace
 
+## 0.1.0-beta.9
+
+### Patch Changes
+
+- 77c9d46: Keep the out-of-order SSR stream open when a successfully loaded boundary subtree fails to render: the boundary now keeps its fallback and emits a failure comment (same semantics as loader rejections) instead of erroring the whole stream after partial HTML.
+- 929396a: Add an opt-in `timeoutMs` option to `renderToStringAsync()`, `renderToStream()`, and `generateStaticSiteAsync()` (site-level with route-level override) so never-settling async renders reject with the new `SolaceTimeoutError` (exported from the package root and `@italone/solace/server`) instead of hanging. Out-of-order stream boundaries time out individually: the fallback is kept and a failure comment is emitted while the stream stays open.
+
 ## 0.1.0-beta.8
 
 ### Minor Changes
