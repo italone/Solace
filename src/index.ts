@@ -6,6 +6,7 @@ export { ref } from "./reactivity/ref";
 export { watch, watchEffect } from "./reactivity/watch";
 export { nextTick } from "./scheduler/scheduler";
 export { render, SolaceHydrationError } from "./renderer/renderer";
+export { SolaceTimeoutError } from "./server/ssr-timeout";
 export { h } from "./vnode/h";
 export { Fragment } from "./vnode/vnode";
 export { onMounted, onUnmounted, onUpdated } from "./component/lifecycle";

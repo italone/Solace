@@ -61,7 +61,9 @@ backpressure（流队列写满时生产挂起）。乱序（out-of-order）strea
 guards）的 `router` option 配合 `hydrateAsync(container, { router,
 routerIdentifyRecord })` 提供 renderer-owned router SSR，外加两个 SSG 入口的 route 级 `router`
 option，并通过三个 SSR renderer 上成对的
-`manifest` 加 `clientEntry` options 提供生产 asset injection；仍推迟
+`manifest` 加 `clientEntry` options 提供生产 asset injection，并提供可选的 `timeoutMs` 挂起防护 ——
+传入正数后 async SSR 入口（`generateStaticSiteAsync()` 支持 site 级配置并可用 route 级覆盖）超时会以根入口导出的
+`SolaceTimeoutError` 拒绝而不是永久挂起，乱序流的 async 边界按各自超时处理并保留 fallback；仍推迟
 auth、permissions、app 级 SSG router 集成与同步 `hydrate()` 的 router option、initial hydration 之后的 async
 update scheduling，以及 build CLI asset 工具链（manifest 由应用的构建产出）。Router `auth` 和
 `permissions` options 或 route

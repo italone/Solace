@@ -239,7 +239,8 @@ Hydration mismatch 错误会带结构化的 `kind`、`path`、`expected` 和 `ac
 
 `renderToStringAsync()` 会先缓冲完整 initial tree，再返回 `{ html, styles }`。它接受 promised
 root、async components、promised child VNodes，以及与 `renderToString()` 相同的 `context` 和
-`provides` options。发生 rejection 时不会暴露部分 HTML。
+`provides` options。发生 rejection 时不会暴露部分 HTML。可选的 `timeoutMs`（正数）会让永不落定的
+渲染以根入口导出的 `SolaceTimeoutError` 拒绝，而不是永久挂起。
 
 ```tsx
 import { h } from "@italone/solace";
@@ -282,8 +283,8 @@ const stream = renderToStream(h("section", null, h(AsyncMessage)));
 return new Response(stream, { headers: { "content-type": "text/html; charset=utf-8" } });
 ```
 
-`renderToStream()` 被调用时渲染立即开始。返回的流支持消费者 backpressure：流队列写满后生产暂停，消费者 pull 时恢复。options 只接受 `context`、`provides`、`mode`、`router`、`manifest` 和 `clientEntry`
-（`"ordered"` 为默认值，与之前的版本字节一致；`"out-of-order"` 见下文；`router` 见下文 renderer-owned
+`renderToStream()` 被调用时渲染立即开始。返回的流支持消费者 backpressure：流队列写满后生产暂停，消费者 pull 时恢复。options 只接受 `context`、`provides`、`mode`、`router`、`manifest`、`clientEntry` 和 `timeoutMs`
+（`timeoutMs` 为可选的挂起防护：source 阶段超时会以根入口导出的 `SolaceTimeoutError` 拒绝流，乱序模式的 async 边界按各自超时处理 —— 保留 fallback 并发射失败注释、流保持打开；`"ordered"` 为默认值，与之前的版本字节一致；`"out-of-order"` 见下文；`router` 见下文 renderer-owned
 router 章节；`manifest` 与 `clientEntry` 见下文 SSR asset injection 章节）；未知的自有字段会抛出
 带字段名的 `TypeError`。默认的 ordered 模式下，渲染错误会通过
 `controller.error()` 拒绝流，此时部分字节可能已经发射。router option 的 snapshot script 会在
@@ -546,7 +547,9 @@ site.pages[0].html;
 ### `generateStaticSiteAsync(options)`
 
 `generateStaticSiteAsync()` 接受相同的已校验 SSG options 和 async route sources。Routes 会按声明
-顺序逐个 await；只有全部 route 与 shell 调用成功后，才返回完整 `{ pages }`。
+顺序逐个 await；只有全部 route 与 shell 调用成功后，才返回完整 `{ pages }`。可选的 site 级
+`timeoutMs`（正数）会转发到每个 route 的 `renderToStringAsync()` 调用，并支持 route 级覆盖；超时会以
+根入口导出的 `SolaceTimeoutError` 拒绝。
 
 ```ts
 const site = await generateStaticSiteAsync({
