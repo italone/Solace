@@ -5,9 +5,19 @@
     "@italone/solace": "0.1.0-beta.6"
   },
   "changesets": [
+    "bench-methodology-fix",
+    "benchmark-perf-optimizations",
     "cross-commit-performance-gate",
+    "deep-reactive",
+    "devtools-event-contract",
+    "flatten-nested-array-children",
     "frozen-contract-boundary",
+    "hydration-mismatch-hardening",
+    "keyed-reorder-move-batch-push",
     "quiet-beta6-evidence",
-    "shallow-reactive-hydration-export-docs"
+    "router-aware-ssg",
+    "shallow-reactive-hydration-export-docs",
+    "stream-backpressure",
+    "sync-entry-router"
   ]
 }

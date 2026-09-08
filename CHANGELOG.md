@@ -1,5 +1,23 @@
 # @italone/solace
 
+## 0.1.0-beta.8
+
+### Minor Changes
+
+- e792edd: Make `reactive()` deep: nested plain objects and arrays are lazily wrapped in identity-stable cached reactive proxies, so nested mutations trigger updates. The previous shallow behavior is preserved via the new `shallowReactive()` root export. Non-plain values (Date, RegExp, class instances) are returned as-is.
+- e72631e: Extend the DevTools event contract (version 1, additive): new `router:navigation` events (start/success/redirect/error/cancelled with fullPath summaries), `scheduler:flush` gains `skippedStaleJobs` and `distinctCauses`, `reactivity:trigger` gains `correlationId`, and `component:update` optionally carries the matching id so triggers can be linked to the updates they caused. `DEVTOOLS_CONTRACT_VERSION` is exported from `@italone/solace/devtools`, and the example DevTools panel gains the router family, correlation display, and a versioned panel handshake (`contractVersion`).
+- d46e79a: Harden the hydration mismatch policy: hydration now detects attribute mismatches between client props and server HTML (one-directional comparison with structured `attribute-mismatch` errors carrying `attributeName`), and supports `hydrate(container, { textComparison: "normalized-collapsing" })` to tolerate foldable whitespace differences in text nodes (default remains exact comparison).
+- e23b955: Add router-aware SSG: `generateStaticSiteAsync()` async route entries accept an optional `router` option (`{ routes, identifyRecord, configure? }`, with the route's `path` used as the url). Router-backed routes settle a request-scoped memory router, inject its server context `provides`, and append the serialized route snapshot script to the rendered body for verify-before-hydration pairing with `hydrateAsync(container, { router, routerIdentifyRecord })`. The synchronous `generateStaticSite()` still rejects route-level `router` fields.
+- caa5e83: Add synchronous-entry router support: `renderToString()` accepts a `router` option (`{ url, routes, identifyRecord, configure? }`) backed by a new synchronous router settlement fast path (`router.isReadySync()`) that requires synchronous guards (thenable guard results throw a `TypeError` pointing at the async entries), follows redirects synchronously, injects the router server context, and appends the same route snapshot script as the async path. `generateStaticSite()` accepts the same route-level `router` option as `generateStaticSiteAsync()`.
+
+### Patch Changes
+
+- aa3caf0: Fix component-update benchmark methodology: hoist reactive setup and mount out of the timed task, add warmup iterations, and move assertions after measurement so the recorded numbers reflect the batched update flush instead of mount plus JIT warmup.
+- 078c7ab: Performance: reduce hot-path allocations — `flattenChildren` returns the original array when children are already flat, `trigger()` snapshots dependencies as a plain array instead of copying into a new `Set` per trigger, keyed-diff key maps are built only when new children carry keys, and the scheduler allocates its devtools cause set lazily. The unmount delete path was profiled and confirmed DOM-bound; the existing batched `DocumentFragment` removal is already optimal and no change was needed. No public API changes.
+- cd0397e: Flatten nested array children (for example JSX-mapped lists interleaved with standalone children) instead of silently dropping them at render time.
+- 951c6f8: Collect keyed reorder move batches with array push instead of unshift, removing the quadratic collection cost for full-list reversals. Shipped as a complexity fix only: the jsdom keyed-reorder scenario is DOM-bound (see docs/performance.md), so no same-session speedup is claimed.
+- 7b0ae70: Apply consumer backpressure in `renderToStream()`: chunk production parks when the `ReadableStream` queue is full and resumes on pull, instead of eagerly buffering the whole document. Byte order and chunk content are unchanged.
+
 ## 0.1.0-beta.7
 
 ### Patch Changes
