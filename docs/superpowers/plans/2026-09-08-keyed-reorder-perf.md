@@ -35,6 +35,7 @@ Inspect the largest `.cpuprofile` in Chrome DevTools → Performance → Load pr
 ### Task 2: Lock multi-batch move ordering with a regression test
 
 **Files:**
+
 - Modify: `tests/unit/renderer/diff.test.ts` (add one `it` block after the "records keyed full reverse move-path counters" test, ~line 390)
 
 - [ ] **Step 1: Write the test**
@@ -42,46 +43,46 @@ Inspect the largest `.cpuprofile` in Chrome DevTools → Performance → Load pr
 This locks the multi-node batch path (5 moved nodes + 1 stable head child, forcing a single large batch and the post-flush anchor update) — the exact paths the fix touches. It must PASS against current code (behavior lock, not new behavior):
 
 ```ts
-  it("preserves order across multiple moved batches with stable separators", () => {
-    const container = document.createElement("div");
+it("preserves order across multiple moved batches with stable separators", () => {
+  const container = document.createElement("div");
 
-    render(
-      h("ul", null, [
-        h("li", { key: "a" }, "A"),
-        h("li", { key: "b" }, "B"),
-        h("li", { key: "c" }, "C"),
-        h("li", { key: "d" }, "D"),
-        h("li", { key: "e" }, "E"),
-        h("li", { key: "f" }, "F"),
-      ]),
-      container,
-    );
+  render(
+    h("ul", null, [
+      h("li", { key: "a" }, "A"),
+      h("li", { key: "b" }, "B"),
+      h("li", { key: "c" }, "C"),
+      h("li", { key: "d" }, "D"),
+      h("li", { key: "e" }, "E"),
+      h("li", { key: "f" }, "F"),
+    ]),
+    container,
+  );
 
-    const before = new Map([...container.querySelectorAll("li")].map((li) => [li.textContent, li]));
+  const before = new Map([...container.querySelectorAll("li")].map((li) => [li.textContent, li]));
 
-    // Full reversal: one child is LIS-stable, the other five form one moved batch.
-    render(
-      h("ul", null, [
-        h("li", { key: "f" }, "F"),
-        h("li", { key: "e" }, "E"),
-        h("li", { key: "d" }, "D"),
-        h("li", { key: "c" }, "C"),
-        h("li", { key: "b" }, "B"),
-        h("li", { key: "a" }, "A"),
-      ]),
-      container,
-    );
+  // Full reversal: one child is LIS-stable, the other five form one moved batch.
+  render(
+    h("ul", null, [
+      h("li", { key: "f" }, "F"),
+      h("li", { key: "e" }, "E"),
+      h("li", { key: "d" }, "D"),
+      h("li", { key: "c" }, "C"),
+      h("li", { key: "b" }, "B"),
+      h("li", { key: "a" }, "A"),
+    ]),
+    container,
+  );
 
-    const after = [...container.querySelectorAll("li")];
+  const after = [...container.querySelectorAll("li")];
 
-    expect(after.map((li) => li.textContent)).toEqual(["F", "E", "D", "C", "B", "A"]);
-    for (const text of ["F", "E", "D", "C", "B", "A"]) {
-      expect(before.get(text)?.isConnected).toBe(true);
-    }
-    expect(after[0]).toBe(before.get("F"));
-    expect(after[3]).toBe(before.get("C"));
-    expect(after[5]).toBe(before.get("A"));
-  });
+  expect(after.map((li) => li.textContent)).toEqual(["F", "E", "D", "C", "B", "A"]);
+  for (const text of ["F", "E", "D", "C", "B", "A"]) {
+    expect(before.get(text)?.isConnected).toBe(true);
+  }
+  expect(after[0]).toBe(before.get("F"));
+  expect(after[3]).toBe(before.get("C"));
+  expect(after[5]).toBe(before.get("A"));
+});
 ```
 
 - [ ] **Step 2: Run it and verify PASS against current code**
@@ -102,6 +103,7 @@ git commit -m "test: lock multi-batch keyed move ordering"
 ### Task 3: Replace unshift collection with push + reverse append
 
 **Files:**
+
 - Modify: `src/renderer/children.ts:262-286` (flushMovedExistingBatch) and `src/renderer/children.ts:337` (collection site)
 
 - [ ] **Step 1: Edit `flushMovedExistingBatch`**
@@ -109,32 +111,32 @@ git commit -m "test: lock multi-batch keyed move ordering"
 Replace the existing function body (lines 262–286) with:
 
 ```ts
-  function flushMovedExistingBatch(): void {
-    if (movedExistingBatch.length === 0) {
-      return;
-    }
-
-    if (movedExistingBatch.length === 1) {
-      const [node] = movedExistingBatch;
-      insert(node, container, anchorNode);
-      anchorNode = node;
-      movedExistingBatch.length = 0;
-      return;
-    }
-
-    if (shouldRecordMovePath) {
-      recordKeyedReorderMovedExistingBatch();
-    }
-
-    const fragment = document.createDocumentFragment();
-    // Collected back-to-front via push, so append in reverse for DOM order.
-    for (let index = movedExistingBatch.length - 1; index >= 0; index -= 1) {
-      fragment.appendChild(movedExistingBatch[index]);
-    }
-    insert(fragment, container, anchorNode);
-    anchorNode = movedExistingBatch[movedExistingBatch.length - 1];
-    movedExistingBatch.length = 0;
+function flushMovedExistingBatch(): void {
+  if (movedExistingBatch.length === 0) {
+    return;
   }
+
+  if (movedExistingBatch.length === 1) {
+    const [node] = movedExistingBatch;
+    insert(node, container, anchorNode);
+    anchorNode = node;
+    movedExistingBatch.length = 0;
+    return;
+  }
+
+  if (shouldRecordMovePath) {
+    recordKeyedReorderMovedExistingBatch();
+  }
+
+  const fragment = document.createDocumentFragment();
+  // Collected back-to-front via push, so append in reverse for DOM order.
+  for (let index = movedExistingBatch.length - 1; index >= 0; index -= 1) {
+    fragment.appendChild(movedExistingBatch[index]);
+  }
+  insert(fragment, container, anchorNode);
+  anchorNode = movedExistingBatch[movedExistingBatch.length - 1];
+  movedExistingBatch.length = 0;
+}
 ```
 
 - [ ] **Step 2: Change the collection site**
@@ -142,13 +144,13 @@ Replace the existing function body (lines 262–286) with:
 At `src/renderer/children.ts:337`, replace:
 
 ```ts
-    movedExistingBatch.unshift(childEl);
+movedExistingBatch.unshift(childEl);
 ```
 
 with:
 
 ```ts
-    movedExistingBatch.push(childEl);
+movedExistingBatch.push(childEl);
 ```
 
 - [ ] **Step 3: Run the renderer unit tests**
@@ -195,6 +197,7 @@ Expected: exit 0.
 ### Task 5: Changeset, performance notes, final commit
 
 **Files:**
+
 - Create: `.changeset/keyed-reorder-move-batch-push.md`
 - Modify: `docs/performance.md`
 

@@ -129,6 +129,22 @@ Benchmark reality:
   initial render 40.2 → ≤30 ms) is unmeasurable on this machine; the mid-August "regression" it
   referenced may itself be machine drift. Record these targets as unverified, not as recovered.
 
+## Keyed Reorder jsdom Profile (2026-09-08)
+
+The jsdom `10000 row keyed reorder` task (full reversal, `tests/performance/list-diff.bench.ts`)
+measured 938 ms in this session. A CPU profile of the worker process attributed roughly 57–60% of
+self time to jsdom DOM internals (52.6% `symbol-tree` bookkeeping plus ~4.7% `Node-impl.js` and IDL
+wrappers), about 17.5% to GC/module-load/idle, and only about 0.7% to Solace's own code. A full
+reversal requires 10,000 DOM `insertBefore` calls regardless of diff bookkeeping, and each insert is
+O(n) in jsdom's symbol tree, so the cost is structural to the jsdom environment. The browser
+production benchmark runs the same reversal in ~3 ms.
+
+The candidate fix — collecting the moved-existing batch with `push` instead of `unshift` in
+`patchKeyedChildren` (`src/renderer/children.ts`), removing an O(n²) collection — was evaluated and
+NOT shipped: the native array-copy share is under 10% of the profile, so no same-session A-B
+improvement above the ±5% noise floor is demonstrable. Recorded per the same rule as the 2026-09-03
+delete finding: do not optimize jsdom-DOM-bound scenarios.
+
 ## Browser Production Benchmark
 
 Command:
