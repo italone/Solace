@@ -141,9 +141,16 @@ production benchmark runs the same reversal in ~3 ms.
 
 The candidate fix — collecting the moved-existing batch with `push` instead of `unshift` in
 `patchKeyedChildren` (`src/renderer/children.ts`), removing an O(n²) collection — was evaluated and
-NOT shipped: the native array-copy share is under 10% of the profile, so no same-session A-B
-improvement above the ±5% noise floor is demonstrable. Recorded per the same rule as the 2026-09-03
-delete finding: do not optimize jsdom-DOM-bound scenarios.
+initially NOT shipped: the native array-copy share is under 10% of the profile, so no same-session
+A-B improvement above the ±5% noise floor is demonstrable. Recorded per the same rule as the
+2026-09-03 delete finding: do not optimize jsdom-DOM-bound scenarios.
+
+The `push` change was later shipped (2026-09-08, same session) strictly as an algorithmic-complexity
+fix, not a performance claim: it is guarded by a multi-batch move-ordering behavior-lock test, all
+renderer unit tests and the full quality gate pass, and the jsdom reorder benchmark stays within
+noise of the 938 ms baseline (the scenario remains jsdom-DOM-bound). The batch flush now appends
+nodes to the DocumentFragment in reverse collection order and takes the post-flush anchor from the
+array's last element (the front-most node); DOM output is byte-identical.
 
 The companion anomaly `1000 component batched reactive update` (~67 ms) appearing slower than
 initial render (~40 ms) was profiled the same day and is a benchmark artifact, not framework
