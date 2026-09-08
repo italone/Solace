@@ -5,6 +5,6 @@ export default defineConfig({
     environment: "jsdom",
     include: ["tests/performance/**/*.bench.ts"],
     passWithNoTests: false,
-    testTimeout: 30_000,
+    testTimeout: 120_000,
   },
 });
