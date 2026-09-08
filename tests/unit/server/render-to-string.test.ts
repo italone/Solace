@@ -13,6 +13,7 @@ import {
 } from "../../../src";
 import type { AsyncComponentType } from "../../../src";
 import { renderToString, renderToStringAsync } from "../../../src/server";
+import { SolaceTimeoutError } from "../../../src/server/ssr-timeout";
 
 describe("renderToString", () => {
   it("serializes elements, text, fragments, and synchronous components", () => {
@@ -263,5 +264,39 @@ describe("renderToStringAsync", () => {
     );
 
     expect(captured).toBeUndefined();
+  });
+
+  it("rejects with SolaceTimeoutError when a never-settling render exceeds timeoutMs", async () => {
+    const Hung: AsyncComponentType = () => new Promise(() => {}) as never;
+    await expect(renderToStringAsync(h(Hung), { timeoutMs: 15 })).rejects.toThrow(
+      SolaceTimeoutError,
+    );
+  });
+
+  it("rejects with SolaceTimeoutError when a promised child never settles", async () => {
+    const pendingChild = new Promise(() => {});
+    await expect(
+      renderToStringAsync(h("p", null, pendingChild as never), { timeoutMs: 15 }),
+    ).rejects.toThrow(/timed out after 15ms/);
+  });
+
+  it("leaves never-settling renders pending when timeoutMs is omitted", async () => {
+    let release: (() => void) | undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const Gated: AsyncComponentType = () => gate.then(() => () => h("p", null, "late"));
+    const result = renderToStringAsync(h(Gated));
+    await Promise.resolve();
+    release!();
+    await expect(result).resolves.toEqual({ html: "<p>late</p>", styles: [] });
+  });
+
+  it("rejects invalid timeoutMs values", async () => {
+    for (const bad of [0, -1, "100"]) {
+      await expect(
+        renderToStringAsync(h("p", null, "x"), { timeoutMs: bad as never }),
+      ).rejects.toThrow(TypeError("SSR timeoutMs must be a positive number"));
+    }
   });
 });

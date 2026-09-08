@@ -12,6 +12,7 @@ import { isThenable } from "../shared/utils";
 import type { AsyncComponentType, ComponentTransport, VNode } from "../vnode/vnode";
 import type { StaticAssetManifest } from "./static-assets";
 import { assertSSRAssetOptions, buildSSRAssetTags } from "./ssr-assets";
+import { assertTimeoutMs, raceWithTimeout } from "./ssr-timeout";
 import {
   assertRouterSSROption,
   buildSnapshotScript,
@@ -34,6 +35,7 @@ export interface RenderToStringOptions {
   router?: RouterSSROptions;
   manifest?: StaticAssetManifest;
   clientEntry?: string;
+  timeoutMs?: number;
 }
 
 export type RenderToStringAsyncOptions = RenderToStringOptions;
@@ -79,9 +81,19 @@ export function renderToString(
   };
 }
 
-export async function renderToStringAsync(
+export function renderToStringAsync(
   source: RenderToStringAsyncSource,
   options: RenderToStringAsyncOptions = {},
+): Promise<RenderToStringResult> {
+  if (options.timeoutMs === undefined) {
+    return renderToStringAsyncInner(source, options);
+  }
+  return raceWithTimeout(renderToStringAsyncInner(source, options), options.timeoutMs, "render");
+}
+
+async function renderToStringAsyncInner(
+  source: RenderToStringAsyncSource,
+  options: RenderToStringAsyncOptions,
 ): Promise<RenderToStringResult> {
   assertRouterAwareSSROptions(options);
   const routerSSR = options.router !== undefined ? await resolveRouterSSR(options.router) : null;
@@ -222,6 +234,7 @@ function assertNoAsyncSSRSource(value: unknown): void {
 
 function assertRouterAwareSSROptions(options: RenderToStringAsyncOptions): void {
   assertBaseSSROptions(options);
+  assertTimeoutMs(options.timeoutMs, "SSR");
 
   if (options.router !== undefined) {
     assertRouterSSROption(options.router);
@@ -242,7 +255,8 @@ function assertRouterAwareSSROptions(options: RenderToStringAsyncOptions): void 
       key !== "provides" &&
       key !== "router" &&
       key !== "manifest" &&
-      key !== "clientEntry",
+      key !== "clientEntry" &&
+      key !== "timeoutMs",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown SSR option: ${String(unknownKey)}`);
