@@ -231,6 +231,7 @@ describe("package exports", () => {
 
     expect(Object.keys(server).sort()).toEqual([
       "RouterHydrationError",
+      "SolaceTimeoutError",
       "buildSnapshotScript",
       "createRouterServerContext",
       "createRouterSnapshot",
@@ -523,6 +524,7 @@ describe("package exports", () => {
     expect(Object.keys(sfc)).toEqual([]);
     expect(Object.keys(server).sort()).toEqual([
       "RouterHydrationError",
+      "SolaceTimeoutError",
       "buildSnapshotScript",
       "createRouterServerContext",
       "createRouterSnapshot",
@@ -539,6 +541,7 @@ describe("package exports", () => {
       "verifyRouterSnapshot",
     ]);
     expect(server.RouterHydrationError).toEqual(expect.any(Function));
+    expect(server.SolaceTimeoutError).toEqual(expect.any(Function));
     expect(server.createRouterServerContext).toEqual(expect.any(Function));
     expect(server.createRouterSnapshot).toEqual(expect.any(Function));
     expect(server.createStaticRoutesFromRouter).toEqual(expect.any(Function));

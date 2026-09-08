@@ -8,6 +8,7 @@ export {
   type StaticPage,
   type StaticRoute,
 } from "./generate-static-site";
+export { SolaceTimeoutError } from "./ssr-timeout";
 export {
   createStaticRoutesFromRouter,
   type StaticRouterOptions,

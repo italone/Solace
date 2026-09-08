@@ -286,7 +286,7 @@ on both sides before comparison. All other mismatch semantics (throw-on-mismatch
 `renderToStringAsync()` buffers the complete initial tree before returning `{ html, styles }`. It
 accepts promised roots, async components, promised child VNodes, and the same `context` and
 `provides` options as `renderToString()`. Rejections propagate without exposing partial HTML. An
-opt-in `timeoutMs` (positive number) makes a never-settling render reject with the root-exported
+opt-in `timeoutMs` (positive number) makes a never-settling render reject with the
 `SolaceTimeoutError` instead of hanging.
 
 ```tsx
@@ -337,7 +337,7 @@ Rendering starts eagerly when `renderToStream()` is called. The returned stream 
 backpressure: production pauses once the stream queue is full and resumes when the consumer pulls.
 Options accept only `context`, `provides`, `mode`, `router`,
 `manifest`, `clientEntry`, and `timeoutMs` (`timeoutMs` is the opt-in hang guard: the source phase
-errors the stream with the root-exported `SolaceTimeoutError`, while out-of-order boundaries time out
+errors the stream with the `SolaceTimeoutError` (root and `@italone/solace/server` exports), while out-of-order boundaries time out
 individually — the fallback is kept and a failure comment is emitted while the stream stays open;
 `"ordered"` is the default and byte-identical to previous releases;
 `"out-of-order"` is described below; `router` is described in the renderer-owned router section;
@@ -642,7 +642,7 @@ site.pages[0].html;
 are awaited sequentially in declaration order, and the complete `{ pages }` result is returned only
 after every route and shell call succeeds. An opt-in site-level `timeoutMs` (positive number) is
 forwarded into each route's `renderToStringAsync()` call and may be overridden per route; a timeout
-rejects with the root-exported `SolaceTimeoutError`.
+rejects with the `SolaceTimeoutError` (root and `@italone/solace/server` exports).
 
 ```ts
 const site = await generateStaticSiteAsync({

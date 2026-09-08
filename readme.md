@@ -75,7 +75,7 @@ plus route-level `router` options on both SSG entries, and
 production asset injection through the `manifest` plus `clientEntry` option pair on all three SSR
 renderers, and an opt-in `timeoutMs` hang guard — a positive number that makes the async SSR entries
 (`generateStaticSiteAsync()` supports site-level with route-level override) reject with the
-root-exported `SolaceTimeoutError` instead of hanging, while out-of-order stream boundaries time out
+`SolaceTimeoutError` (root and `@italone/solace/server` exports) instead of hanging, while out-of-order stream boundaries time out
 individually and keep their fallbacks. It still
 defers auth, permissions, SSG app-level router integration, the synchronous `hydrate()` router
 option, async update scheduling after
