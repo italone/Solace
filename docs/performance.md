@@ -145,6 +145,16 @@ NOT shipped: the native array-copy share is under 10% of the profile, so no same
 improvement above the ±5% noise floor is demonstrable. Recorded per the same rule as the 2026-09-03
 delete finding: do not optimize jsdom-DOM-bound scenarios.
 
+The companion anomaly `1000 component batched reactive update` (~67 ms) appearing slower than
+initial render (~40 ms) was profiled the same day and is a benchmark artifact, not framework
+overhead: the update bench builds its reactive proxy, 1001 closures, and 1000 vnodes inside the
+timed closure while the render bench hoists them out, both run a single JIT-cold iteration, and the
+update bench's timed closure includes three nwsapi attribute-selector queries. Measured in
+isolation with warm code, one 1000-component batched flush costs ~2.9 ms versus ~5.9 ms to mount.
+The update flush itself is also jsdom-DOM-bound (~63% self time in symbol-tree/`Node-impl` via
+`textContent`'s remove-and-replace implementation in `src/renderer/dom.ts`); Solace-side cost
+(effect re-subscription and per-write trigger scans) totals ~0.4 ms per flush. No change made.
+
 ## Browser Production Benchmark
 
 Command:
