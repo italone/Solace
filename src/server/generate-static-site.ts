@@ -2,6 +2,7 @@ import type { Provides } from "../component/provide";
 import type { RenderToStringAsyncSource, RenderToStringSource } from "./render-to-string";
 import { renderToString, renderToStringAsync } from "./render-to-string";
 import { assertRouterSSGOption, type RouterSSGOptions } from "./router-ssr";
+import { assertTimeoutMs } from "./ssr-timeout";
 import {
   resolveStaticAssets,
   type StaticAssetManifest,
@@ -19,6 +20,7 @@ export interface StaticRoute {
 export interface AsyncStaticRoute extends Omit<StaticRoute, "source"> {
   source: RenderToStringAsyncSource;
   router?: RouterSSGOptions;
+  timeoutMs?: number;
 }
 
 export interface StaticPage {
@@ -42,6 +44,7 @@ export interface GenerateStaticSiteOptions {
   manifest?: StaticAssetManifest;
   clientEntry?: string;
   base?: string;
+  timeoutMs?: number;
 }
 
 export interface GenerateStaticSiteAsyncOptions extends Omit<GenerateStaticSiteOptions, "routes"> {
@@ -104,6 +107,7 @@ export async function generateStaticSiteAsync(
 ): Promise<GenerateStaticSiteResult> {
   assertNoDeferredIntegrationOptions(options);
   assertValidRoutes(options.routes);
+  assertTimeoutMs(options.timeoutMs, "SSR static site");
 
   const assets = resolveStaticSiteAssets(options);
   const seenPaths = new Set<string>();
@@ -114,16 +118,20 @@ export async function generateStaticSiteAsync(
     assertStaticRouteContext(route.context);
     assertStaticRouteProvides(route.provides);
     assertStaticRoutePath(route.path, seenPaths);
+    assertTimeoutMs(route.timeoutMs, "SSR static route");
 
+    const timeoutMs = route.timeoutMs ?? options.timeoutMs;
     const context = { ...(route.context ?? {}) };
     const rendered =
       route.router !== undefined
         ? await renderToStringAsync(route.source, {
             router: { url: route.path, ...route.router },
+            ...(timeoutMs !== undefined ? { timeoutMs } : {}),
           })
         : await renderToStringAsync(route.source, {
             context: { ...context },
             provides: route.provides,
+            ...(timeoutMs !== undefined ? { timeoutMs } : {}),
           });
     const body = rendered.html;
     const styles = [...rendered.styles];
@@ -194,7 +202,8 @@ function assertNoDeferredIntegrationOptions(
       key !== "shell" &&
       key !== "manifest" &&
       key !== "clientEntry" &&
-      key !== "base",
+      key !== "base" &&
+      key !== "timeoutMs",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown SSG option: ${String(unknownKey)}`);
@@ -272,7 +281,8 @@ function assertAsyncRouteIntegrationOptions(route: AsyncStaticRoute): void {
       key !== "source" &&
       key !== "context" &&
       key !== "provides" &&
-      key !== "router",
+      key !== "router" &&
+      key !== "timeoutMs",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown SSG route field: ${String(unknownKey)}`);

@@ -51,4 +51,41 @@ describe("generateStaticSite runtime rendering", () => {
       }),
     ).rejects.toThrow("route boom");
   });
+
+  it("rejects the build when a never-settling route exceeds site timeoutMs", async () => {
+    const Hung: AsyncComponentType = () => new Promise(() => {}) as never;
+    await expect(
+      generateStaticSiteAsync({
+        timeoutMs: 15,
+        routes: [
+          { path: "/ok", source: () => h("p", null, "ok") },
+          { path: "/bad", source: Hung },
+        ],
+      }),
+    ).rejects.toThrow(/timed out after 15ms/);
+  });
+
+  it("lets a route-level timeoutMs override the site default", async () => {
+    const Hung: AsyncComponentType = () => new Promise(() => {}) as never;
+    await expect(
+      generateStaticSiteAsync({
+        timeoutMs: 5000,
+        routes: [{ path: "/bad", source: Hung, timeoutMs: 15 }],
+      }),
+    ).rejects.toThrow(/timed out after 15ms/);
+  });
+
+  it("rejects invalid timeoutMs at site and route level", async () => {
+    await expect(
+      generateStaticSiteAsync({
+        timeoutMs: 0 as never,
+        routes: [{ path: "/", source: () => h("p", null, "x") }],
+      }),
+    ).rejects.toThrow(TypeError("SSR static site timeoutMs must be a positive number"));
+    await expect(
+      generateStaticSiteAsync({
+        routes: [{ path: "/", source: () => h("p", null, "x"), timeoutMs: -1 as never }],
+      }),
+    ).rejects.toThrow(TypeError("SSR static route timeoutMs must be a positive number"));
+  });
 });
