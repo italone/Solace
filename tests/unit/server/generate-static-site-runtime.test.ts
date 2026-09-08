@@ -38,4 +38,17 @@ describe("generateStaticSite runtime rendering", () => {
       }),
     ).toThrow(/Async SSR is deferred/);
   });
+
+  it("rejects the whole build when one async route fails", async () => {
+    const Bad: AsyncComponentType = () => Promise.reject(new Error("route boom"));
+
+    await expect(
+      generateStaticSiteAsync({
+        routes: [
+          { path: "/ok", source: () => h("p", null, "ok") },
+          { path: "/bad", source: Bad },
+        ],
+      }),
+    ).rejects.toThrow("route boom");
+  });
 });
