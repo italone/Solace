@@ -446,7 +446,16 @@ async function* flushPendingBoundaries(ctx: StreamContext): AsyncGenerator<strin
     }
 
     try {
-      const html = await collectBoundaryHtml(winner, ctx);
+      // The per-boundary deadline bounds loader readiness, not the render pass:
+      // a subtree that hangs while streaming would stall the flush loop forever.
+      const html =
+        winner.deadlineAt !== null
+          ? await raceWithTimeout(
+              collectBoundaryHtml(winner, ctx),
+              Math.max(winner.deadlineAt - Date.now(), 1),
+              `streaming boundary ${winner.id}`,
+            )
+          : await collectBoundaryHtml(winner, ctx);
       yield replacementScriptMarker(winner.id);
       yield buildReplacementScript(winner.id, html);
     } catch (error) {
@@ -463,10 +472,16 @@ async function* flushPendingBoundaries(ctx: StreamContext): AsyncGenerator<strin
 function racePending(remaining: Set<PendingBoundary>): Promise<PendingBoundary> {
   return new Promise((resolve) => {
     for (const boundary of remaining) {
-      const settle = (): void => resolve(boundary);
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const settle = (): void => {
+        if (timer !== undefined) {
+          clearTimeout(timer);
+        }
+        resolve(boundary);
+      };
       void boundary.ready.then(settle, settle);
       if (boundary.deadlineAt !== null) {
-        setTimeout(
+        timer = setTimeout(
           () => {
             if (boundary.error === null) {
               boundary.error = new SolaceTimeoutError(

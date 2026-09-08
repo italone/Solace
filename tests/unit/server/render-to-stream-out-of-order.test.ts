@@ -235,6 +235,19 @@ describe("renderToStream out-of-order replacement", () => {
     expect(streamed).not.toContain("so:r:1");
   });
 
+  it("keeps fallback when a loaded boundary render never settles past timeoutMs", async () => {
+    const HungRender = defineAsyncComponent({
+      loader: async () => () => new Promise(() => {}) as never,
+      fallback: h("p", null, "loading…"),
+    });
+    const streamed = await collectStream(
+      renderToStream(h(HungRender), { mode: "out-of-order", timeoutMs: 15 }),
+    );
+    expect(streamed).toContain("<p>loading…</p>");
+    expect(streamed).toMatch(/so:b:1 failed:[^]*timed out/);
+    expect(streamed).not.toContain("so:r:1");
+  });
+
   it("rejects invalid timeoutMs", () => {
     expect(() => renderToStream(h("p", null, "x"), { timeoutMs: 0 as never })).toThrow(
       TypeError("SSR streaming timeoutMs must be a positive number"),
