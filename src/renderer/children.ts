@@ -277,11 +277,12 @@ function patchKeyedChildren(
     }
 
     const fragment = document.createDocumentFragment();
-    for (const node of movedExistingBatch) {
-      fragment.appendChild(node);
+    // Collected back-to-front via push, so append in reverse for DOM order.
+    for (let index = movedExistingBatch.length - 1; index >= 0; index -= 1) {
+      fragment.appendChild(movedExistingBatch[index]);
     }
     insert(fragment, container, anchorNode);
-    anchorNode = movedExistingBatch[0];
+    anchorNode = movedExistingBatch[movedExistingBatch.length - 1];
     movedExistingBatch.length = 0;
   }
 
@@ -334,7 +335,7 @@ function patchKeyedChildren(
     if (shouldRecordMovePath) {
       recordKeyedReorderMovedExistingChild();
     }
-    movedExistingBatch.unshift(childEl);
+    movedExistingBatch.push(childEl);
   }
 
   flushMovedExistingBatch();
