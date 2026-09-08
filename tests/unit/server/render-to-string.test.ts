@@ -229,4 +229,40 @@ describe("renderToStringAsync", () => {
     });
     expect(loader).toHaveBeenCalledTimes(2);
   });
+
+  it("rejects when an async component loader rejects", async () => {
+    const Bad: AsyncComponentType = () => Promise.reject(new Error("loader boom"));
+
+    await expect(renderToStringAsync(h("div", null, h(Bad)))).rejects.toThrow("loader boom");
+  });
+
+  it("rejects when a component render throws after other children resolved", async () => {
+    const Good: AsyncComponentType = async () => () => h("p", null, "good");
+    const Bad: AsyncComponentType = async () =>
+      () => {
+        throw new Error("render boom");
+      };
+
+    await expect(
+      renderToStringAsync(h("div", null, [h(Good), h(Bad)])),
+    ).rejects.toThrow("render boom");
+  });
+
+  it("produces no partial HTML when the tree rejects", async () => {
+    const Bad: AsyncComponentType = async () => () => {
+      throw new Error("render boom");
+    };
+    let captured: { html: string; styles: string[] } | undefined;
+
+    await renderToStringAsync(h("div", null, h(Bad))).then(
+      (result) => {
+        captured = result;
+      },
+      () => {
+        captured = undefined;
+      },
+    );
+
+    expect(captured).toBeUndefined();
+  });
 });
