@@ -422,9 +422,18 @@ async function* flushPendingBoundaries(ctx: StreamContext): AsyncGenerator<strin
       continue;
     }
 
-    yield replacementScriptMarker(winner.id);
-    const html = await collectBoundaryHtml(winner, ctx);
-    yield buildReplacementScript(winner.id, html);
+    try {
+      const html = await collectBoundaryHtml(winner, ctx);
+      yield replacementScriptMarker(winner.id);
+      yield buildReplacementScript(winner.id, html);
+    } catch (error) {
+      // A post-load subtree failure follows the same semantics as a loader
+      // failure: keep the fallback, emit a failure comment, keep the stream open.
+      yield boundaryFailureMarker(
+        winner.id,
+        escapeHtml(error instanceof Error ? error.message : String(error)),
+      );
+    }
   }
 }
 

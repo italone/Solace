@@ -135,6 +135,48 @@ describe("renderToStream out-of-order replacement", () => {
     expect(typeof streamed).toBe("string");
   });
 
+  it("keeps fallback and emits a failure comment when a loaded boundary render throws", async () => {
+    const BadRender = defineAsyncComponent({
+      loader: async () =>
+        () => {
+          throw new Error("render boom");
+        },
+      fallback: h("p", null, "loading…"),
+    });
+    const streamed = await collectStream(
+      renderToStream(h(Fragment, null, [h("b", null, "ok"), h(BadRender)]), {
+        mode: "out-of-order",
+      }),
+    );
+    expect(streamed).toContain("<b>ok</b>");
+    expect(streamed).toContain("<p>loading…</p>");
+    expect(streamed).toContain("failed:render boom");
+    expect(streamed).not.toContain("so:r:1");
+  });
+
+  it("keeps fallback when a loaded boundary render returns an invalid value", async () => {
+    const BadRender = defineAsyncComponent({
+      loader: async () => () => "not a vnode" as never,
+      fallback: h("p", null, "loading…"),
+    });
+    const streamed = await collectStream(renderToStream(h(BadRender), { mode: "out-of-order" }));
+    expect(streamed).toContain("<p>loading…</p>");
+    expect(streamed).toContain("failed:");
+    expect(streamed).not.toContain("so:r:1");
+  });
+
+  it("does not let an error message break out of the failure comment", async () => {
+    const Bad = defineAsyncComponent(() => Promise.reject(new Error("boom-->alert")));
+    const streamed = await collectStream(renderToStream(h(Bad), { mode: "out-of-order" }));
+    const markerStart = streamed.indexOf("<!--so:b:1 failed:");
+    expect(markerStart).toBeGreaterThan(-1);
+    const markerEnd = streamed.indexOf("-->", markerStart + 1);
+    const marker = streamed.slice(markerStart, markerEnd + 3);
+    // The message must stay inside one comment: no raw --> before the marker's own closer.
+    expect(marker).toContain("boom");
+    expect(streamed.slice(markerStart, markerEnd)).not.toContain("-->");
+  });
+
   it("embeds style tags registered inside the boundary subtree", async () => {
     const Styled = defineAsyncComponent(async () => {
       return () => {
