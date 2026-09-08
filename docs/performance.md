@@ -155,6 +155,22 @@ The update flush itself is also jsdom-DOM-bound (~63% self time in symbol-tree/`
 `textContent`'s remove-and-replace implementation in `src/renderer/dom.ts`); Solace-side cost
 (effect re-subscription and per-write trigger scans) totals ~0.4 ms per flush. No change made.
 
+## Component-Update Benchmark Methodology Fix (2026-09-08)
+
+Following the artifact diagnosis above, `tests/performance/component-update.bench.ts` was fixed:
+reactive state, components, and the initial mount are now hoisted out of the timed task, the timed
+closure contains only three batched mutations plus `await nextTick()`, assertions moved after
+`bench.run()`, and the bench now uses warmup (3 warmup iterations) with 10 measured iterations
+instead of a single JIT-cold iteration.
+
+Same-session effect: `1000 component batched reactive update` mean dropped from ~67–89 ms
+(in-timeline historical numbers that included mount and cold JIT) to 2.14 ms, and
+`1000 stable child components parent update` to 0.118 ms — consistent with the isolated warm
+measurement (~2.9 ms) recorded above. Cross-day comparisons remain invalid per the standing rule;
+the historical 67–89 ms numbers for these two scenarios are methodology artifacts, not framework
+regressions. The jsdom performance-regression budget gate passes with the new numbers (budgets are
+upper limits). No framework code changed in this fix.
+
 ## Browser Production Benchmark
 
 Command:
