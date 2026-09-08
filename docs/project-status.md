@@ -7,7 +7,7 @@ This document summarizes the current completion level of Solace as an open-sourc
 ## Summary
 
 Solace is now on the `0.1.0` beta line. npm `latest` remains the stable `@italone/solace@0.0.5`
-line, while published npm `beta` is `0.1.0-beta.7` (published 2026-09-08).
+line, while published npm `beta` is `0.1.0-beta.8` (published 2026-09-08).
 It provides a working public API, package exports, examples, tests, benchmarks, and release checks.
 Its primary authoring path is JSX/TSX-first function components backed by explicit runtime APIs. It
 is suitable as a compact educational and experimental frontend framework, but it should not be
@@ -16,16 +16,16 @@ described as a mature production replacement for React, Vue, Svelte, or similar 
 Current repository state:
 
 - Package name: `@italone/solace`
-- Repository package version: `0.1.0-beta.7`
+- Repository package version: `0.1.0-beta.8`
 - Published npm `latest`: `0.0.5`
-- Published npm `beta`: `0.1.0-beta.7`
-- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.7`
+- Published npm `beta`: `0.1.0-beta.8`
+- npm dist-tags: `latest` points to `0.0.5`; `beta` points to `0.1.0-beta.8`
 - Public package metadata: `"private": false`
 - Current branch: `main`
 - Remote state: recheck with `git fetch origin main`, `git status --short --branch`, and
   `git rev-list --left-right --count origin/main...HEAD` before any future release, publish, or
   synchronization claim.
-- Phase: beta.7 (published to npm 2026-09-08), which adds the root `SolaceHydrationError`
+- Phase: beta.8 (published to npm 2026-09-08), which adds deep `reactive()` with `shallowReactive()`, the DevTools event contract v1 (router events, scheduler causes, trigger correlation), hydration attribute-mismatch hardening with `textComparison`, router-aware SSG, synchronous-entry router SSR, streaming backpressure, flattened nested array children, and the keyed move-batch push fix on top of the beta.7 root `SolaceHydrationError`
   export and shallow-`reactive()` documentation on top of the beta.6 renderer-owned router SSR,
   runtime SSR asset injection, and the stable 1.0 public-contract boundary. The Router stable slice,
   buffered async initial SSR/hydration, sequential async SSG, and the first browser DevTools
