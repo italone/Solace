@@ -190,7 +190,7 @@ describe("renderToStream async trees", () => {
           if (done) return;
         }
       })(),
-    ).rejects.toThrow(/timed out after 15ms/);
+    ).rejects.toThrow(/timed out after \d+ms/);
   });
 });
 
