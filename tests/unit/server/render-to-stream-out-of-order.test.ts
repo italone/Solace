@@ -218,6 +218,29 @@ describe("renderToStream out-of-order replacement", () => {
     expect(streamed.slice(scriptIndex)).toContain("slot text");
   });
 
+  it("keeps fallback and closes the stream when a boundary never settles past timeoutMs", async () => {
+    const Hung = defineAsyncComponent({
+      loader: () => new Promise(() => {}) as never,
+      fallback: h("p", null, "loading…"),
+    });
+    const streamed = await collectStream(
+      renderToStream(h(Fragment, null, [h("b", null, "ok"), h(Hung)]), {
+        mode: "out-of-order",
+        timeoutMs: 15,
+      }),
+    );
+    expect(streamed).toContain("<b>ok</b>");
+    expect(streamed).toContain("<p>loading…</p>");
+    expect(streamed).toMatch(/so:b:1 failed:[^]*timed out/);
+    expect(streamed).not.toContain("so:r:1");
+  });
+
+  it("rejects invalid timeoutMs", () => {
+    expect(() => renderToStream(h("p", null, "x"), { timeoutMs: 0 as never })).toThrow(
+      TypeError("SSR streaming timeoutMs must be a positive number"),
+    );
+  });
+
   it("neutralizes closing script sequences in embedded content", async () => {
     const Tricky = defineAsyncComponent(async () => () => h("p", null, "</script>"));
     const streamed = await collectStream(renderToStream(h(Tricky), { mode: "out-of-order" }));

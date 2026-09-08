@@ -37,6 +37,7 @@ import {
   resolveRouterSSR,
   type RouterSSROptions,
 } from "./router-ssr";
+import { assertTimeoutMs, raceWithTimeout, SolaceTimeoutError } from "./ssr-timeout";
 import {
   assertSafeHtmlName,
   isPlainObject,
@@ -58,6 +59,7 @@ export interface RenderToStreamOptions {
   router?: RouterSSROptions;
   manifest?: StaticAssetManifest;
   clientEntry?: string;
+  timeoutMs?: number;
 }
 
 type StreamMode = "ordered" | "out-of-order";
@@ -68,14 +70,20 @@ interface StreamContext {
   sink: ServerStyleSink;
   styles: StyleDrain;
   pending: PendingBoundary[];
+  timeoutMs: number | undefined;
   nextBoundaryId(): number;
 }
 
-function createStreamContext(mode: StreamMode, appProvides: Provides | null): StreamContext {
+function createStreamContext(
+  mode: StreamMode,
+  appProvides: Provides | null,
+  timeoutMs: number | undefined,
+): StreamContext {
   let nextId = 0;
   return {
     mode,
     appProvides,
+    timeoutMs,
     sink: createServerStyleSink(),
     styles: createStyleDrain(),
     pending: [],
@@ -133,11 +141,20 @@ export function renderToStream(
     };
 
     try {
+      // Source-phase deadline: only guards the source loop below; out-of-order
+      // boundaries enforce their own per-boundary deadlines during the flush.
+      const deadline = options.timeoutMs !== undefined ? Date.now() + options.timeoutMs : null;
+      const remainingMs = (): number =>
+        deadline === null ? 0 : Math.max(deadline - Date.now(), 1);
+      const raceSource = <T>(promise: Promise<T>): Promise<T> =>
+        deadline === null ? promise : raceWithTimeout(promise, remainingMs(), "streaming source");
+
       const routerSSR =
-        options.router !== undefined ? await resolveRouterSSR(options.router) : null;
+        options.router !== undefined ? await raceSource(resolveRouterSSR(options.router)) : null;
       const ctx = createStreamContext(
         options.mode ?? "ordered",
         routerSSR !== null ? routerSSR.provides : (options.provides ?? null),
+        options.timeoutMs,
       );
       const iterator = streamSource(source, ctx)[Symbol.asyncIterator]();
       let buffer = "";
@@ -165,7 +182,7 @@ export function renderToStream(
           buffer = "";
         }
 
-        const result = await nextPromise;
+        const result = await raceSource(nextPromise);
         if (result.done) {
           break;
         }
@@ -325,7 +342,13 @@ async function* streamOutOfOrderBoundary(
   ctx: StreamContext,
 ): AsyncGenerator<string> {
   const id = ctx.nextBoundaryId();
-  const boundary = createPendingBoundary(id, metadata.load(), vnode.props, vnode.children);
+  const boundary = createPendingBoundary(
+    id,
+    metadata.load(),
+    vnode.props,
+    vnode.children,
+    ctx.timeoutMs,
+  );
   ctx.pending.push(boundary);
 
   yield boundaryStartMarker(id);
@@ -351,7 +374,7 @@ async function* streamSuspenseBoundary(
   const load = allResolved
     ? Promise.resolve(Suspense)
     : Promise.all(loaders.map((l) => l())).then(() => Suspense);
-  const boundary = createPendingBoundary(id, load, vnode.props, vnode.children);
+  const boundary = createPendingBoundary(id, load, vnode.props, vnode.children, ctx.timeoutMs);
   ctx.pending.push(boundary);
 
   yield boundaryStartMarker(id);
@@ -440,7 +463,21 @@ async function* flushPendingBoundaries(ctx: StreamContext): AsyncGenerator<strin
 function racePending(remaining: Set<PendingBoundary>): Promise<PendingBoundary> {
   return new Promise((resolve) => {
     for (const boundary of remaining) {
-      void boundary.ready.then(() => resolve(boundary));
+      const settle = (): void => resolve(boundary);
+      void boundary.ready.then(settle, settle);
+      if (boundary.deadlineAt !== null) {
+        setTimeout(
+          () => {
+            if (boundary.error === null) {
+              boundary.error = new SolaceTimeoutError(
+                `SSR timed out after streaming boundary wait (boundary ${boundary.id})`,
+              );
+            }
+            settle();
+          },
+          Math.max(boundary.deadlineAt - Date.now(), 0),
+        );
+      }
     }
   });
 }
@@ -491,6 +528,8 @@ function assertStreamOptions(options: RenderToStreamOptions): void {
 
   assertSSRAssetOptions(options);
 
+  assertTimeoutMs(options.timeoutMs, "SSR streaming");
+
   if (options.router !== undefined) {
     assertRouterSSROption(options.router);
     if (options.provides !== undefined) {
@@ -505,7 +544,8 @@ function assertStreamOptions(options: RenderToStreamOptions): void {
       key !== "mode" &&
       key !== "router" &&
       key !== "manifest" &&
-      key !== "clientEntry",
+      key !== "clientEntry" &&
+      key !== "timeoutMs",
   );
   if (unknownKey !== undefined) {
     throw new TypeError(`Unknown SSR streaming option: ${String(unknownKey)}`);

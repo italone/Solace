@@ -53,6 +53,7 @@ export interface PendingBoundary {
   component: unknown;
   props: VNode["props"];
   children: VNode["children"];
+  deadlineAt: number | null;
 }
 
 export function createPendingBoundary(
@@ -60,6 +61,7 @@ export function createPendingBoundary(
   load: Promise<unknown>,
   props: VNode["props"],
   children: VNode["children"],
+  timeoutMs?: number,
 ): PendingBoundary {
   const boundary: PendingBoundary = {
     id,
@@ -67,6 +69,7 @@ export function createPendingBoundary(
     component: null,
     props,
     children,
+    deadlineAt: timeoutMs === undefined ? null : Date.now() + timeoutMs,
     ready: null as never,
   };
   boundary.ready = load.then(

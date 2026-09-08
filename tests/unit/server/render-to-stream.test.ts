@@ -178,6 +178,20 @@ describe("renderToStream async trees", () => {
     const Bad = defineAsyncComponent(() => Promise.reject(new Error("load failed")));
     await expect(collectStream(renderToStream(h(Bad)))).rejects.toThrow("load failed");
   });
+
+  it("errors the stream when the ordered source never settles past timeoutMs", async () => {
+    const Hung = defineAsyncComponent(() => new Promise(() => {}) as never);
+    const stream = renderToStream(h(Hung), { timeoutMs: 15 });
+    await expect(
+      (async () => {
+        const reader = stream.getReader();
+        for (;;) {
+          const { done } = await reader.read();
+          if (done) return;
+        }
+      })(),
+    ).rejects.toThrow(/timed out after 15ms/);
+  });
 });
 
 describe("renderToStream styles", () => {
