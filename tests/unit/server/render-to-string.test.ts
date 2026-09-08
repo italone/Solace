@@ -238,14 +238,13 @@ describe("renderToStringAsync", () => {
 
   it("rejects when a component render throws after other children resolved", async () => {
     const Good: AsyncComponentType = async () => () => h("p", null, "good");
-    const Bad: AsyncComponentType = async () =>
-      () => {
-        throw new Error("render boom");
-      };
+    const Bad: AsyncComponentType = async () => () => {
+      throw new Error("render boom");
+    };
 
-    await expect(
-      renderToStringAsync(h("div", null, [h(Good), h(Bad)])),
-    ).rejects.toThrow("render boom");
+    await expect(renderToStringAsync(h("div", null, [h(Good), h(Bad)]))).rejects.toThrow(
+      "render boom",
+    );
   });
 
   it("produces no partial HTML when the tree rejects", async () => {

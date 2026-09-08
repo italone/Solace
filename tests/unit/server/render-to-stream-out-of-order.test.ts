@@ -137,10 +137,9 @@ describe("renderToStream out-of-order replacement", () => {
 
   it("keeps fallback and emits a failure comment when a loaded boundary render throws", async () => {
     const BadRender = defineAsyncComponent({
-      loader: async () =>
-        () => {
-          throw new Error("render boom");
-        },
+      loader: async () => () => {
+        throw new Error("render boom");
+      },
       fallback: h("p", null, "loading…"),
     });
     const streamed = await collectStream(
